@@ -533,7 +533,7 @@ RegisterNUICallback("saveVehicleInfo", function(data, cb)
     local impound = data.impound
     local JobType = GetJobType(PlayerData.job.name)
     if JobType == 'police' and impound.impoundChanged == true then
-        if impound.inpoundActive then
+        if impound.impoundActive then
             local found = 0
             local plate = string.upper(string.gsub(data['plate'], "^%s*(.-)%s*$", "%1"))
             local vehicles = GetGamePool('CVehicle')
@@ -543,8 +543,10 @@ RegisterNUICallback("saveVehicleInfo", function(data, cb)
                 if plt == plate then
                     local dist = #(GetEntityCoords(PlayerPedId()) - GetEntityCoords(v))
                     if dist < 5.0 then
+                        print(true)
                         found = VehToNet(v)
                         SendNUIMessage({ type = "greenImpound" })
+                        TriggerServerEvent('mdt:server:saveVehicleInfo', dbid, plate, imageurl, notes, stolen, code5, impound)
                     end
                     break
                 end
@@ -554,22 +556,21 @@ RegisterNUICallback("saveVehicleInfo", function(data, cb)
                 QBCore.Functions.Notify('Vehicle not found!', 'error')
                 SendNUIMessage({ type = "redImpound" })
             end
-            --TriggerServerEvent('mdt:server:impoundVehicle', data, found)
-            --cb('ok')
         else
             local ped = PlayerPedId()
             local playerPos = GetEntityCoords(ped)
             for k, v in pairs(Config.ImpoundLocations) do
                 if (#(playerPos - vector3(v.x, v.y, v.z)) < 20.0) then
-                    --TriggerServerEvent('mdt:server:removeImpound', data['plate'], k)
                     impound.CurrentSelection = k
+                    TriggerServerEvent('mdt:server:saveVehicleInfo', dbid, plate, imageurl, notes, stolen, code5, impound)
                     break
                 end
             end
         end
+    else
+        TriggerServerEvent('mdt:server:saveVehicleInfo', dbid, plate, imageurl, notes, stolen, code5, impound)
     end
     print(impound.CurrentSelection)
-    TriggerServerEvent('mdt:server:saveVehicleInfo', dbid, plate, imageurl, notes, stolen, code5, impound)
     cb(true)
 end)
 
