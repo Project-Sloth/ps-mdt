@@ -1085,22 +1085,21 @@ RegisterNetEvent('mdt:server:sendMessage', function(message, time)
 			MySQL.scalar("SELECT pfp FROM `mdt_data` WHERE cid=:id LIMIT 1", {
 				id = Player.PlayerData.citizenid -- % wildcard, needed to search for all alike results
 			}, function(data)
-				if data and data[1] then
-					local ProfilePicture = ProfPic(Player.PlayerData.charinfo.gender, data[1]['profilepic'])
-					local callsign = GetResourceKvpString(Player.PlayerData.metadata.callsign..'-callsign') or "000"
-					local Item = {
-						profilepic = ProfilePicture,
-						callsign = Player.PlayerData.metadata.callsign,
-						cid = Player.PlayerData.citizenid,
-						name = '('..callsign..') '..Player.PlayerData.charinfo.firstname.. " "..Player.PlayerData.charinfo.lastname,
-						message = message,
-						time = time,
-						job = Player.PlayerData.job.name
-					}
-					dispatchMessages[#dispatchMessages+1] = item
-					TriggerClientEvent('mdt:client:dashboardMessage', -1, Item)
-					-- Send to all clients, for auto updating stuff, ya dig.
-				end
+				if data == "" then data = nil end
+				local ProfilePicture = ProfPic(Player.PlayerData.charinfo.gender, data)
+				local callsign = Player.PlayerData.metadata.callsign or "000"
+				local Item = {
+					profilepic = ProfilePicture,
+					callsign = Player.PlayerData.metadata.callsign,
+					cid = Player.PlayerData.citizenid,
+					name = '('..callsign..') '..Player.PlayerData.charinfo.firstname.. " "..Player.PlayerData.charinfo.lastname,
+					message = message,
+					time = time,
+					job = Player.PlayerData.job.name
+				}
+				dispatchMessages[#dispatchMessages+1] = Item
+				TriggerClientEvent('mdt:client:dashboardMessage', -1, Item)
+				-- Send to all clients, for auto updating stuff, ya dig.
 			end)
 		end
 	end
