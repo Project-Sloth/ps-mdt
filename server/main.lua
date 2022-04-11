@@ -905,7 +905,7 @@ RegisterNetEvent('mdt:server:saveIncident', function(id, title, information, tag
 end)
 
 RegisterNetEvent('mdt:server:handleExistingConvictions', function(data, incidentid, time)
-	MySQL.query.await('SELECT * FROM mdt_convictions WHERE cid=:cid AND linkedincident=:linkedincident', {
+	MySQL.query('SELECT * FROM mdt_convictions WHERE cid=:cid AND linkedincident=:linkedincident', {
 		cid = data['Cid'],
 		linkedincident = incidentid
 	}, function(convictionRes)
