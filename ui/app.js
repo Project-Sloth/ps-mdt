@@ -209,7 +209,7 @@ $(document).ready(() => {
 
         vehHTML = '';
         vehicles.forEach(value => {
-          vehHTML += `<div class="veh-tag" data-plate="${value.plate}">${value.plate} - ${value.vehicle} </div>`
+          vehHTML += `<div class="veh-tag" data-plate="${value.plate}">${value.plate} - ${value.model} </div>`
         })
       }
       if (convictions && convictions.length > 0) {
