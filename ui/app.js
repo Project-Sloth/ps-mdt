@@ -173,12 +173,12 @@ $(document).ready(() => {
     $(".manage-profile-name-input-2").val(result["lastname"]);
     $(".manage-profile-dob-input").val(result["dob"]);
     $(".manage-profile-job-input").val(`${result.job}, ${result.grade}`);
-    $(".manage-profile-url-input").val(result["profilepic"]);
+    $(".manage-profile-url-input").val(result["profilepic"] ?? "");
     $(".manage-profile-info").val(result["mdtinfo"]);
     $(".manage-profile-info").removeAttr("disabled");
     $(".manage-profile-fingerprint").val(result["fingerprint"]);
     $(".manage-profile-fingerprint").removeAttr("disabled");
-    $(".manage-profile-pic").attr("src", result["profilepic"]);
+    $(".manage-profile-pic").attr("src", result["profilepic"] ?? "img/male.png");
 
     const { vehicles, tags, gallery, convictions, properties } = result
 
