@@ -674,6 +674,7 @@ end)
 --====================================================================================
 
 RegisterNetEvent('dispatch:clNotify', function(sNotificationData, sNotificationId)
+    sNotificationData.playerJob = PlayerData.job.name
     SendNUIMessage({ type = "call", data = sNotificationData })
 end)
 
