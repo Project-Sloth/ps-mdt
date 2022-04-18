@@ -709,7 +709,6 @@ RegisterNetEvent('mdt:server:getVehicleData', function(plate)
 end)
 
 RegisterNetEvent('mdt:server:saveVehicleInfo', function(dbid, plate, imageurl, notes, stolen, code5, impound)
-	print(dbid, plate, imageurl, notes, stolen, code5, impound)
 	if plate then
 		local src = source
 		local Player = QBCore.Functions.GetPlayer(src)
@@ -791,6 +790,7 @@ RegisterNetEvent('mdt:server:getAllLogs', function()
 	if Player then
 		if Config.LogPerms[Player.PlayerData.job.name] then
 			if Config.LogPerms[Player.PlayerData.job.name][Player.PlayerData.job.grade.level] then
+				
 				local JobType = GetJobType(Player.PlayerData.job.name)
 				local infoResult = MySQL.query.await('SELECT * FROM mdt_logs WHERE `jobtype` = :jobtype ORDER BY `id` DESC LIMIT 250', {jobtype = JobType})
 
@@ -1244,6 +1244,10 @@ RegisterNetEvent('mdt:server:statusImpound', function(plate)
 	end
 end)
 
+RegisterServerEvent("mdt:server:AddLog", function(text)
+	AddLog(text)
+end)
+
 function GetBoloStatus(plate)
     MySQL.query.await("SELECT * FROM mdt_bolos where plate = ?", {plate}, function(bolo)
 		if bolo and bolo[1] then
@@ -1262,3 +1266,4 @@ function GetVehicleInformation(plate)
         return false
     end
 end
+
