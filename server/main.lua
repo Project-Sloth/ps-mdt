@@ -185,12 +185,14 @@ QBCore.Functions.CreateCallback('mdt:server:GetProfileData', function(source, cb
 	if Config.PoliceJobs[JobName] then
 		local convictions = GetConvictions({person.cid})
 		person.convictions = {}
+		local convCount = 1
 		if next(convictions) then
 			for _, conv in pairs(convictions) do
 				if conv.warrant then person.warrant = true end
 				local charges = json.decode(conv.charges)
 				for _, charge in pairs(charges) do
-					person.convictions[_] = charge
+					person.convictions[convCount] = charge
+					convCount = convCount + 1
 				end
 			end
 		end
