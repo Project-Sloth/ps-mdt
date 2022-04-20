@@ -184,16 +184,25 @@ QBCore.Functions.CreateCallback('mdt:server:GetProfileData', function(source, cb
 
 	if Config.PoliceJobs[JobName] then
 		local convictions = GetConvictions({person.cid})
-		person.convictions = {}
+		person.convictions2 = {}
 		local convCount = 1
 		if next(convictions) then
 			for _, conv in pairs(convictions) do
 				if conv.warrant then person.warrant = true end
 				local charges = json.decode(conv.charges)
 				for _, charge in pairs(charges) do
-					person.convictions[convCount] = charge
+					person.convictions2[convCount] = charge
 					convCount = convCount + 1
 				end
+			end
+		end
+		local hash = {}
+		person.convictions = {}
+
+		for _,v in ipairs(person.convictions2) do
+			if (not hash[v]) then
+				person.convictions[#person.convictions+1] = v -- found this dedupe method on sourceforge somewhere, copy+pasta dev, needs to be refined later
+				hash[v] = true
 			end
 		end
 		local vehicles = GetPlayerVehicles(person.cid)
