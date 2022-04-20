@@ -4076,6 +4076,18 @@ $(document).ready(() => {
           DispatchItem += `<div class="call-bottom-info"><span class="fas fa-map-pin"></span>${value.firstStreet}</div>`;
         }
 
+        if (value["callsign"]) {
+          DispatchItem += `<div class="call-bottom-info"><span class="fas fa-compass"></span>${value.callsign}</div>`;
+        }
+
+        if (value["doorCount"]) {
+          DispatchItem += `<div class="call-bottom-info"><span class="fas fa-door-open"></span>${value.doorCount}</div>`;
+        }
+
+        if (value["weapon"]) {
+          DispatchItem += `<div class="call-bottom-info"><span class="fas fa-bullseye"></span>${value.weapon}</div>`;
+        }
+        
         if (value["heading"]) {
           DispatchItem += `<div class="call-bottom-info"><span class="fas fa-share"></span>${value.heading}</div>`;
         }
