@@ -264,7 +264,7 @@ RegisterNUICallback("getProfileData", function(data, cb)
     end
     local pP = nil
     local result = getProfileDataPromise(id)
-    
+
     --[[ local getProfileProperties = function(data)
         if pP then return end
         pP = promise.new()
@@ -296,7 +296,7 @@ RegisterNUICallback("removeProfileTag", function(data, cb)
     local cid = data.cid
     local tagtext = data.text
     TriggerServerEvent('mdt:server:removeProfileTag', cid, tagtext)
-    cb(removeProfileTag)
+    cb(true)
 end)
 
 RegisterNUICallback("updateLicence", function(data, cb)
@@ -543,7 +543,6 @@ RegisterNUICallback("saveVehicleInfo", function(data, cb)
                 if plt == plate then
                     local dist = #(GetEntityCoords(PlayerPedId()) - GetEntityCoords(v))
                     if dist < 5.0 then
-                        print(true)
                         found = VehToNet(v)
                         SendNUIMessage({ type = "greenImpound" })
                         TriggerServerEvent('mdt:server:saveVehicleInfo', dbid, plate, imageurl, notes, stolen, code5, impound)
@@ -570,7 +569,6 @@ RegisterNUICallback("saveVehicleInfo", function(data, cb)
     else
         TriggerServerEvent('mdt:server:saveVehicleInfo', dbid, plate, imageurl, notes, stolen, code5, impound)
     end
-    print(impound.CurrentSelection)
     cb(true)
 end)
 
