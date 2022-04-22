@@ -57,7 +57,7 @@ RegisterCommand('mdt', function()
             TriggerServerEvent('mdt:server:openMDT')
         end
     else
-        QBCore.Functions.Notify('Your Dead!', 'error')
+        QBCore.Functions.Notify("Can't do that!", "error")
     end
 end, false)
 
