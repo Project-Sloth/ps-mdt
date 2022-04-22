@@ -50,8 +50,14 @@ end)
 RegisterKeyMapping('mdt', 'Open Police MDT', 'keyboard', 'k')
 
 RegisterCommand('mdt', function()
-    if GetJobType(PlayerData.job.name) ~= nil then
-        TriggerServerEvent('mdt:server:openMDT')
+    local plyPed = PlayerPedId()
+    PlayerData = QBCore.Functions.GetPlayerData()
+    if not PlayerData.metadata["isdead"] and not PlayerData.metadata["inlaststand"] and not PlayerData.metadata["ishandcuffed"] and not IsPauseMenuActive() then
+        if GetJobType(PlayerData.job.name) ~= nil then
+            TriggerServerEvent('mdt:server:openMDT')
+        end
+    else
+        QBCore.Functions.Notify('Your Dead!', 'error')
     end
 end, false)
 
