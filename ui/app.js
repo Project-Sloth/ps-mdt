@@ -3868,7 +3868,7 @@ $(document).ready(() => {
         let radio = unit.radio ? unit.radio : "0";
         let callSign = unit.callSign ? unit.callSign : "000";
         let activeInfoJob = `<div class="unit-job active-info-job-unk">UNKNOWN</div>`;
-        if (PoliceJobs[playerJob] !== undefined) {
+        if (PoliceJobs[unit.unitType] !== undefined) {
           policeCount++;
           activeInfoJob = `<div class="unit-job active-info-job-lspd">LSPD</div>`;
         } else if (AmbulanceJobs[unit.unitType] !== undefined) {
