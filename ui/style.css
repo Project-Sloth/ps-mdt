@@ -11,6 +11,9 @@
     --color-8: #2554cc;
     --color-9: #6E707C;
     --color-10: #8f741b;
+
+    --container-width: 89.0%;
+    --container-height: 89.0%;
 }
 
 body {
@@ -33,107 +36,22 @@ input::-webkit-inner-spin-button {
   margin: 0;
 }
 
-.dashboard-page-container  {
-    background-color: var(--color-9);
-    border-radius: 15px;
-    position: absolute; 
-    width: 96.5%;
-    height: 96.5%;
-    left: 2.0%;
-    top: 1.5%;
-    display: none;
-}
-
 .badge-logo {
     margin-left: 1vh
 }
 
-.profile-page-container {
+.dashboard-page-container, .profile-page-container, .incidents-page-container, .bolos-page-container, .reports-page-container, .penalcode-page-container, .dmv-page-container, .stafflogs-page-container, .container-load {
     background-color: var(--color-9);
     border-radius: 15px;
-    position: absolute; 
-    width: 96.5%;
-    height: 96.5%;
-    left: 2.0%;
-    top: 1.5%;
-    display: none;
-}
-
-.incidents-page-container {
-    background-color: var(--color-9);
-    border-radius: 15px;
-    position: absolute; 
-    width: 96.5%;
-    height: 96.5%;
-    left: 2.0%;
-    top: 1.5%;
-    display: none;
-}
-
-.bolos-page-container {
-    background-color: var(--color-9);
-    border-radius: 15px;
-    position: absolute; 
-    width: 96.5%;
-    height: 96.5%;
-    left: 2.0%;
-    top: 1.5%;
-    display: none;
-}
-
-.reports-page-container {
-    background-color: var(--color-9);
-    border-radius: 15px;
-    position: absolute; 
-    width: 96.5%;
-    height: 96.5%;
-    left: 2.0%;
-    top: 1.5%;
-    display: none;
-}
-
-.penalcode-page-container {
-    background-color: var(--color-9);
-    border-radius: 15px;
-    position: absolute; 
-    width: 96.5%;
-    height: 96.5%;
-    left: 2.0%;
-    top: 1.5%;
-    display: none;
-}
-
-.dmv-page-container {
-    background-color: var(--color-9);
-    border-radius: 15px;
-    position: absolute; 
-    width: 96.5%;
-    height: 96.5%;
-    left: 2.0%;
-    top: 1.5%;
-    display: none;
-}
-
-.stafflogs-page-container  {
-    background-color: var(--color-9);
-    border-radius: 15px;
-    position: absolute; 
-    width: 96.5%;
-    height: 96.5%;
-    left: 2.0%;
-    top: 1.5%;
-    display: none;
-    overflow: auto
-}
-
-.container-load {
-    background-color: var(--color-9);
-    border-radius: 15px;
-    position: absolute; 
-    width: 96.5%;
-    height: 96.5%;
-    left: 2.0%;
-    top: 1.5%;
+    border-color: var(--color-10);
+    border-width: 2px;
+    border-style: solid;
+    position: absolute;
+    width: var(--container-width);
+    height: var(--container-height);
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
     display: none;
 }
 
@@ -226,7 +144,7 @@ input::-webkit-inner-spin-button {
     border: 2px solid var(--color-3);
     display: flex;
     flex-direction: column;
-    height: 74.7vh;
+    height: 95%;
     width: 50vh;
     margin-top: 10px;
     margin-left: 10px;
@@ -477,7 +395,7 @@ span.bulletin-item-info[contenteditable]:empty::before {
     border: 2px solid var(--color-3);
     display: flex;
     flex-direction: column;
-    height: 74.7vh;
+    height: 97%;
     width: 50vh;
     margin-top: 10px;
     margin-left: 10px;
@@ -851,7 +769,7 @@ a {
     border: 2px solid var(--color-3);
     display: flex;
     flex-direction: column;
-    height: 74.7vh;
+    height: 95%;
     width: 50vh;
      margin-top: 10px;
     margin-left: 10px;
@@ -989,7 +907,7 @@ a {
     border: 2px solid var(--color-3);
     display: flex;
     flex-direction: column;
-    height: 74.7vh;
+    height: 95%;
     width: 50vh;
     margin-top: 10px;
     margin-left: 10px;
@@ -1551,7 +1469,6 @@ span.tag-input[contenteditable]:empty::before {
     width: 95%;
     align-items: center;
     user-select: none;
-    
 }
 
 .convictions-holder {
@@ -1635,7 +1552,7 @@ span.tag-input[contenteditable]:empty::before {
     white-space: nowrap;
 }
 
-.contextmenu-btn { 
+.contextmenu-btn {
     display: block;
     color: white;
     font-size: 13px;
@@ -1678,7 +1595,7 @@ span.tag-input[contenteditable]:empty::before {
     top: 50%;
     transform: translateY(-50%);
     border: 5px solid transparent;
-    border-left-color: #808080; 
+    border-left-color: #808080;
 }
 
 .contextmenu-item-submenu:hover::after {
@@ -1765,7 +1682,7 @@ span.tag-input[contenteditable]:empty::before {
     border: 2px solid var(--color-3);
     display: flex;
     flex-direction: column;
-    height: 74.7vh;
+    height: 95%;
     width: 50vh;
      margin-top: 10px;
     margin-left: 10px;
@@ -1907,8 +1824,8 @@ span.tag-input[contenteditable]:empty::before {
     border: 2px solid var(--color-3);
     display: flex;
     flex-direction: column;
-    height: 74.7vh;
-    max-height: 74.7vh;
+    height: 95%;
+    max-height: 95%;
     width: 50vh;
     margin-top: 10px;
     margin-left: 10px;
@@ -2429,7 +2346,7 @@ span.civilians-incident-input[contenteditable]:empty::before {
     border: 2px solid var(--color-3);
     display: flex;
     flex-direction: column;
-    height: 74.7vh;
+    height: 95%;
     width: 50vh;
     margin-top: 10px;
     margin-left: 10px;
@@ -2880,7 +2797,7 @@ span.civilians-incident-input[contenteditable]:empty::before {
     border: 2px solid var(--color-3);
     display: flex;
     flex-direction: column;
-    height: 74.7vh;
+    height: 95%;
     width: 50vh;
      margin-top: 10px;
     margin-left: 10px;
@@ -2963,8 +2880,8 @@ span.civilians-incident-input[contenteditable]:empty::before {
     border: 2px solid var(--color-3);
     display: flex;
     flex-direction: column;
-    height: 74.7vh;
-    max-height: 74.7vh;
+    height: 95%;
+    max-height: 95%;
     width: 50vh;
     margin-top: 10px;
     margin-left: 10px;
@@ -3535,7 +3452,7 @@ span.officer-tag-bolo-input[contenteditable]:empty::before {
     border: 2px solid var(--color-3);
     display: flex;
     flex-direction: column;
-    height: 74.7vh;
+    height: 95%;
     width: 50vh;
     margin-top: 10px;
     margin-left: 10px;
@@ -3840,8 +3757,8 @@ span.officer-tag-bolo-input[contenteditable]:empty::before {
     border: 2px solid var(--color-3);
     display: flex;
     flex-direction: column;
-    height: 74.7vh;
-    max-height: 74.7vh;
+    height: 95%;
+    max-height: 95%;
     width: 50vh;
     margin-top: 10px;
     margin-left: 10px;
@@ -4456,7 +4373,7 @@ span.civilian-tag-reports-input[contenteditable]:empty::before {
     border: 2px solid var(--color-3);
     display: flex;
     flex-direction: column;
-    height: 74.7vh;
+    height: 95%;
     width: 50%;
      margin-top: 10px;
     margin-left: 10px;
@@ -4547,7 +4464,7 @@ span.civilian-tag-reports-input[contenteditable]:empty::before {
     border: 2px solid var(--color-3);
     display: flex;
     flex-direction: column;
-    height: 74.7vh;
+    height: 95%;
     width: 50%;
     margin-top: 10px;
     margin-left: 10px;
@@ -4910,7 +4827,7 @@ span.civilian-tag-reports-input[contenteditable]:empty::before {
     border: 2px solid var(--color-3);
     display: flex;
     flex-direction: column;
-    height: 74.7vh;
+    height: 95%;
     width: 100%;
     margin-top: 10px;
     margin-left: 10px;
