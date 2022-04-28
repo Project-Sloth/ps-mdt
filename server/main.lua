@@ -47,8 +47,10 @@ RegisterNetEvent('mdt:server:openMDT', function()
 	local JobType = GetJobType(PlayerData.job.name)
 	local bulletin = GetBulletins(JobType)
 
+	local calls = exports['qb-dispatch']:GetDispatchCalls()
+
 	--TriggerClientEvent('mdt:client:dashboardbulletin', src, bulletin)
-	TriggerClientEvent('mdt:client:open', src, bulletin, activeUnits)
+	TriggerClientEvent('mdt:client:open', src, bulletin, activeUnits, calls)
 	--TriggerClientEvent('mdt:client:GetActiveUnits', src, activeUnits)
 end)
 
@@ -236,6 +238,12 @@ QBCore.Functions.CreateCallback('mdt:server:GetProfileData', function(source, cb
 		person.profilepic = mdtData.pfp
 		person.tags = json.decode(mdtData.tags)
 		person.gallery = json.decode(mdtData.gallery)
+	end
+
+	local mdtData2 = GetPfpFingerPrintInformation(sentId)
+	if mdtData2 then
+		person.fingerprint = mdtData2.fingerprint
+		person.profilepic = mdtData.pfp
 	end
 
 	return cb(person)

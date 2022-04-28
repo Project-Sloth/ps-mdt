@@ -28,6 +28,11 @@ function GetPersonInformation(cid, jobtype)
 	-- return exports.oxmysql:executeSync('SELECT information, tags, gallery FROM mdt WHERE cid= ? and type = ?', { cid, jobtype })
 end
 
+function GetPfpFingerPrintInformation(cid)
+	local result = MySQL.query.await('SELECT pfp, fingerprint FROM mdt_data WHERE cid = ?', { cid })
+	return result[1]
+end
+
 -- idk but I guess sure?
 function GetIncidentName(id)
 	-- Should also be a scalar

@@ -192,7 +192,7 @@ RegisterNetEvent('mdt:client:deleteBulletin', function(ignoreId, sentData, job)
     end
 end)
 
-RegisterNetEvent('mdt:client:open', function(bulletin, activeUnits)
+RegisterNetEvent('mdt:client:open', function(bulletin, activeUnits, calls)
     EnableGUI(true)
     local x, y, z = table.unpack(GetEntityCoords(PlayerPedId()))
 
@@ -212,6 +212,7 @@ RegisterNetEvent('mdt:client:open', function(bulletin, activeUnits)
     -- local grade = PlayerData.job.grade.name
 
     SendNUIMessage({ type = "data", activeUnits = activeUnits, name = "Welcome, " ..PlayerData.job.grade.name..' '..PlayerData.charinfo.lastname:sub(1,1):upper()..PlayerData.charinfo.lastname:sub(2), location = playerStreetsLocation, fullname = PlayerData.charinfo.firstname..' '..PlayerData.charinfo.lastname, bulletin = bulletin })
+    SendNUIMessage({ type = "calls", data = calls })
     TriggerEvent("mdt:client:dashboardWarrants")
 end)
 
