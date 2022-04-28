@@ -4083,7 +4083,11 @@ $(document).ready(() => {
         if (value["doorCount"]) {
           DispatchItem += `<div class="call-bottom-info"><span class="fas fa-door-open"></span>${value.doorCount}</div>`;
         }
-
+        
+        if (value["speed"]) {
+          DispatchItem += `<div class="call-bottom-info"><span class="fas fa-arrow-right"></span>${value.speed}</div>`;
+        }
+        
         if (value["weapon"]) {
           DispatchItem += `<div class="call-bottom-info"><span class="fas fa-bullseye"></span>${value.weapon}</div>`;
         }
