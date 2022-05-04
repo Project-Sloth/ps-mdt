@@ -41,6 +41,8 @@ function IsJobAllowedToMDT(job)
 		return true
 	elseif Config.DojJobs[job] then
 		return true
+	elseif Config.FireJobs[job] then
+		return true
 	else
 		return false
 	end
