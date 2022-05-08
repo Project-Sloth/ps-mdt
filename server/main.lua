@@ -551,7 +551,7 @@ RegisterNetEvent('mdt:server:getAllReports', function()
 	local Player = QBCore.Functions.GetPlayer(src)
 	if Player then
 		local JobType = GetJobType(Player.PlayerData.job.name)
-		if JobType == 'police' or JobType == 'doj' or JobType == 'ambulance' or JobType == 'firefighter' then
+		if JobType == 'police' or JobType == 'doj' or JobType == 'ambulance' then
 			if JobType == 'doj' then JobType = 'police' end
 			local matches = MySQL.query.await("SELECT * FROM `mdt_reports` WHERE jobtype = :jobtype ORDER BY `id` DESC LIMIT 30", {
 				jobtype = JobType
@@ -567,7 +567,7 @@ RegisterNetEvent('mdt:server:getReportData', function(sentId)
 		local Player = QBCore.Functions.GetPlayer(src)
 		if Player then
 			local JobType = GetJobType(Player.PlayerData.job.name)
-			if JobType == 'police' or JobType == 'doj' or JobType == 'ambulance' or JobType == 'firefighter' then
+			if JobType == 'police' or JobType == 'doj' or JobType == 'ambulance' then
 				if JobType == 'doj' then JobType = 'police' end
 				local matches = MySQL.query.await("SELECT * FROM `mdt_reports` WHERE `id` = :id AND `jobtype` = :jobtype LIMIT 1", {
 					id = sentId,
@@ -590,7 +590,7 @@ RegisterNetEvent('mdt:server:searchReports', function(sentSearch)
 		local Player = QBCore.Functions.GetPlayer(src)
 		if Player then
 			local JobType = GetJobType(Player.PlayerData.job.name)
-			if JobType == 'police' or JobType == 'doj' or JobType == 'ambulance' or JobType == 'firefighter' then
+			if JobType == 'police' or JobType == 'doj' or JobType == 'ambulance' then
 				if JobType == 'doj' then JobType = 'police' end
 				local matches = MySQL.query.await("SELECT * FROM `mdt_reports` WHERE `id` LIKE :query OR LOWER(`author`) LIKE :query OR LOWER(`title`) LIKE :query OR LOWER(`type`) LIKE :query OR LOWER(`details`) LIKE :query OR LOWER(`tags`) LIKE :query AND `jobtype` = :jobtype ORDER BY `id` DESC LIMIT 50", {
 					query = string.lower('%'..sentSearch..'%'), -- % wildcard, needed to search for all alike results
@@ -1010,7 +1010,7 @@ RegisterNetEvent('mdt:server:setWaypoint', function(callid)
 	local src = source
 	local Player = QBCore.Functions.GetPlayer(source)
 	local JobType = GetJobType(Player.PlayerData.job.name)
-	if JobType == 'police' or JobType == 'ambulance' or JobType == 'firefighter' then
+	if JobType == 'police' or JobType == 'ambulance' then
 		if callid then
 			local calls = exports['qb-dispatch']:GetDispatchCalls()
 			TriggerClientEvent('mdt:client:setWaypoint', src, calls[callid])
@@ -1028,7 +1028,7 @@ RegisterNetEvent('mdt:server:callDetach', function(callid)
 		callsign = Player.PlayerData.metadata.callsign
 	}
 	local JobType = GetJobType(Player.PlayerData.job.name)
-	if JobType == 'police' or JobType == 'ambulance' or JobType == 'firefighter' then
+	if JobType == 'police' or JobType == 'ambulance' then
 		if callid then
 			TriggerEvent('dispatch:removeUnit', callid, playerdata, function(newNum)
 				TriggerClientEvent('mdt:client:callDetach', -1, callid, newNum)
@@ -1047,7 +1047,7 @@ RegisterNetEvent('mdt:server:callAttach', function(callid)
 		callsign = Player.PlayerData.metadata.callsign
 	}
 	local JobType = GetJobType(Player.PlayerData.job.name)
-	if JobType == 'police' or JobType == 'ambulance' or JobType == 'firefighter' then
+	if JobType == 'police' or JobType == 'ambulance' then
 		if callid then
 			TriggerEvent('dispatch:addUnit', callid, playerdata, function(newNum)
 				TriggerClientEvent('mdt:client:callAttach', -1, callid, newNum)
@@ -1061,7 +1061,7 @@ RegisterNetEvent('mdt:server:attachedUnits', function(callid)
 	local src = source
 	local Player = QBCore.Functions.GetPlayer(src)
 	local JobType = GetJobType(Player.PlayerData.job.name)
-	if JobType == 'police' or JobType == 'ambulance' or JobType == 'firefighter' then
+	if JobType == 'police' or JobType == 'ambulance' then
 		if callid then
 			local calls = exports['qb-dispatch']:GetDispatchCalls()
 			TriggerClientEvent('mdt:client:attachedUnits', src, calls[callid]['units'], callid)
@@ -1080,7 +1080,7 @@ RegisterNetEvent('mdt:server:callDispatchDetach', function(callid, cid)
 	}
 	local callid = tonumber(callid)
 	local JobType = GetJobType(Player.PlayerData.job.name)
-	if JobType == 'police' or JobType == 'ambulance' or JobType == 'firefighter' then
+	if JobType == 'police' or JobType == 'ambulance' then
 		if callid then
 			TriggerEvent('dispatch:removeUnit', callid, playerdata, function(newNum)
 				TriggerClientEvent('mdt:client:callDetach', -1, callid, newNum)
@@ -1094,7 +1094,7 @@ RegisterNetEvent('mdt:server:setDispatchWaypoint', function(callid, cid)
 	local Player = QBCore.Functions.GetPlayer(src)
 	local callid = tonumber(callid)
 	local JobType = GetJobType(Player.PlayerData.job.name)
-	if JobType == 'police' or JobType == 'ambulance' or JobType == 'firefighter' then
+	if JobType == 'police' or JobType == 'ambulance' then
 		if callid then
 			local calls = exports['qb-dispatch']:GetDispatchCalls()
 			TriggerClientEvent('mdt:client:setWaypoint', src, calls[callid])
@@ -1114,7 +1114,7 @@ RegisterNetEvent('mdt:server:callDragAttach', function(callid, cid)
 	}
 	local callid = tonumber(callid)
 	local JobType = GetJobType(Player.PlayerData.job.name)
-	if JobType == 'police' or JobType == 'ambulance' or JobType == 'firefighter' then
+	if JobType == 'police' or JobType == 'ambulance' then
 		if callid then
 			TriggerEvent('dispatch:addUnit', callid, playerdata, function(newNum)
 				TriggerClientEvent('mdt:client:callAttach', -1, callid, newNum)
