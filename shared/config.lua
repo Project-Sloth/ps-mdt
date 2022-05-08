@@ -259,9 +259,6 @@ end
 for index, value in pairs(Config.DojJobs) do
     Config.AllowedJobs[index] = value
 end
-for index, value in pairs(Config.FireJobs) do
-    Config.AllowedJobs[index] = value
-end
 -- Leave my hacky code alone ya goblins
 
 Config.LogPerms = {
