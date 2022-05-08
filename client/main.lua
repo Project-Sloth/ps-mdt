@@ -31,7 +31,7 @@ RegisterNetEvent('QBCore:Client:OnGangUpdate', function(GangInfo)
 end)
 
 RegisterNetEvent("QBCore:Client:SetDuty", function(job, state)
-    if job == "police" or job == "ambulance" or job == "firefighter" then
+    if AllowedJob(job) then
         TriggerServerEvent("qb-mdt:server:ToggleDuty")
     end
 end)
@@ -128,6 +128,17 @@ local function RefreshGUI()
     isOpen = false
 end
 
+--// Non local function so above EHs can utilise
+function AllowedJob(job)
+    for key, _ in pairs(Config.AllowedJobs) do
+        if key == job then
+            return true
+        end
+    end
+    --// Return false if current job is not in allowed list
+    return false
+end
+
 
 --====================================================================================
 ------------------------------------------
@@ -188,14 +199,14 @@ end)
 
 RegisterNetEvent('mdt:client:newBulletin', function(ignoreId, sentData, job)
     if ignoreId == GetPlayerServerId(PlayerId()) then return end;
-    if PlayerData.job.name == "police" or PlayerData.job.name == "ambulance" or PlayerData.job.name == "firefighter" then
+    if AllowedJob(PlayerData.job.name) then
         SendNUIMessage({ type = "newBulletin", data = sentData })
     end
 end)
 
 RegisterNetEvent('mdt:client:deleteBulletin', function(ignoreId, sentData, job)
     if ignoreId == GetPlayerServerId(PlayerId()) then return end;
-    if PlayerData.job.name == "police" or PlayerData.job.name == "ambulance" or PlayerData.job.name == "firefighter" then
+    if AllowedJob(PlayerData.job.name) then
         SendNUIMessage({ type = "deleteBulletin", data = sentData })
     end
 end)
@@ -660,7 +671,7 @@ end)
 RegisterNetEvent('mdt:client:sig100', function(radio, type)
     local job = PlayerData.job.name
     local duty = PlayerData.job.onduty
-    if (job == "police" or job == "ambulance" or job == "firefighter") and duty == 1 then
+    if AllowedJob(job) and duty == 1 then
         if type == true then
             exports['erp_notifications']:PersistentAlert("START", "signall100-"..radio, "inform", "Radio "..radio.." is currently signal 100!")
         end
@@ -823,13 +834,13 @@ end)
 
 RegisterNetEvent('mdt:client:callDetach', function(callid, sentData)
     local job = PlayerData.job.name
-    if job == "police" or job == "ambulance" or job == "firefighter" then 
+    if AllowedJob(job) then 
         SendNUIMessage({ type = "callDetach", callid = callid, data = tonumber(sentData) }) 
     end
 end)
 RegisterNetEvent('mdt:client:callAttach', function(callid, sentData)
     local job = PlayerData.job.name
-    if job == "police" or job == 'ambulance' or job == 'firefighter' then
+    if AllowedJob(job) then 
         SendNUIMessage({ type = "callAttach", callid = callid, data = tonumber(sentData) })
     end
 end)
@@ -840,7 +851,7 @@ end)
 
 RegisterNetEvent('mdt:client:dashboardMessage', function(sentData)
     local job = PlayerData.job.name
-    if job == "police" or job == 'ambulance' or job == 'firefighter' then
+    if AllowedJob(job) then 
         SendNUIMessage({ type = "dispatchmessage", data = sentData })
     end
 end)
