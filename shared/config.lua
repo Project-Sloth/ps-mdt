@@ -5,7 +5,6 @@ Config.RosterLink = {
     ['ambulance'] = '',
     ['bcso'] = '',
     ['doj'] = '',
-    ['firefighter'] = '',
 }
 
 Config.OnlyShowOnDuty = true
@@ -249,10 +248,6 @@ Config.DojJobs = {
     ['lawyer'] = true,
 }
 
-Config.FireJobs = {
-    ['firefighter'] = true,
-}
-
 -- Leave my hacky code alone ya goblins
 Config.AllowedJobs = {}
 for index, value in pairs(Config.PoliceJobs) do
@@ -274,9 +269,6 @@ Config.LogPerms = {
 		[4] = true,
 	},
 	['police'] = {
-		[4] = true,
-	},
-    ['firefighter'] = {
 		[4] = true,
 	},
 }
@@ -637,8 +629,6 @@ function GetJobType(job)
 		return 'ambulance'
 	elseif Config.DojJobs[job] then
 		return 'doj'
-    elseif Config.FireJobs[job] then
-		return 'firefighter'
 	else
 		return nil
 	end
