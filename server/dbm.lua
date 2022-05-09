@@ -1,5 +1,16 @@
 local QBCore = exports['qb-core']:GetCoreObject()
 
+-- Get CitizenIDs from Player License
+function GetCitizenID(license)
+    local result = MySQL.query.await("SELECT citizenid FROM players WHERE license = ?", {license,})
+    if result ~= nil then
+        return result
+    else
+        print("Cannot find a CitizenID for License: "..license)
+        return nil
+    end
+end
+
 -- (Start) Opening the MDT and sending data
 function AddLog(text)
 	--print(text)

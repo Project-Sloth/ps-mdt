@@ -18,12 +18,22 @@ RegisterNetEvent('QBCore:Client:OnPlayerLoaded', function()
     callSign = PlayerData.metadata.callsign
 end)
 
+RegisterNetEvent('QBCore:Client:OnPlayerUnload', function()
+    TriggerServerEvent("qb-mdt:server:OnPlayerUnload")
+end)
+
 RegisterNetEvent('QBCore:Client:OnJobUpdate', function(JobInfo)
     PlayerData.job = JobInfo
 end)
 
 RegisterNetEvent('QBCore:Client:OnGangUpdate', function(GangInfo)
     PlayerData.gang = GangInfo
+end)
+
+RegisterNetEvent("QBCore:Client:SetDuty", function(job, state)
+    if AllowedJob(job) then
+        TriggerServerEvent("qb-mdt:server:ToggleDuty")
+    end
 end)
 
 RegisterNetEvent('police:SetCopCount', function(amount)
@@ -118,6 +128,17 @@ local function RefreshGUI()
     isOpen = false
 end
 
+--// Non local function so above EHs can utilise
+function AllowedJob(job)
+    for key, _ in pairs(Config.AllowedJobs) do
+        if key == job then
+            return true
+        end
+    end
+    --// Return false if current job is not in allowed list
+    return false
+end
+
 
 --====================================================================================
 ------------------------------------------
@@ -178,21 +199,19 @@ end)
 
 RegisterNetEvent('mdt:client:newBulletin', function(ignoreId, sentData, job)
     if ignoreId == GetPlayerServerId(PlayerId()) then return end;
-    if PlayerData.job.name == 'police' then
-        SendNUIMessage({ type = "newBulletin", data = sentData })
-    elseif PlayerData.job.name == 'ambulance' then
+    if AllowedJob(PlayerData.job.name) then
         SendNUIMessage({ type = "newBulletin", data = sentData })
     end
 end)
 
 RegisterNetEvent('mdt:client:deleteBulletin', function(ignoreId, sentData, job)
     if ignoreId == GetPlayerServerId(PlayerId()) then return end;
-    if PlayerData.job.name == 'police' or PlayerData.job.name == 'ambulance'then
+    if AllowedJob(PlayerData.job.name) then
         SendNUIMessage({ type = "deleteBulletin", data = sentData })
     end
 end)
 
-RegisterNetEvent('mdt:client:open', function(bulletin, activeUnits, calls)
+RegisterNetEvent('mdt:client:open', function(bulletin, activeUnits, calls, cid)
     EnableGUI(true)
     local x, y, z = table.unpack(GetEntityCoords(PlayerPedId()))
 
@@ -211,7 +230,7 @@ RegisterNetEvent('mdt:client:open', function(bulletin, activeUnits, calls)
 
     -- local grade = PlayerData.job.grade.name
 
-    SendNUIMessage({ type = "data", activeUnits = activeUnits, name = "Welcome, " ..PlayerData.job.grade.name..' '..PlayerData.charinfo.lastname:sub(1,1):upper()..PlayerData.charinfo.lastname:sub(2), location = playerStreetsLocation, fullname = PlayerData.charinfo.firstname..' '..PlayerData.charinfo.lastname, bulletin = bulletin })
+    SendNUIMessage({ type = "data", activeUnits = activeUnits, citizenid = cid, ondutyonly = Config.OnlyShowOnDuty, name = "Welcome, " ..PlayerData.job.grade.name..' '..PlayerData.charinfo.lastname:sub(1,1):upper()..PlayerData.charinfo.lastname:sub(2), location = playerStreetsLocation, fullname = PlayerData.charinfo.firstname..' '..PlayerData.charinfo.lastname, bulletin = bulletin })
     SendNUIMessage({ type = "calls", data = calls })
     TriggerEvent("mdt:client:dashboardWarrants")
 end)
@@ -590,8 +609,7 @@ RegisterNUICallback("getPenalCode", function(data, cb)
 end)
 
 RegisterNUICallback("toggleDuty", function(data, cb)
-    -- TriggerServerEvent('QBCore:ToggleDuty')
-    TriggerEvent("qb-policejob:ToggleDuty")
+    TriggerServerEvent('QBCore:ToggleDuty')
     cb(true)
 end)
 
@@ -653,7 +671,7 @@ end)
 RegisterNetEvent('mdt:client:sig100', function(radio, type)
     local job = PlayerData.job.name
     local duty = PlayerData.job.onduty
-    if (job == "police" or job == "ambulance") and duty == 1 then
+    if AllowedJob(job) and duty == 1 then
         if type == true then
             exports['erp_notifications']:PersistentAlert("START", "signall100-"..radio, "inform", "Radio "..radio.." is currently signal 100!")
         end
@@ -816,11 +834,13 @@ end)
 
 RegisterNetEvent('mdt:client:callDetach', function(callid, sentData)
     local job = PlayerData.job.name
-    if job == "police" or job == 'ambulance' then SendNUIMessage({ type = "callDetach", callid = callid, data = tonumber(sentData) }) end
+    if AllowedJob(job) then 
+        SendNUIMessage({ type = "callDetach", callid = callid, data = tonumber(sentData) }) 
+    end
 end)
 RegisterNetEvent('mdt:client:callAttach', function(callid, sentData)
     local job = PlayerData.job.name
-    if job == "police" or job == 'ambulance' then
+    if AllowedJob(job) then 
         SendNUIMessage({ type = "callAttach", callid = callid, data = tonumber(sentData) })
     end
 end)
@@ -831,7 +851,7 @@ end)
 
 RegisterNetEvent('mdt:client:dashboardMessage', function(sentData)
     local job = PlayerData.job.name
-    if job == "police" or job == 'ambulance' then
+    if AllowedJob(job) then 
         SendNUIMessage({ type = "dispatchmessage", data = sentData })
     end
 end)

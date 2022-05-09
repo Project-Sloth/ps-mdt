@@ -7,6 +7,8 @@ Config.RosterLink = {
     ['doj'] = '',
 }
 
+Config.OnlyShowOnDuty = true
+
 Config.Fuel = "lj-fuel" -- "LegacyFuel", "lj-fuel"
 
 Config.PenalCodeTitles = {
