@@ -1197,7 +1197,7 @@ RegisterNetEvent('mdt:server:setRadio', function(cid, newRadio)
 		TriggerClientEvent("QBCore:Notify", src, 'You can only change your radio!', 'error')
 		return
 	else
-		local radio = Player.Functions.GetItemByName("phone")
+		local radio = Player.Functions.GetItemByName("radio")
 		if radio ~= nil then
 			TriggerClientEvent('mdt:client:setRadio', src, newRadio)
 		else
