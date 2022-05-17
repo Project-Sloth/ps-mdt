@@ -19,7 +19,7 @@ RegisterNetEvent('QBCore:Client:OnPlayerLoaded', function()
 end)
 
 RegisterNetEvent('QBCore:Client:OnPlayerUnload', function()
-    TriggerServerEvent("qb-mdt:server:OnPlayerUnload")
+    TriggerServerEvent("ps-mdt:server:OnPlayerUnload")
 end)
 
 RegisterNetEvent('QBCore:Client:OnJobUpdate', function(JobInfo)
@@ -32,7 +32,7 @@ end)
 
 RegisterNetEvent("QBCore:Client:SetDuty", function(job, state)
     if AllowedJob(job) then
-        TriggerServerEvent("qb-mdt:server:ToggleDuty")
+        TriggerServerEvent("ps-mdt:server:ToggleDuty")
     end
 end)
 

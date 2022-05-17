@@ -20,12 +20,12 @@ local function IsPolice(job)
 end
 
 AddEventHandler("onResourceStart", function(resourceName)
-	if (resourceName == 'qb-mdt') then
+	if (resourceName == 'ps-mdt') then
         activeUnits = {}
     end
 end)
 
-RegisterNetEvent("qb-mdt:server:OnPlayerUnload", function()
+RegisterNetEvent("ps-mdt:server:OnPlayerUnload", function()
 	--// Delete player from the MDT on logout
 	local src = source
 	local player = QBCore.Functions.GetPlayer(src)
@@ -55,7 +55,7 @@ AddEventHandler("playerDropped", function(reason)
 	end
 end)
 
-RegisterNetEvent("qb-mdt:server:ToggleDuty", function()
+RegisterNetEvent("ps-mdt:server:ToggleDuty", function()
     local src = source
     local player = QBCore.Functions.GetPlayer(src)
     if not player.PlayerData.job.onduty then
@@ -827,7 +827,7 @@ RegisterNetEvent('mdt:server:saveVehicleInfo', function(dbid, plate, imageurl, n
 
 								result.currentSelection = impoundInfo.CurrentSelection
 								result.plate = plate
-								TriggerClientEvent('qb-mdt:client:TakeOutImpound', src, result)
+								TriggerClientEvent('ps-mdt:client:TakeOutImpound', src, result)
 							end
 
 						end
