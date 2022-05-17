@@ -184,7 +184,7 @@ RegisterNetEvent('mdt:server:deleteBulletin', function(id, title)
 	if not PermCheck(src, PlayerData) then return end
 	local JobType = GetJobType(PlayerData.job.name)
 
-	local deletion = MySQL.query.await('DELETE FROM `mdt_bulletin` where title = ?', {title})
+	MySQL.query.await('DELETE FROM `mdt_bulletin` where id = ?', {id})
 	AddLog("Bulletin with Title: "..title.." was deleted by " .. GetNameFromPlayerData(PlayerData) .. ".")
 end)
 
