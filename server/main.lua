@@ -464,7 +464,7 @@ RegisterNetEvent('mdt:server:newBolo', function(existing, id, title, plate, owne
 			end
 
 			local function UpdateBolo()
-				MySQL.async.execute("UPDATE mdt_bolos SET `title`=:title, plate=:plate, owner=:owner, individual=:individual, detail=:detail, tags=:tags, gallery=:gallery, officersinvolved=:officersinvolved WHERE `id`=:id AND jobtype = :jobtype LIMIT 1", {
+				MySQL.update("UPDATE mdt_bolos SET `title`=:title, plate=:plate, owner=:owner, individual=:individual, detail=:detail, tags=:tags, gallery=:gallery, officersinvolved=:officersinvolved WHERE `id`=:id AND jobtype = :jobtype LIMIT 1", {
 					title = title,
 					plate = plate,
 					owner = owner,
