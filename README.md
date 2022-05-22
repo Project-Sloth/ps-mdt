@@ -8,6 +8,7 @@ For all support questions, ask in our Discord support chat. Do not create issues
 
 - QBCore
 - OxMySQL V1.9.0 (will release docs on how to use an older version)
+- Ps-Dispatch https://github.com/Project-Sloth/ps-dispatch
 
 ## EchoRP MDT QBCore Edit (WIP)
 
