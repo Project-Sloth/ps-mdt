@@ -19,7 +19,9 @@ client_scripts{
     'client/main.lua',
     'client/cl_impound.lua'
 } 
-
+dependency {
+    "ps-dispatch"
+    }
 ui_page 'ui/dashboard.html'
 
 files {
