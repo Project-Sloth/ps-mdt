@@ -60,6 +60,10 @@ end)
 RegisterKeyMapping('mdt', 'Open Police MDT', 'keyboard', 'k')
 
 RegisterCommand('mdt', function()
+    if GetResourceState("ps-dispatch") ~= "started" then -- Checking if the resource is loaded, preventing errors server side 
+        QBCore.Functions.Notify("ps-dispatch didn't load correctly", "error")
+        return
+    end
     local plyPed = PlayerPedId()
     PlayerData = QBCore.Functions.GetPlayerData()
     if not PlayerData.metadata["isdead"] and not PlayerData.metadata["inlaststand"] and not PlayerData.metadata["ishandcuffed"] and not IsPauseMenuActive() then
