@@ -66,7 +66,7 @@ Config.PenalCode = {
         [10] = {title = 'Robo a mano Armada', class = 'Felony', id = 'P.C. 2010', months = 30, fine = 3000, color = 'orange'},
         [11] = {title = 'Accesorio a Robo a mano Armada', class = 'Felony', id = 'P.C. 2011', months = 15, fine = 1500, color = 'orange'},
         [12] = {title = 'Intento de Robo a mano Armada', class = 'Felony', id = 'P.C. 2012', months = 25, fine = 1500, color = 'orange'},
-        [13] = {title = 'Robo Agravado', class = 'Felony', id = 'P.C. 2013', months = 45, fine = 7500, color = 'orange'},
+        [13] = {title = 'Robo Mayor Agravado', class = 'Felony', id = 'P.C. 2013', months = 45, fine = 7500, color = 'orange'},
         [14] = {title = 'Irse sin Pagar', class = 'Infraction', id = 'P.C. 2014', months = 0, fine = 500, color = 'green'},
         [15] = {title = 'Posesion de Dinero Sucio', class = 'Misdemeanor', id = 'P.C. 2015', months = 10, fine = 750, color = 'green'},
         [16] = {title = 'Posesion de Equipo Gubernamental', class = 'Misdemeanor', id = 'P.C. 2016', months = 15, fine = 1000, color = 'green'},
