@@ -3510,17 +3510,6 @@ $(document).ready(() => {
     }
   });
 
-  function IsValidJobForDispatch(jobList, job){
-    let valid = false;
-    for(let i = 0; i < jobList.length; i++){
-      console.log(jobList[i], job);
-      if(jobList[i] == job){
-        valid = true;
-        break;
-      }
-    }
-    return valid;
-  }
   function JobColors(sentJob) {
     if (sentJob) {
       if (PoliceJobs[sentJob] !== undefined) {
@@ -4060,7 +4049,7 @@ $(document).ready(() => {
       );
     } else if (eventData.type == "call") {
       const value = eventData.data;
-      if (value && IsValidJobForDispatch(value.job, eventData.data.playerJob)) {
+      if (value && value.job.includes(playerJob)) {
         const prio = value["priority"];
         let DispatchItem = `<div class="active-calls-item" data-id="${value.callId}" data-canrespond="false"><div class="active-call-inner-container"><div class="call-item-top"><div class="call-number">#${value.callId}</div><div class="call-code priority-${value.priority}">${value.dispatchCode}</div><div class="call-title">${value.dispatchMessage}</div><div class="call-radio">${value.units.length}</div></div><div class="call-item-bottom">`;
 
@@ -4196,7 +4185,7 @@ $(document).ready(() => {
       const table = eventData.data;
       $(".active-calls-list").empty();
       $.each(table, function (index, value) {
-        if (value) {
+        if (value && value.job.includes(playerJob)) {
           const prio = value["priority"];
           let DispatchItem = `<div class="active-calls-item" data-id="${value.callId}" data-canrespond="false"><div class="active-call-inner-container"><div class="call-item-top"><div class="call-number">#${value.callId}</div><div class="call-code priority-${value.priority}">${value.dispatchCode}</div><div class="call-title">${value.dispatchMessage}</div><div class="call-radio">${value.units.length}</div></div><div class="call-item-bottom">`;
 
