@@ -5537,6 +5537,10 @@ span.civilian-tag-reports-input[contenteditable]:empty::before {
     background-color: #950909;
 }
 
+.remove-blip:hover {
+    background-color: #950909;
+}
+
 .dispatch-attached-units {
     display: flex;
     flex-direction: column;
@@ -5912,4 +5916,3 @@ span.civilian-tag-reports-input[contenteditable]:empty::before {
 .cams-items:hover {
     background-color: var(--color-3);
 }
-
