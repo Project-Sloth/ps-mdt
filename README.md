@@ -1,10 +1,3 @@
-# Xirvin Fork
-
-This fork allows you to use the MDT in order to access the cameras from the qb-policejob. 
-
-![image](https://user-images.githubusercontent.com/103050557/173057274-31482ebb-b621-44b9-81bc-95b81d653b1f.png)
-
-
 # Project Sloth MDT 
 
 For all support questions, ask in our Discord support chat. Do not create issues if you need help. Issues are for bug reporting and new features only. 
