@@ -711,11 +711,6 @@ RegisterNUICallback("callDetach", function(data, cb)
     cb(true)
 end)
 
-RegisterNUICallback("removeCallBlip", function(data, cb)
-    TriggerEvent('ps-dispatch:client:removeCallBlip', data.callid)
-    cb(true)
-end)
-
 RegisterNUICallback("callAttach", function(data, cb)
     TriggerServerEvent('mdt:server:callAttach', data.callid)
     cb(true)
@@ -831,6 +826,11 @@ end)
 
 RegisterNetEvent('mdt:client:attachedUnits', function(sentData, callid)
     SendNUIMessage({ type = "attachedUnits", data = sentData, callid = callid })
+end)
+
+RegisterNUICallback('openCamera', function(data)
+    local camId = tonumber(data.cam)
+    TriggerEvent('police:client:ActiveCamera', camId)
 end)
 
 RegisterNetEvent('mdt:client:setWaypoint', function(callInformation)

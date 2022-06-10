@@ -34,6 +34,7 @@ RegisterNetEvent("ps-mdt:server:OnPlayerUnload", function()
 	end
 end)
 
+RegisterServerEvent("playerDropped")
 AddEventHandler("playerDropped", function(reason)
 	--// Delete player from the MDT on logout
 	local src = source
