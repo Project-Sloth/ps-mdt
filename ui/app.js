@@ -3410,6 +3410,17 @@ $(document).ready(() => {
     }
   });
 
+  $(".cams-items").click(function () {
+    var camId = this.id;
+    $.post(
+      `https://${GetParentResourceName()}/openCamera`,
+      JSON.stringify({
+        cam: camId,
+      })
+    );
+    $.post(`https://${GetParentResourceName()}/escape`, JSON.stringify({}));
+  })
+
   var draggedElement = 0;
   var dragging = false;
 
@@ -3550,6 +3561,7 @@ $(document).ready(() => {
         $(".incidents-nav-item").show();
         $(".bolo-nav-item").show();
         $(".dmv-nav-item").show();
+        $(".cams-nav-item").show();
         $(".dispatch-title-ofsomesort").html("Dispatch");
         $(".dispatch-comms-container").fadeIn(0);
         $(".manage-profile-name-input-1").attr("readonly", true);
@@ -3650,6 +3662,7 @@ $(document).ready(() => {
         );
         $(".incidents-nav-item").hide();
         $(".dmv-nav-item").hide();
+        $(".cams-nav-item").hide();
         $("#reports-officers-involved-tag-title").html("EMS Involved");
         $(".dispatch-title-ofsomesort").html("Dispatch");
         $(".dispatch-comms-container").fadeIn(0);

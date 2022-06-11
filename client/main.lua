@@ -829,6 +829,11 @@ RegisterNUICallback("statusImpound", function(data, cb)
 	cb('ok')
 end)
 
+RegisterNUICallback('openCamera', function(data)
+    local camId = tonumber(data.cam)
+    TriggerEvent('police:client:ActiveCamera', camId)
+end)
+
 RegisterNetEvent('mdt:client:attachedUnits', function(sentData, callid)
     SendNUIMessage({ type = "attachedUnits", data = sentData, callid = callid })
 end)

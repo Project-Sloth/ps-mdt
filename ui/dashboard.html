@@ -114,6 +114,7 @@
                 <div class="nav-item">Roster</div>
                 <div class="nav-item dmv-nav-item">DMV</div>
                 <div class="nav-item">Staff Logs</div>
+                <div class="nav-item cams-nav-item">Cameras</div>
             </div>
         </div>
     </div>
@@ -144,6 +145,7 @@
                 <div class="nav-item penalcode-nav-item" data-page=".penalcode-page-container">Roster</div>
                 <div class="nav-item dmv-nav-item" data-page=".dmv-page-container">DMV</div>
                 <div class="nav-item" data-page=".stafflogs-page-container">Staff Logs</div>
+                <div class="nav-item cams-nav-item" data-page=".cams-page-container">Cameras</div>
             </div>
             <div style="display: flex; flex-direction: column;">
                 <div class="dispatch-comms-container">
@@ -232,6 +234,7 @@
                 <div class="nav-item penalcode-nav-item" data-page=".penalcode-page-container">Roster</div>
                 <div class="nav-item dmv-nav-item" data-page=".dmv-page-container">DMV</div>
                 <div class="nav-item" data-page=".stafflogs-page-container">Staff Logs</div>
+                <div class="nav-item cams-nav-item" data-page=".cams-page-container">Cameras</div>
             </div>
             <div class="profile-container">
                 <div class="profile-title"> <span class="fas fa-search"></span> Profiles</div>
@@ -339,6 +342,7 @@
                 <div class="nav-item penalcode-nav-item" data-page=".penalcode-page-container">Roster</div>
                 <div class="nav-item dmv-nav-item" data-page=".dmv-page-container">DMV</div>
                 <div class="nav-item" data-page=".stafflogs-page-container">Staff Logs</div>
+                <div class="nav-item cams-nav-item" data-page=".cams-page-container">Cameras</div>
             </div>
             <div class="incidents-container">
                 <div style="display: flex;" class="reports-search-title-holder">
@@ -441,6 +445,7 @@
                 <div class="nav-item penalcode-nav-item" data-page=".penalcode-page-container">Roster</div>
                 <div class="nav-item dmv-nav-item" data-page=".dmv-page-container">DMV</div>
                 <div class="nav-item" data-page=".stafflogs-page-container">Staff Logs</div>
+                <div class="nav-item cams-nav-item" data-page=".cams-page-container">Cameras</div>
             </div>
             <div class="reports-container">
 
@@ -533,6 +538,7 @@
                 <div class="nav-item penalcode-nav-item" data-page=".penalcode-page-container">Roster</div>
                 <div class="nav-item dmv-nav-item" data-page=".dmv-page-container">DMV</div>
                 <div class="nav-item" data-page=".stafflogs-page-container">Staff Logs</div>
+                <div class="nav-item cams-nav-item" data-page=".cams-page-container">Cameras</div>
             </div>
             <div class="bolos-container">
 
@@ -624,6 +630,7 @@
                 <div class="nav-item penalcode-nav-item active-nav" data-page=".penalcode-page-container">Roster</div>
                 <div class="nav-item dmv-nav-item" data-page=".dmv-page-container">DMV</div>
                 <div class="nav-item" data-page=".stafflogs-page-container">Staff Logs</div>
+                <div class="nav-item cams-nav-item" data-page=".cams-page-container">Cameras</div>
             </div>
             <div class="penalcode-embed" style="border:none;">
                 <iframe class="roster-iframe" src="" target="_blank"></iframe>
@@ -657,6 +664,7 @@
                 <div class="nav-item penalcode-nav-item" data-page=".penalcode-page-container">Roster</div>
                 <div class="nav-item dmv-nav-item active-nav" data-page=".dmv-page-container">DMV</div>
                 <div class="nav-item" data-page=".stafflogs-page-container">Staff Logs</div>
+                <div class="nav-item cams-nav-item" data-page=".cams-page-container">Cameras</div>
             </div>
             <div class="dmv-container">
                 <div class="dmv-search-title"> <span class="fas fa-search"></span> Vehicles</div>
@@ -733,11 +741,81 @@
                 <div class="nav-item penalcode-nav-item" data-page=".penalcode-page-container">Roster</div>
                 <div class="nav-item dmv-nav-item" data-page=".dmv-page-container">DMV</div>
                 <div class="nav-item active-nav" data-page=".stafflogs-page-container">Staff Logs</div>
+                <div class="nav-item cams-nav-item" data-page=".cams-page-container">Cameras</div>
             </div>
             <div class="stafflogs-container"></div>
         </div>
     </div>
-
+    <div class="cams-page-container close-all">
+        <div class="header">
+            <img src="img/sasp_badge.png" class="badge-logo">
+            <div class="header-left">
+                <div class="header-title" style="color: #caa95d; font-weight: bold; font-size: 20px;">SAN ANDREAS STATE POLICE</div>
+                <div style="color: white; font-weight: lighter; font-size: 18px;">Mobile Database Terminal</div>
+            </div>
+            <div class="header-middle">
+                <div class="date">Loading...</div>
+                <div class="time">00:00</div>
+            </div>
+            <div class="header-right">
+                <div style="color: white; font-weight: lighter; font-size: 25px;" class="name-shit">Welcome, Loading...
+                </div>
+                <div style="color: lightgray; font-size: 18px;"><span class="fas fa-map-pin header-pin"></span><span class="header-location"></span></div>
+            </div>
+        </div>
+        <div class="main-container">
+            <div class="nav-menu">
+                <div class="nav-item" data-page=".dashboard-page-container">Dashboard</div>
+                <div class="nav-item" data-page=".profile-page-container">Profiles</div>
+                <div class="nav-item incidents-nav-item" data-page=".incidents-page-container">Incidents</div>
+                <div class="nav-item" data-page=".reports-page-container">Reports</div>
+                <div class="nav-item bolo-nav-item" data-page=".bolos-page-container">BOLOs</div>
+                <div class="nav-item penalcode-nav-item" data-page=".penalcode-page-container">Roster</div>
+                <div class="nav-item dmv-nav-item" data-page=".dmv-page-container">DMV</div>
+                <div class="nav-item" data-page=".stafflogs-page-container">Staff Logs</div>
+                <div class="nav-item cams-nav-item active-nav" data-page=".cams-page-container">Cameras</div>
+            </div>
+            <div class="cams-container">
+                <div class="cams-item">
+                                
+                    <div class="cams-items" id="1"><img class="cams-image" src="img/pacific1.png">Pacific Bank CAM 1</div>
+                    <div class="cams-items" id="2"><img class="cams-image" src="img/pacific2.png">Pacific Bank CAM 2</div>
+                    <div class="cams-items" id="3"><img class="cams-image" src="img/pacific3.png">Pacific Bank CAM 3</div>
+                    <div class="cams-items" id="4"><img class="cams-image" src="img/247Back.png">Limited Ltd Grove St.</div>
+                    <div class="cams-items" id="5"><img class="cams-image" src="img/liquor.png">Rob's Liqour Prosperity St.</div>
+                    <div class="cams-items" id="6"><img class="cams-image" src="img/liquor.png">Rob's Liqour San Andreas Ave.</div>
+                    <div class="cams-items" id="7"><img class="cams-image" src="img/247Back.png">Limited Ltd Ginger St.</div>
+                    <div class="cams-items" id="8"><img class="cams-image" src="img/247SmallFront.png">24/7 Supermarkt Innocence Blvd.</div>
+                    <div class="cams-items" id="9"><img class="cams-image" src="img/liquor.png">Rob's Liqour El Rancho Blvd.</div>
+                    <div class="cams-items" id="10"><img class="cams-image" src="img/247SmallBack.png">Limited Ltd West Mirror Drive</div>
+                    <div class="cams-items" id="11"><img class="cams-image" src="img/247Back.png">24/7 Supermarkt Clinton Ave</div>
+                    <div class="cams-items" id="12"><img class="cams-image" src="img/247Back.png">Limited Ltd Banham Canyon Dr</div>
+                    <div class="cams-items" id="13"><img class="cams-image" src="img/liquor.png">Rob's Liqour Great Ocean Hwy</div>
+                    <div class="cams-items" id="14"><img class="cams-image" src="img/247SmallBack.png">24/7 Supermarkt Ineseno Road</div>
+                    <div class="cams-items" id="15"><img class="cams-image" src="img/247SmallBack.png">24/7 Supermarkt Barbareno Rd.</div>
+                    <div class="cams-items" id="16"><img class="cams-image" src="img/247SmallBack.png">24/7 Supermarkt Route 68</div>
+                    <div class="cams-items" id="17"><img class="cams-image" src="img/liquor.png">Rob's Liqour Route 68</div>
+                    <div class="cams-items" id="18"><img class="cams-image" src="img/247SmallFront.png">24/7 Supermarkt Senora Fwy CAM 1</div>
+                    <div class="cams-items" id="19"><img class="cams-image" src="img/247SmallBack.png">24/7 Supermarkt Senora Fwy CAM 2</div>
+                    <div class="cams-items" id="20"><img class="cams-image" src="img/247SmallFront.png">24/7 Supermarkt Alhambra Dr.</div>
+                    <div class="cams-items" id="21"><img class="cams-image" src="img/fleeca.png">Fleeca Bank Hawick Ave CAM 1</div>
+                    <div class="cams-items" id="22"><img class="cams-image" src="img/fleeca.png">Fleeca Bank Hawick Ave CAM 2</div>
+                    <div class="cams-items" id="23"><img class="cams-image" src="img/fleeca.png">Fleeca Bank Legion Square</div>
+                    <div class="cams-items" id="24"><img class="cams-image" src="img/fleeca.png">Fleeca Bank Del Perro Blvd</div>
+                    <div class="cams-items" id="25"><img class="cams-image" src="img/fleeca.png">Fleeca Bank Great Ocean Hwy</div>
+                    <div class="cams-items" id="26"><img class="cams-image" src="img/paleto.png">Paleto Bank</div>
+                    <div class="cams-items" id="27"><img class="cams-image" src="img/liquor.png">Del Vecchio </br> Liquor Paleto Bay</div>
+                    <div class="cams-items" id="28"><img class="cams-image" src="img/247Back.png">Don's Country Store Paleto Bay CAM 1</div>
+                    <div class="cams-items" id="29"><img class="cams-image" src="img/247SmallFront.png">Don's Country Store Paleto Bay CAM 2</div>
+                    <div class="cams-items" id="30"><img class="cams-image" src="img/247SmallBack.png">Don's Country Store Paleto Bay CAM 3</div>
+                    <div class="cams-items" id="31"><img class="cams-image" src="img/val1.png">Vangelico Jewelery CAM 1</div>
+                    <div class="cams-items" id="32"><img class="cams-image" src="img/val2.png">Vangelico Jewelery CAM 2</div>
+                    <div class="cams-items" id="33"><img class="cams-image" src="img/val3.png">Vangelico Jewelery CAM 3</div>
+                    <div class="cams-items" id="34"><img class="cams-image" src="img/val4.png">Vangelico Jewelery CAM 4</div>
+                </div>
+            </div>
+        </div>
+    </div>
     <div class="impound-form" style="display: none;">
         <form>
             <i class="far fa-id-card fa-lg"></i><input type="text" class="impound-plate" id="plate" name="plate" placeholder="Plate" disabled><br>
