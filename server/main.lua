@@ -220,7 +220,7 @@ QBCore.Functions.CreateCallback('mdt:server:GetProfileData', function(source, cb
 		job = job.label,
 		grade = grade.name,
 		pp = ProfPic(target.charinfo.gender),
-		licences = licencesdata,,
+		licences = licencesdata,
 		dob = target.charinfo.birthdate,
 		mdtinfo = '',
 		fingerprint = '',
