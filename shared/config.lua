@@ -7,6 +7,15 @@ Config.RosterLink = {
     ['doj'] = '',
 }
 
+
+Config.UseWolfknightRadar = true
+--[[
+Adds support for Wraith ARS 2X by WolfKnight98 (wk_wars2x)
+https://github.com/WolfKnight98/wk_wars2x
+To save on unnecessary database queries, in wk_wars2x/config.lua set 'CONFIG.use_sonorancad = true'
+This will only check plates of vehicles that have been occupied by a player
+--]]
+
 Config.OnlyShowOnDuty = true
 
 Config.Fuel = "lj-fuel" -- "LegacyFuel", "lj-fuel"
