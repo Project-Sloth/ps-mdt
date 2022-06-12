@@ -90,7 +90,7 @@ function GetPlayerDataById(id)
     else
         return MySQL.single.await('SELECT citizenid, charinfo, job, metadata FROM players WHERE citizenid = ? LIMIT 1', { id })
     end
-	
+
 	-- return exports.oxmysql:executeSync('SELECT citizenid, charinfo, job FROM players WHERE citizenid = ? LIMIT 1', { id })
 end
 
@@ -127,6 +127,13 @@ function GetPlayerLicenses(identifier)
             local metadata = json.decode(result)
             if metadata["licences"] ~= nil and metadata["licences"] then
                 return metadata["licences"]
+            else
+                return {
+                    ['driver'] = false,
+                    ['business'] = false,
+                    ['weapon'] = false,
+                    ['pilot'] = false
+                }
             end
         end
     end
@@ -157,11 +164,19 @@ function ManageLicenses(identifier, incomingLicenses)
     local Player = QBCore.Functions.GetPlayerByCitizenId(identifier)
     if Player ~= nil then
         Player.Functions.SetMetaData("licences", incomingLicenses)
-        
+
     else
         local result = MySQL.scalar.await('SELECT metadata FROM players WHERE citizenid = @identifier', {['@identifier'] = identifier})
         result = json.decode(result)
-        for k, v in pairs(result.licences) do
+
+        result.licences = result.licences or {
+            ['driver'] = true,
+            ['business'] = false,
+            ['weapon'] = false,
+            ['pilot'] = false
+        }
+
+        for k, _ in pairs(incomingLicenses) do
             result.licences[k] = incomingLicenses[k]
         end
         MySQL.query.await('UPDATE `players` SET `metadata` = @metadata WHERE citizenid = @citizenid', {['@metadata'] = json.encode(result), ['@citizenid'] = identifier})

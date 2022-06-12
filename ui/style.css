@@ -5537,6 +5537,10 @@ span.civilian-tag-reports-input[contenteditable]:empty::before {
     background-color: #950909;
 }
 
+.remove-blip:hover {
+    background-color: #950909;
+}
+
 .dispatch-attached-units {
     display: flex;
     flex-direction: column;
@@ -5851,4 +5855,64 @@ span.civilian-tag-reports-input[contenteditable]:empty::before {
 }
 .display_hidden{
     display: none;
+}
+
+.cams-page-container {
+    background-color: var(--color-9);
+    border-radius: 15px;
+    position: absolute; 
+    width: 96.5%;
+    height: 96.5%;
+    left: 2.0%;
+    top: 1.5%;
+    display: none;
+    overflow: auto
+}
+
+.cams-container {
+    background-color: var(--color-1);
+    border: 2px solid var(--color-3);
+    display: flex;
+    flex-direction: column;
+    height: 74.7vh;
+    width: 100%;
+    margin-top: 10px;
+    margin-left: 10px;
+    margin-right: 10px;
+    overflow: auto;
+}
+
+.cams-item {
+    display: grid; 
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+    grid-auto-flow: row;
+    gap: 15px 15px;
+    overflow: auto;
+    margin-bottom: 10px;
+
+
+}
+
+.cams-items {
+    background-color: var(--color-5);
+    height: auto; 
+    padding: 10px;
+    text-align: center;
+    margin: 10px;
+    color: white;
+    font-size: 20px;
+    color: white;
+    overflow: visible;
+
+}
+
+.cams-image {
+    height:125px; 
+    width: auto;
+    margin: 10px;
+
+}
+
+.cams-items:hover {
+    background-color: var(--color-3);
 }

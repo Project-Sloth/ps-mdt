@@ -198,10 +198,15 @@ $(document).ready(() => {
     // convert key value pair object of licenses to array
     let licenses = Object.entries(result.licences);
 
+    if (licenses.length == 0 || licenses.length == undefined) {
+      var licenseTypes = ['business', 'pilot', 'weapon', 'driver'];
+      licenses = Object.entries(licenseTypes.reduce((licenseType, licenseValue) => (licenseType[licenseValue] = false, licenseType), {}));
+    }
+
     if (licenses.length > 0 && (PoliceJobs[playerJob] !== undefined || DojJobs[playerJob] !== undefined)) {
         licencesHTML = '';
         for (const [lic, hasLic] of licenses) {
-  
+
           let tagColour = hasLic == true ? "green-tag" : "red-tag";
           licencesHTML += `<span class="license-tag ${tagColour} ${lic}" data-type="${lic}">${titleCase(lic)}</span>`;
         }
@@ -307,7 +312,7 @@ $(document).ready(() => {
                 <div class="bulletin-item-title">${title}</div>
                 <div class="bulletin-item-info">${info}</div>
                 <div class="bulletin-bottom-info">
-                    
+
                     <div class="bulletin-date">${MyName} - ${timeAgo(
           Number(time.getTime())
         )}</div>
@@ -411,7 +416,7 @@ $(document).ready(() => {
         let tags = new Array();
         let gallery = new Array();
         let licenses = {};
-        
+
         $(".tags-holder")
           .find("div")
           .each(function () {
@@ -438,16 +443,16 @@ $(document).ready(() => {
         let description = $(".manage-profile-info").val();
         let fingerprint = $(".manage-profile-fingerprint").val();
         let id = $(".manage-profile-citizenid-input").val();
-        
+
         $(".licenses-holder")
         .find("span")
         .each(function(){
           let type = $(this).data("type")
           if ($(this).attr('class').includes('green-tag')){
-            licenses[type] = true
+            licenses[type] = true;
           }
           else{
-            licenses[type] = false
+            licenses[type] = false;
           }
         })
 
@@ -1651,30 +1656,15 @@ $(document).ready(() => {
     }
   });
 
-  $(".offenses-main-container").on(
-    "mousedown",
-    ".offense-item",
-    function (e) {
+  $(".offenses-main-container").on("mousedown",".offense-item",function (e) {
       const cid = $("#current-charges-holder").data("cid");
       const newItem = $(this).find(".offense-item-offense").html();
       const Fine = +$(this).data("fine");
       const Sentence = +$(this).data("sentence");
       if (e.which == 1) {
         let randomNum = Math.ceil(Math.random() * 1000).toString();
-        $(`[data-name="${cid}"]`).prepend(
-          `<div class="white-tag" data-link="${randomNum}" data-id="${cid}">${$(
-            this
-          )
-            .find(".offense-item-offense")
-            .html()}</div>`
-        );
-        $("#current-charges-holder").prepend(
-          `<div class="current-charges-tag" data-link="${randomNum}">${$(
-            this
-          )
-            .find(".offense-item-offense")
-            .html()}</div>`
-        );
+        $(`[data-name="${cid}"]`).prepend(`<div class="white-tag" data-link="${randomNum}"data-id="${cid}">${$(this).find(".offense-item-offense").html()}</div>`);
+        $("#current-charges-holder").prepend(`<div class="current-charges-tag" data-link="${randomNum}">${$(this).find(".offense-item-offense").html()}</div>`);
 
         const CurrRfine = $(".fine-recommended-amount").val();
         const NewFine = +CurrRfine + +Fine;
@@ -1683,78 +1673,35 @@ $(document).ready(() => {
         const NewSentence = +CurrRsentence + +Sentence;
         $(".sentence-recommended-amount").val(NewSentence);
       } else if (e.which == 3) {
-        $(".associated-incidents-user-holder")
-          .children("div")
-          .each(function (index) {
-            if (
-              $(".associated-incidents-user-holder")
-                .children()
-                .eq(index)
-                .data("id") == cid
-            ) {
-              if (
-                $(".associated-incidents-user-holder")
-                  .children()
-                  .eq(index)
-                  .html() == newItem
-              ) {
-                const linkedId = $(
-                  ".associated-incidents-user-holder"
-                )
-                  .children()
-                  .eq(index)
-                  .data("link");
-                //$(".current-charges-tag").filter(`[data-link="${linkedId}"]`).remove()
-                $(".white-tag")
-                  .filter(`[data-link="${linkedId}"]`)
-                  .remove();
+        $(".associated-incidents-user-holder").children("div").each(function (index) {
+          if ($(".associated-incidents-user-holder").children().eq(index).data("id") == cid) {
+            if ($(".associated-incidents-user-holder").children().eq(index).html() == newItem) {
+              const linkedId = $(".associated-incidents-user-holder").children().eq(index).data("link");
+              //$(".current-charges-tag").filter(`[data-link="${linkedId}"]`).remove()
+              $(".white-tag").filter(`[data-link="${linkedId}"]`).remove();
 
-                var stop = false;
+              var stop = false;
 
-                $("#current-charges-holder")
-                  .children("div")
-                  .each(function (index) {
-                    if (stop == false) {
-                      if (
-                        $("#current-charges-holder")
-                          .children()
-                          .eq(index)
-                          .html() == newItem
-                      ) {
-                        const linkedId = $(
-                          "#current-charges-holder"
-                        )
-                          .children()
-                          .eq(index)
-                          .data("link");
-                        $(".current-charges-tag")
-                          .filter(
-                            `[data-link="${linkedId}"]`
-                          )
-                          .remove();
-                        stop = true;
-                      }
-                    }
-                  });
+              $("#current-charges-holder").children("div").each(function (index) {
+                if (stop == false) {
+                  if ($("#current-charges-holder").children().eq(index).html() == newItem) {
+                    const linkedId = $("#current-charges-holder").children().eq(index).data("link");
+                    $(".current-charges-tag").filter(`[data-link="${linkedId}"]`).remove();
+                    stop = true;
+                  }
+                }
+              });
 
-                const CurrRfine = $(
-                  ".fine-recommended-amount"
-                ).val();
-                const NewFine = +CurrRfine - Fine;
-                $(".fine-recommended-amount").val(NewFine);
-                //
-                const CurrRsentence = $(
-                  ".sentence-recommended-amount"
-                ).val();
-                const NewSentence = +CurrRsentence - +Sentence;
-                $(".sentence-recommended-amount").val(
-                  NewSentence
-                );
-
-                return false;
-              }
+              const CurrRfine = $(".fine-recommended-amount").val();
+              const NewFine = +CurrRfine - Fine;
+              $(".fine-recommended-amount").val(NewFine);
+              const CurrRsentence = $(".sentence-recommended-amount").val();
+              const NewSentence = +CurrRsentence - +Sentence;
+              $(".sentence-recommended-amount").val(NewSentence);
+              return false;
             }
-          });
+          }
+        });
       }
     }
   );
@@ -2574,7 +2521,7 @@ $(document).ready(() => {
           return true;
         }
         $(".dmv-items").empty();
-        
+
         let vehicleHTML = "";
 
         result.forEach((value) => {
@@ -2668,7 +2615,7 @@ $(document).ready(() => {
           } else {
             imageurl = newImageurl;
           }
-          
+
           let code5 = false;
           let code5tag = $(".vehicle-tags").find(".code5-tag");
           if (code5tag.hasClass("green-tag")) {
@@ -3165,6 +3112,16 @@ $(document).ready(() => {
     );
   });
 
+  $(".contextmenu").on("click", ".remove-blip", function () {
+    const callId = $(this).data("info");
+    $.post(
+      `https://${GetParentResourceName()}/removeCallBlip`,
+      JSON.stringify({
+        callid: callId,
+      })
+    );
+  });
+
   $(".contextmenu").on("click", ".attached-units", function () {
     const callId = $(this).data("info");
     $.post(
@@ -3251,6 +3208,13 @@ $(document).ready(() => {
               info: callId,
               status: "",
             },
+            {
+              className: "remove-blip",
+              icon: "fa-solid fa-circle-minus",
+              text: "Remove Blip",
+              info: callId,
+              status: "",
+            },
           ];
         } else if (canRespond == false) {
           args = [
@@ -3279,6 +3243,13 @@ $(document).ready(() => {
               className: "Set-Waypoint",
               icon: "fas fa-map-marker-alt",
               text: "Set Waypoint",
+              info: callId,
+              status: "",
+            },
+            {
+              className: "remove-blip",
+              icon: "fa-solid fa-circle-minus",
+              text: "Remove Blip",
               info: callId,
               status: "",
             },
@@ -3444,6 +3415,17 @@ $(document).ready(() => {
     }
   });
 
+  $(".cams-items").click(function () {
+    var camId = this.id;
+    $.post(
+      `https://${GetParentResourceName()}/openCamera`,
+      JSON.stringify({
+        cam: camId,
+      })
+    );
+    $.post(`https://${GetParentResourceName()}/escape`, JSON.stringify({}));
+  })
+
   var draggedElement = 0;
   var dragging = false;
 
@@ -3584,6 +3566,7 @@ $(document).ready(() => {
         $(".incidents-nav-item").show();
         $(".bolo-nav-item").show();
         $(".dmv-nav-item").show();
+        $(".cams-nav-item").show();
         $(".dispatch-title-ofsomesort").html("Dispatch");
         $(".dispatch-comms-container").fadeIn(0);
         $(".manage-profile-name-input-1").attr("readonly", true);
@@ -3684,6 +3667,7 @@ $(document).ready(() => {
         );
         $(".incidents-nav-item").hide();
         $(".dmv-nav-item").hide();
+        $(".cams-nav-item").hide();
         $("#reports-officers-involved-tag-title").html("EMS Involved");
         $(".dispatch-title-ofsomesort").html("Dispatch");
         $(".dispatch-comms-container").fadeIn(0);
@@ -3839,7 +3823,7 @@ $(document).ready(() => {
                 </div>
                 </div>`);
       });
-      
+
       let policeCount = 0;
       let emsCount = 0;
       let dojCount = 0;
@@ -4077,15 +4061,15 @@ $(document).ready(() => {
         if (value["doorCount"]) {
           DispatchItem += `<div class="call-bottom-info"><span class="fas fa-door-open"></span>${value.doorCount}</div>`;
         }
-        
+
         if (value["speed"]) {
           DispatchItem += `<div class="call-bottom-info"><span class="fas fa-arrow-right"></span>${value.speed}</div>`;
         }
-        
+
         if (value["weapon"]) {
           DispatchItem += `<div class="call-bottom-info"><span class="fas fa-bullseye"></span>${value.weapon}</div>`;
         }
-        
+
         if (value["heading"]) {
           DispatchItem += `<div class="call-bottom-info"><span class="fas fa-share"></span>${value.heading}</div>`;
         }
@@ -4386,7 +4370,7 @@ $(document).ready(() => {
         );
         $(".manage-incidents-title").css("width", "95%");
       }
-      
+
       let associateddata = eventData.convictions;
       $.each(associateddata, function (index, value) {
         $(".associated-incidents-tags-holder").prepend(
@@ -4470,7 +4454,7 @@ $(document).ready(() => {
         $(".fine-recommended-amount")
           .filter("[data-id='" + value.cid + "']")
           .val(value.recfine);
-          
+
         $(".sentence-recommended-amount")
           .filter("[data-id='" + value.cid + "']")
           .val(value.recsentence);
@@ -4991,6 +4975,11 @@ function searchProfilesResults(result) {
     let licences = "";
     let licArr = Object.entries(value.licences);
 
+    if (licArr.length == 0 || licArr.length == undefined) {
+      var licenseTypes = ['business', 'pilot', 'weapon', 'driver'];
+      licArr = Object.entries(licenseTypes.reduce((licenseType, licenseValue) => (licenseType[licenseValue] = false, licenseType), {}));
+    }
+
     if (licArr.length > 0 && (PoliceJobs[playerJob] !== undefined || DojJobs[playerJob] !== undefined)) {
       for (const [lic, hasLic] of licArr) {
         let tagColour =
@@ -5011,7 +5000,7 @@ function searchProfilesResults(result) {
     ) {
       convictions = "orange-tag";
     }
-   
+
     if (value.pp == '') {
       value.pp = 'img/not-found.jpg'
     }

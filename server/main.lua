@@ -47,7 +47,6 @@ RegisterNetEvent("ps-mdt:server:OnPlayerUnload", function()
 	end
 end)
 
-RegisterServerEvent("playerDropped")
 AddEventHandler("playerDropped", function(reason)
 	--// Delete player from the MDT on logout
 	local src = source
@@ -218,6 +217,13 @@ QBCore.Functions.CreateCallback('mdt:server:GetProfileData', function(source, cb
 	if type(target.charinfo) == 'string' then target.charinfo = json.decode(target.charinfo) end
 	if type(target.metadata) == 'string' then target.metadata = json.decode(target.metadata) end
 
+	local licencesdata = target.metadata['licences'] or {
+        ['driver'] = false,
+        ['business'] = false,
+        ['weapon'] = false,
+		['pilot'] = false
+	}
+
 	local job, grade = UnpackJob(target.job)
 
 	local person = {
@@ -227,7 +233,7 @@ QBCore.Functions.CreateCallback('mdt:server:GetProfileData', function(source, cb
 		job = job.label,
 		grade = grade.name,
 		pp = ProfPic(target.charinfo.gender),
-		licences = target.metadata['licences'],
+		licences = licencesdata,
 		dob = target.charinfo.birthdate,
 		mdtinfo = '',
 		fingerprint = '',
