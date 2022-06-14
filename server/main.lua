@@ -34,12 +34,11 @@ if Config.UseWolfknightRadar == true then
 		local warrant = GetWarrantStatus(plate)
 
 		if bolo == true then
-			TriggerClientEvent('QBCore:Notify', src, 'Plate: '..plate..' '..vehinfo., "error", 30000)
-			TriggerClientEvent('QBCore:Notify', src, 'Plate: '..plate..'HAS A BOLO', "error", 30000)
+			TriggerClientEvent('QBCore:Notify', src, 'Plate: '..plate..' - HAS A BOLO', "error", 45000)
 		end
 		print(warrant)
 		if warrant == true then
-			TriggerClientEvent('QBCore:Notify', src, 'Plate: '..plate..' OWNER WANTED', "error", 30000)
+			TriggerClientEvent('QBCore:Notify', src, 'Plate: '..plate..' - REGISTERED OWNER IS WANTED', "error", 45000)
 		end
 
 
