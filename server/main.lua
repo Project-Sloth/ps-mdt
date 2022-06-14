@@ -31,12 +31,26 @@ if Config.UseWolfknightRadar == true then
 		local src = source
 		local Player = QBCore.Functions.GetPlayer(src)
 		local bolo = GetBoloStatus(plate)
-		print(cam, plate, index)
+		local warrant = GetWarrantStatus(plate)
+
 		if bolo == true then
-			TriggerClientEvent("wk:togglePlateLock", Player.PlayerData.source, cam, beep, bolo)
+			TriggerClientEvent('QBCore:Notify', src, 'Plate: '..plate..' '..vehinfo., "error", 30000)
+			TriggerClientEvent('QBCore:Notify', src, 'Plate: '..plate..'HAS A BOLO', "error", 30000)
 		end
+		print(warrant)
+		if warrant == true then
+			TriggerClientEvent('QBCore:Notify', src, 'Plate: '..plate..' OWNER WANTED', "error", 30000)
+		end
+
+
+		if bolo or warrant == true then
+		--print('Bolo or warrant is true')
+		TriggerClientEvent("wk:togglePlateLock", Player.PlayerData.source, cam, beep, bolo)
+		end
+
 	end)
 end
+
 RegisterNetEvent("ps-mdt:server:OnPlayerUnload", function()
 	--// Delete player from the MDT on logout
 	local src = source
@@ -1328,6 +1342,15 @@ function GetBoloStatus(plate)
 	return false
 end
 
+function GetWarrantStatus(plate)
+    local result = MySQL.query.await("SELECT p.plate, p. citizenid FROM player_vehicles p INNER JOIN mdt_convictions m ON p.citizenid = m.cid WHERE m.warrant =1 AND p.plate =?", {plate})
+	if result and result[1] then
+		return true
+	end
+
+	return false
+end
+
 function GetVehicleInformation(plate)
 	local result = MySQL.query.await('SELECT * FROM mdt_vehicleinfo WHERE plate = @plate', {['@plate'] = plate})
     if result[1] then
@@ -1336,4 +1359,3 @@ function GetVehicleInformation(plate)
         return false
     end
 end
-
