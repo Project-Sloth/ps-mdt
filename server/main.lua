@@ -44,7 +44,7 @@ if Config.UseWolfknightRadar == true then
 
 		if bolo or warrant == true then
 		--print('Bolo or warrant is true')
-		TriggerClientEvent("wk:togglePlateLock", Player.PlayerData.source, cam, beep, bolo)
+		TriggerClientEvent("wk:togglePlateLock", Player.PlayerData.source, cam, beep, 1)
 		end
 
 	end)
