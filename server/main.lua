@@ -30,20 +30,18 @@ if Config.UseWolfknightRadar == true then
 	AddEventHandler("wk:onPlateScanned", function(cam, plate, index)
 		local src = source
 		local Player = QBCore.Functions.GetPlayer(src)
-		local bolo = GetBoloStatus(plate)
-		local warrant = GetWarrantStatus(plate)
+		local bolo, title, boloid = GetBoloStatus(plate, title, boloid)
+		local warrant, owner, incidentid = GetWarrantStatus(plate, owner, incidentid)
 
 		if bolo == true then
-			TriggerClientEvent('QBCore:Notify', src, 'Plate: '..plate..' - HAS A BOLO', "error", 45000)
+			TriggerClientEvent('QBCore:Notify', src, 'BOLO ID: '..boloid..' | Title: '..title..' | Registered Owner: '..owner..' | Plate: '..plate, 'error', Config.WolfknightNotifyTime)
 		end
-		print(warrant)
 		if warrant == true then
-			TriggerClientEvent('QBCore:Notify', src, 'Plate: '..plate..' - REGISTERED OWNER IS WANTED', "error", 45000)
+			TriggerClientEvent('QBCore:Notify', src, 'WANTED - INCIDENT ID: '..incidentid..' | Registered Owner: '..owner..' | Plate: '..plate, 'error', Config.WolfknightNotifyTime)
 		end
 
 
 		if bolo or warrant == true then
-		--print('Bolo or warrant is true')
 		TriggerClientEvent("wk:togglePlateLock", Player.PlayerData.source, cam, beep, 1)
 		end
 
@@ -1332,21 +1330,26 @@ RegisterServerEvent("mdt:server:AddLog", function(text)
 	AddLog(text)
 end)
 
-function GetBoloStatus(plate)
+function GetBoloStatus(plate, title, boloid)
     local result = MySQL.query.await("SELECT * FROM mdt_bolos where plate = @plate", {['@plate'] = plate})
 	if result and result[1] then
-		return true
+		local title = result[1]['title']
+		local boloid = result[1]['id']
+		return true, title, boloid
 	end
 
 	return false
 end
 
-function GetWarrantStatus(plate)
-    local result = MySQL.query.await("SELECT p.plate, p. citizenid FROM player_vehicles p INNER JOIN mdt_convictions m ON p.citizenid = m.cid WHERE m.warrant =1 AND p.plate =?", {plate})
+function GetWarrantStatus(plate, owner, incidentid)
+    local result = MySQL.query.await("SELECT p.plate, p.citizenid, m.id FROM player_vehicles p INNER JOIN mdt_convictions m ON p.citizenid = m.cid WHERE m.warrant =1 AND p.plate =?", {plate})
 	if result and result[1] then
-		return true
+		local citizenid = result[1]['citizenid']
+		local Player = QBCore.Functions.GetPlayerByCitizenId(citizenid)
+		local owner = Player.PlayerData.charinfo.firstname.." "..Player.PlayerData.charinfo.lastname
+		local incidentid = result[1]['id']
+		return true, owner, incidentid
 	end
-
 	return false
 end
 
