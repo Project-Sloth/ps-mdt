@@ -25,6 +25,18 @@ AddEventHandler("onResourceStart", function(resourceName)
     end
 end)
 
+if Config.UseWolfknightRadar == true then
+	RegisterNetEvent("wk:onPlateScanned")
+	AddEventHandler("wk:onPlateScanned", function(cam, plate, index)
+		local src = source
+		local Player = QBCore.Functions.GetPlayer(src)
+		local bolo = GetBoloStatus(plate)
+		print(cam, plate, index)
+		if bolo == true then
+			TriggerClientEvent("wk:togglePlateLock", Player.PlayerData.source, cam, beep, bolo)
+		end
+	end)
+end
 RegisterNetEvent("ps-mdt:server:OnPlayerUnload", function()
 	--// Delete player from the MDT on logout
 	local src = source
