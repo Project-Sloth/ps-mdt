@@ -31,9 +31,8 @@ if Config.UseWolfknightRadar == true then
 		local src = source
 		local Player = QBCore.Functions.GetPlayer(src)
 		local bolo = GetBoloStatus(plate)
-		print(cam, plate, index)
 		if bolo == true then
-			TriggerClientEvent("wk:togglePlateLock", Player.PlayerData.source, cam, beep, bolo)
+			TriggerClientEvent("wk:togglePlateLock", src, cam, true, bolo)
 		end
 	end)
 end
