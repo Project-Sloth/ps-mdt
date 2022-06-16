@@ -240,7 +240,7 @@ $(document).ready(() => {
     if (gallery && gallery.length > 0) {
       galleryHTML = '';
       gallery.forEach(value => {
-        galleryHTML += `<img src="${value}" class="gallery-img" onerror="this.src='img/not-found.jpg'">`;
+        galleryHTML += `<img src="${value}" class="gallery-img" onerror="this.src='img/not-found.webp'">`;
       })
     }
 
@@ -386,7 +386,7 @@ $(document).ready(() => {
       if (URL !== "") {
         let randomNum = Math.ceil(Math.random() * 10).toString();
         $(".gallery-inner-container").prepend(
-          `<img src="${URL}" class="gallery-img ${randomNum}" onerror="this.src='img/not-found.jpg'">`
+          `<img src="${URL}" class="gallery-img ${randomNum}" onerror="this.src='img/not-found.webp'">`
         );
         $("#gallery-upload-input").val("");
         $(".gallery-upload-input").slideUp(250);
@@ -436,7 +436,7 @@ $(document).ready(() => {
         let pfp = $(".manage-profile-pic").attr("src");
         let newpfp = $(".manage-profile-url-input").val();
         if (newpfp.includes("base64")) {
-          newpfp = "img/not-found.jpg";
+          newpfp = "img/not-found.webp";
         } else {
           pfp = newpfp;
         }
@@ -1227,7 +1227,7 @@ $(document).ready(() => {
       if (URL !== "") {
         let randomNum = Math.ceil(Math.random() * 10).toString();
         $(".manage-incidents-evidence-holder").prepend(
-          `<img src="${URL}" class="incidents-img ${randomNum}" onerror="this.src='img/not-found.jpg'">`
+          `<img src="${URL}" class="incidents-img ${randomNum}" onerror="this.src='img/not-found.webp'">`
         );
         $("#incidents-upload-input").val("");
         $(".incidents-upload-input").slideUp(250);
@@ -1499,7 +1499,7 @@ $(document).ready(() => {
       if (URL !== "") {
         let randomNum = Math.ceil(Math.random() * 10).toString();
         $(".bolo-gallery-inner-container").prepend(
-          `<img src="${URL}" class="bolo-img ${randomNum}" onerror="this.src='img/not-found.jpg'">`
+          `<img src="${URL}" class="bolo-img ${randomNum}" onerror="this.src='img/not-found.webp'">`
         );
         $("#bolo-gallery-upload-input").val("");
         $(".bolo-gallery-upload-input").slideUp(250);
@@ -2200,7 +2200,7 @@ $(document).ready(() => {
       if (URL !== "") {
         let randomNum = Math.ceil(Math.random() * 10).toString();
         $(".reports-gallery-inner-container").prepend(
-          `<img src="${URL}" class="reports-img ${randomNum}" onerror="this.src='img/not-found.jpg'">`
+          `<img src="${URL}" class="reports-img ${randomNum}" onerror="this.src='img/not-found.webp'">`
         );
         $("#reports-gallery-upload-input").val("");
         $(".reports-gallery-upload-input").slideUp(250);
@@ -2611,7 +2611,7 @@ $(document).ready(() => {
           let imageurl = $(".vehicle-info-image").attr("src");
           let newImageurl = $(".vehicle-info-imageurl-input").val();
           if (newImageurl.includes("base64")) {
-            imageurl = "img/not-found.jpg";
+            imageurl = "img/not-found.webp";
           } else {
             imageurl = newImageurl;
           }
@@ -4520,7 +4520,7 @@ $(document).ready(() => {
       $.each(table["gallery"], function (index, value) {
         let randomNum = Math.ceil(Math.random() * 10).toString();
         $(".bolo-gallery-inner-container").prepend(
-          `<img src="${value}" class="bolo-img ${randomNum}" onerror="this.src='img/not-found.jpg'">`
+          `<img src="${value}" class="bolo-img ${randomNum}" onerror="this.src='img/not-found.webp'">`
         );
       });
 
@@ -4635,7 +4635,7 @@ $(document).ready(() => {
       $.each(table["gallery"], function (index, value) {
         let randomNum = Math.ceil(Math.random() * 10).toString();
         $(".reports-gallery-inner-container").append(
-          `<img src="${value}" class="reports-img ${randomNum}" onerror="this.src='img/not-found.jpg'">`
+          `<img src="${value}" class="reports-img ${randomNum}" onerror="this.src='img/not-found.webp'">`
         );
       });
 
@@ -5002,7 +5002,7 @@ function searchProfilesResults(result) {
     }
 
     if (value.pp == '') {
-      value.pp = 'img/not-found.jpg'
+      value.pp = 'img/not-found.webp'
     }
 
     profileHTML += `
