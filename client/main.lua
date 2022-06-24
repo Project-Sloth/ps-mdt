@@ -3,7 +3,6 @@ local PlayerData = {}
 local CurrentCops = 0
 local isOpen = false
 local callSign = ""
-
 local tablet = 0
 local tabletDict = "amb@code_human_in_bus_passenger_idles@female@tablet@base"
 local tabletAnim = "base"
@@ -20,6 +19,7 @@ end)
 
 RegisterNetEvent('QBCore:Client:OnPlayerUnload', function()
     TriggerServerEvent("ps-mdt:server:OnPlayerUnload")
+    PlayerData = {}
 end)
 
 RegisterNetEvent('QBCore:Client:OnJobUpdate', function(JobInfo)
@@ -697,8 +697,10 @@ end)
 --====================================================================================
 
 RegisterNetEvent('dispatch:clNotify', function(sNotificationData, sNotificationId)
-    sNotificationData.playerJob = PlayerData.job.name
-    SendNUIMessage({ type = "call", data = sNotificationData })
+    if LocalPlayer.state.isLoggedIn then
+        sNotificationData.playerJob = PlayerData.job.name
+        SendNUIMessage({ type = "call", data = sNotificationData })
+    end
 end)
 
 RegisterNUICallback("setWaypoint", function(data, cb)
