@@ -22,7 +22,7 @@ end
 local function GetActiveData(cid)
 	local player = type(cid) == "string" and cid or tostring(cid)
 	if player then
-		return activeUnits[player] or false
+		return activeUnits[player] and true or false
 	end
 	return false
 end
