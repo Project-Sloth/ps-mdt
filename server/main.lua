@@ -66,7 +66,7 @@ AddEventHandler("playerDropped", function(reason)
 		local citizenids = GetCitizenID(license)
 
 		for _, v in pairs(citizenids) do
-			if GetActiveData(v.citizenid) nil then
+			if GetActiveData(v.citizenid) then
 				activeUnits[v.citizenid] = nil
 			end
 		end
