@@ -1614,7 +1614,7 @@ $(document).ready(() => {
         {
           className: "add-charge",
           icon: "fas fa-check",
-          text: "Add Charge",
+          text: "Modify Charges",
           info: $(this).data("name"),
           status: "",
         },
