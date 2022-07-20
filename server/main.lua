@@ -19,6 +19,14 @@ local function IsPolice(job)
     return false
 end
 
+local function GetActiveData(cid)
+	local player = type(cid) == "string" and cid or tostring(cid)
+	if player then
+		return activeUnits[player] and true or false
+	end
+	return false
+end
+
 AddEventHandler("onResourceStart", function(resourceName)
 	if (resourceName == 'ps-mdt') then
         activeUnits = {}
@@ -40,7 +48,7 @@ RegisterNetEvent("ps-mdt:server:OnPlayerUnload", function()
 	--// Delete player from the MDT on logout
 	local src = source
 	local player = QBCore.Functions.GetPlayer(src)
-	if activeUnits[player.PlayerData.citizenid] ~= nil then
+	if GetActiveData(player.PlayerData.citizenid) then
 		activeUnits[player.PlayerData.citizenid] = nil
 	end
 end)
@@ -50,7 +58,7 @@ AddEventHandler("playerDropped", function(reason)
 	local src = source
 	local player = QBCore.Functions.GetPlayer(src)
 	if player ~= nil then
-		if activeUnits[player.PlayerData.citizenid] ~= nil then
+		if GetActiveData(player.PlayerData.citizenid) then
 			activeUnits[player.PlayerData.citizenid] = nil
 		end
 	else
@@ -58,7 +66,7 @@ AddEventHandler("playerDropped", function(reason)
 		local citizenids = GetCitizenID(license)
 
 		for _, v in pairs(citizenids) do
-			if activeUnits[v.citizenid] ~= nil then
+			if GetActiveData(v.citizenid) then
 				activeUnits[v.citizenid] = nil
 			end
 		end
@@ -70,7 +78,7 @@ RegisterNetEvent("ps-mdt:server:ToggleDuty", function()
     local player = QBCore.Functions.GetPlayer(src)
     if not player.PlayerData.job.onduty then
 	--// Remove from MDT
-	if activeUnits[player.PlayerData.citizenid] ~= nil then
+	if GetActiveData(player.PlayerData.citizenid) then
 		activeUnits[player.PlayerData.citizenid] = nil
 	end
     end
