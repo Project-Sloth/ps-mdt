@@ -74,6 +74,16 @@ function getFormattedDate(date, prefomattedDate = false, hideYear = false) {
   return `${day}. ${month} ${year}. at ${hours}:${minutes}`;
 }
 
+var quotes = [
+  'Project Sloth On Top!',
+  'A Discord rewrite fixes everything.',
+  'Does anyone even read these?',
+]
+
+function randomizeQuote() {
+  return randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
+}
+
 function timeAgo(dateParam) {
   if (!dateParam) {
     return null;
@@ -3562,7 +3572,7 @@ $(document).ready(() => {
         );
         $("#home-warrants-container").fadeIn(0);
         $("#home-reports-container").fadeOut(0);
-        $(".quote-span").html("TUCKER MALD, BEST MALD");
+        //$(".quote-span").html("TUCKER MALD, BEST MALD");
         $(".incidents-nav-item").show();
         $(".bolo-nav-item").show();
         $(".dmv-nav-item").show();
@@ -3633,9 +3643,7 @@ $(document).ready(() => {
         );
         $(".badge-logo").attr("src", "img/ems_badge.png");
         $(".header-title").html("PILLBOX HILL MEDICAL CENTER");
-        $(".quote-span").html(
-          "The simplest explanation is almost always somebody screwed up."
-        );
+        //$(".quote-span").html("The simplest explanation is almost always somebody screwed up.");
         $(".bolo-nav-item").html("ICU");
         $(".bolos-search-title").html("ICU Check-ins");
         $("#bolos-search-input").attr(
@@ -3722,7 +3730,7 @@ $(document).ready(() => {
         );
         $(".badge-logo").attr("src", "img/court.png");
         $(".header-title").html("DEPARTMENT OF JUSTICE");
-        $(".quote-span").html("Actually useless.");
+        //$(".quote-span").html("Actually useless.");
         //$(".dmv-nav-item").hide();
         $(".bolo-nav-item").hide();
         $(".dispatch-title-ofsomesort").html("Message Board");
@@ -3758,6 +3766,7 @@ $(document).ready(() => {
         rosterLink = eventData.rosterLink;
         playerJob = eventData.job;
         JobColors(playerJob);
+        $(".quote-span").html(randomizeQuote());
         if (PoliceJobs[playerJob] !== undefined || DojJobs[playerJob] !== undefined) {
           $(".manage-profile-licenses-container").removeClass("display_hidden");
           $(".manage-convictions-container").removeClass("display_hidden");
