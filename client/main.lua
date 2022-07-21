@@ -60,6 +60,11 @@ end)
 RegisterKeyMapping('mdt', 'Open Police MDT', 'keyboard', 'k')
 
 RegisterCommand('mdt', function()
+		 if string.find(GetCurrentResourceName(), "-main") then
+        QBCore.Functions.Notify(("You need to change %s to %s"):format(GetCurrentResourceName(),
+            string.gsub(GetCurrentResourceName(), "-main", "")), "error", 10000)
+        return
+    end
     local plyPed = PlayerPedId()
     PlayerData = QBCore.Functions.GetPlayerData()
     if not PlayerData.metadata["isdead"] and not PlayerData.metadata["inlaststand"] and not PlayerData.metadata["ishandcuffed"] and not IsPauseMenuActive() then
