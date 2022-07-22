@@ -27,10 +27,17 @@ local function GetActiveData(cid)
 	return false
 end
 
+AddEventHandler('onResourceStarting', function(resourceName)
+	if resourceName ~= 'ps-mdt' then
+		print('^1Please rename the resource to ps-mdt or you will run into issues.^7')
+		CancelEvent()
+	end
+end)
+
 AddEventHandler("onResourceStart", function(resourceName)
-	if (resourceName == 'ps-mdt') then
-        activeUnits = {}
-    end
+	if resourceName == 'ps-mdt' then
+		activeUnits = {}
+	end
 end)
 
 if Config.UseWolfknightRadar == true then
