@@ -16,6 +16,8 @@ To save on unnecessary database queries, in wk_wars2x/config.lua set 'CONFIG.use
 This will only check plates of vehicles that have been occupied by a player
 --]]
 
+Config.WolfknightNotifyTime = 5000 --How long the notification displays for in miliseconds (30000 = 30 seconds)
+
 Config.OnlyShowOnDuty = true
 
 Config.Fuel = "lj-fuel" -- "LegacyFuel", "lj-fuel"
