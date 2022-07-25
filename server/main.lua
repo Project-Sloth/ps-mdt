@@ -106,12 +106,7 @@ RegisterNetEvent('mdt:server:openMDT', function()
 
 	local JobType = GetJobType(PlayerData.job.name)
 	local bulletin = GetBulletins(JobType)
-	if isDispatchRunning then
-		local calls = exports['ps-dispatch']:GetDispatchCalls()
-	else
-		local calls = {}
-	end
-
+	local calls = exports['ps-dispatch']:GetDispatchCalls()	
 	--TriggerClientEvent('mdt:client:dashboardbulletin', src, bulletin)
 	TriggerClientEvent('mdt:client:open', src, bulletin, activeUnits, calls, PlayerData.citizenid)
 	--TriggerClientEvent('mdt:client:GetActiveUnits', src, activeUnits)
