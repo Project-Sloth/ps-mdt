@@ -23,6 +23,6 @@ EchoRP MDT Released by Flawws#9999 from Echo RP rewritten and restructured for Q
 This is no longer a fork so we are able to open issues on this repo.
 
 # DMCA Protection Certificate
-![image](https://user-images.githubusercontent.com/82112471/169714767-ac9aef04-e4b0-4144-840c-5453dcb05e01.png)
+![image](https://user-images.githubusercontent.com/82112471/183939077-c714b08b-77cc-49c6-a94a-3064856d90b9.png)
 
 [https://www.dmca.com/r/p3j2p4q](https://www.dmca.com/Protection/Status.aspx?ID=0ff6f6e1-2b54-4dda-bcd3-42728908f404&refurl=https://github.com/Project-Sloth/ps-mdt)
