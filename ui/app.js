@@ -4206,6 +4206,10 @@ $(document).ready(() => {
             DispatchItem += `<div class="call-bottom-info"><span class="fas fa-share"></span>${value.heading}</div>`;
           }
 
+          if (value["weapon"]) {
+            DispatchItem += `<div class="call-bottom-info"><span class="fas fa-gun"></span>${value.weapon}</div>`;
+          }
+          
           if (value["gender"]) {
             let gender = "Male";
             if (value["gender"] == 0 || value["gender"] == 2) {
