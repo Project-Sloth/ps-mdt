@@ -1346,9 +1346,11 @@ $(document).ready(() => {
         }
       });
 
-      $(".bolo-gallery-inner-container").each(function (index) {
-        if ($(this).text() != "") {
-          gallery.push($(this).text());
+      $(".bolo-gallery-inner-container")
+      .find("img")
+      .each(function () {
+        if ($(this).attr("src") != "") {
+          gallery.push($(this).attr("src"));
         }
       });
 
