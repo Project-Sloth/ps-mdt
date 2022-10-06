@@ -9,6 +9,7 @@ Config.RosterLink = {
 
 
 Config.UseWolfknightRadar = false
+Config.WolfknightNotifyTime = 5000 --How long the notification displays for in miliseconds (30000 = 30 seconds)
 --[[
 Adds support for Wraith ARS 2X by WolfKnight98 (wk_wars2x)
 https://github.com/WolfKnight98/wk_wars2x
@@ -642,7 +643,7 @@ end
 
 -- this is a hack, because the qb-menu in qb-policejob populates an impound location and passed it through to the event.
 -- if this impound locations are changed in qb-policejob, they must also be changed here.
-Config.ImpoundLocations = { 
+Config.ImpoundLocations = {
     [1] = vector4(436.68, -1007.42, 27.32, 180.0),
     [2] = vector4(-436.14, 5982.63, 31.34, 136.0),
 }
