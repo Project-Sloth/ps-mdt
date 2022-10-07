@@ -47,7 +47,7 @@ if Config.UseWolfknightRadar == true then
 		local driverunlicensed = nil
 
 		if bolo == true then
-			TriggerClientEvent('QBCore:Notify', src, 'BOLO ID: '..boloid..' | Title: '..title..' | Registered Owner: '..owner..' | Plate: '..plate, 'error', Config.WolfknightNotifyTime)
+			TriggerClientEvent('QBCore:Notify', src, 'BOLO ID: '..boloid..' | Title: '..title..' | Registered Owner: '..vehicleowner..' | Plate: '..plate, 'error', Config.WolfknightNotifyTime)
 		end
 		if warrant == true then
 			TriggerClientEvent('QBCore:Notify', src, 'WANTED - INCIDENT ID: '..incidentid..' | Registered Owner: '..owner..' | Plate: '..plate, 'error', Config.WolfknightNotifyTime)
@@ -56,7 +56,7 @@ if Config.UseWolfknightRadar == true then
 		if driverslicense == false then
 			driverunlicensed = true
 			if driverunlicensed == true then
-			TriggerClientEvent('QBCore:Notify', src, 'NO DRIVERS LICENCE: | Registered Owner: '..vehicleowner..' | Plate: '..plate, 'error', Config.WolfknightNotifyTime)
+			TriggerClientEvent('QBCore:Notify', src, 'NO DRIVERS LICENCE | Registered Owner: '..vehicleowner..' | Plate: '..plate, 'error', Config.WolfknightNotifyTime)
 			end
 		end
 
