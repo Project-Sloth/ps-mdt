@@ -1354,7 +1354,9 @@ $(document).ready(() => {
         }
       });
 
-      $(".manage-officers-tags-holder").each(function (index) {
+      $(".manage-officers-tags-holder")
+      .find("div")
+      .each(function () {
         if ($(this).text() != "") {
           officers.push($(this).text());
         }
