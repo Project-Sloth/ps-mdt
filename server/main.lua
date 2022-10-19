@@ -307,8 +307,12 @@ QBCore.Functions.CreateCallback('mdt:server:GetProfileData', function(source, cb
 
 	local mdtData2 = GetPfpFingerPrintInformation(sentId)
 	if mdtData2 then
-		person.fingerprint = mdtData2.fingerprint
-		person.profilepic = mdtData and mdtData.pfp or ""
+		if mdtData2.fingerprint then
+			person.fingerprint = mdtData2.fingerprint
+		end
+		if mdtData2.pfp ~= "" then
+ 			person.profilepic = mdtData2.pfp
+ 		end
 	end
 
 	return cb(person)
