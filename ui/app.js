@@ -811,6 +811,9 @@ $(document).ready(() => {
   $(".contextmenu").on("click", ".remove-image", function () {
     removeImage($(this).data("info"));
   });
+  $(".contextmenu").on("click", ".copy-image-link", function () {
+    copyImageSource($(this).data("info"));
+  });
   $(".contextmenu").on("click", ".remove-image-incident", function () {
     $(".manage-incidents-evidence-holder img")
       .filter("[src='" + $(this).data("info") + "']")
@@ -832,6 +835,13 @@ $(document).ready(() => {
           className: "expand-image",
           icon: "fas fa-expand",
           text: "Expand Image",
+          info: $(this).attr("src"),
+          status: $(this).css("filter"),
+        },
+        {
+          className: "copy-image-link",
+          icon: "fa-regular fa-copy",
+          text: "Copy Image Link",
           info: $(this).attr("src"),
           status: $(this).css("filter"),
         },
@@ -1402,6 +1412,13 @@ $(document).ready(() => {
           info: $(this).attr("src"),
           status: $(this).css("filter"),
         },
+        {
+          className: "copy-image-link",
+          icon: "fa-regular fa-copy",
+          text: "Copy Image Link",
+          info: $(this).attr("src"),
+          status: $(this).css("filter"),
+        },
       ];
       openContextMenu(e, args);
     }
@@ -1751,6 +1768,13 @@ $(document).ready(() => {
           className: "expand-image",
           icon: "fas fa-expand",
           text: "Expand Image",
+          info: $(this).attr("src"),
+          status: $(this).css("filter"),
+        },
+        {
+          className: "copy-image-link",
+          icon: "fa-regular fa-copy",
+          text: "Copy Image Link",
           info: $(this).attr("src"),
           status: $(this).css("filter"),
         },
@@ -2264,6 +2288,13 @@ $(document).ready(() => {
           className: "expand-image",
           icon: "fas fa-expand",
           text: "Expand Image",
+          info: $(this).attr("src"),
+          status: $(this).css("filter"),
+        },
+        {
+          className: "copy-image-link",
+          icon: "fa-regular fa-copy",
+          text: "Copy Image Link",
           info: $(this).attr("src"),
           status: $(this).css("filter"),
         },
@@ -4921,6 +4952,15 @@ function expandImage(url) {
   $(".gallery-image-enlarged").fadeIn(150);
   $(".gallery-image-enlarged").css("display", "block");
   $(".gallery-image-enlarged").attr("src", url);
+}
+
+function copyImageSource(url) {
+  const el = document.createElement('textarea');
+  el.value = url;
+  document.body.appendChild(el);
+  el.select();
+  document.execCommand('copy');
+  document.body.removeChild(el); 
 }
 
 function removeImage(url) {
