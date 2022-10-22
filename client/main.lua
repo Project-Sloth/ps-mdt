@@ -316,11 +316,12 @@ RegisterNUICallback("getProfileData", function(data, cb)
     end
     local propertiesResult = getProfileProperties(id)
     result.properties = propertiesResult
-     ]]
+    ]]
     local vehicles=result.vehicles
     for i=1,#vehicles do
         local vehicle=result.vehicles[i]
-        result.vehicles[i]['model'] = GetLabelText(GetDisplayNameFromVehicleModel(vehicle['vehicle']))
+        local vehData = QBCore.Shared.Vehicles[vehicle['vehicle']]
+        result.vehicles[i]['model'] = vehData["name"]
     end
     p = nil
     return cb(result)
@@ -373,10 +374,8 @@ RegisterNetEvent('mdt:client:getProfileData', function(sentData, isLimited)
             sentData['vehicles'][i]['plate'] = string.upper(sentData['vehicles'][i]['plate'])
             local tempModel = vehicles[i]['model']
             if tempModel and tempModel ~= "Unknown" then
-                local DisplayNameModel = GetDisplayNameFromVehicleModel(tempModel)
-                local LabelText = GetLabelText(DisplayNameModel)
-                if LabelText == "NULL" then LabelText = DisplayNameModel end
-                sentData['vehicles'][i]['model'] = LabelText
+                local vehData = QBCore.Shared.Vehicles[tempModel]
+                sentData['vehicles'][i]['model'] = vehData["brand"] .. ' ' .. vehData["name"]
             end
         end
     end
@@ -552,7 +551,8 @@ RegisterNUICallback("searchVehicles", function(data, cb)
         result[i]['plate'] = string.upper(result[i]['plate'])
         result[i]['color'] = Config.ColorInformation[mods['color1']]
         result[i]['colorName'] = Config.ColorNames[mods['color1']]
-        result[i]['model'] = GetLabelText(GetDisplayNameFromVehicleModel(vehicle['vehicle']))
+        local vehData = QBCore.Shared.Vehicles[vehicle['vehicle']]
+        result[i]['model'] = vehData["brand"] .. ' ' .. vehData["name"]
     end
     cb(result)
 
@@ -654,7 +654,8 @@ RegisterNetEvent('mdt:client:getVehicleData', function(sentData)
         local vehData = json.decode(vehicle['vehicle'])
         vehicle['color'] = Config.ColorInformation[vehicle['color1']]
         vehicle['colorName'] = Config.ColorNames[vehicle['color1']]
-        vehicle['model'] = GetLabelText(GetDisplayNameFromVehicleModel(vehicle['vehicle']))
+        local vehData = QBCore.Shared.Vehicles[vehicle.vehicle]
+        vehicle.model = vehData["brand"] .. ' ' .. vehData["name"]
         vehicle['class'] = Config.ClassList[GetVehicleClassFromName(vehicle['vehicle'])]
         vehicle['vehicle'] = nil
         SendNUIMessage({ type = "getVehicleData", data = vehicle })
