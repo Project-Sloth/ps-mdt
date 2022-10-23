@@ -890,16 +890,28 @@ RegisterNetEvent('mdt:server:saveWeaponInfo', function(dbid, serial, imageurl, n
 				local fullname = Player.PlayerData.charinfo.firstname .. ' ' .. Player.PlayerData.charinfo.lastname
 				if imageurl == nil then imageurl = 'img/not-found.webp' end
 				--AddLog event?
-				local result = MySQL.insert.await('INSERT INTO mdt_weaponinfo (serial, owner, information, weapClass, weapModel, image) VALUES (?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE id = ?', {
-					serial,
-					owner,
-					notes,
-					weapClass,
-					weapModel,
-					imageurl,
-					dbid,
-				})
-		
+				local result = false
+				if dbid == 0 then
+					result = MySQL.insert.await('INSERT INTO mdt_weaponinfo (serial, owner, information, weapClass, weapModel, image) VALUES (?, ?, ?, ?, ?, ?)', {
+						serial,
+						owner,
+						notes,
+						weapClass,
+						weapModel,
+						imageurl,
+					})
+				else
+					result = MySQL.insert.await('UPDATE mdt_weaponinfo SET serial = ?, owner = ?, information = ?, weapClass = ?, weapModel = ?, image = ? WHERE id = ?', {
+						serial,
+						owner,
+						notes,
+						weapClass,
+						weapModel,
+						imageurl,
+						dbid
+					})
+				end
+				
 				if result then
 					TriggerEvent('mdt:server:AddLog', "A weapon with the serial number ("..serial..") was added to the weapon information database by "..fullname)
 				else
@@ -917,7 +929,7 @@ RegisterNetEvent('mdt:server:getWeaponData', function(serial)
 			local JobType = GetJobType(Player.PlayerData.job.name)
 			if JobType == 'police' or JobType == 'doj' then
 				local results = MySQL.query.await('SELECT * FROM mdt_weaponinfo WHERE serial = ?', { serial })
-				TriggerClientEvent('mdt:client:getWeaponData', source, results)
+				TriggerClientEvent('mdt:client:getWeaponData', Player.PlayerData.source, results)
 			end
 		end
 	end

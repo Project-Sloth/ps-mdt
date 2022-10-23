@@ -639,6 +639,7 @@ RegisterNUICallback("saveWeaponInfo", function(data, cb)
     local weapModel = data.weapModel
     local JobType = GetJobType(PlayerData.job.name)
     if JobType == 'police' then
+        print(dbid)
         TriggerServerEvent('mdt:server:saveWeaponInfo', dbid, serial, imageurl, notes, owner, weapClass, weapModel)
     end
     cb(true)
@@ -652,8 +653,8 @@ end)
 
 RegisterNetEvent('mdt:client:getWeaponData', function(sentData)
     if sentData and sentData[1] then
-        local vehicle = sentData[1]
-        SendNUIMessage({ type = "getWeaponData", data = vehicle })
+        local results = sentData[1]
+        SendNUIMessage({ type = "getWeaponData", data = results })
     end
 end)
 
