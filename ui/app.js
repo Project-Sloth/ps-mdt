@@ -9,6 +9,7 @@ let canInputBoloTag = true;
 let canInputBoloOfficerTag = true;
 let canSearchReports = true;
 let canCreateBulletin = 0;
+let canSearchForWeapons = true;
 let mouse_is_inside = false;
 let currentTab = ".dashboard-page-container";
 let MyName = "";
@@ -2657,6 +2658,7 @@ $(document).ready(() => {
           );
           let plate = $(".vehicle-info-plate-input").val();
           let notes = $(".vehicle-info-content").val();
+          let points = $("#vehiclePointsSlider").val();
 
           let imageurl = $(".vehicle-info-image").attr("src");
           let newImageurl = $(".vehicle-info-imageurl-input").val();
@@ -2700,6 +2702,7 @@ $(document).ready(() => {
               stolen: stolen,
               code5: code5,
               impound: impoundInfo,
+              points: points,
             })
           );
 
@@ -3015,7 +3018,7 @@ $(document).ready(() => {
 
         result.forEach((value) => {
           weaponHTML += `
-                        <div class="weapons-item" data-id="${value._id}" data-dbid="${value._id}" data-serial="${value.serial}">
+                        <div class="weapons-item" data-id="${value.id}" data-dbid="${value.id}" data-serial="${value.serial}">
                             <img src="${value.image}" class="weapons-image">
                             <div style="display: flex; flex-direction: column; margin-top: 2.5px; margin-left: 5px; width: 100%; padding: 5px;">
                               <div style="display: flex; flex-direction: column;">
@@ -3356,6 +3359,12 @@ $(document).ready(() => {
     $(".respond-calls-container").fadeIn(250)
     $(".close-all").css("filter", "brightness(15%)");
     $("#respondcalls").val("")*/
+  });
+
+  $('#vehiclePointsSlider').change(function(){
+    //console.log(this.value);
+    var currentValue = $('#vehiclePointsSliderValue');
+    currentValue.html(this.value);
   });
 
   $(".active-calls-list").on(
@@ -4901,6 +4910,24 @@ $(document).ready(() => {
         `<div class="vehicle-tag ${stolen} stolen-tag">Stolen</div>`
       );
       $(".vehicle-info-imageurl-input").val(table["image"]);
+    } else if (eventData.type == "getWeaponData") {
+      impoundChanged = false;
+      let table = eventData.data;
+      console.log(table)
+
+      $(".weapon-information-title-holder").data( "dbid", table["id"] );
+
+      $(".weapon-info-serial-input").val(table["serial"]);
+      $(".weapon-info-owner-input").val(table["owner"]);
+      $(".weapon-info-class-input").val(table["weapClass"]);
+      $(".weapon-info-model-input").val(table["weapModel"]);
+      $(".weapon-info-imageurl-input").val(table["image"]);
+
+      $(".weapon-info-content").val(table["information"]);
+
+      $(".weapon-info-image").attr("src", table["image"]);
+
+      $(".weapon-info-imageurl-input").val(table["image"]);
     } else if (eventData.type == "updateVehicleDbId") {
       $(".vehicle-information-title-holder").data("dbid", Number(eventData.data));
     } else if (eventData.type == "updateIncidentDbId") {
