@@ -5926,6 +5926,17 @@ span.civilian-tag-reports-input[contenteditable]:empty::before {
     background-color: var(--color-3);
 }
 
+.weapons-page-container {
+    background-color: var(--color-9);
+    border-radius: 15px;
+    position: absolute; 
+    width: 96.5%;
+    height: 96.5%;
+    left: 2.0%;
+    top: 1.5%;
+    display: none;
+}
+
 .weapons-container {
     background-color: var(--color-1);
     border: 2px solid var(--color-3);
