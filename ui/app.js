@@ -3357,6 +3357,12 @@ $(document).ready(() => {
     $("#respondcalls").val("")*/
   });
 
+  $('#vehiclePointsSlider').change(function(){
+    //console.log(this.value);
+    var currentValue = $('#vehiclePointsSliderValue');
+    currentValue.html(this.value);
+  });
+
   $(".active-calls-list").on(
     "contextmenu",
     ".active-calls-item",
