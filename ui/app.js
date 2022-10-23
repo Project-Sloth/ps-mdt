@@ -1949,7 +1949,7 @@ $(document).ready(() => {
           this
         ).data(
           "cid"
-        )}"><img src="https://i.imgur.com/h7S5f9J.png"> <input disabled placeholder="0" class="fine-recommended-amount" id="fine-recommended-amount" data-id="${$(
+        )}"><img src="img/h7S5f9J.webp"> <input disabled placeholder="0" class="fine-recommended-amount" id="fine-recommended-amount" data-id="${$(
           this
         ).data("cid")}" type="number"></div>
                 <div class="manage-incidents-title-tag" data-id="${$(this).data(
@@ -1959,7 +1959,7 @@ $(document).ready(() => {
           this
         ).data(
           "cid"
-        )}"><img src="https://i.imgur.com/9Xn6xXK.png"> <input disabled placeholder="0" class="sentence-recommended-amount" id="sentence-recommended-amount" data-id="${$(
+        )}"><img src="img/9Xn6xXK.webp"> <input disabled placeholder="0" class="sentence-recommended-amount" id="sentence-recommended-amount" data-id="${$(
           this
         ).data("cid")}" type="number"></div>
                 <div class="manage-incidents-title-tag" data-id="${$(this).data(
@@ -1969,7 +1969,7 @@ $(document).ready(() => {
           this
         ).data(
           "cid"
-        )}"><img src="https://i.imgur.com/h7S5f9J.png"> <input placeholder="Enter fine here..." value="0" class="fine-amount" data-id="${$(
+        )}"><img src="img/h7S5f9J.webp"> <input placeholder="Enter fine here..." value="0" class="fine-amount" data-id="${$(
           this
         ).data("cid")}" type="number"></div>
                 <div class="manage-incidents-title-tag" data-id="${$(this).data(
@@ -1979,7 +1979,7 @@ $(document).ready(() => {
           this
         ).data(
           "cid"
-        )}"><img src="https://i.imgur.com/9Xn6xXK.png"> <input placeholder="Enter months here..." value="0" class="sentence-amount" data-id="${$(
+        )}"><img src="img/9Xn6xXK.webp"> <input placeholder="Enter months here..." value="0" class="sentence-amount" data-id="${$(
           this
         ).data("cid")}" type="number"></div>
             </div>
@@ -4615,13 +4615,13 @@ $(document).ready(() => {
                             <div class="associated-incidents-user-holder" data-name="${value.cid}" style="display:none;">
                             </div>
                             <div class="manage-incidents-title-tag" data-id="${value.cid}" style="display:none;">Recommended Fine</div>
-                            <div class="associated-incidents-fine-input" data-id="${value.cid}" style="display:none;"><img src="https://i.imgur.com/h7S5f9J.png"> <input placeholder="0" disabled class="fine-recommended-amount" id="fine-recommended-amount" data-id="${value.cid}" type="number"></div>
+                            <div class="associated-incidents-fine-input" data-id="${value.cid}" style="display:none;"><img src="img/h7S5f9J.webp"> <input placeholder="0" disabled class="fine-recommended-amount" id="fine-recommended-amount" data-id="${value.cid}" type="number"></div>
                             <div class="manage-incidents-title-tag" data-id="${value.cid}" style="display:none;">Recommended Sentence</div>
-                            <div class="associated-incidents-sentence-input" data-id="${value.cid}" style="display:none;"><img src="https://i.imgur.com/9Xn6xXK.png"> <input placeholder="0" disabled class="sentence-recommended-amount" id="sentence-recommended-amount" data-id="${value.cid}" type="number"></div>
+                            <div class="associated-incidents-sentence-input" data-id="${value.cid}" style="display:none;"><img src="img/9Xn6xXK.webp"> <input placeholder="0" disabled class="sentence-recommended-amount" id="sentence-recommended-amount" data-id="${value.cid}" type="number"></div>
                             <div class="manage-incidents-title-tag" data-id="${value.cid}" style="display:none;">Fine</div>
-                            <div class="associated-incidents-fine-input" data-id="${value.cid}" style="display:none;"><img src="https://i.imgur.com/h7S5f9J.png"> <input placeholder="Enter fine here..." value="0" class="fine-amount" data-id="${value.cid}" type="number"></div>
+                            <div class="associated-incidents-fine-input" data-id="${value.cid}" style="display:none;"><img src="img/h7S5f9J.webp"> <input placeholder="Enter fine here..." value="0" class="fine-amount" data-id="${value.cid}" type="number"></div>
                             <div class="manage-incidents-title-tag" data-id="${value.cid}" style="display:none;">Sentence</div>
-                            <div class="associated-incidents-sentence-input" data-id="${value.cid}" style="display:none;"><img src="https://i.imgur.com/9Xn6xXK.png"> <input placeholder="Enter months here..." value="0" class="sentence-amount" data-id="${value.cid}" type="number"></div>
+                            <div class="associated-incidents-sentence-input" data-id="${value.cid}" style="display:none;"><img src="img/9Xn6xXK.webp"> <input placeholder="Enter months here..." value="0" class="sentence-amount" data-id="${value.cid}" type="number"></div>
                         </div>`
           );
         } else {
@@ -4637,13 +4637,13 @@ $(document).ready(() => {
                             <div class="associated-incidents-user-holder" data-name="${value.cid}">
                             </div>
                             <div class="manage-incidents-title-tag" data-id="${value.cid}">Recommended Fine</div>
-                            <div class="associated-incidents-fine-input" data-id="${value.cid}"><img src="https://i.imgur.com/h7S5f9J.png"> <input placeholder="0" disabled class="fine-recommended-amount" id="fine-recommended-amount" data-id="${value.cid}" type="number"></div>
+                            <div class="associated-incidents-fine-input" data-id="${value.cid}"><img src="img/h7S5f9J.webp"> <input placeholder="0" disabled class="fine-recommended-amount" id="fine-recommended-amount" data-id="${value.cid}" type="number"></div>
                             <div class="manage-incidents-title-tag" data-id="${value.cid}">Recommended Sentence</div>
-                            <div class="associated-incidents-sentence-input" data-id="${value.cid}"><img src="https://i.imgur.com/9Xn6xXK.png"> <input placeholder="0" disabled class="sentence-recommended-amount" id="sentence-recommended-amount" data-id="${value.cid}" type="number"></div>
+                            <div class="associated-incidents-sentence-input" data-id="${value.cid}"><img src="img/9Xn6xXK.webp"> <input placeholder="0" disabled class="sentence-recommended-amount" id="sentence-recommended-amount" data-id="${value.cid}" type="number"></div>
                             <div class="manage-incidents-title-tag" data-id="${value.cid}">Fine</div>
-                            <div class="associated-incidents-fine-input" data-id="${value.cid}"><img src="https://i.imgur.com/h7S5f9J.png"> <input placeholder="Enter fine here..." value="0" class="fine-amount" data-id="${value.cid}" type="number"></div>
+                            <div class="associated-incidents-fine-input" data-id="${value.cid}"><img src="img/h7S5f9J.webp"> <input placeholder="Enter fine here..." value="0" class="fine-amount" data-id="${value.cid}" type="number"></div>
                             <div class="manage-incidents-title-tag" data-id="${value.cid}">Sentence</div>
-                            <div class="associated-incidents-sentence-input" data-id="${value.cid}"><img src="https://i.imgur.com/9Xn6xXK.png"> <input placeholder="Enter months here..." value="0" class="sentence-amount" data-id="${value.cid}" type="number"></div>
+                            <div class="associated-incidents-sentence-input" data-id="${value.cid}"><img src="img/9Xn6xXK.webp"> <input placeholder="Enter months here..." value="0" class="sentence-amount" data-id="${value.cid}" type="number"></div>
                         </div>`
           );
         }
