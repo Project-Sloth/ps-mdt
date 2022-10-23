@@ -2656,6 +2656,7 @@ $(document).ready(() => {
           );
           let plate = $(".vehicle-info-plate-input").val();
           let notes = $(".vehicle-info-content").val();
+          let points = $("#vehiclePointsSlider").val();
 
           let imageurl = $(".vehicle-info-image").attr("src");
           let newImageurl = $(".vehicle-info-imageurl-input").val();
@@ -2699,6 +2700,7 @@ $(document).ready(() => {
               stolen: stolen,
               code5: code5,
               impound: impoundInfo,
+              points: points,
             })
           );
 
