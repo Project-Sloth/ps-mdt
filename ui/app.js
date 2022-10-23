@@ -9,7 +9,6 @@ let canInputBoloTag = true;
 let canInputBoloOfficerTag = true;
 let canSearchReports = true;
 let canCreateBulletin = 0;
-let canSearchForWeapons = true;
 let mouse_is_inside = false;
 let currentTab = ".dashboard-page-container";
 let MyName = "";
@@ -2653,9 +2652,7 @@ $(document).ready(() => {
           canSaveVehicle = true;
         }, 750);
         setTimeout(() => {
-          let dbid = $(".vehicle-information-title-holder").data(
-            "dbid"
-          );
+          let dbid = $(".vehicle-information-title-holder").data("dbid");
           let plate = $(".vehicle-info-plate-input").val();
           let notes = $(".vehicle-info-content").val();
           let points = $("#vehiclePointsSlider").val();
@@ -3769,6 +3766,7 @@ $(document).ready(() => {
         $(".incidents-nav-item").show();
         $(".bolo-nav-item").show();
         $(".dmv-nav-item").show();
+        $(".weapons-nav-item").show()
         $(".cams-nav-item").show();
         $(".dispatch-title-ofsomesort").html("Dispatch");
         $(".dispatch-comms-container").fadeIn(0);
@@ -3925,6 +3923,7 @@ $(document).ready(() => {
         $(".header-title").html("DEPARTMENT OF JUSTICE");
         //$(".quote-span").html("Actually useless.");
         //$(".dmv-nav-item").hide();
+        $(".weapons-nav-item").show()
         $(".bolo-nav-item").hide();
         $(".dispatch-title-ofsomesort").html("Message Board");
         $(".dispatch-comms-container").fadeOut(0);
@@ -4867,6 +4866,9 @@ $(document).ready(() => {
       $(".vehicle-info-class-input").val(table["class"]);
       $(".vehicle-info-model-input").val(table["model"]);
       $(".vehicle-info-imageurl-input").val(table["image"]);
+      let vehiclePoints = table["points"] != null ? table["points"] : 0;
+      $("#vehiclePointsSlider").val(vehiclePoints);
+      $("#vehiclePointsSliderValue").html(vehiclePoints);
 
       $(".vehicle-info-content").val(table["information"]);
 
@@ -4897,23 +4899,14 @@ $(document).ready(() => {
         stolen = "green-tag";
       }
 
-      $(".vehicle-tags").append(
-        `<div class="vehicle-tag ${impound} impound-tag">Impound</div>`
-      );
-      $(".vehicle-tags").append(
-        `<div class="vehicle-tag ${bolo}">BOLO</div>`
-      );
-      $(".vehicle-tags").append(
-        `<div class="vehicle-tag ${codefive} code5-tag">Code 5</div>`
-      );
-      $(".vehicle-tags").append(
-        `<div class="vehicle-tag ${stolen} stolen-tag">Stolen</div>`
-      );
+      $(".vehicle-tags").append(`<div class="vehicle-tag ${impound} impound-tag">Impound</div>`);
+      $(".vehicle-tags").append(`<div class="vehicle-tag ${bolo}">BOLO</div>`);
+      $(".vehicle-tags").append(`<div class="vehicle-tag ${codefive} code5-tag">Code 5</div>`);
+      $(".vehicle-tags").append(`<div class="vehicle-tag ${stolen} stolen-tag">Stolen</div>`);
       $(".vehicle-info-imageurl-input").val(table["image"]);
     } else if (eventData.type == "getWeaponData") {
       impoundChanged = false;
       let table = eventData.data;
-      console.log(table)
 
       $(".weapon-information-title-holder").data( "dbid", table["id"] );
 
