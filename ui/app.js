@@ -2960,6 +2960,150 @@ $(document).ready(() => {
     }
   });
 
+  $(".weapons-search-title").click(function () {
+    if (canSearchForWeapons == true) {
+      if ($(".weapons-search-input").css("display") == "none") {
+        $(".weapons-search-input").slideDown(250);
+        $(".weapons-search-input").css("display", "block");
+      } else {
+        $(".weapons-search-input").slideUp(250);
+        setTimeout(() => {
+          $(".weapons-search-input").css("display", "none");
+        }, 250);
+      }
+    }
+  });
+
+  $("#weapons-search-input").keydown(async function (e) {
+    if (e.keyCode === 13 && canSearchForWeapons == true) {
+      let name = $("#weapons-search-input").val();
+      if (name !== "") {
+        canSearchForWeapons = false;
+        $(".weapons-items").empty();
+        $(".weapons-items").prepend(`<div class="profile-loader"></div>`);
+
+        let result = await $.post(
+          `https://${GetParentResourceName()}/searchWeapons`,
+          JSON.stringify({
+            name: name,
+          })
+        );
+        console.log(result)
+        if (result.length === 0) {
+          $(".weapons-items").html(
+            `
+                            <div class="profile-item" data-id="0">
+
+                                <div style="display: flex; flex-direction: column; margin-top: 2.5px; margin-left: 5px; width: 100%; padding: 5px;">
+                                <div style="display: flex; flex-direction: column;">
+                                    <div class="profile-item-title">No Weapons Matching that search</div>
+                                    </div>
+                                    <div class="profile-bottom-info">
+                                    </div>
+                                </div>
+                            </div>
+                    `
+          );
+          canSearchForWeapons = true;
+          return true;
+        }
+        $(".weapons-items").empty();
+
+        let weaponHTML = "";
+
+        result.forEach((value) => {
+          weaponHTML += `
+                        <div class="weapons-item" data-id="${value._id}" data-dbid="${value._id}" data-serial="${value.serial}">
+                            <img src="${value.image}" class="weapons-image">
+                            <div style="display: flex; flex-direction: column; margin-top: 2.5px; margin-left: 5px; width: 100%; padding: 5px;">
+                              <div style="display: flex; flex-direction: column;">
+                                <div class="weapons-item-title">${value.weapModel} - Class ${value.weapClass}</div>
+
+                                </div>
+                                <div class="weapons-bottom-info">
+                                  <div class="weapons-id">Serial Number: ${value.serial} · Owner: ${value.owner}</div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+        });
+
+        $(".weapons-items").html(weaponHTML);
+
+        canSearchForWeapons = true;
+      }
+    }
+  });
+
+  $(".weapon-information-title-holder").on("click", ".weapon-information-new", function () {
+    $(".weapon-information-title-holder").data("dbid", 0);
+    $(".weapon-info-serial-input").val("");
+    $(".weapon-info-owner-input").val("");
+    $(".weapon-info-class-input").val("");
+    $(".weapon-info-model-input").val("");
+    $(".weapon-info-imageurl-input").val("img/not-found.webp");
+    
+    canSaveWeapon = true;
+  }
+);
+
+  $(".weapon-information-title-holder").on("click", ".weapon-information-save", function () {
+    if (canSaveProfile == true) {
+      canSaveProfile = false;
+        $(".manage-profile-save").empty();
+        $(".manage-profile-save").prepend(
+          `<span class="fas fa-check"></span>`
+        );
+        setTimeout(() => {
+          $(".manage-profile-save").empty();
+          $(".manage-profile-save").html("Save");
+          canSaveProfile = true;
+        }, 750);
+
+        setTimeout(() => {
+          let dbid = $(".weapon-information-title-holder").data("dbid");
+          let serial = $(".weapon-info-serial-input").val();
+          let notes = $(".weapon-info-content").val();
+          let owner = $(".weapon-info-owner-input").val();
+          let weapClass = $(".weapon-info-class-input").val();
+          let weapModel = $(".weapon-info-model-input").val();
+
+          let imageurl = $(".weapon-info-image").attr("src");
+          let newImageurl = $(".weapon-info-imageurl-input").val();
+          if (newImageurl.includes("base64")) {
+            imageurl = "img/not-found.webp";
+          } else {
+            imageurl = newImageurl;
+          }
+
+          $.post(
+            `https://${GetParentResourceName()}/saveWeaponInfo`,
+            JSON.stringify({
+              dbid: dbid,
+              serial: serial,
+              imageurl: imageurl,
+              notes: notes,
+              owner: owner,
+              weapClass: weapClass,
+              weapModel: weapModel,
+            })
+          );
+
+          $(".weapon-info-image").attr("src", newImageurl);
+        }, 250);
+    }
+  }
+);
+
+  $(".weapons-items").on("click", ".weapons-item", function () {
+    $.post(
+      `https://${GetParentResourceName()}/getWeaponData`,
+      JSON.stringify({
+        serial: $(this).data("serial"),
+      })
+    );
+  });
+
   $(".contextmenu").on("click", ".view-profile", async function () {
     const cid = $(this).data("info");
     fidgetSpinner(".profile-page-container");

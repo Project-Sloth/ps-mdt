@@ -4702,6 +4702,7 @@ span.civilian-tag-reports-input[contenteditable]:empty::before {
     margin-top: 5px;
     color: white;
     background-color: rgba(0, 0, 0, 0);
+    width: 80%;
 }
 
 .vehicle-info-owner {
@@ -4719,6 +4720,7 @@ span.civilian-tag-reports-input[contenteditable]:empty::before {
     margin-top: 5px;
     color: white;
     background-color: rgba(0, 0, 0, 0);
+    width: 80%;
 }
 
 .vehicle-info-class {
@@ -4736,6 +4738,7 @@ span.civilian-tag-reports-input[contenteditable]:empty::before {
     margin-top: 5px;
     color: white;
     background-color: rgba(0, 0, 0, 0);
+    width: 80%;
 }
 
 .vehicle-info-model {
@@ -4753,6 +4756,7 @@ span.civilian-tag-reports-input[contenteditable]:empty::before {
     margin-top: 5px;
     color: white;
     background-color: rgba(0, 0, 0, 0);
+    width: 80%;
 }
 
 .vehicle-info-imageurl {
@@ -4770,6 +4774,7 @@ span.civilian-tag-reports-input[contenteditable]:empty::before {
     margin-top: 5px;
     color: white;
     background-color: rgba(0, 0, 0, 0);
+    width: 80%;
 }
 
 .vehicle-info-icon {
@@ -4873,7 +4878,7 @@ span.civilian-tag-reports-input[contenteditable]:empty::before {
     margin-bottom: 0px;
     border: none;
     outline: none;
-    min-height: 30.9vh;
+    min-height: 26.9vh;
     resize: none;
     background-color: var(--color-5);
     color: white;
@@ -5919,4 +5924,397 @@ span.civilian-tag-reports-input[contenteditable]:empty::before {
 
 .cams-items:hover {
     background-color: var(--color-3);
+}
+
+.weapons-container {
+    background-color: var(--color-1);
+    border: 2px solid var(--color-3);
+    display: flex;
+    flex-direction: column;
+    height: 74.7vh;
+    width: 50%;
+    margin-top: 10px;
+    margin-left: 10px;
+}
+
+.weapons-search-title {
+    background-color: var(--color-4);
+    color: white;
+    font-size: 18px;
+    font-weight: bolder;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    text-align: center;
+    margin: auto;
+    margin-top: 10px;
+    margin-bottom: 0px;
+    width: 95%;
+    align-items: center;
+    user-select: none;
+}
+
+.weapons-search-title:hover {
+    background-color: var(--color-3);
+}
+
+.weapons-search-input {
+    background-color: var(--color-3);
+    color: white;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    text-align: center;
+    margin: auto;
+    margin-top: 10px;
+    margin-bottom: 0px;
+    width: 95%;
+    align-items: center;
+    user-select: none;
+    display: none;
+}
+
+#weapons-search-input {
+    outline: none;
+    border: none;
+    width: 95%;
+    color: white;
+    font-size: 15px;
+    background-color: rgba(0, 0, 0, 0);
+    margin: auto;
+}
+
+#weapons-search-input::placeholder {
+    color: white;
+}
+
+.weapons-items {
+    display: flex;
+    flex-direction: column;
+    overflow: auto;
+    margin: auto;
+    margin-top: 10px;
+    width: 95%;
+    height: 100%;
+    margin-bottom: 15px;
+}
+
+.weapon-information-container {
+    background-color: var(--color-1);
+    border: 2px solid var(--color-3);
+    display: flex;
+    flex-direction: column;
+    height: 74.7vh;
+    width: 50%;
+    margin-top: 10px;
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+.weapon-information-new {
+    width: 13.7%;
+    font-size: 15px;
+    font-weight: lighter;
+    padding-top: 7px;
+    padding-bottom: 7px;
+    background-color: #8f1b1b;
+    margin: auto;
+    margin-left: 5px;
+    margin-top: 10px;
+    margin-bottom: 0px;
+    color: white;
+    text-align: center;
+    user-select: none;
+    display: block;
+}
+
+.weapon-information-new:hover {
+    background-color: #aa1c1c;
+}
+
+.weapon-information-save {
+    width: 13.7%;
+    font-size: 15px;
+    font-weight: lighter;
+    padding-top: 7px;
+    padding-bottom: 7px;
+    background-color: #1b8f25;
+    margin: auto;
+    margin-left: 5px;
+    margin-top: 10px;
+    margin-bottom: 0px;
+    color: white;
+    text-align: center;
+    user-select: none;
+    display: block;
+}
+
+.weapon-information-save:hover {
+    background-color: #1caa28;
+}
+
+.weapon-information-title {
+    background-color: var(--color-4);
+    color: white;
+    font-size: 18px;
+    font-weight: bolder;
+    padding-top: 5px;
+    padding-bottom: 0px;
+    text-align: center;
+    margin: auto;
+    margin-top: 10px;
+    margin-bottom: 0px;
+    margin-right: 0px;
+    width: 81%;
+    /* width: 66%; */
+    align-items: center;
+    user-select: none;
+}
+
+.weapon-info-stuff {
+    display: flex;
+    flex-direction: row;
+    width: 95%;
+    margin: auto;
+    margin-top: 10px;
+    margin-bottom: 0px;
+}
+
+.weapon-info-image {
+    width: 444px;
+    height: 269px;
+    object-fit: cover;
+}
+
+.weapon-info-imageurl {
+    color: white;
+    margin-left: 10px;
+    font-size: 15px;
+    user-select: none;
+}
+
+.weapon-info-imageurl-input {
+    border: none;
+    outline: none;
+    margin-left: 2.5px;
+    font-size: 16px;
+    margin-top: 5px;
+    color: white;
+    background-color: rgba(0, 0, 0, 0);
+    width: 80%;
+}
+
+.weapon-info-inner-container {
+    display: flex;
+    flex-direction: column;
+    width: 55%;
+}
+
+.weapon-info-serial {
+    color: white;
+    margin-left: 10px;
+    font-size: 15px;
+    user-select: none;
+}
+
+.weapon-info-serial-input {
+    border: none;
+    outline: none;
+    margin-left: 2.5px;
+    font-size: 16px;
+    margin-top: 5px;
+    color: white;
+    background-color: rgba(0, 0, 0, 0);
+    width: 80%;
+}
+
+.weapon-info-icon {
+    color: white;
+    font-size: 16px;
+    margin-left: 10px
+}
+
+.weapon-info-line {
+    background-color: var(--color-3);
+    height: 2px;
+    margin-left: 10px;
+    margin-bottom: 10px;
+}
+
+.weapon-info-model {
+    color: white;
+    margin-left: 10px;
+    font-size: 15px;
+    user-select: none;
+}
+
+.weapon-info-model-input {
+    border: none;
+    outline: none;
+    margin-left: 2.5px;
+    font-size: 16px;
+    margin-top: 5px;
+    color: white;
+    background-color: rgba(0, 0, 0, 0);
+    width: 80%;
+}
+
+.weapon-info-owner {
+    color: white;
+    margin-left: 10px;
+    font-size: 15px;
+    user-select: none;
+}
+
+.weapon-info-owner-input {
+    border: none;
+    outline: none;
+    margin-left: 2.5px;
+    font-size: 16px;
+    margin-top: 5px;
+    color: white;
+    background-color: rgba(0, 0, 0, 0);
+    width: 80%;
+}
+
+.weapon-info-class {
+    color: white;
+    margin-left: 10px;
+    font-size: 15px;
+    user-select: none;
+}
+
+.weapon-info-class-input {
+    border: none;
+    outline: none;
+    margin-left: 2.5px;
+    font-size: 16px;
+    margin-top: 5px;
+    color: white;
+    background-color: rgba(0, 0, 0, 0);
+    width: 80%;
+}
+
+.weapon-info-imageurl {
+    color: white;
+    margin-left: 10px;
+    font-size: 15px;
+    user-select: none;
+}
+
+.weapon-info-imageurl-input {
+    border: none;
+    outline: none;
+    margin-left: 2.5px;
+    font-size: 16px;
+    margin-top: 5px;
+    color: white;
+    background-color: rgba(0, 0, 0, 0);
+}
+
+.weapon-info-content {
+    width: 93%;
+    margin: auto;
+    margin-top: 10px;
+    margin-bottom: 0px;
+    border: none;
+    outline: none;
+    min-height: 30.9vh;
+    resize: none;
+    background-color: var(--color-5);
+    color: white;
+    font-size: 16px;
+    padding: 10px;
+}
+
+.weapons-item-title {
+    font-size: 16px;
+    font-weight: lighter;
+    color: white;
+    padding-top: 2px;
+}
+
+.weapons-image {
+    width: 7vh;
+    height: 7vh;
+    margin-left: 10px;
+    margin-top: auto;
+    margin-bottom: auto;
+    object-fit: cover;
+}
+
+.weapons-item-title {
+    font-size: 16px;
+    font-weight: lighter;
+    color: white;
+    padding-top: 2px;
+}
+
+.weapons-bottom-info {
+    display: flex;
+    margin: auto;
+    width: 100%;
+}
+
+.weapons-id {
+    color: white;
+    font-size: 13px;
+}
+
+.weapons-item {
+    background-color: var(--color-5);
+    width: 100%;
+    height: 9vh;
+    margin: auto;
+    margin-bottom: 10px;
+    margin-top: 0px;
+    display: flex;
+    user-select: none;
+
+}
+
+.weapons-item:hover {
+    background-color: var(--color-3);
+}
+
+.weapons-image {
+    width: 7vh;
+    height: 7vh;
+    margin-left: 10px;
+    margin-top: auto;
+    margin-bottom: auto;
+    object-fit: cover;
+}
+
+.weapons-item-title {
+    font-size: 16px;
+    font-weight: lighter;
+    color: white;
+    padding-top: 2px;
+}
+
+input[type="range"].vehicle-info-points-input {
+    border: none;
+    outline: none;
+    margin-left: 2.5px;
+    font-size: 16px;
+    margin-top: 5px;
+    color: white;
+    width: 80%;
+}
+
+input[type="range"].vehicle-info-points-input::-moz-range-thumb {
+    box-shadow: none;
+    border: 2px solid grey;
+    height: 16px;
+    width: 16px;
+    border-radius: 16px;
+    background: white;
+}
+
+input[type="range"].vehicle-info-points-input::-moz-range-track {
+    width: 100%;
+    height: 2px;
+    box-shadow: none;
+    background: var(--color-8);
+    border-radius: 0px;
+    border: 0px;
 }

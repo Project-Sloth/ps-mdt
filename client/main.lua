@@ -613,6 +613,50 @@ RegisterNUICallback("saveVehicleInfo", function(data, cb)
     cb(true)
 end)
 
+--====================================================================================
+------------------------------------------
+--                Weapons PAGE          --
+------------------------------------------
+--====================================================================================
+RegisterNUICallback("searchWeapons", function(data, cb)
+    local p = promise.new()
+
+    QBCore.Functions.TriggerCallback('mdt:server:SearchWeapons', function(result)
+        p:resolve(result)
+    end, data.name)
+
+    local result = Citizen.Await(p)
+    cb(result)
+end)
+
+RegisterNUICallback("saveWeaponInfo", function(data, cb)
+    local dbid = data.dbid
+    local serial = data.serial
+    local notes = data.notes
+    local imageurl = data.imageurl
+    local owner = data.owner
+    local weapClass = data.weapClass
+    local weapModel = data.weapModel
+    local JobType = GetJobType(PlayerData.job.name)
+    if JobType == 'police' then
+        TriggerServerEvent('mdt:server:saveWeaponInfo', dbid, serial, imageurl, notes, owner, weapClass, weapModel)
+    end
+    cb(true)
+end)
+
+RegisterNUICallback("getWeaponData", function(data, cb)
+    local serial = data.serial
+    TriggerServerEvent('mdt:server:getWeaponData', serial)
+    cb(true)
+end)
+
+RegisterNetEvent('mdt:client:getWeaponData', function(sentData)
+    if sentData and sentData[1] then
+        local vehicle = sentData[1]
+        SendNUIMessage({ type = "getWeaponData", data = vehicle })
+    end
+end)
+
 RegisterNUICallback("getAllLogs", function(data, cb)
     TriggerServerEvent('mdt:server:getAllLogs')
     cb(true)
@@ -664,6 +708,10 @@ end)
 
 RegisterNetEvent('mdt:client:updateVehicleDbId', function(sentData)
     SendNUIMessage({ type = "updateVehicleDbId", data = tonumber(sentData) })
+end)
+
+RegisterNetEvent('mdt:client:updateWeaponDbId', function(sentData)
+    SendNUIMessage({ type = "updateWeaponDbId", data = tonumber(sentData) })
 end)
 
 RegisterNetEvent('mdt:client:getAllLogs', function(sentData)

@@ -862,6 +862,60 @@ RegisterNetEvent('mdt:server:saveVehicleInfo', function(dbid, plate, imageurl, n
 	end
 end)
 
+QBCore.Functions.CreateCallback('mdt:server:SearchWeapons', function(source, cb, sentData)
+	if not sentData then  return cb({}) end
+	local PlayerData = GetPlayerData(source)
+	if not PermCheck(source, PlayerData) then return cb({}) end
+
+	local Player = QBCore.Functions.GetPlayer(source)
+	if Player then
+		local JobType = GetJobType(Player.PlayerData.job.name)
+		if JobType == 'police' or JobType == 'doj' then
+			--SELECT SQL QUERY HERE
+			--id int, serial string, image string, information string, owner string, weapClass string, weapModel string
+			cb(matches)
+		end
+	end
+end)
+
+RegisterNetEvent('mdt:server:saveWeaponInfo', function(dbid, serial, imageurl, notes, owner, weapClass, weapModel)
+	if serial then
+		local PlayerData = GetPlayerData(source)
+		if not PermCheck(source, PlayerData) then return cb({}) end
+
+		local Player = QBCore.Functions.GetPlayer(source)
+		if Player then
+			local JobType = GetJobType(Player.PlayerData.job.name)
+			if JobType == 'police' or JobType == 'doj' then
+				if dbid == nil then dbid = 0 end;
+				local fullname = Player.PlayerData.charinfo.firstname .. ' ' .. Player.PlayerData.charinfo.lastname
+				if imageurl == nil then imageurl = 'img/not-found.webp' end
+				--AddLog event?
+				if dbid == 0 then
+					--INSERT SQL QUERY HERE
+					--Emulate updateVehicleDbId event here
+					TriggerEvent('mdt:server:AddLog', "A weapon with the serial number ("..serial..") was added to the weapon information database by "..fullname)
+				elseif dbid ~= 0 then
+					--UPDATE SQL QUERY HERE
+				end
+			end
+		end
+	end
+end)
+
+RegisterNetEvent('mdt:server:getWeaponData', function(serial)
+	if serial then
+		local Player = QBCore.Functions.GetPlayer(source)
+		if Player then
+			local JobType = GetJobType(Player.PlayerData.job.name)
+			if JobType == 'police' or JobType == 'doj' then
+				--SELECT SQL QUERY HERE
+				TriggerClientEvent('mdt:client:getWeaponData', source, results)
+			end
+		end
+	end
+end)
+
 RegisterNetEvent('mdt:server:getAllLogs', function()
 	local src = source
 	local Player = QBCore.Functions.GetPlayer(src)
