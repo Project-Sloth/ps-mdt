@@ -871,8 +871,7 @@ QBCore.Functions.CreateCallback('mdt:server:SearchWeapons', function(source, cb,
 	if Player then
 		local JobType = GetJobType(Player.PlayerData.job.name)
 		if JobType == 'police' or JobType == 'doj' then
-			--SELECT SQL QUERY HERE
-			--id int, serial string, image string, information string, owner string, weapClass string, weapModel string
+			local matches = MySQL.query.await('SELECT * FROM mdt_weaponinfo')
 			cb(matches)
 		end
 	end
@@ -891,12 +890,20 @@ RegisterNetEvent('mdt:server:saveWeaponInfo', function(dbid, serial, imageurl, n
 				local fullname = Player.PlayerData.charinfo.firstname .. ' ' .. Player.PlayerData.charinfo.lastname
 				if imageurl == nil then imageurl = 'img/not-found.webp' end
 				--AddLog event?
-				if dbid == 0 then
-					--INSERT SQL QUERY HERE
-					--Emulate updateVehicleDbId event here
+				local result = MySQL.insert.await('INSERT INTO mdt_weaponinfo (serial, owner, information, weapClass, weapModel, image) VALUES (?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE id = ?', {
+					serial,
+					owner,
+					notes,
+					weapClass,
+					weapModel,
+					imageurl,
+					dbid,
+				})
+		
+				if result then
 					TriggerEvent('mdt:server:AddLog', "A weapon with the serial number ("..serial..") was added to the weapon information database by "..fullname)
-				elseif dbid ~= 0 then
-					--UPDATE SQL QUERY HERE
+				else
+					TriggerEvent('mdt:server:AddLog', "A weapon with the serial number ("..serial..") failed to be added to the weapon information database by "..fullname)
 				end
 			end
 		end
@@ -909,7 +916,7 @@ RegisterNetEvent('mdt:server:getWeaponData', function(serial)
 		if Player then
 			local JobType = GetJobType(Player.PlayerData.job.name)
 			if JobType == 'police' or JobType == 'doj' then
-				--SELECT SQL QUERY HERE
+				local results = MySQL.query.await('SELECT * FROM mdt_weaponinfo WHERE serial = ?', { serial })
 				TriggerClientEvent('mdt:client:getWeaponData', source, results)
 			end
 		end
