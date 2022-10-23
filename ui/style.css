@@ -6291,6 +6291,14 @@ span.civilian-tag-reports-input[contenteditable]:empty::before {
     padding-top: 2px;
 }
 
+.vehicle-info-points {
+    color: white;
+    margin-left: 10px;
+    font-size: 15px;
+    user-select: none;
+    margin-top: 5px;
+}
+
 input[type="range"].vehicle-info-points-input {
     border: none;
     outline: none;
