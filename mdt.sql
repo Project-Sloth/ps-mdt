@@ -97,7 +97,7 @@ CREATE TABLE IF NOT EXISTS `mdt_vehicleinfo` (
   `information` text NOT NULL DEFAULT '',
   `stolen` tinyint(1) NOT NULL DEFAULT 0,
   `code5` tinyint(1) NOT NULL DEFAULT 0,
-  `image` varchar(255) DEFAULT NULL,
+  `image` text NOT NULL DEFAULT '',
   `points` int(11) DEFAULT 0,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
