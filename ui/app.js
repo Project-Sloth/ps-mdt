@@ -1284,7 +1284,7 @@ $(document).ready(() => {
       //$(".manage-bolos-new").effect("shake", { times: 2, distance: 2 }, 500)
       //} else {
       var template = "";
-      if ($(".badge-logo").attr("src") == "img/ems_badge.png") {
+      if ($(".badge-logo").attr("src") == "img/ems_badge.webp") {
         template =
           "ICU Room #: [ # ]\n\nReport ID: [ Report ID ]\n\nTime Admitted: [ Date and Time Here ]\n\nSurgery: [Yes/No]\n\nInjuries/Ailments:\n - [ Enter List Of Injuries Here ]\n\n\nAdditional Attending:\n - [ List Any Other Staff Here ]\n\n\n🧑‍🤝‍🧑 Additional Emergency Contacts:\n - [ Name And Number ]\n\n\nNotes:\n[Additional Notes Here]";
       }
@@ -1583,7 +1583,7 @@ $(document).ready(() => {
 
   $(".contextmenu").on("click", ".bolo-delete", function () {
     if ($(this).data("info") != 0) {
-      if ($(".badge-logo").attr("src") == "img/ems_badge.png") {
+      if ($(".badge-logo").attr("src") == "img/ems_badge.webp") {
         $(".bolos-items")
           .find("[data-id='" + $(this).data("info") + "']")
           .remove();
@@ -1617,7 +1617,7 @@ $(document).ready(() => {
         status: "",
       },
     ];
-    if ($(".badge-logo").attr("src") == "img/ems_badge.png") {
+    if ($(".badge-logo").attr("src") == "img/ems_badge.webp") {
       args = [
         {
           className: "bolo-delete",
@@ -2409,7 +2409,7 @@ $(document).ready(() => {
       //$(".manage-bolos-new").effect("shake", { times: 2, distance: 2 }, 500)
       //} else {
       let template = "";
-      if ($(".badge-logo").attr("src") == "img/ems_badge.png") {
+      if ($(".badge-logo").attr("src") == "img/ems_badge.webp") {
         template =
           "Submitted to ICU?: [Yes/No]\n\nIncident Report:\n[ Brief summary of what happened and who did what while on scene. Note anything that stood out about the scene as well as what was done to treat the patient ]\n\n\nList of Injuries:\n- [ State what injury or injuries occurred ]\n\n\n💉 Surgical Report:\n[ Full report on what was done in surgery, list any complications or anything that was found while in operation. Note who was attending and what they did during the surgery. At the end of the report be sure to note the state of the patient after ]\n\n\nAttending:\n- [ List Any Attending Here ]\n\n\nMedications Applied:\n- [ List Any Attending Here ]\n\n\nNotes:\n[ Additional Notes Here ]";
       }
@@ -3757,7 +3757,7 @@ $(document).ready(() => {
           "--color-10",
           "#8f741b"
         );
-        $(".badge-logo").attr("src", "img/sasp_badge.png");
+        $(".badge-logo").attr("src", "img/sasp_badge.webp");
         $(".header-title").html("SAN ANDREAS STATE POLICE");
         $(".bolo-nav-item").html("BOLOs");
         $(".bolos-search-title").html("Bolos");
@@ -3854,7 +3854,7 @@ $(document).ready(() => {
           "--color-10",
           "#444444"
         );
-        $(".badge-logo").attr("src", "img/ems_badge.png");
+        $(".badge-logo").attr("src", "img/ems_badge.webp");
         $(".header-title").html("PILLBOX HILL MEDICAL CENTER");
         //$(".quote-span").html("The simplest explanation is almost always somebody screwed up.");
         $(".bolo-nav-item").html("ICU");
@@ -4721,7 +4721,7 @@ $(document).ready(() => {
         "You are currently editing BOLO " + table["id"]
       );
 
-      if ($(".badge-logo").attr("src") == "img/ems_badge.png") {
+      if ($(".badge-logo").attr("src") == "img/ems_badge.webp") {
         $(".manage-bolos-editing-title").html(
           "You are editing ICU Check-in " + table["id"]
         );
@@ -4762,7 +4762,7 @@ $(document).ready(() => {
       var reportName = "General BOLO";
       canSearchForProfiles = true;
       $(".bolos-items").empty();
-      if ($(".badge-logo").attr("src") == "img/ems_badge.png") {
+      if ($(".badge-logo").attr("src") == "img/ems_badge.webp") {
         reportName = "ICU Check-in";
       }
       $.each(table, function (index, value) {
@@ -5154,10 +5154,10 @@ function openChargesContextMenu(e, args) {
     if (value.status !== "blur(5px)") {
       $(".ccontextmenu").prepend(
         `
-                <li class="ccontextmenu-item ${value.className}" data-info="${value.info}" data-status="${value.status}">
-                    <span class="ccontextmenu-text">${value.info}</span>
-                </li>
-                `
+        <li class="ccontextmenu-item ${value.className}" data-info="${value.info}" data-status="${value.status}">
+            <span class="ccontextmenu-text">${value.info}</span>
+        </li>
+        `
       );
     }
   });
