@@ -23,6 +23,7 @@ var LastName = "";
 var DispatchNum = 0;
 var playerJob = "";
 let rosterLink  = "";
+let hoverChargeId = 0;
 
 let impoundChanged = false;
 
@@ -1741,6 +1742,27 @@ $(document).ready(() => {
       }
     }
   );
+
+  $(".offenses-main-container").on("mouseover",".offense-item",function (e) {
+    if ($(this).data("id") != hoverChargeId) {
+      hoverChargeId = $(this).data("id")
+      let args = [
+          {
+            className: "incidents-remove-tag",
+            text: "Remove Tag",
+            info: $(this).data("descr"),
+            status: "",
+          },
+        ];
+        openChargesContextMenu(e, args);
+      }
+    }
+  );
+
+  $(".offenses-main-container").on("mouseleave",".offense-item",function (e) {
+    hoverChargeId = 0;
+    hideChargesMenu();
+  });
 
   $(".bolo-gallery-inner-container").on("click", ".bolo-img", function () {
     if ($(this).css("filter") == "none") {
@@ -4477,7 +4499,7 @@ $(document).ready(() => {
       $.each(penalcode, function (index, value) {
         $.each(value, function (i, v) {
           $(`#penal-${index}`).append(`
-                    <div class="offense-item ${v.color}-penis-code" data-sentence="${v.months}" data-fine="${v.fine}">
+                    <div class="offense-item ${v.color}-penal-code" data-id="${index}.${i}" data-sentence="${v.months}" data-fine="${v.fine}" data-descr="${v.description}">
                     <div style="display: flex; flex-direction: row; width: 100%; margin: auto; margin-top: 0vh;">
                         <div class="offense-item-offense">${v.title}</div>
                         <div class="offfense-item-name">${v.class}</div>
@@ -5083,12 +5105,23 @@ function showMenu(x, y) {
   $(".contextmenu").addClass("contextmenu-show");
 }
 
+function showChargesMenu(x, y) {
+  $(".ccontextmenu").css("left", x + "px");
+  $(".ccontextmenu").css("top", y + "px");
+  $(".ccontextmenu").addClass("ccontextmenu-show");
+}
+
 function hideMenu() {
   $(".contextmenu").removeClass("contextmenu-show");
 }
 
+function hideChargesMenu() {
+  $(".ccontextmenu").removeClass("ccontextmenu-show");
+}
+
 function onMouseDown(e) {
   hideMenu();
+  hideChargesMenu();
   document.removeEventListener("mouseup", onMouseDown);
 }
 
@@ -5105,6 +5138,24 @@ function openContextMenu(e, args) {
                         <i class="${value.icon}"></i>
                         <span class="contextmenu-text">${value.text}</span>
                     </a>
+                </li>
+                `
+      );
+    }
+  });
+  document.addEventListener("mouseup", onMouseDown);
+}
+
+function openChargesContextMenu(e, args) {
+  e.preventDefault();
+  showChargesMenu(e.pageX, e.pageY);
+  $(".ccontextmenu").empty();
+  $.each(args, function (index, value) {
+    if (value.status !== "blur(5px)") {
+      $(".ccontextmenu").prepend(
+        `
+                <li class="ccontextmenu-item ${value.className}" data-info="${value.info}" data-status="${value.status}">
+                    <span class="ccontextmenu-text">${value.info}</span>
                 </li>
                 `
       );

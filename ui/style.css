@@ -5506,15 +5506,15 @@ span.civilian-tag-reports-input[contenteditable]:empty::before {
     color: black;   
 }
 
-.orange-penis-code {
+.orange-penal-code {
     background-color: #D77A0D;
 }
 
-.green-penis-code {
+.green-penal-code {
     background-color: #0B9509;
 }
 
-.red-penis-code {
+.red-penal-code {
     background-color: #950909;
 }
 
@@ -6325,4 +6325,88 @@ input[type="range"].vehicle-info-points-input::-moz-range-track {
     background: var(--color-8);
     border-radius: 0px;
     border: 0px;
+}
+
+/* Charges Hover */
+
+.ccontextmenu {
+    position: absolute;
+    width: fit-content;
+    padding: 2px;
+    margin: 0;
+    border: 1px solid var(--color-3);
+    background: var(--color-5);
+    z-index: 100;
+    border-radius: 3px;
+    box-shadow: 1px 1px 4px rgba(0,0,0,.2);
+    opacity: 0;
+    transform: translate(0, 15px) scale(.95);
+    transition: transform 0.1s ease-out, opacity 0.1s ease-out;
+    pointer-events: none;
+}
+
+.ccontextmenu-item {
+    display: block;
+    position: relative;
+    margin: 0;
+    padding: 0;
+    /* white-space: nowrap; */
+    max-width: 34ch;
+    word-wrap:break-word;
+}
+
+.ccontextmenu-text { 
+    display: block;
+    color: white;
+    font-size: 13px;
+    cursor: pointer;
+    border: 1px solid transparent;
+    /* white-space: nowrap; */
+    padding: 6px 8px;
+    border-radius: 3px;
+    max-width: 34ch;
+    word-wrap:break-word;
+}
+
+.ccontextmenu-text {
+    outline: 0 none;
+    text-decoration: none;
+}
+
+.ccontextmenu-text .fa {
+    position: absolute;
+    left: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.ccontextmenu-item-disabled {
+    opacity: .5;
+    pointer-events: none;
+}
+
+.ccontextmenu-item-disabled .ccontextmenu-text {
+    cursor: default;
+}
+
+.ccontextmenu-item-submenu::after {
+    content: "";
+    position: absolute;
+    right: 6px;
+    top: 50%;
+    transform: translateY(-50%);
+    border: 5px solid transparent;
+    border-left-color: #808080; 
+}
+
+.ccontextmenu-item-submenu:hover::after {
+    border-left-color: #fff;
+}
+
+.ccontextmenu-show,
+.ccontextmenu-item:hover > .ccontextmenu {
+    opacity: 1;
+    transform: translate(0, 0) scale(1);
+    pointer-events: auto;
+    z-index: 9999;
 }
