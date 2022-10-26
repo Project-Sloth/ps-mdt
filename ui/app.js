@@ -3919,7 +3919,7 @@ $(document).ready(() => {
           "--color-8",
           "#cc9225"
         );
-        $(".badge-logo").attr("src", "img/court.png");
+        $(".badge-logo").attr("src", "img/court.webp");
         $(".header-title").html("DEPARTMENT OF JUSTICE");
         //$(".quote-span").html("Actually useless.");
         //$(".dmv-nav-item").hide();
