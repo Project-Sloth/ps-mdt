@@ -23,7 +23,6 @@ var LastName = "";
 var DispatchNum = 0;
 var playerJob = "";
 let rosterLink  = "";
-let hoverChargeId = null;
 
 let impoundChanged = false;
 
@@ -1743,24 +1742,24 @@ $(document).ready(() => {
     }
   );
 
-  $(".offenses-main-container").on("mouseover",".offense-item",function (e) {
-    if ($(this).data("id") != hoverChargeId) {
-      hoverChargeId = $(this).data("id")
+  var timeout;
+  $(".offenses-main-container").on("mouseenter",".offense-item",function (e) {
+    var descr = $(this).data("descr")
+    timeout = setTimeout(function() {
       let args = [
           {
             className: "incidents-remove-tag",
             text: "Remove Tag",
-            info: $(this).data("descr"),
+            info: descr,
             status: "",
           },
         ];
-        openChargesContextMenu(e, args);
-      }
-    }
-  );
+      openChargesContextMenu(e, args);
+    }, 500);
+  });
 
   $(".offenses-main-container").on("mouseleave",".offense-item",function (e) {
-    hoverChargeId = null;
+    clearTimeout(timeout)
     hideChargesMenu();
   });
 
