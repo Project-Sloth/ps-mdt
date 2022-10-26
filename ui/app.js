@@ -23,7 +23,7 @@ var LastName = "";
 var DispatchNum = 0;
 var playerJob = "";
 let rosterLink  = "";
-let hoverChargeId = 0;
+let hoverChargeId = null;
 
 let impoundChanged = false;
 
@@ -1760,7 +1760,7 @@ $(document).ready(() => {
   );
 
   $(".offenses-main-container").on("mouseleave",".offense-item",function (e) {
-    hoverChargeId = 0;
+    hoverChargeId = null;
     hideChargesMenu();
   });
 
