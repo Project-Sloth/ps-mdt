@@ -572,6 +572,7 @@ RegisterNUICallback("saveVehicleInfo", function(data, cb)
     local stolen = data.stolen
     local code5 = data.code5
     local impound = data.impound
+    local points = data.points
     local JobType = GetJobType(PlayerData.job.name)
     if JobType == 'police' and impound.impoundChanged == true then
         if impound.impoundActive then
@@ -586,7 +587,7 @@ RegisterNUICallback("saveVehicleInfo", function(data, cb)
                     if dist < 5.0 then
                         found = VehToNet(v)
                         SendNUIMessage({ type = "greenImpound" })
-                        TriggerServerEvent('mdt:server:saveVehicleInfo', dbid, plate, imageurl, notes, stolen, code5, impound)
+                        TriggerServerEvent('mdt:server:saveVehicleInfo', dbid, plate, imageurl, notes, stolen, code5, impound, points)
                     end
                     break
                 end
@@ -602,13 +603,13 @@ RegisterNUICallback("saveVehicleInfo", function(data, cb)
             for k, v in pairs(Config.ImpoundLocations) do
                 if (#(playerPos - vector3(v.x, v.y, v.z)) < 20.0) then
                     impound.CurrentSelection = k
-                    TriggerServerEvent('mdt:server:saveVehicleInfo', dbid, plate, imageurl, notes, stolen, code5, impound)
+                    TriggerServerEvent('mdt:server:saveVehicleInfo', dbid, plate, imageurl, notes, stolen, code5, impound, points)
                     break
                 end
             end
         end
     else
-        TriggerServerEvent('mdt:server:saveVehicleInfo', dbid, plate, imageurl, notes, stolen, code5, impound)
+        TriggerServerEvent('mdt:server:saveVehicleInfo', dbid, plate, imageurl, notes, stolen, code5, impound, points)
     end
     cb(true)
 end)

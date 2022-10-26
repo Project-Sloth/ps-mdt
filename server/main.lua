@@ -774,6 +774,7 @@ RegisterNetEvent('mdt:server:getVehicleData', function(plate)
 					if info then
 						vehicle[1]['information'] = info['information']
 						vehicle[1]['dbid'] = info['id']
+						vehicle[1]['points'] = info['points']
 						vehicle[1]['image'] = info['image']
 						vehicle[1]['code'] = info['code5']
 						vehicle[1]['stolen'] = info['stolen']
@@ -788,7 +789,7 @@ RegisterNetEvent('mdt:server:getVehicleData', function(plate)
 	end
 end)
 
-RegisterNetEvent('mdt:server:saveVehicleInfo', function(dbid, plate, imageurl, notes, stolen, code5, impoundInfo)
+RegisterNetEvent('mdt:server:saveVehicleInfo', function(dbid, plate, imageurl, notes, stolen, code5, impoundInfo, points)
 	if plate then
 		local src = source
 		local Player = QBCore.Functions.GetPlayer(src)
@@ -798,14 +799,14 @@ RegisterNetEvent('mdt:server:saveVehicleInfo', function(dbid, plate, imageurl, n
 				local fullname = Player.PlayerData.charinfo.firstname .. ' ' .. Player.PlayerData.charinfo.lastname
 				TriggerEvent('mdt:server:AddLog', "A vehicle with the plate ("..plate..") has a new image ("..imageurl..") edited by "..fullname)
 				if tonumber(dbid) == 0 then
-					MySQL.insert('INSERT INTO `mdt_vehicleinfo` (`plate`, `information`, `image`, `code5`, `stolen`) VALUES (:plate, :information, :image, :code5, :stolen)', { plate = string.gsub(plate, "^%s*(.-)%s*$", "%1"), information = notes, image = imageurl, code5 = code5, stolen = stolen }, function(infoResult)
+					MySQL.insert('INSERT INTO `mdt_vehicleinfo` (`plate`, `information`, `image`, `code5`, `stolen`, `points`) VALUES (:plate, :information, :image, :code5, :stolen, :points)', { plate = string.gsub(plate, "^%s*(.-)%s*$", "%1"), information = notes, image = imageurl, code5 = code5, stolen = stolen, points = points }, function(infoResult)
 						if infoResult then
 							TriggerClientEvent('mdt:client:updateVehicleDbId', src, infoResult)
 							TriggerEvent('mdt:server:AddLog', "A vehicle with the plate ("..plate..") was added to the vehicle information database by "..fullname)
 						end
 					end)
 				elseif tonumber(dbid) > 0 then
-					MySQL.update("UPDATE mdt_vehicleinfo SET `information`= :information, `image`= :image, `code5`= :code5, `stolen`= :stolen WHERE `plate`= :plate LIMIT 1", { plate = string.gsub(plate, "^%s*(.-)%s*$", "%1"), information = notes, image = imageurl, code5 = code5, stolen = stolen })
+					MySQL.update("UPDATE mdt_vehicleinfo SET `information`= :information, `image`= :image, `code5`= :code5, `stolen`= :stolen, `points`= :points WHERE `plate`= :plate LIMIT 1", { plate = string.gsub(plate, "^%s*(.-)%s*$", "%1"), information = notes, image = imageurl, code5 = code5, stolen = stolen, points = points })
 				end
 
 				if impoundInfo.impoundChanged then
