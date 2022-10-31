@@ -12,9 +12,9 @@ function GetCitizenID(license)
 end
 
 -- (Start) Opening the MDT and sending data
-function AddLog(text)
+function AddLog(text, job)
 	--print(text)
-    return MySQL.insert.await('INSERT INTO `mdt_logs` (`text`, `time`) VALUES (?,?)', {text, os.time() * 1000})
+    return MySQL.insert.await('INSERT INTO `mdt_logs` (`text`, `time`) VALUES (?,?,?)', {text, os.time() * 1000, job})
 	-- return exports.oxmysql:execute('INSERT INTO `mdt_logs` (`text`, `time`) VALUES (:text, :time)', { text = text, time = os.time() * 1000 })
 end
 

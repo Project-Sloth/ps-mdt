@@ -106,7 +106,7 @@ RegisterNetEvent('mdt:server:openMDT', function()
 
 	local JobType = GetJobType(PlayerData.job.name)
 	local bulletin = GetBulletins(JobType)
-	local calls = exports['ps-dispatch']:GetDispatchCalls()	
+	local calls = exports['ps-dispatch']:GetDispatchCalls()
 	--TriggerClientEvent('mdt:client:dashboardbulletin', src, bulletin)
 	TriggerClientEvent('mdt:client:open', src, bulletin, activeUnits, calls, PlayerData.citizenid)
 	--TriggerClientEvent('mdt:client:GetActiveUnits', src, activeUnits)
@@ -482,7 +482,7 @@ RegisterNetEvent('mdt:server:newBolo', function(existing, id, title, plate, owne
 				}, function(r)
 					if r then
 						TriggerClientEvent('mdt:client:boloComplete', src, r)
-						TriggerEvent('mdt:server:AddLog', "A new BOLO was created by "..fullname.." with the title ("..title..") and ID ("..id..")")
+						TriggerEvent('mdt:server:AddLog', "A new BOLO was created by "..fullname.." with the title ("..title..") and ID ("..id..")", JobType)
 					end
 				end)
 			end
@@ -502,7 +502,7 @@ RegisterNetEvent('mdt:server:newBolo', function(existing, id, title, plate, owne
 				}, function(r)
 					if r then
 						TriggerClientEvent('mdt:client:boloComplete', src, id)
-						TriggerEvent('mdt:server:AddLog', "A BOLO was updated by "..fullname.." with the title ("..title..") and ID ("..id..")")
+						TriggerEvent('mdt:server:AddLog', "A BOLO was updated by "..fullname.." with the title ("..title..") and ID ("..id..")", JobType)
 					end
 				end)
 			end
@@ -524,7 +524,7 @@ RegisterNetEvent('mdt:server:deleteBolo', function(id)
 		if JobType == 'police' then
 			local fullname = Player.PlayerData.charinfo.firstname .. ' ' .. Player.PlayerData.charinfo.lastname
 			MySQL.update("DELETE FROM `mdt_bolos` WHERE id=:id", { id = id, jobtype = JobType })
-			TriggerEvent('mdt:server:AddLog', "A BOLO was deleted by "..fullname.." with the ID ("..id..")")
+			TriggerEvent('mdt:server:AddLog', "A BOLO was deleted by "..fullname.." with the ID ("..id..")", JobType)
 		end
 	end
 end)
@@ -537,7 +537,7 @@ RegisterNetEvent('mdt:server:deleteICU', function(id)
 		if JobType == 'ambulance' then
 			local fullname = Player.PlayerData.charinfo.firstname .. ' ' .. Player.PlayerData.charinfo.lastname
 			MySQL.update("DELETE FROM `mdt_bolos` WHERE id=:id", { id = id, jobtype = JobType })
-			TriggerEvent('mdt:server:AddLog', "A ICU Check-in was deleted by "..fullname.." with the ID ("..id..")")
+			TriggerEvent('mdt:server:AddLog', "A ICU Check-in was deleted by "..fullname.." with the ID ("..id..")", JobType)
 		end
 	end
 end)
@@ -650,7 +650,7 @@ RegisterNetEvent('mdt:server:newReport', function(existing, id, title, reporttyp
 					}, function(r)
 						if r then
 							TriggerClientEvent('mdt:client:reportComplete', src, r)
-							TriggerEvent('mdt:server:AddLog', "A new report was created by "..fullname.." with the title ("..title..") and ID ("..id..")")
+							TriggerEvent('mdt:server:AddLog', "A new report was created by "..fullname.." with the title ("..title..") and ID ("..id..")", JobType)
 						end
 					end)
 				end
@@ -669,7 +669,7 @@ RegisterNetEvent('mdt:server:newReport', function(existing, id, title, reporttyp
 					}, function(affectedRows)
 						if affectedRows > 0 then
 							TriggerClientEvent('mdt:client:reportComplete', src, id)
-							TriggerEvent('mdt:server:AddLog', "A report was updated by "..fullname.." with the title ("..title..") and ID ("..id..")")
+							TriggerEvent('mdt:server:AddLog', "A report was updated by "..fullname.." with the title ("..title..") and ID ("..id..")", JobType)
 						end
 					end)
 				end
@@ -788,16 +788,17 @@ RegisterNetEvent('mdt:server:saveVehicleInfo', function(dbid, plate, imageurl, n
 	if plate then
 		local src = source
 		local Player = QBCore.Functions.GetPlayer(src)
+		local JobType = GetJobType(Player.PlayerData.job.name)
 		if Player then
-			if GetJobType(Player.PlayerData.job.name) == 'police' then
+			if JobType == 'police' then
 				if dbid == nil then dbid = 0 end;
 				local fullname = Player.PlayerData.charinfo.firstname .. ' ' .. Player.PlayerData.charinfo.lastname
-				TriggerEvent('mdt:server:AddLog', "A vehicle with the plate ("..plate..") has a new image ("..imageurl..") edited by "..fullname)
+				TriggerEvent('mdt:server:AddLog', "A vehicle with the plate ("..plate..") has a new image ("..imageurl..") edited by "..fullname, JobType)
 				if tonumber(dbid) == 0 then
 					MySQL.insert('INSERT INTO `mdt_vehicleinfo` (`plate`, `information`, `image`, `code5`, `stolen`) VALUES (:plate, :information, :image, :code5, :stolen)', { plate = string.gsub(plate, "^%s*(.-)%s*$", "%1"), information = notes, image = imageurl, code5 = code5, stolen = stolen }, function(infoResult)
 						if infoResult then
 							TriggerClientEvent('mdt:client:updateVehicleDbId', src, infoResult)
-							TriggerEvent('mdt:server:AddLog', "A vehicle with the plate ("..plate..") was added to the vehicle information database by "..fullname)
+							TriggerEvent('mdt:server:AddLog', "A vehicle with the plate ("..plate..") was added to the vehicle information database by "..fullname, JobType)
 						end
 					end)
 				elseif tonumber(dbid) > 0 then
@@ -1329,8 +1330,8 @@ RegisterNetEvent('mdt:server:statusImpound', function(plate)
 	end
 end)
 
-RegisterServerEvent("mdt:server:AddLog", function(text)
-	AddLog(text)
+RegisterServerEvent("mdt:server:AddLog", function(text, job)
+	AddLog(text, job)
 end)
 
 function GetBoloStatus(plate)
