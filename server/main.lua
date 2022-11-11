@@ -896,26 +896,14 @@ RegisterNetEvent('mdt:server:saveWeaponInfo', function(dbid, serial, imageurl, n
 				if imageurl == nil then imageurl = 'img/not-found.webp' end
 				--AddLog event?
 				local result = false
-				if dbid == 0 then
-					result = MySQL.insert.await('INSERT INTO mdt_weaponinfo (serial, owner, information, weapClass, weapModel, image) VALUES (?, ?, ?, ?, ?, ?)', {
-						serial,
-						owner,
-						notes,
-						weapClass,
-						weapModel,
-						imageurl,
-					})
-				else
-					result = MySQL.insert.await('UPDATE mdt_weaponinfo SET serial = ?, owner = ?, information = ?, weapClass = ?, weapModel = ?, image = ? WHERE id = ?', {
-						serial,
-						owner,
-						notes,
-						weapClass,
-						weapModel,
-						imageurl,
-						dbid
-					})
-				end
+				result = MySQL.Async.insert('INSERT INTO mdt_weaponinfo (serial, owner, information, weapClass, weapModel, image) VALUES (:serial, :owner, :notes, :weapClass, :weapModel, :imageurl) ON DUPLICATE KEY UPDATE owner = :owner, information = :notes, weapClass = :weapClass, weapModel = :weapModel, image = :imageurl', {
+					['serial'] = serial,
+					['owner'] = owner,
+					['notes'] = notes,
+					['weapClass'] = weapClass,
+					['weapModel'] = weapModel,
+					['imageurl'] = imageurl,
+				})
 				
 				if result then
 					TriggerEvent('mdt:server:AddLog', "A weapon with the serial number ("..serial..") was added to the weapon information database by "..fullname)
