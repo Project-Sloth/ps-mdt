@@ -914,6 +914,22 @@ RegisterNetEvent('mdt:server:saveWeaponInfo', function(serial, imageurl, notes, 
 	end
 end)
 
+function CreateWeaponInfo(serial, imageurl, notes, owner, weapClass, weapModel)
+	if serial == nil then return end
+	if imageurl == nil then imageurl = 'img/not-found.webp' end
+	MySQL.Async.insert('INSERT INTO mdt_weaponinfo (serial, owner, information, weapClass, weapModel, image) VALUES (:serial, :owner, :notes, :weapClass, :weapModel, :imageurl) ON DUPLICATE KEY UPDATE owner = :owner, information = :notes, weapClass = :weapClass, weapModel = :weapModel, image = :imageurl', {
+		['serial'] = serial,
+		['owner'] = owner,
+		['notes'] = notes,
+		['weapClass'] = weapClass,
+		['weapModel'] = weapModel,
+		['imageurl'] = imageurl,
+	})
+end
+
+exports('CreateWeaponInfo', CreateWeaponInfo)
+--exports['ps-mdt']:CreateWeaponInfo(serial, imageurl, notes, owner, weapClass, weapModel)
+
 RegisterNetEvent('mdt:server:getWeaponData', function(serial)
 	if serial then
 		local Player = QBCore.Functions.GetPlayer(source)
