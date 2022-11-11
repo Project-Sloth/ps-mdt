@@ -631,7 +631,6 @@ RegisterNUICallback("searchWeapons", function(data, cb)
 end)
 
 RegisterNUICallback("saveWeaponInfo", function(data, cb)
-    local dbid = data.dbid
     local serial = data.serial
     local notes = data.notes
     local imageurl = data.imageurl
@@ -640,8 +639,7 @@ RegisterNUICallback("saveWeaponInfo", function(data, cb)
     local weapModel = data.weapModel
     local JobType = GetJobType(PlayerData.job.name)
     if JobType == 'police' then
-        print(dbid)
-        TriggerServerEvent('mdt:server:saveWeaponInfo', dbid, serial, imageurl, notes, owner, weapClass, weapModel)
+        TriggerServerEvent('mdt:server:saveWeaponInfo', serial, imageurl, notes, owner, weapClass, weapModel)
     end
     cb(true)
 end)

@@ -3084,7 +3084,6 @@ $(document).ready(() => {
         }, 750);
 
         setTimeout(() => {
-          let dbid = $(".weapon-information-title-holder").data("dbid");
           let serial = $(".weapon-info-serial-input").val();
           let notes = $(".weapon-info-content").val();
           let owner = $(".weapon-info-owner-input").val();
@@ -3102,7 +3101,6 @@ $(document).ready(() => {
           $.post(
             `https://${GetParentResourceName()}/saveWeaponInfo`,
             JSON.stringify({
-              dbid: dbid,
               serial: serial,
               imageurl: imageurl,
               notes: notes,

@@ -882,7 +882,7 @@ QBCore.Functions.CreateCallback('mdt:server:SearchWeapons', function(source, cb,
 	end
 end)
 
-RegisterNetEvent('mdt:server:saveWeaponInfo', function(dbid, serial, imageurl, notes, owner, weapClass, weapModel)
+RegisterNetEvent('mdt:server:saveWeaponInfo', function(serial, imageurl, notes, owner, weapClass, weapModel)
 	if serial then
 		local PlayerData = GetPlayerData(source)
 		if not PermCheck(source, PlayerData) then return cb({}) end
@@ -891,7 +891,6 @@ RegisterNetEvent('mdt:server:saveWeaponInfo', function(dbid, serial, imageurl, n
 		if Player then
 			local JobType = GetJobType(Player.PlayerData.job.name)
 			if JobType == 'police' or JobType == 'doj' then
-				if dbid == nil then dbid = 0 end;
 				local fullname = Player.PlayerData.charinfo.firstname .. ' ' .. Player.PlayerData.charinfo.lastname
 				if imageurl == nil then imageurl = 'img/not-found.webp' end
 				--AddLog event?
