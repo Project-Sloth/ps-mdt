@@ -3,6 +3,7 @@ let canSaveProfile = true;
 let canRefreshBolo = true;
 let canRefreshReports = true;
 let canRefreshIncidents = true;
+let canSearchForWeapons = true;
 let canInputTag = true;
 let canInputBoloTag = true;
 let canInputBoloOfficerTag = true;
@@ -17,6 +18,7 @@ let canInputReportCivilianTag = true;
 let canSearchForVehicles = true;
 let canSearchForReports = true;
 let canSaveVehicle = true;
+let canSaveWeapon = true;
 var LastName = "";
 var DispatchNum = 0;
 var playerJob = "";
@@ -34,7 +36,8 @@ const AmbulanceJobs = {
 }
 
 const DojJobs = {
-  ['lawyer']: true
+  ['lawyer']: true,
+  ['judge']: true
 }
 
 const MONTH_NAMES = [
@@ -1281,7 +1284,7 @@ $(document).ready(() => {
       //$(".manage-bolos-new").effect("shake", { times: 2, distance: 2 }, 500)
       //} else {
       var template = "";
-      if ($(".badge-logo").attr("src") == "img/ems_badge.png") {
+      if ($(".badge-logo").attr("src") == "img/ems_badge.webp") {
         template =
           "ICU Room #: [ # ]\n\nReport ID: [ Report ID ]\n\nTime Admitted: [ Date and Time Here ]\n\nSurgery: [Yes/No]\n\nInjuries/Ailments:\n - [ Enter List Of Injuries Here ]\n\n\nAdditional Attending:\n - [ List Any Other Staff Here ]\n\n\n🧑‍🤝‍🧑 Additional Emergency Contacts:\n - [ Name And Number ]\n\n\nNotes:\n[Additional Notes Here]";
       }
@@ -1580,7 +1583,7 @@ $(document).ready(() => {
 
   $(".contextmenu").on("click", ".bolo-delete", function () {
     if ($(this).data("info") != 0) {
-      if ($(".badge-logo").attr("src") == "img/ems_badge.png") {
+      if ($(".badge-logo").attr("src") == "img/ems_badge.webp") {
         $(".bolos-items")
           .find("[data-id='" + $(this).data("info") + "']")
           .remove();
@@ -1614,7 +1617,7 @@ $(document).ready(() => {
         status: "",
       },
     ];
-    if ($(".badge-logo").attr("src") == "img/ems_badge.png") {
+    if ($(".badge-logo").attr("src") == "img/ems_badge.webp") {
       args = [
         {
           className: "bolo-delete",
@@ -1739,6 +1742,27 @@ $(document).ready(() => {
       }
     }
   );
+
+  var timeout;
+  $(".offenses-main-container").on("mouseenter",".offense-item",function (e) {
+    var descr = $(this).data("descr")
+    timeout = setTimeout(function() {
+      let args = [
+          {
+            className: "incidents-remove-tag",
+            text: "Remove Tag",
+            info: descr,
+            status: "",
+          },
+        ];
+      openChargesContextMenu(e, args);
+    }, 500);
+  });
+
+  $(".offenses-main-container").on("mouseleave",".offense-item",function (e) {
+    clearTimeout(timeout)
+    hideChargesMenu();
+  });
 
   $(".bolo-gallery-inner-container").on("click", ".bolo-img", function () {
     if ($(this).css("filter") == "none") {
@@ -1947,7 +1971,7 @@ $(document).ready(() => {
           this
         ).data(
           "cid"
-        )}"><img src="https://i.imgur.com/h7S5f9J.png"> <input disabled placeholder="0" class="fine-recommended-amount" id="fine-recommended-amount" data-id="${$(
+        )}"><img src="img/h7S5f9J.webp"> <input disabled placeholder="0" class="fine-recommended-amount" id="fine-recommended-amount" data-id="${$(
           this
         ).data("cid")}" type="number"></div>
                 <div class="manage-incidents-title-tag" data-id="${$(this).data(
@@ -1957,7 +1981,7 @@ $(document).ready(() => {
           this
         ).data(
           "cid"
-        )}"><img src="https://i.imgur.com/9Xn6xXK.png"> <input disabled placeholder="0" class="sentence-recommended-amount" id="sentence-recommended-amount" data-id="${$(
+        )}"><img src="img/9Xn6xXK.webp"> <input disabled placeholder="0" class="sentence-recommended-amount" id="sentence-recommended-amount" data-id="${$(
           this
         ).data("cid")}" type="number"></div>
                 <div class="manage-incidents-title-tag" data-id="${$(this).data(
@@ -1967,7 +1991,7 @@ $(document).ready(() => {
           this
         ).data(
           "cid"
-        )}"><img src="https://i.imgur.com/h7S5f9J.png"> <input placeholder="Enter fine here..." value="0" class="fine-amount" data-id="${$(
+        )}"><img src="img/h7S5f9J.webp"> <input placeholder="Enter fine here..." value="0" class="fine-amount" data-id="${$(
           this
         ).data("cid")}" type="number"></div>
                 <div class="manage-incidents-title-tag" data-id="${$(this).data(
@@ -1977,7 +2001,7 @@ $(document).ready(() => {
           this
         ).data(
           "cid"
-        )}"><img src="https://i.imgur.com/9Xn6xXK.png"> <input placeholder="Enter months here..." value="0" class="sentence-amount" data-id="${$(
+        )}"><img src="img/9Xn6xXK.webp"> <input placeholder="Enter months here..." value="0" class="sentence-amount" data-id="${$(
           this
         ).data("cid")}" type="number"></div>
             </div>
@@ -2385,7 +2409,7 @@ $(document).ready(() => {
       //$(".manage-bolos-new").effect("shake", { times: 2, distance: 2 }, 500)
       //} else {
       let template = "";
-      if ($(".badge-logo").attr("src") == "img/ems_badge.png") {
+      if ($(".badge-logo").attr("src") == "img/ems_badge.webp") {
         template =
           "Submitted to ICU?: [Yes/No]\n\nIncident Report:\n[ Brief summary of what happened and who did what while on scene. Note anything that stood out about the scene as well as what was done to treat the patient ]\n\n\nList of Injuries:\n- [ State what injury or injuries occurred ]\n\n\n💉 Surgical Report:\n[ Full report on what was done in surgery, list any complications or anything that was found while in operation. Note who was attending and what they did during the surgery. At the end of the report be sure to note the state of the patient after ]\n\n\nAttending:\n- [ List Any Attending Here ]\n\n\nMedications Applied:\n- [ List Any Attending Here ]\n\n\nNotes:\n[ Additional Notes Here ]";
       }
@@ -2650,11 +2674,10 @@ $(document).ready(() => {
           canSaveVehicle = true;
         }, 750);
         setTimeout(() => {
-          let dbid = $(".vehicle-information-title-holder").data(
-            "dbid"
-          );
+          let dbid = $(".vehicle-information-title-holder").data("dbid");
           let plate = $(".vehicle-info-plate-input").val();
           let notes = $(".vehicle-info-content").val();
+          let points = $("#vehiclePointsSlider").val();
 
           let imageurl = $(".vehicle-info-image").attr("src");
           let newImageurl = $(".vehicle-info-imageurl-input").val();
@@ -2698,6 +2721,7 @@ $(document).ready(() => {
               stolen: stolen,
               code5: code5,
               impound: impoundInfo,
+              points: points,
             })
           );
 
@@ -2960,6 +2984,148 @@ $(document).ready(() => {
     }
   });
 
+  $(".weapons-search-title").click(function () {
+    if (canSearchForWeapons == true) {
+      if ($(".weapons-search-input").css("display") == "none") {
+        $(".weapons-search-input").slideDown(250);
+        $(".weapons-search-input").css("display", "block");
+      } else {
+        $(".weapons-search-input").slideUp(250);
+        setTimeout(() => {
+          $(".weapons-search-input").css("display", "none");
+        }, 250);
+      }
+    }
+  });
+
+  $("#weapons-search-input").keydown(async function (e) {
+    if (e.keyCode === 13 && canSearchForWeapons == true) {
+      let name = $("#weapons-search-input").val();
+      if (name !== "") {
+        canSearchForWeapons = false;
+        $(".weapons-items").empty();
+        $(".weapons-items").prepend(`<div class="profile-loader"></div>`);
+
+        let result = await $.post(
+          `https://${GetParentResourceName()}/searchWeapons`,
+          JSON.stringify({
+            name: name,
+          })
+        );
+        console.log(result)
+        if (result.length === 0) {
+          $(".weapons-items").html(
+            `
+                            <div class="profile-item" data-id="0">
+
+                                <div style="display: flex; flex-direction: column; margin-top: 2.5px; margin-left: 5px; width: 100%; padding: 5px;">
+                                <div style="display: flex; flex-direction: column;">
+                                    <div class="profile-item-title">No Weapons Matching that search</div>
+                                    </div>
+                                    <div class="profile-bottom-info">
+                                    </div>
+                                </div>
+                            </div>
+                    `
+          );
+          canSearchForWeapons = true;
+          return true;
+        }
+        $(".weapons-items").empty();
+
+        let weaponHTML = "";
+
+        result.forEach((value) => {
+          weaponHTML += `
+                        <div class="weapons-item" data-id="${value.id}" data-dbid="${value.id}" data-serial="${value.serial}">
+                            <img src="${value.image}" class="weapons-image">
+                            <div style="display: flex; flex-direction: column; margin-top: 2.5px; margin-left: 5px; width: 100%; padding: 5px;">
+                              <div style="display: flex; flex-direction: column;">
+                                <div class="weapons-item-title">${value.weapModel} - Class ${value.weapClass}</div>
+
+                                </div>
+                                <div class="weapons-bottom-info">
+                                  <div class="weapons-id">Serial Number: ${value.serial} · Owner: ${value.owner}</div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+        });
+
+        $(".weapons-items").html(weaponHTML);
+
+        canSearchForWeapons = true;
+      }
+    }
+  });
+
+  $(".weapon-information-title-holder").on("click", ".weapon-information-new", function () {
+    $(".weapon-information-title-holder").data("dbid", 0);
+    $(".weapon-info-serial-input").val("");
+    $(".weapon-info-owner-input").val("");
+    $(".weapon-info-class-input").val("");
+    $(".weapon-info-model-input").val("");
+    $(".weapon-info-imageurl-input").val("img/not-found.webp");
+    
+    canSaveWeapon = true;
+  }
+);
+
+  $(".weapon-information-title-holder").on("click", ".weapon-information-save", function () {
+    if (canSaveProfile == true) {
+      canSaveProfile = false;
+        $(".manage-profile-save").empty();
+        $(".manage-profile-save").prepend(
+          `<span class="fas fa-check"></span>`
+        );
+        setTimeout(() => {
+          $(".manage-profile-save").empty();
+          $(".manage-profile-save").html("Save");
+          canSaveProfile = true;
+        }, 750);
+
+        setTimeout(() => {
+          let serial = $(".weapon-info-serial-input").val();
+          let notes = $(".weapon-info-content").val();
+          let owner = $(".weapon-info-owner-input").val();
+          let weapClass = $(".weapon-info-class-input").val();
+          let weapModel = $(".weapon-info-model-input").val();
+
+          let imageurl = $(".weapon-info-image").attr("src");
+          let newImageurl = $(".weapon-info-imageurl-input").val();
+          if (newImageurl.includes("base64")) {
+            imageurl = "img/not-found.webp";
+          } else {
+            imageurl = newImageurl;
+          }
+
+          $.post(
+            `https://${GetParentResourceName()}/saveWeaponInfo`,
+            JSON.stringify({
+              serial: serial,
+              imageurl: imageurl,
+              notes: notes,
+              owner: owner,
+              weapClass: weapClass,
+              weapModel: weapModel,
+            })
+          );
+
+          $(".weapon-info-image").attr("src", newImageurl);
+        }, 250);
+    }
+  }
+);
+
+  $(".weapons-items").on("click", ".weapons-item", function () {
+    $.post(
+      `https://${GetParentResourceName()}/getWeaponData`,
+      JSON.stringify({
+        serial: $(this).data("serial"),
+      })
+    );
+  });
+
   $(".contextmenu").on("click", ".view-profile", async function () {
     const cid = $(this).data("info");
     fidgetSpinner(".profile-page-container");
@@ -3210,6 +3376,12 @@ $(document).ready(() => {
     $(".respond-calls-container").fadeIn(250)
     $(".close-all").css("filter", "brightness(15%)");
     $("#respondcalls").val("")*/
+  });
+
+  $('#vehiclePointsSlider').change(function(){
+    //console.log(this.value);
+    var currentValue = $('#vehiclePointsSliderValue');
+    currentValue.html(this.value);
   });
 
   $(".active-calls-list").on(
@@ -3583,7 +3755,7 @@ $(document).ready(() => {
           "--color-10",
           "#8f741b"
         );
-        $(".badge-logo").attr("src", "img/sasp_badge.png");
+        $(".badge-logo").attr("src", "img/sasp_badge.webp");
         $(".header-title").html("SAN ANDREAS STATE POLICE");
         $(".bolo-nav-item").html("BOLOs");
         $(".bolos-search-title").html("Bolos");
@@ -3614,6 +3786,7 @@ $(document).ready(() => {
         $(".incidents-nav-item").show();
         $(".bolo-nav-item").show();
         $(".dmv-nav-item").show();
+        $(".weapons-nav-item").show()
         $(".cams-nav-item").show();
         $(".dispatch-title-ofsomesort").html("Dispatch");
         $(".dispatch-comms-container").fadeIn(0);
@@ -3679,7 +3852,7 @@ $(document).ready(() => {
           "--color-10",
           "#444444"
         );
-        $(".badge-logo").attr("src", "img/ems_badge.png");
+        $(".badge-logo").attr("src", "img/ems_badge.webp");
         $(".header-title").html("PILLBOX HILL MEDICAL CENTER");
         //$(".quote-span").html("The simplest explanation is almost always somebody screwed up.");
         $(".bolo-nav-item").html("ICU");
@@ -3766,10 +3939,11 @@ $(document).ready(() => {
           "--color-8",
           "#cc9225"
         );
-        $(".badge-logo").attr("src", "img/court.png");
+        $(".badge-logo").attr("src", "img/court.webp");
         $(".header-title").html("DEPARTMENT OF JUSTICE");
         //$(".quote-span").html("Actually useless.");
         //$(".dmv-nav-item").hide();
+        $(".weapons-nav-item").show()
         $(".bolo-nav-item").hide();
         $(".dispatch-title-ofsomesort").html("Message Board");
         $(".dispatch-comms-container").fadeOut(0);
@@ -4323,7 +4497,7 @@ $(document).ready(() => {
       $.each(penalcode, function (index, value) {
         $.each(value, function (i, v) {
           $(`#penal-${index}`).append(`
-                    <div class="offense-item ${v.color}-penis-code" data-sentence="${v.months}" data-fine="${v.fine}">
+                    <div class="offense-item ${v.color}-penal-code" data-id="${index}.${i}" data-sentence="${v.months}" data-fine="${v.fine}" data-descr="${v.description}">
                     <div style="display: flex; flex-direction: row; width: 100%; margin: auto; margin-top: 0vh;">
                         <div class="offense-item-offense">${v.title}</div>
                         <div class="offfense-item-name">${v.class}</div>
@@ -4461,13 +4635,13 @@ $(document).ready(() => {
                             <div class="associated-incidents-user-holder" data-name="${value.cid}" style="display:none;">
                             </div>
                             <div class="manage-incidents-title-tag" data-id="${value.cid}" style="display:none;">Recommended Fine</div>
-                            <div class="associated-incidents-fine-input" data-id="${value.cid}" style="display:none;"><img src="https://i.imgur.com/h7S5f9J.png"> <input placeholder="0" disabled class="fine-recommended-amount" id="fine-recommended-amount" data-id="${value.cid}" type="number"></div>
+                            <div class="associated-incidents-fine-input" data-id="${value.cid}" style="display:none;"><img src="img/h7S5f9J.webp"> <input placeholder="0" disabled class="fine-recommended-amount" id="fine-recommended-amount" data-id="${value.cid}" type="number"></div>
                             <div class="manage-incidents-title-tag" data-id="${value.cid}" style="display:none;">Recommended Sentence</div>
-                            <div class="associated-incidents-sentence-input" data-id="${value.cid}" style="display:none;"><img src="https://i.imgur.com/9Xn6xXK.png"> <input placeholder="0" disabled class="sentence-recommended-amount" id="sentence-recommended-amount" data-id="${value.cid}" type="number"></div>
+                            <div class="associated-incidents-sentence-input" data-id="${value.cid}" style="display:none;"><img src="img/9Xn6xXK.webp"> <input placeholder="0" disabled class="sentence-recommended-amount" id="sentence-recommended-amount" data-id="${value.cid}" type="number"></div>
                             <div class="manage-incidents-title-tag" data-id="${value.cid}" style="display:none;">Fine</div>
-                            <div class="associated-incidents-fine-input" data-id="${value.cid}" style="display:none;"><img src="https://i.imgur.com/h7S5f9J.png"> <input placeholder="Enter fine here..." value="0" class="fine-amount" data-id="${value.cid}" type="number"></div>
+                            <div class="associated-incidents-fine-input" data-id="${value.cid}" style="display:none;"><img src="img/h7S5f9J.webp"> <input placeholder="Enter fine here..." value="0" class="fine-amount" data-id="${value.cid}" type="number"></div>
                             <div class="manage-incidents-title-tag" data-id="${value.cid}" style="display:none;">Sentence</div>
-                            <div class="associated-incidents-sentence-input" data-id="${value.cid}" style="display:none;"><img src="https://i.imgur.com/9Xn6xXK.png"> <input placeholder="Enter months here..." value="0" class="sentence-amount" data-id="${value.cid}" type="number"></div>
+                            <div class="associated-incidents-sentence-input" data-id="${value.cid}" style="display:none;"><img src="img/9Xn6xXK.webp"> <input placeholder="Enter months here..." value="0" class="sentence-amount" data-id="${value.cid}" type="number"></div>
                         </div>`
           );
         } else {
@@ -4483,13 +4657,13 @@ $(document).ready(() => {
                             <div class="associated-incidents-user-holder" data-name="${value.cid}">
                             </div>
                             <div class="manage-incidents-title-tag" data-id="${value.cid}">Recommended Fine</div>
-                            <div class="associated-incidents-fine-input" data-id="${value.cid}"><img src="https://i.imgur.com/h7S5f9J.png"> <input placeholder="0" disabled class="fine-recommended-amount" id="fine-recommended-amount" data-id="${value.cid}" type="number"></div>
+                            <div class="associated-incidents-fine-input" data-id="${value.cid}"><img src="img/h7S5f9J.webp"> <input placeholder="0" disabled class="fine-recommended-amount" id="fine-recommended-amount" data-id="${value.cid}" type="number"></div>
                             <div class="manage-incidents-title-tag" data-id="${value.cid}">Recommended Sentence</div>
-                            <div class="associated-incidents-sentence-input" data-id="${value.cid}"><img src="https://i.imgur.com/9Xn6xXK.png"> <input placeholder="0" disabled class="sentence-recommended-amount" id="sentence-recommended-amount" data-id="${value.cid}" type="number"></div>
+                            <div class="associated-incidents-sentence-input" data-id="${value.cid}"><img src="img/9Xn6xXK.webp"> <input placeholder="0" disabled class="sentence-recommended-amount" id="sentence-recommended-amount" data-id="${value.cid}" type="number"></div>
                             <div class="manage-incidents-title-tag" data-id="${value.cid}">Fine</div>
-                            <div class="associated-incidents-fine-input" data-id="${value.cid}"><img src="https://i.imgur.com/h7S5f9J.png"> <input placeholder="Enter fine here..." value="0" class="fine-amount" data-id="${value.cid}" type="number"></div>
+                            <div class="associated-incidents-fine-input" data-id="${value.cid}"><img src="img/h7S5f9J.webp"> <input placeholder="Enter fine here..." value="0" class="fine-amount" data-id="${value.cid}" type="number"></div>
                             <div class="manage-incidents-title-tag" data-id="${value.cid}">Sentence</div>
-                            <div class="associated-incidents-sentence-input" data-id="${value.cid}"><img src="https://i.imgur.com/9Xn6xXK.png"> <input placeholder="Enter months here..." value="0" class="sentence-amount" data-id="${value.cid}" type="number"></div>
+                            <div class="associated-incidents-sentence-input" data-id="${value.cid}"><img src="img/9Xn6xXK.webp"> <input placeholder="Enter months here..." value="0" class="sentence-amount" data-id="${value.cid}" type="number"></div>
                         </div>`
           );
         }
@@ -4545,7 +4719,7 @@ $(document).ready(() => {
         "You are currently editing BOLO " + table["id"]
       );
 
-      if ($(".badge-logo").attr("src") == "img/ems_badge.png") {
+      if ($(".badge-logo").attr("src") == "img/ems_badge.webp") {
         $(".manage-bolos-editing-title").html(
           "You are editing ICU Check-in " + table["id"]
         );
@@ -4586,7 +4760,7 @@ $(document).ready(() => {
       var reportName = "General BOLO";
       canSearchForProfiles = true;
       $(".bolos-items").empty();
-      if ($(".badge-logo").attr("src") == "img/ems_badge.png") {
+      if ($(".badge-logo").attr("src") == "img/ems_badge.webp") {
         reportName = "ICU Check-in";
       }
       $.each(table, function (index, value) {
@@ -4712,6 +4886,9 @@ $(document).ready(() => {
       $(".vehicle-info-class-input").val(table["class"]);
       $(".vehicle-info-model-input").val(table["model"]);
       $(".vehicle-info-imageurl-input").val(table["image"]);
+      let vehiclePoints = table["points"] != null ? table["points"] : 0;
+      $("#vehiclePointsSlider").val(vehiclePoints);
+      $("#vehiclePointsSliderValue").html(vehiclePoints);
 
       $(".vehicle-info-content").val(table["information"]);
 
@@ -4742,19 +4919,28 @@ $(document).ready(() => {
         stolen = "green-tag";
       }
 
-      $(".vehicle-tags").append(
-        `<div class="vehicle-tag ${impound} impound-tag">Impound</div>`
-      );
-      $(".vehicle-tags").append(
-        `<div class="vehicle-tag ${bolo}">BOLO</div>`
-      );
-      $(".vehicle-tags").append(
-        `<div class="vehicle-tag ${codefive} code5-tag">Code 5</div>`
-      );
-      $(".vehicle-tags").append(
-        `<div class="vehicle-tag ${stolen} stolen-tag">Stolen</div>`
-      );
+      $(".vehicle-tags").append(`<div class="vehicle-tag ${impound} impound-tag">Impound</div>`);
+      $(".vehicle-tags").append(`<div class="vehicle-tag ${bolo}">BOLO</div>`);
+      $(".vehicle-tags").append(`<div class="vehicle-tag ${codefive} code5-tag">Code 5</div>`);
+      $(".vehicle-tags").append(`<div class="vehicle-tag ${stolen} stolen-tag">Stolen</div>`);
       $(".vehicle-info-imageurl-input").val(table["image"]);
+    } else if (eventData.type == "getWeaponData") {
+      impoundChanged = false;
+      let table = eventData.data;
+
+      $(".weapon-information-title-holder").data( "dbid", table["id"] );
+
+      $(".weapon-info-serial-input").val(table["serial"]);
+      $(".weapon-info-owner-input").val(table["owner"]);
+      $(".weapon-info-class-input").val(table["weapClass"]);
+      $(".weapon-info-model-input").val(table["weapModel"]);
+      $(".weapon-info-imageurl-input").val(table["image"]);
+
+      $(".weapon-info-content").val(table["information"]);
+
+      $(".weapon-info-image").attr("src", table["image"]);
+
+      $(".weapon-info-imageurl-input").val(table["image"]);
     } else if (eventData.type == "updateVehicleDbId") {
       $(".vehicle-information-title-holder").data("dbid", Number(eventData.data));
     } else if (eventData.type == "updateIncidentDbId") {
@@ -4917,12 +5103,23 @@ function showMenu(x, y) {
   $(".contextmenu").addClass("contextmenu-show");
 }
 
+function showChargesMenu(x, y) {
+  $(".ccontextmenu").css("left", x + "px");
+  $(".ccontextmenu").css("top", y + "px");
+  $(".ccontextmenu").addClass("ccontextmenu-show");
+}
+
 function hideMenu() {
   $(".contextmenu").removeClass("contextmenu-show");
 }
 
+function hideChargesMenu() {
+  $(".ccontextmenu").removeClass("ccontextmenu-show");
+}
+
 function onMouseDown(e) {
   hideMenu();
+  hideChargesMenu();
   document.removeEventListener("mouseup", onMouseDown);
 }
 
@@ -4941,6 +5138,24 @@ function openContextMenu(e, args) {
                     </a>
                 </li>
                 `
+      );
+    }
+  });
+  document.addEventListener("mouseup", onMouseDown);
+}
+
+function openChargesContextMenu(e, args) {
+  e.preventDefault();
+  showChargesMenu(e.pageX, e.pageY);
+  $(".ccontextmenu").empty();
+  $.each(args, function (index, value) {
+    if (value.status !== "blur(5px)") {
+      $(".ccontextmenu").prepend(
+        `
+        <li class="ccontextmenu-item ${value.className}" data-info="${value.info}" data-status="${value.status}">
+            <span class="ccontextmenu-text">${value.info}</span>
+        </li>
+        `
       );
     }
   });

@@ -316,11 +316,12 @@ RegisterNUICallback("getProfileData", function(data, cb)
     end
     local propertiesResult = getProfileProperties(id)
     result.properties = propertiesResult
-     ]]
+    ]]
     local vehicles=result.vehicles
     for i=1,#vehicles do
         local vehicle=result.vehicles[i]
-        result.vehicles[i]['model'] = GetLabelText(GetDisplayNameFromVehicleModel(vehicle['vehicle']))
+        local vehData = QBCore.Shared.Vehicles[vehicle['vehicle']]
+        result.vehicles[i]['model'] = vehData["name"]
     end
     p = nil
     return cb(result)
@@ -373,10 +374,8 @@ RegisterNetEvent('mdt:client:getProfileData', function(sentData, isLimited)
             sentData['vehicles'][i]['plate'] = string.upper(sentData['vehicles'][i]['plate'])
             local tempModel = vehicles[i]['model']
             if tempModel and tempModel ~= "Unknown" then
-                local DisplayNameModel = GetDisplayNameFromVehicleModel(tempModel)
-                local LabelText = GetLabelText(DisplayNameModel)
-                if LabelText == "NULL" then LabelText = DisplayNameModel end
-                sentData['vehicles'][i]['model'] = LabelText
+                local vehData = QBCore.Shared.Vehicles[tempModel]
+                sentData['vehicles'][i]['model'] = vehData["brand"] .. ' ' .. vehData["name"]
             end
         end
     end
@@ -552,7 +551,8 @@ RegisterNUICallback("searchVehicles", function(data, cb)
         result[i]['plate'] = string.upper(result[i]['plate'])
         result[i]['color'] = Config.ColorInformation[mods['color1']]
         result[i]['colorName'] = Config.ColorNames[mods['color1']]
-        result[i]['model'] = GetLabelText(GetDisplayNameFromVehicleModel(vehicle['vehicle']))
+        local vehData = QBCore.Shared.Vehicles[vehicle['vehicle']]
+        result[i]['model'] = vehData["brand"] .. ' ' .. vehData["name"]
     end
     cb(result)
 
@@ -572,6 +572,7 @@ RegisterNUICallback("saveVehicleInfo", function(data, cb)
     local stolen = data.stolen
     local code5 = data.code5
     local impound = data.impound
+    local points = data.points
     local JobType = GetJobType(PlayerData.job.name)
     if JobType == 'police' and impound.impoundChanged == true then
         if impound.impoundActive then
@@ -586,7 +587,7 @@ RegisterNUICallback("saveVehicleInfo", function(data, cb)
                     if dist < 5.0 then
                         found = VehToNet(v)
                         SendNUIMessage({ type = "greenImpound" })
-                        TriggerServerEvent('mdt:server:saveVehicleInfo', dbid, plate, imageurl, notes, stolen, code5, impound)
+                        TriggerServerEvent('mdt:server:saveVehicleInfo', dbid, plate, imageurl, notes, stolen, code5, impound, points)
                     end
                     break
                 end
@@ -602,15 +603,58 @@ RegisterNUICallback("saveVehicleInfo", function(data, cb)
             for k, v in pairs(Config.ImpoundLocations) do
                 if (#(playerPos - vector3(v.x, v.y, v.z)) < 20.0) then
                     impound.CurrentSelection = k
-                    TriggerServerEvent('mdt:server:saveVehicleInfo', dbid, plate, imageurl, notes, stolen, code5, impound)
+                    TriggerServerEvent('mdt:server:saveVehicleInfo', dbid, plate, imageurl, notes, stolen, code5, impound, points)
                     break
                 end
             end
         end
     else
-        TriggerServerEvent('mdt:server:saveVehicleInfo', dbid, plate, imageurl, notes, stolen, code5, impound)
+        TriggerServerEvent('mdt:server:saveVehicleInfo', dbid, plate, imageurl, notes, stolen, code5, impound, points)
     end
     cb(true)
+end)
+
+--====================================================================================
+------------------------------------------
+--                Weapons PAGE          --
+------------------------------------------
+--====================================================================================
+RegisterNUICallback("searchWeapons", function(data, cb)
+    local p = promise.new()
+
+    QBCore.Functions.TriggerCallback('mdt:server:SearchWeapons', function(result)
+        p:resolve(result)
+    end, data.name)
+
+    local result = Citizen.Await(p)
+    cb(result)
+end)
+
+RegisterNUICallback("saveWeaponInfo", function(data, cb)
+    local serial = data.serial
+    local notes = data.notes
+    local imageurl = data.imageurl
+    local owner = data.owner
+    local weapClass = data.weapClass
+    local weapModel = data.weapModel
+    local JobType = GetJobType(PlayerData.job.name)
+    if JobType == 'police' then
+        TriggerServerEvent('mdt:server:saveWeaponInfo', serial, imageurl, notes, owner, weapClass, weapModel)
+    end
+    cb(true)
+end)
+
+RegisterNUICallback("getWeaponData", function(data, cb)
+    local serial = data.serial
+    TriggerServerEvent('mdt:server:getWeaponData', serial)
+    cb(true)
+end)
+
+RegisterNetEvent('mdt:client:getWeaponData', function(sentData)
+    if sentData and sentData[1] then
+        local results = sentData[1]
+        SendNUIMessage({ type = "getWeaponData", data = results })
+    end
 end)
 
 RegisterNUICallback("getAllLogs", function(data, cb)
@@ -654,7 +698,8 @@ RegisterNetEvent('mdt:client:getVehicleData', function(sentData)
         local vehData = json.decode(vehicle['vehicle'])
         vehicle['color'] = Config.ColorInformation[vehicle['color1']]
         vehicle['colorName'] = Config.ColorNames[vehicle['color1']]
-        vehicle['model'] = GetLabelText(GetDisplayNameFromVehicleModel(vehicle['vehicle']))
+        local vehData = QBCore.Shared.Vehicles[vehicle.vehicle]
+        vehicle.model = vehData["brand"] .. ' ' .. vehData["name"]
         vehicle['class'] = Config.ClassList[GetVehicleClassFromName(vehicle['vehicle'])]
         vehicle['vehicle'] = nil
         SendNUIMessage({ type = "getVehicleData", data = vehicle })
@@ -663,6 +708,10 @@ end)
 
 RegisterNetEvent('mdt:client:updateVehicleDbId', function(sentData)
     SendNUIMessage({ type = "updateVehicleDbId", data = tonumber(sentData) })
+end)
+
+RegisterNetEvent('mdt:client:updateWeaponDbId', function(sentData)
+    SendNUIMessage({ type = "updateWeaponDbId", data = tonumber(sentData) })
 end)
 
 RegisterNetEvent('mdt:client:getAllLogs', function(sentData)
