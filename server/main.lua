@@ -699,7 +699,7 @@ QBCore.Functions.CreateCallback('mdt:server:SearchVehicles', function(source, cb
 	if Player then
 		local JobType = GetJobType(Player.PlayerData.job.name)
 		if JobType == 'police' or JobType == 'doj' then
-			local vehicles = MySQL.query.await("SELECT pv.id, pv.citizenid, pv.plate, pv.vehicle, pv.mods, pv.state, p.charinfo FROM `player_vehicles` pv LEFT JOIN players p ON pv.citizenid = p.citizenid WHERE LOWER(`plate`) LIKE :query OR LOWER(`vehicle`) LIKE :query LIMIT 25", {
+			local vehicles = MySQL.query.await("SELECT pv.id, pv.citizenid, pv.plate, pv.vehicle, pv.mods, pv.state, pv.vinscratch, p.charinfo FROM `player_vehicles` pv LEFT JOIN players p ON pv.citizenid = p.citizenid WHERE LOWER(`plate`) LIKE :query OR LOWER(`vehicle`) LIKE :query LIMIT 25", {
 				query = string.lower('%'..sentData..'%')
 			})
 
@@ -732,7 +732,12 @@ QBCore.Functions.CreateCallback('mdt:server:SearchVehicles', function(source, cb
 
 				local ownerResult = json.decode(value.charinfo)
 
-				value.owner = ownerResult['firstname'] .. " " .. ownerResult['lastname']
+				if value.vinscratch == 1 then
+					value.owner = "Unknown"
+				else
+					value.owner = ownerResult['firstname'] .. " " .. ownerResult['lastname']
+				end
+
 			end
 			-- idk if this works or I have to call cb first then return :shrug:
 			return cb(vehicles)
@@ -760,10 +765,12 @@ RegisterNetEvent('mdt:server:getVehicleData', function(plate)
 					vehicle[1]['bolo'] = GetBoloStatus(vehicle[1]['plate'])
 					vehicle[1]['information'] = ""
 
-					vehicle[1]['name'] = "Unknown Person"
-
-					local ownerResult = json.decode(vehicle[1].charinfo)
-					vehicle[1]['name'] = ownerResult['firstname'] .. " " .. ownerResult['lastname']
+					vehicle[1]['name'] = "Unknown"
+						
+					if vehicle[1].vinscratch ~= 1 then
+						local ownerResult = json.decode(vehicle[1].charinfo)
+						vehicle[1]['name'] = ownerResult['firstname'] .. " " .. ownerResult['lastname']
+					end
 
 					local color1 = json.decode(vehicle[1].mods)
 					vehicle[1]['color1'] = color1['color1']
@@ -1431,4 +1438,3 @@ function GetVehicleInformation(plate)
         return false
     end
 end
-
