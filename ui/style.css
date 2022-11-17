@@ -6338,6 +6338,23 @@ input[type="range"].vehicle-info-points-input::-moz-range-track {
     border: 0px;
 }
 
+.manage-profile-apartment {
+    color: white;
+    margin-left: 10px;
+    font-size: 15px;
+    user-select: none;
+}
+
+.manage-profile-apartment-input {
+    border: none;
+    outline: none;
+    margin-left: 2.5px;
+    font-size: 16px;
+    margin-top: 2px;
+    color: white;
+    background-color: rgba(0, 0, 0, 0);
+}
+
 /* Charges Hover */
 
 .ccontextmenu {
