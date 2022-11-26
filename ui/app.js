@@ -3012,7 +3012,6 @@ $(document).ready(() => {
             name: name,
           })
         );
-        console.log(result)
         if (result.length === 0) {
           $(".weapons-items").html(
             `
