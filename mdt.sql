@@ -111,6 +111,7 @@ CREATE TABLE IF NOT EXISTS `mdt_weaponinfo` (
   `weapModel` varchar(50) DEFAULT NULL,
   `image` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`)
+  UNIQUE KEY `serial` (`serial`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE IF NOT EXISTS `mdt_impound` (
