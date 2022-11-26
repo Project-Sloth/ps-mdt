@@ -876,7 +876,9 @@ QBCore.Functions.CreateCallback('mdt:server:SearchWeapons', function(source, cb,
 	if Player then
 		local JobType = GetJobType(Player.PlayerData.job.name)
 		if JobType == 'police' or JobType == 'doj' then
-			local matches = MySQL.query.await('SELECT * FROM mdt_weaponinfo')
+			local matches = MySQL.query.await('SELECT * FROM mdt_weaponinfo WHERE LOWER(`serial`) LIKE :query OR LOWER(`weapModel`) LIKE :query OR LOWER(`owner`) LIKE :query LIMIT 25', {
+				query = string.lower('%'..sentData..'%')
+			})
 			cb(matches)
 		end
 	end
