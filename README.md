@@ -10,6 +10,13 @@ For all support questions, ask in our Discord support chat. Do not create issues
 - [PS-Dispatch](https://github.com/Project-Sloth/ps-dispatch) [If you intend to use it, make sure this starts before the mdt!]
 - [Ox MySQL](https://github.com/overextended/oxmysql)
 
+# Installation
+* Download ZIP
+* Drag and drop resource into your server files, make sure to remove -main in the folder name
+* Run the attached SQL script (mdt.sql)
+* Start resource through server.cfg
+* Restart your server.
+
 ## FAQ
 - **How do I add charges to a criminal in an Incident?** - After finding and adding the criminal citizen to the incident, right-click in the space under the criminal's name and select "Add Charge".
 
