@@ -186,6 +186,7 @@ $(document).ready(() => {
     $(".manage-profile-name-input-2").val(result["lastname"]);
     $(".manage-profile-dob-input").val(result["dob"]);
     $(".manage-profile-job-input").val(`${result.job}, ${result.grade}`);
+    $(".manage-profile-apartment-input").val(`${result.apartment}`);
     $(".manage-profile-url-input").val(result["profilepic"] ?? "");
     $(".manage-profile-info").val(result["mdtinfo"]);
     $(".manage-profile-info").removeAttr("disabled");

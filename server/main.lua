@@ -231,12 +231,19 @@ QBCore.Functions.CreateCallback('mdt:server:GetProfileData', function(source, cb
 
 	local job, grade = UnpackJob(target.job)
 
+	local apartmentData = GetPlayerApartment(target.citizenid)
+
+	if apartmentData then
+		apartmentData = apartmentData[1].label .. ' (' ..apartmentData[1].name..')'
+	end
+
 	local person = {
 		cid = target.citizenid,
 		firstname = target.charinfo.firstname,
 		lastname = target.charinfo.lastname,
 		job = job.label,
 		grade = grade.name,
+		apartment = apartmentData,
 		pp = ProfPic(target.charinfo.gender),
 		licences = licencesdata,
 		dob = target.charinfo.birthdate,

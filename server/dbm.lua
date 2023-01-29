@@ -116,6 +116,11 @@ function GetVehicleInformation(plate, cb)
 	cb(result)
 end
 
+function GetPlayerApartment(cid, cb)
+    local result =  MySQL.query.await('SELECT name, type, label FROM apartments where citizenid = ?', {cid})
+    return result
+end
+
 function GetPlayerLicenses(identifier)
     local response = false
     local Player = QBCore.Functions.GetPlayerByCitizenId(identifier)
