@@ -669,7 +669,7 @@ $(document).ready(() => {
     ".manage-incidents-create",
     function () {
       let tempalte =
-        "📝 Summary:\n\n[Insert Report Summary Here]\n\n🧍 Hostage: [Name Here]\n\n🔪 Weapons/Items Confiscated:\n\n· [Insert List Here]\n\n-----\n💸 Fine:\n⌚ Sentence:\n-----";
+        "Summary:\n\n[Insert Report Summary Here]";
       $("#manage-incidents-title-input").val(
         "Name - Charge - " + $(".date").html()
       );
@@ -2985,6 +2985,38 @@ $(document).ready(() => {
     }
   });
 
+
+  $(".calls-search-title").click(function () {
+    if (canSearchForProfiles == true) {
+      if ($(".calls-search-input").css("display") == "none") {
+        $(".calls-search-input").slideDown(250);
+        $(".calls-search-input").css("display", "block");
+      } else {
+        $(".calls-search-input").slideUp(250);
+        setTimeout(() => {
+          $(".calls-search-input").css("display", "none");
+        }, 250);
+      }
+    }
+  });
+
+  $("#calls-search-input").keydown(function (e) {
+    if (e.keyCode === 13 && canSearchForProfiles == true) {
+      let searchVal = $("#calls-search-input").val();
+      if (searchVal !== "") {
+        canSearchForProfiles = false;
+        $.post(
+          `https://${GetParentResourceName()}/searchCalls`,
+          JSON.stringify({
+            searchVal: searchVal,
+          })
+        );
+        $(".calls-items").empty();
+        $(".calls-items").prepend(`<div class="profile-loader"></div>`);
+      }
+    }
+  });
+
   $(".weapons-search-title").click(function () {
     if (canSearchForWeapons == true) {
       if ($(".weapons-search-input").css("display") == "none") {
@@ -3382,6 +3414,12 @@ $(document).ready(() => {
     //console.log(this.value);
     var currentValue = $('#vehiclePointsSliderValue');
     currentValue.html(this.value);
+  });
+
+  $(`.search-tab-input`).each(function(key, value) {
+    console.log("Hei")
+    $(value).val("")
+
   });
 
   $(".active-calls-list").on(
@@ -3788,6 +3826,7 @@ $(document).ready(() => {
         $(".dmv-nav-item").show();
         $(".weapons-nav-item").show()
         $(".cams-nav-item").show();
+        $(".map-nav-item").show();
         $(".dispatch-title-ofsomesort").html("Dispatch");
         $(".dispatch-comms-container").fadeIn(0);
         $(".manage-profile-name-input-1").attr("readonly", true);
@@ -5060,6 +5099,9 @@ function fidgetSpinner(page) {
   if (page == ".incidents-page-container") {
     $.post(`https://${GetParentResourceName()}/getAllIncidents`, JSON.stringify({}));
   }
+  if (page == ".map-page-container") {
+    $.post(`https://${GetParentResourceName()}/getAllIncidents`, JSON.stringify({}));
+  }
   setTimeout(() => {
     $(".container-load").fadeOut(0);
     $(page).fadeIn(0);
@@ -5331,3 +5373,5 @@ window.addEventListener("load", function () {
       }
     });
 });
+
+// Map

@@ -34,13 +34,16 @@ input::-webkit-inner-spin-button {
 }
 
 .dashboard-page-container  {
-    background-color: var(--color-9);
+    /* background-color: rgb(40, 40, 40); */
+    background-color: rgb(40, 40, 40);
+    
     border-radius: 15px;
     position: absolute; 
-    width: 96.5%;
-    height: 96.5%;
-    left: 2.0%;
-    top: 1.5%;
+    width: 80.5%;
+    height: 80.5%;
+    border: 10px solid rgb(22, 22, 22);
+    left: 10.0%;
+    top: 10.0%;
     display: none;
 }
 
@@ -49,195 +52,183 @@ input::-webkit-inner-spin-button {
 }
 
 .profile-page-container {
-    background-color: var(--color-9);
+    background-color: rgb(40, 40, 40);
     border-radius: 15px;
     position: absolute; 
-    width: 96.5%;
-    height: 96.5%;
-    left: 2.0%;
-    top: 1.5%;
+    width: 80.5%;
+    height: 80.5%;
+    border: 10px solid rgb(22, 22, 22);
+    left: 10.0%;
+    top: 10.0%;
     display: none;
 }
 
 .incidents-page-container {
-    background-color: var(--color-9);
+    background-color: rgb(40, 40, 40);
     border-radius: 15px;
     position: absolute; 
-    width: 96.5%;
-    height: 96.5%;
-    left: 2.0%;
-    top: 1.5%;
+    width: 80.5%;
+    height: 80.5%;
+    border: 10px solid rgb(22, 22, 22);
+    left: 10.0%;
+    top: 10.0%;
     display: none;
 }
 
 .bolos-page-container {
-    background-color: var(--color-9);
+    background-color: rgb(40, 40, 40);
     border-radius: 15px;
     position: absolute; 
-    width: 96.5%;
-    height: 96.5%;
-    left: 2.0%;
-    top: 1.5%;
+    width: 80.5%;
+    height: 80.5%;
+    border: 10px solid rgb(22, 22, 22);
+    left: 10.0%;
+    top: 10.0%;
     display: none;
 }
 
 .reports-page-container {
-    background-color: var(--color-9);
+    background-color: rgb(40, 40, 40);
     border-radius: 15px;
     position: absolute; 
-    width: 96.5%;
-    height: 96.5%;
-    left: 2.0%;
-    top: 1.5%;
+    width: 80.5%;
+    height: 80.5%;
+    border: 10px solid rgb(22, 22, 22);
+    left: 10.0%;
+    top: 10.0%;
     display: none;
 }
 
 .penalcode-page-container {
-    background-color: var(--color-9);
+    background-color: rgb(40, 40, 40);
     border-radius: 15px;
     position: absolute; 
-    width: 96.5%;
-    height: 96.5%;
-    left: 2.0%;
-    top: 1.5%;
+    width: 80.5%;
+    height: 80.5%;
+    border: 10px solid rgb(22, 22, 22);
+    left: 10.0%;
+    top: 10.0%;
     display: none;
 }
 
 .dmv-page-container {
-    background-color: var(--color-9);
+    background-color: rgb(40, 40, 40);
     border-radius: 15px;
     position: absolute; 
-    width: 96.5%;
-    height: 96.5%;
-    left: 2.0%;
-    top: 1.5%;
+    width: 80.5%;
+    height: 80.5%;
+    border: 10px solid rgb(22, 22, 22);
+    left: 10.0%;
+    top: 10.0%;
     display: none;
 }
 
 .weapons-page-container {
-    background-color: var(--color-9);
+    background-color: rgb(40, 40, 40);
     border-radius: 15px;
     position: absolute; 
-    width: 96.5%;
-    height: 96.5%;
-    left: 2.0%;
-    top: 1.5%;
+    width: 80.5%;
+    height: 80.5%;
+    border: 10px solid rgb(22, 22, 22);
+    left: 10.0%;
+    top: 10.0%;
     display: none;
 }
 
 .stafflogs-page-container  {
-    background-color: var(--color-9);
+    background-color: rgb(40, 40, 40);
     border-radius: 15px;
     position: absolute; 
-    width: 96.5%;
-    height: 96.5%;
-    left: 2.0%;
-    top: 1.5%;
+    width: 80.5%;
+    height: 80.5%;
+    border: 10px solid rgb(22, 22, 22);
+    left: 10.0%;
+    top: 10.0%;
     display: none;
     overflow: auto
 }
 
 .container-load {
-    background-color: var(--color-9);
+    background-color: rgb(40, 40, 40);
     border-radius: 15px;
     position: absolute; 
-    width: 96.5%;
-    height: 96.5%;
-    left: 2.0%;
-    top: 1.5%;
+    width: 80.5%;
+    height: 80.5%;
+    border: 10px solid rgb(22, 22, 22);
+    left: 10.0%;
+    top: 10.0%;
     display: none;
 }
 
 .header {
     height: 7vh;
     background-color: var(--color-1);
-    border: 5px solid #393B39;
-    border-top-right-radius: 50px;
-    border-bottom-right-radius: 50px;
-    width: 96.5%;
+
+    width: 86.5%;
     position: absolute;
-    top: 5.5vh;
+
     display: flex;
     align-items: center;
     user-select: none;
 }
 
-.header-left {
-    display: flex;
-    flex-direction: column;
-    text-align: left;
-    margin-left: 10px;
-    margin-right: 0px;
-}
 
-.header-middle {
-    background-color: var(--color-2);
-    border-radius: 15px;
-    width: fit-content;
-    height: fit-content;
-    padding: 10px;
-    padding-left: 20px;
-    padding-right: 20px;
-    display: flex;
-    flex-direction: column;
-    text-align: center;
-    color: white;
-    margin: auto;
-    font-size: 20px;
-}
-
-.header-right {
-    display: flex;
-    flex-direction: column;
-    text-align: right;
-    margin: auto;
-    margin-right: 35px;
-    margin-left: 0px;
-}
 
 .main-container {
-    border-top: 5px solid var(--color-3);
+
     width: 100%;
-    height: 79.5%;
+    height: 93.5%;
     position: absolute;
     display: flex;
     bottom: 0;
 }
 
 .nav-menu {
-    background-color: var(--color-1);
-    border-right: 5px solid var(--color-3);
+  
+
     min-width: 22.5vh;
     height: 100%;
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     user-select: none;
-    border-bottom-left-radius: 15px;
+    margin-left: 10px;
+    height: 5vh;
+
+    width: 86.5%;
+    position: absolute;
+
+    display: flex;
+    align-items: center;
+    user-select: none;
+    
+
 }
 
 .nav-item {
-    background-color: var(--color-4);
     margin-top: 10px;
     padding: 10px;
-    color: white;
+    color: rgb(138, 138, 138);
     font-size: 18px;
     font-weight: bolder;
+    margin-left: 10px;
 }
 
 .nav-item:hover {
-    background-color: var(--color-3);
+    color: rgb(255, 255, 255);
+    /* background-color: var(--color-3); */
 }
 
 .active-nav {
-    background-color: var(--color-3);
+    color: rgb(255, 255, 255);
+    /* background-color: var(--color-3); */
 }
 
 .warrants-container {
     background-color: var(--color-1);
-    border: 2px solid var(--color-3);
+    border: 2px solid rgb(32, 32, 32);
     display: flex;
     flex-direction: column;
-    height: 74.7vh;
+    height: 72.7vh;
     width: 50vh;
     margin-top: 10px;
     margin-left: 10px;
@@ -329,7 +320,7 @@ input::-webkit-inner-spin-button {
 
 .quotes-container {
     background-color: var(--color-1);
-    border: 2px solid var(--color-3);
+    border: 2px solid rgb(32, 32, 32);
     width: 50vh;
     height: 75px;
     margin-top: 10px;
@@ -373,10 +364,10 @@ input::-webkit-inner-spin-button {
 
 .bulletin-container {
     background-color: var(--color-1);
-    border: 2px solid var(--color-3);
+    border: 2px solid rgb(32, 32, 32);
     display: flex;
     flex-direction: column;
-    height: 100%;
+    height: 45.5%;
     width: 50vh;
     margin-top: 10px;
     margin-bottom: 8px;
@@ -384,6 +375,122 @@ input::-webkit-inner-spin-button {
     user-select: none;
     overflow: hidden;
 }
+
+.map-title {
+    background-color: var(--color-4);
+    color: white;
+    font-size: 18px;
+    font-weight: bolder;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    text-align: center;
+    margin: auto;
+    margin-top: 10px;
+    margin-right: 0px;
+    margin-bottom: 0px;
+    width: 83.5%;
+    align-items: center;
+    user-select: none;
+}
+
+.map-container {
+    background-color: var(--color-1);
+    border: 2px solid rgb(32, 32, 32);
+    display: flex;
+    flex-direction: column;
+    height: 45.5%;
+    width: 50vh;
+    margin-top: 10px;
+    margin-bottom: 8px;
+    margin-left: 10px;
+    user-select: none;
+    overflow: hidden;
+}
+
+.map-add-btn {
+    background-color: var(--color-4);
+    color: white;
+    font-size: 18px;
+    font-weight: bolder;
+    padding-top: 7px;
+    padding-bottom: 7px;
+    margin: auto;
+    margin-top: 10px;
+    margin-left: 5px;
+    margin-bottom: 0px;
+    width: 10%;
+    text-align: center;
+}
+
+.map-add-btn:hover {
+    background-color: var(--color-3);
+}
+
+.map-page-container  {
+    /* background-color: rgb(40, 40, 40); */
+    background-color: rgb(40, 40, 40);
+    
+    border-radius: 15px;
+    position: absolute; 
+    width: 80.5%;
+    height: 80.5%;
+    border: 10px solid rgb(22, 22, 22);
+    left: 10.0%;
+    top: 10.0%;
+    display: none;
+}
+.map-item {
+    position: absolute;
+
+    width: 98%;
+    height: 80%;
+
+    top: 56%;
+    left: 50%;
+
+    transform: translateX(-50%) translateY(-50%);
+
+    opacity: 1;
+    overflow: hidden;
+}
+
+.smallmap-item {
+    position: absolute;
+
+    width: 96%;
+    height: 75%;
+
+    top: 56%;
+    left: 50%;
+
+    transform: translateX(-50%) translateY(-50%);
+
+    opacity: 1;
+    overflow: hidden;
+}
+
+
+.dash-map-img {
+    position: absolute;
+
+    top: -200%;
+    left: 20%;
+
+    width: 100%;
+    height: 100%;
+
+    transform: rotatez(90deg) scale(8);
+}
+/* .dispatch-comms-container {
+    background-color: var(--color-1);
+    border: 2px solid rgb(32, 32, 32);
+    display: flex;
+    flex-direction: column;
+    height: 45.5%;
+    width: 50vh;
+    margin-top: 1vh;
+    margin-left: 10px;
+} */
 
 .bulletin-title {
     background-color: var(--color-4);
@@ -485,14 +592,15 @@ span.bulletin-item-info[contenteditable]:empty::before {
 
 .dispatch-container {
     background-color: var(--color-1);
-    border: 2px solid var(--color-3);
+    border: 2px solid rgb(32, 32, 32);
     display: flex;
     flex-direction: column;
-    height: 74.7vh;
+    height: 72.7vh;
     width: 50vh;
     margin-top: 10px;
     margin-left: 10px;
     margin-right: 15px;
+
 }
 
 .dispatch-title {
@@ -568,6 +676,54 @@ span.bulletin-item-info[contenteditable]:empty::before {
     user-select: none;
 }
 
+.calls-search-title {
+    background-color: var(--color-3);
+    color: white;
+    font-size: 18px;
+    font-weight: bolder;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    text-align: center;
+    margin: auto;
+    margin-top: 10px;
+    margin-bottom: 0px;
+    margin-right: 2px;
+    margin-left: 10px;
+    margin-left: 13px;
+    width: 95%;
+    align-items: center;
+    user-select: none;
+}
+
+.calls-search-input {
+    background-color: var(--color-3);
+    color: white;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    text-align: center;
+    margin: auto;
+    margin-top: 10px;
+    margin-bottom: 0px;
+    width: 95%;
+    align-items: center;
+    user-select: none;
+    display: none;
+}
+
+#calls-search-input {
+    outline: none;
+    border: none;
+    width: 95%;
+    color: white;
+    font-size: 15px;
+    background-color: rgba(0, 0, 0, 0);
+    margin: auto;
+}
+
+#calls-search-input::placeholder {
+    color: white;
+}
+
 #police-count {
     background-color: #093095;
 }
@@ -610,6 +766,7 @@ span.bulletin-item-info[contenteditable]:empty::before {
     align-items: center;
     margin-bottom: 5px;
 }
+
 
 #draggedItem {
     position: absolute;
@@ -723,8 +880,7 @@ span.bulletin-item-info[contenteditable]:empty::before {
     display: flex;
     align-items: center;
     margin-bottom: 5px;
-    border-bottom-left-radius: 1vh;
-    border-top-left-radius: 1vh;
+    border: 1px solid rgb(32, 32, 32);
 }
 
 .active-call-inner-container {
@@ -859,10 +1015,10 @@ a {
 
 .profile-container {
     background-color: var(--color-1);
-    border: 2px solid var(--color-3);
+    border: 2px solid rgb(32, 32, 32);
     display: flex;
     flex-direction: column;
-    height: 74.7vh;
+    height: 72.7vh;
     width: 50vh;
     margin-top: 10px;
     margin-left: 10px;
@@ -997,10 +1153,10 @@ a {
 
 .manage-profile-container {
     background-color: var(--color-1);
-    border: 2px solid var(--color-3);
+    border: 2px solid rgb(32, 32, 32);
     display: flex;
     flex-direction: column;
-    height: 74.7vh;
+    height: 72.7vh;
     width: 50vh;
     margin-top: 10px;
     margin-left: 10px;
@@ -1224,7 +1380,7 @@ a {
 .manage-profile-licenses-container {
     background-color: var(--color-1);
     width: 100%;
-    border: 2px solid var(--color-3);
+    border: 2px solid rgb(32, 32, 32);
     height: 15%;
 }
 
@@ -1274,7 +1430,7 @@ a {
     flex-direction: column;
     background-color: var(--color-1);
     width: 100%;
-    border: 2px solid var(--color-3);
+    border: 2px solid rgb(32, 32, 32);
     margin-top: 10px;
     min-height: 100px;
     max-height: 200px;
@@ -1374,7 +1530,7 @@ span.tag-input[contenteditable]:empty::before {
     flex-direction: column;
     background-color: var(--color-1);
     width: 100%;
-    border: 2px solid var(--color-3);
+    border: 2px solid rgb(32, 32, 32);
     margin-top: 10px;
     max-height: 150px;
     overflow: scroll;
@@ -1427,7 +1583,7 @@ span.tag-input[contenteditable]:empty::before {
     flex-direction: column;
     background-color: var(--color-1);
     width: 100%;
-    border: 2px solid var(--color-3);
+    border: 2px solid rgb(32, 32, 32);
     margin-top: 10px;
     max-height: 150px;
     overflow: scroll;
@@ -1480,7 +1636,7 @@ span.tag-input[contenteditable]:empty::before {
     flex-direction: column;
     background-color: var(--color-1);
     width: 100%;
-    border: 2px solid var(--color-3);
+    border: 2px solid rgb(32, 32, 32);
     margin-top: 10px;
     height: 18vh;
     overflow: scroll;
@@ -1542,7 +1698,7 @@ span.tag-input[contenteditable]:empty::before {
     flex-direction: column;
     background-color: var(--color-1);
     width: 100%;
-    border: 2px solid var(--color-3);
+    border: 2px solid rgb(32, 32, 32);
     margin-top: 10px;
     max-height: 200px;
     overflow: scroll;
@@ -1575,16 +1731,16 @@ span.tag-input[contenteditable]:empty::before {
 
 .loader {
     position: absolute;
-    left: 50%;
-    top: 50%;
+    left: 45%;
+    top: 45%;
     z-index: 1;
-    width: 120px;
-    height: 120px;
-    border: 12px solid var(--color-1);
+    width: 100px;
+    height: 100px;
+    border: 10px solid var(--color-1);
     border-radius: 50%;
-    border-top: 12px solid var(--color-3);
-    -webkit-animation: spin 2s linear infinite;
-    animation: spin 2s linear infinite;
+    border-top: 10px solid var(--color-3);
+    -webkit-animation: spin 5s linear infinite;
+    animation: spin 5s linear infinite;
 }
 
 .profile-loader {
@@ -1758,18 +1914,18 @@ span.tag-input[contenteditable]:empty::before {
 
 .penalcode-embed {
     background-color: var(--color-1);
-    border: 2px solid var(--color-3);
+    border: 2px solid rgb(32, 32, 32);
     display: flex;
     flex-direction: column;
-    height: 96.5%;
-    width: 85%;
+    height: 86.5%;
+    width: 75%;
     margin: auto;
     overflow: hidden;
 }
 
 .penalcode-embed iframe {
-    height: 96.5%;
-    width: 98%;
+    height: 86.5%;
+    width: 88%;
     margin: auto;
     border: none;
     outline: none;
@@ -1777,10 +1933,10 @@ span.tag-input[contenteditable]:empty::before {
 
 .incidents-container {
     background-color: var(--color-1);
-    border: 2px solid var(--color-3);
+    border: 2px solid rgb(32, 32, 32);
     display: flex;
     flex-direction: column;
-    height: 74.7vh;
+    height: 72.7vh;
     width: 50vh;
     margin-top: 10px;
     margin-left: 10px;
@@ -1919,11 +2075,10 @@ span.tag-input[contenteditable]:empty::before {
 
 .manage-incidents-container {
     background-color: var(--color-1);
-    border: 2px solid var(--color-3);
     display: flex;
     flex-direction: column;
-    height: 74.7vh;
-    max-height: 74.7vh;
+    height: 72.7vh;
+    max-height: 72.7vh;
     width: 50vh;
     margin-top: 10px;
     margin-left: 10px;
@@ -2049,7 +2204,6 @@ span.tag-input[contenteditable]:empty::before {
 .manage-incidents-tags-container {
     display: flex;
     flex-direction: column;
-    border: 2px solid var(--color-3);
     color: white;
     font-size: 18px;
     font-weight: bolder;
@@ -2132,7 +2286,6 @@ span.tag-input[contenteditable]:empty::before {
 .manage-incidents-officers-container {
     display: flex;
     flex-direction: column;
-    border: 2px solid var(--color-3);
     color: white;
     font-size: 18px;
     font-weight: bolder;
@@ -2215,7 +2368,6 @@ span.tag-input[contenteditable]:empty::before {
 .manage-incidents-civilians-container {
     display: flex;
     flex-direction: column;
-    border: 2px solid var(--color-3);
     color: white;
     font-size: 18px;
     font-weight: bolder;
@@ -2298,7 +2450,7 @@ span.tag-input[contenteditable]:empty::before {
 .manage-incidents-evidence-container {
     display: flex;
     flex-direction: column;
-    border: 2px solid var(--color-3);
+    border: 2px solid rgb(32, 32, 32);
     color: white;
     font-size: 18px;
     font-weight: bolder;
@@ -2441,10 +2593,10 @@ span.civilians-incident-input[contenteditable]:empty::before {
 
 .associated-incidents-container {
     background-color: var(--color-1);
-    border: 2px solid var(--color-3);
+    border: 2px solid rgb(32, 32, 32);
     display: flex;
     flex-direction: column;
-    height: 74.7vh;
+    height: 72.7vh;
     width: 50vh;
     margin-top: 10px;
     margin-left: 10px;
@@ -2474,7 +2626,6 @@ span.civilians-incident-input[contenteditable]:empty::before {
 .associated-incidents-tags-container {
     display: flex;
     flex-direction: column;
-    border: 2px solid var(--color-3);
     color: white;
     font-size: 18px;
     font-weight: bolder;
@@ -2611,7 +2762,7 @@ span.civilians-incident-input[contenteditable]:empty::before {
 .associated-incidents-user-container {
     display: flex;
     flex-direction: column;
-    border: 2px solid var(--color-3);
+    border: 2px solid rgb(32, 32, 32);
     color: white;
     font-size: 18px;
     font-weight: bolder;
@@ -2892,10 +3043,10 @@ span.civilians-incident-input[contenteditable]:empty::before {
 
 .bolos-container {
     background-color: var(--color-1);
-    border: 2px solid var(--color-3);
+    border: 2px solid rgb(32, 32, 32);
     display: flex;
     flex-direction: column;
-    height: 74.7vh;
+    height: 72.7vh;
     width: 50vh;
     margin-top: 10px;
     margin-left: 10px;
@@ -2975,11 +3126,11 @@ span.civilians-incident-input[contenteditable]:empty::before {
 
 .manage-bolos-container {
     background-color: var(--color-1);
-    border: 2px solid var(--color-3);
+    border: 2px solid rgb(32, 32, 32);
     display: flex;
     flex-direction: column;
-    height: 74.7vh;
-    max-height: 74.7vh;
+    height: 72.7vh;
+    max-height: 72.7vh;
     width: 50vh;
     margin-top: 10px;
     margin-left: 10px;
@@ -3224,7 +3375,7 @@ span.civilians-incident-input[contenteditable]:empty::before {
     flex-direction: column;
     background-color: var(--color-1);
     width: 100%;
-    border: 2px solid var(--color-3);
+    border: 2px solid rgb(32, 32, 32);
     max-height: 150px;
     overflow: scroll;
 }
@@ -3234,7 +3385,7 @@ span.civilians-incident-input[contenteditable]:empty::before {
     flex-direction: column;
     background-color: var(--color-1);
     width: 100%;
-    border: 2px solid var(--color-3);
+    border: 2px solid rgb(32, 32, 32);
     margin-top: 10px;
     height: 18vh;
     overflow: scroll;
@@ -3280,7 +3431,7 @@ span.civilians-incident-input[contenteditable]:empty::before {
     flex-direction: column;
     background-color: var(--color-1);
     width: 100%;
-    border: 2px solid var(--color-3);
+    border: 2px solid rgb(32, 32, 32);
     max-height: 150px;
     margin-top: 10px;
     overflow: scroll;
@@ -3547,10 +3698,10 @@ span.officer-tag-bolo-input[contenteditable]:empty::before {
 
 .reports-container {
     background-color: var(--color-1);
-    border: 2px solid var(--color-3);
+    border: 2px solid rgb(32, 32, 32);
     display: flex;
     flex-direction: column;
-    height: 74.7vh;
+    height: 72.7vh;
     width: 50vh;
     margin-top: 10px;
     margin-left: 10px;
@@ -3566,7 +3717,7 @@ span.officer-tag-bolo-input[contenteditable]:empty::before {
 
 .dispatch-comms-container {
     background-color: var(--color-1);
-    border: 2px solid var(--color-3);
+    border: 2px solid rgb(32, 32, 32);
     display: flex;
     flex-direction: column;
     height: 45.5%;
@@ -3852,11 +4003,11 @@ span.officer-tag-bolo-input[contenteditable]:empty::before {
 
 .manage-reports-container {
     background-color: var(--color-1);
-    border: 2px solid var(--color-3);
+    border: 2px solid rgb(32, 32, 32);
     display: flex;
     flex-direction: column;
-    height: 74.7vh;
-    max-height: 74.7vh;
+    height: 72.7vh;
+    max-height: 72.7vh;
     width: 50vh;
     margin-top: 10px;
     margin-left: 10px;
@@ -4138,7 +4289,7 @@ span.officer-tag-bolo-input[contenteditable]:empty::before {
     flex-direction: column;
     background-color: var(--color-1);
     width: 100%;
-    border: 2px solid var(--color-3);
+    border: 2px solid rgb(32, 32, 32);
     max-height: 150px;
     overflow: scroll;
 }
@@ -4148,7 +4299,7 @@ span.officer-tag-bolo-input[contenteditable]:empty::before {
     flex-direction: column;
     background-color: var(--color-1);
     width: 100%;
-    border: 2px solid var(--color-3);
+    border: 2px solid rgb(32, 32, 32);
     margin-top: 10px;
     height: 18vh;
     overflow: scroll;
@@ -4194,7 +4345,7 @@ span.officer-tag-bolo-input[contenteditable]:empty::before {
     flex-direction: column;
     background-color: var(--color-1);
     width: 100%;
-    border: 2px solid var(--color-3);
+    border: 2px solid rgb(32, 32, 32);
     max-height: 150px;
     margin-top: 10px;
     overflow: scroll;
@@ -4288,7 +4439,7 @@ span.officer-tag-bolo-input[contenteditable]:empty::before {
     flex-direction: column;
     background-color: var(--color-1);
     width: 100%;
-    border: 2px solid var(--color-3);
+    border: 2px solid rgb(32, 32, 32);
     max-height: 150px;
     margin-top: 10px;
     overflow: scroll;
@@ -4468,10 +4619,10 @@ span.civilian-tag-reports-input[contenteditable]:empty::before {
 
 .dmv-container {
     background-color: var(--color-1);
-    border: 2px solid var(--color-3);
+    border: 2px solid rgb(32, 32, 32);
     display: flex;
     flex-direction: column;
-    height: 74.7vh;
+    height: 72.7vh;
     width: 50%;
     margin-top: 10px;
     margin-left: 10px;
@@ -4559,10 +4710,10 @@ span.civilian-tag-reports-input[contenteditable]:empty::before {
 
 .vehicle-information-container {
     background-color: var(--color-1);
-    border: 2px solid var(--color-3);
+    border: 2px solid rgb(32, 32, 32);
     display: flex;
     flex-direction: column;
-    height: 74.7vh;
+    height: 72.7vh;
     width: 50%;
     margin-top: 10px;
     margin-left: 10px;
@@ -4804,7 +4955,7 @@ span.civilian-tag-reports-input[contenteditable]:empty::before {
 .vehicle-info-tags-container {
     display: flex;
     flex-direction: column;
-    border: 2px solid var(--color-3);
+    border: 2px solid rgb(32, 32, 32);
     color: white;
     font-size: 18px;
     font-weight: bolder;
@@ -4927,10 +5078,10 @@ span.civilian-tag-reports-input[contenteditable]:empty::before {
 
 .stafflogs-container {
     background-color: var(--color-1);
-    border: 2px solid var(--color-3);
+    border: 2px solid rgb(32, 32, 32);
     display: flex;
     flex-direction: column;
-    height: 74.7vh;
+    height: 72.7vh;
     width: 100%;
     margin-top: 10px;
     margin-left: 10px;
@@ -5696,6 +5847,7 @@ span.civilian-tag-reports-input[contenteditable]:empty::before {
     flex-direction: column;
     z-index: 9998;
     overflow: auto;
+    
 }
 
 .respond-calls-title {
@@ -5878,23 +6030,24 @@ span.civilian-tag-reports-input[contenteditable]:empty::before {
 }
 
 .cams-page-container {
-    background-color: var(--color-9);
+    background-color: rgb(40, 40, 40);
     border-radius: 15px;
     position: absolute; 
-    width: 96.5%;
-    height: 96.5%;
-    left: 2.0%;
-    top: 1.5%;
+    width: 80.5%;
+    height: 80.5%;
+    border: 10px solid rgb(22, 22, 22);
+    left: 10.0%;
+    top: 10.0%;
     display: none;
     overflow: auto
 }
 
 .cams-container {
     background-color: var(--color-1);
-    border: 2px solid var(--color-3);
+    border: 2px solid rgb(32, 32, 32);
     display: flex;
     flex-direction: column;
-    height: 74.7vh;
+    height: 72.7vh;
     width: 100%;
     margin-top: 10px;
     margin-left: 10px;
@@ -5939,10 +6092,10 @@ span.civilian-tag-reports-input[contenteditable]:empty::before {
 
 .weapons-container {
     background-color: var(--color-1);
-    border: 2px solid var(--color-3);
+    border: 2px solid rgb(32, 32, 32);
     display: flex;
     flex-direction: column;
-    height: 74.7vh;
+    height: 72.7vh;
     width: 50%;
     margin-top: 10px;
     margin-left: 10px;
@@ -6010,10 +6163,10 @@ span.civilian-tag-reports-input[contenteditable]:empty::before {
 
 .weapon-information-container {
     background-color: var(--color-1);
-    border: 2px solid var(--color-3);
+    border: 2px solid rgb(32, 32, 32);
     display: flex;
     flex-direction: column;
-    height: 74.7vh;
+    height: 72.7vh;
     width: 50%;
     margin-top: 10px;
     margin-left: 10px;
@@ -6437,4 +6590,164 @@ input[type="range"].vehicle-info-points-input::-moz-range-track {
     transform: translate(0, 0) scale(1);
     pointer-events: auto;
     z-index: 9999;
+}
+
+
+
+
+.calls-container {
+    background-color: var(--color-1);
+    border: 2px solid rgb(32, 32, 32);
+    display: flex;
+    flex-direction: column;
+    height: 72.7vh;
+    width: 30%;
+    margin-top: 10px;
+    margin-left: 10px;
+}
+
+.calls-search-title {
+    background-color: var(--color-4);
+    color: white;
+    font-size: 18px;
+    font-weight: bolder;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    text-align: center;
+    margin: auto;
+    margin-top: 10px;
+    margin-bottom: 0px;
+    width: 95%;
+    align-items: center;
+    user-select: none;
+}
+
+.calls-search-title:hover {
+    background-color: var(--color-3);
+}
+
+.map-container {
+    background-color: var(--color-1);
+    border: 2px solid rgb(32, 32, 32);
+    display: flex;
+    flex-direction: column;
+    height: 72.7vh;
+    width: 70%;
+    margin-top: 10px;
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+.map-new {
+    width: 13.7%;
+    font-size: 15px;
+    font-weight: lighter;
+    padding-top: 7px;
+    padding-bottom: 7px;
+    background-color: #8f1b1b;
+    margin: auto;
+    margin-left: 5px;
+    margin-top: 10px;
+    margin-bottom: 0px;
+    color: white;
+    text-align: center;
+    user-select: none;
+    display: block;
+}
+
+.map-new:hover {
+    background-color: #aa1c1c;
+}
+
+.map-save {
+    width: 13.7%;
+    font-size: 15px;
+    font-weight: lighter;
+    padding-top: 7px;
+    padding-bottom: 7px;
+    background-color: #1b8f25;
+    margin: auto;
+    margin-left: 5px;
+    margin-top: 10px;
+    margin-bottom: 0px;
+    color: white;
+    text-align: center;
+    user-select: none;
+    display: block;
+}
+
+.map-save:hover {
+    background-color: #1caa28;
+}
+
+
+.map-title {
+    background-color: var(--color-4);
+    color: white;
+    font-size: 18px;
+    font-weight: bolder;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    text-align: center;
+    margin: auto;
+    margin-top: 10px;
+    margin-bottom: 0px;
+    width: 98%;
+    align-items: center;
+    user-select: none;
+}
+
+.map-item {
+    border: 2px solid rgb(32, 32, 32);
+    position: absolute;
+
+    width: 98%;
+    height: 90%;
+
+    top: 48%;
+    left: 50%;
+
+    transform: translateX(-50%) translateY(-50%);
+
+    opacity: 1;
+    overflow: hidden;
+}
+
+.smallmap-title {
+    background-color: var(--color-4);
+    color: white;
+    font-size: 18px;
+    font-weight: bolder;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    text-align: center;
+    margin: auto;
+    margin-top: 10px;
+    margin-bottom: 0px;
+    width: 95%;
+    align-items: center;
+    user-select: none;
+}
+
+.smallmap-container {
+    background-color: var(--color-1);
+    border: 2px solid rgb(32, 32, 32);
+    display: flex;
+    flex-direction: column;
+    height: 37.6vh;
+    width: 50vh;
+    margin-top: 3px;
+    margin-left: 10px;
+}
+
+.leaflet-marker-pane {
+	z-index: 600;
+}
+
+.leaflet-tooltip-pane {
+	z-index: 650;
+}
+
+.leaflet-tooltip-right {
+	margin-left: 6px;
 }
