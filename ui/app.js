@@ -3416,11 +3416,6 @@ $(document).ready(() => {
     currentValue.html(this.value);
   });
 
-  $(`.search-tab-input`).each(function(key, value) {
-    console.log("Hei")
-    $(value).val("")
-
-  });
 
   $(".active-calls-list").on(
     "contextmenu",
@@ -5099,9 +5094,6 @@ function fidgetSpinner(page) {
   if (page == ".incidents-page-container") {
     $.post(`https://${GetParentResourceName()}/getAllIncidents`, JSON.stringify({}));
   }
-  if (page == ".map-page-container") {
-    $.post(`https://${GetParentResourceName()}/getAllIncidents`, JSON.stringify({}));
-  }
   setTimeout(() => {
     $(".container-load").fadeOut(0);
     $(page).fadeIn(0);
@@ -5373,5 +5365,3 @@ window.addEventListener("load", function () {
       }
     });
 });
-
-// Map
