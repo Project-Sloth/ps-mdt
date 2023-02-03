@@ -798,13 +798,10 @@
                           <a class="leaflet-control-zoom-out leaflet-disabled" href="#" title="Zoom out" role="button" aria-label="Zoom out">−</a>
                         </div>
                       </div>
-                      <div class="leaflet-top leaflet-right"></div>
-                      <div class="leaflet-bottom leaflet-left"></div>
-                      <div class="leaflet-bottom leaflet-right"></div>
+
                     </div>
                   </div>
                   
-
             </div>
         </div>
     </div>
@@ -822,12 +819,23 @@
     </div>
 
     <script>
-        var map = L.map("map-item").setView([0.7128, 0.0060], 5);
+            var map = L.map("map-item", {
+            crs: L.CRS.Simple,
+            maxBounds: [[0, 0], [8000, 8000]],
+            maxZoom: 1,
+            minZoom: -1,
+            maxBoundsViscosity: 1.0
+            }).setView([1500, 1300], 0);
 
-        var customImageUrl = 'https://gta-assets.nopixel.net/images/dispatch-map.png',
-          imageBounds = [[0, 0], [4000, 200]];
-      
-        var customMap = L.imageOverlay(customImageUrl, imageBounds).addTo(map);
+            var customImageUrl = 'https://gta-assets.nopixel.net/images/dispatch-map.png',
+            imageBounds = [[0, 0], [4000, 4000]];
+
+            var customMap = L.imageOverlay(customImageUrl, imageBounds, {
+            crs: L.CRS.Simple
+            }).addTo(map);
+
+
+
     </script>
       
 </body>
