@@ -831,14 +831,14 @@
 
             var map = L.map("map-item", {
             crs: customcrs,
-            minZoom: 4,
-            maxZoom: 6,
+            minZoom: 3,
+            maxZoom: 5,
             zoom: 5,
         
             noWrap: true,
             continuousWorld: false,
             preferCanvas: true,
-        
+            
             center: [0, -1024],
             maxBoundsViscosity: 1.0
             });
@@ -847,31 +847,82 @@
 
             var sw = map.unproject([0, 1024], 3 - 1);
             var ne = map.unproject([1024, 0], 3 - 1);
-            var MAP_BOUNDS = new L.LatLngBounds(sw, ne);
-            map.setMaxBounds(MAP_BOUNDS);
-            map.fitBounds(MAP_BOUNDS);
+            var mapbounds = new L.LatLngBounds(sw, ne);
+            map.setView([-300, -1500], 4);
+            map.setMaxBounds(mapbounds);
+
 
             map.attributionControl.setPrefix(false)
 
-            L.imageOverlay(customImageUrl, MAP_BOUNDS).addTo(map);
+            L.imageOverlay(customImageUrl, mapbounds).addTo(map);
             
             map.on('dragend', function() {
-                if (!MAP_BOUNDS.contains(map.getCenter())) {
-                    map.panTo(MAP_BOUNDS.getCenter(), { animate: false });
+                if (!mapbounds.contains(map.getCenter())) {
+                    map.panTo(mapbounds.getCenter(), { animate: false });
                 }
             });
 
-            var marker = L.marker([0, -1024], {
-            icon: L.divIcon({
-                className: 'my-div-icon',
+            // var marker = L.marker([0, -1024], {
+            // icon: L.divIcon({
+            //     className: 'my-div-icon',
+            //     html: '<i class="fa fa-location-dot fa-2x"></i>',
+            // })
+            // }).addTo(map);
+
+            // marker.bindTooltip("Discharge of a firearm", {permanent: false, direction: 'top', interactive: true, offset: [0, -10]});
+
+            var Dispatches = {};
+
+            function DispatchMAP(DISPATCH){
+                var MIN =  Math.round(Math.round((new Date() - new Date(DISPATCH.time)) / 1000) / 60);
+                // var MIN = 2;
+                if (MIN > 10)
+                    return;
+
+                $.each(map, function(key, value) {
+
+                    
+                    var COORDS_X = DISPATCH.origin.x
+                    var COORDS_Y = DISPATCH.origin.y
+                    var CODE = DISPATCH.callId
+                
+
+                    Dispatches[CODE] = L.marker([COORDS_Y,COORDS_X], { icon: DispatchPing })
+                    
+                    Dispatches[CODE].bindTooltip(`<div class="map-tooltip-info">${DISPATCH.dispatchMessage}</div></div><div class="map-tooltip-id">#${DISPATCH.callId}</div>`,
+                        {
+                            direction: 'top',
+                            permanent: false,
+                            offset: [0, -10],
+                            opacity: 1,
+                            interactive: true,
+                            className: 'map-tooltip'
+                    });
+                    
+                    Dispatches[CODE].addTo(map);
+
+                    Dispatches[CODE].on('click', function() {
+                        const callId = CODE
+                            $.post(
+                            `https://${GetParentResourceName()}/setWaypoint`,
+                            JSON.stringify({
+                                callid: callId,
+                            })
+                        );
+                    });
+
+                })
+            }
+
+            function ClearMap() {
+                $(".leaflet-popup-pane").empty();
+                $(".leaflet-marker-pane").empty();
+            }
+            var DispatchPing = L.divIcon({
                 html: '<i class="fa fa-location-dot fa-2x"></i>',
-            })
-            }).addTo(map);
-
-            marker.bindTooltip("Discharge of a firearm", {permanent: false, direction: 'top', interactive: true, offset: [0, -10]});
-
-            marker.on('click', function() {
-                console.log("Set Waypoint")
+                iconSize: [20, 20],
+                className: 'map-icon map-icon-ping',
+                offset: [-10, 0]
             });
 
 

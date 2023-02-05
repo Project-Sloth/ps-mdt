@@ -4286,7 +4286,9 @@ $(document).ready(() => {
         $(".dispatch-items")[0].scrollHeight
       );
     } else if (eventData.type == "call") {
+      ClearMap();
       const value = eventData.data;
+      DispatchMAP(value);
       if (value && value.job.includes(playerJob)) {
         const prio = value["priority"];
         let DispatchItem = `<div class="active-calls-item" data-id="${value.callId}" data-canrespond="false"><div class="active-call-inner-container"><div class="call-item-top"><div class="call-number">#${value.callId}</div><div class="call-code priority-${value.priority}">${value.dispatchCode}</div><div class="call-title">${value.dispatchMessage}</div><div class="call-radio">${value.units.length}</div></div><div class="call-item-bottom">`;
