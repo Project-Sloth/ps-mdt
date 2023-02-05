@@ -874,6 +874,17 @@ RegisterNetEvent('mdt:server:saveVehicleInfo', function(dbid, plate, imageurl, n
 	end
 end)
 
+RegisterNetEvent('mdt:server:searchCalls', function(calls)
+	local src = source
+	local Player = QBCore.Functions.GetPlayer(src)
+	local JobType = GetJobType(Player.PlayerData.job.name)
+	if JobType == 'police' then
+		local calls = exports['ps-dispatch']:GetDispatchCalls()
+		TriggerClientEvent('mdt:client:getCalls', src, calls)
+
+	end
+end)
+
 QBCore.Functions.CreateCallback('mdt:server:SearchWeapons', function(source, cb, sentData)
 	if not sentData then  return cb({}) end
 	local PlayerData = GetPlayerData(source)

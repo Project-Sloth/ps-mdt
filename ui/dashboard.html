@@ -790,17 +790,7 @@
                     <div class="map-title">Dispatch Map</div>
                 </div>
           
-                <div class="map-item jss11218 leaflet-main leaflet-container leaflet-touch leaflet-fade-anim leaflet-grab leaflet-touch-drag leaflet-touch-zoom" id="map-item" style="position: relative;" tabindex="0">
-                    <div class="leaflet-control-container">
-                      <div class="leaflet-top leaflet-left">
-                        <div class="leaflet-control-zoom leaflet-bar leaflet-control">
-                          <a class="leaflet-control-zoom-in" href="#" title="Zoom in" role="button" aria-label="Zoom in">+</a>
-                          <a class="leaflet-control-zoom-out leaflet-disabled" href="#" title="Zoom out" role="button" aria-label="Zoom out">−</a>
-                        </div>
-                      </div>
-
-                    </div>
-                  </div>
+                <div class="map-item" id="map-item"></div>
                   
             </div>
         </div>
@@ -819,21 +809,70 @@
     </div>
 
     <script>
+
+            customcrs = L.extend({}, L.CRS.Simple, {
+                projection: L.Projection.LonLat,
+                scale: function(zoom) {
+            
+                    return Math.pow(2, zoom);
+                },
+                zoom: function(sc) {
+            
+                    return Math.log(sc) / 0.6931471805599453;
+                },
+                distance: function(pos1, pos2) {
+                    var x_difference = pos2.lng - pos1.lng;
+                    var y_difference = pos2.lat - pos1.lat;
+                    return Math.sqrt(x_difference * x_difference + y_difference * y_difference);
+                },
+                transformation: new L.Transformation(0.02072, 117.3, -0.0205, 172.8),
+                infinite: false
+            });
+
             var map = L.map("map-item", {
-            crs: L.CRS.Simple,
-            maxBounds: [[0, 0], [8000, 8000]],
-            maxZoom: 1,
-            minZoom: -1,
+            crs: customcrs,
+            minZoom: 4,
+            maxZoom: 6,
+            zoom: 5,
+        
+            noWrap: true,
+            continuousWorld: false,
+            preferCanvas: true,
+        
+            center: [0, -1024],
             maxBoundsViscosity: 1.0
-            }).setView([1500, 1300], 0);
+            });
 
-            var customImageUrl = 'https://gta-assets.nopixel.net/images/dispatch-map.png',
-            imageBounds = [[0, 0], [4000, 4000]];
+            var customImageUrl = 'https://gta-assets.nopixel.net/images/dispatch-map.png';
 
-            var customMap = L.imageOverlay(customImageUrl, imageBounds, {
-            crs: L.CRS.Simple
+            var sw = map.unproject([0, 1024], 3 - 1);
+            var ne = map.unproject([1024, 0], 3 - 1);
+            var MAP_BOUNDS = new L.LatLngBounds(sw, ne);
+            map.setMaxBounds(MAP_BOUNDS);
+            map.fitBounds(MAP_BOUNDS);
+
+            map.attributionControl.setPrefix(false)
+
+            L.imageOverlay(customImageUrl, MAP_BOUNDS).addTo(map);
+            
+            map.on('dragend', function() {
+                if (!MAP_BOUNDS.contains(map.getCenter())) {
+                    map.panTo(MAP_BOUNDS.getCenter(), { animate: false });
+                }
+            });
+
+            var marker = L.marker([0, -1024], {
+            icon: L.divIcon({
+                className: 'my-div-icon',
+                html: '<i class="fa fa-location-dot fa-2x"></i>',
+            })
             }).addTo(map);
 
+            marker.bindTooltip("Discharge of a firearm", {permanent: false, direction: 'top', interactive: true, offset: [0, -10]});
+
+            marker.on('click', function() {
+                console.log("Set Waypoint")
+            });
 
 
     </script>

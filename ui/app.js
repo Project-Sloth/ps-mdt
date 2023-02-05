@@ -3001,14 +3001,13 @@ $(document).ready(() => {
   });
 
   $("#calls-search-input").keydown(function (e) {
-    if (e.keyCode === 13 && canSearchForProfiles == true) {
-      let searchVal = $("#calls-search-input").val();
-      if (searchVal !== "") {
-        canSearchForProfiles = false;
+    if (e.keyCode === 13) {
+      let searchCall = $("#calls-search-input").val();
+      if (searchCall !== "") {
         $.post(
           `https://${GetParentResourceName()}/searchCalls`,
           JSON.stringify({
-            searchVal: searchVal,
+            searchCall: searchCall,
           })
         );
         $(".calls-items").empty();

@@ -232,6 +232,7 @@ input::-webkit-inner-spin-button {
     width: 50vh;
     margin-top: 10px;
     margin-left: 10px;
+    margin-bottom: 10px;
 }
 
 .warrants-title {
@@ -367,10 +368,10 @@ input::-webkit-inner-spin-button {
     border: 2px solid rgb(32, 32, 32);
     display: flex;
     flex-direction: column;
-    height: 45.5%;
+    height: 95.5%;
     width: 50vh;
     margin-top: 10px;
-    margin-bottom: 8px;
+    margin-bottom: 10px;
     margin-left: 10px;
     user-select: none;
     overflow: hidden;
@@ -595,12 +596,12 @@ span.bulletin-item-info[contenteditable]:empty::before {
     border: 2px solid rgb(32, 32, 32);
     display: flex;
     flex-direction: column;
-    height: 72.7vh;
+    height: 73.0vh;
     width: 50vh;
     margin-top: 10px;
     margin-left: 10px;
-    margin-right: 15px;
-
+    margin-right: 10px;
+    margin-bottom: 10px;
 }
 
 .dispatch-title {
@@ -6701,16 +6702,15 @@ input[type="range"].vehicle-info-points-input::-moz-range-track {
     border: 2px solid rgb(32, 32, 32);
     position: absolute;
 
-    width: 98%;
-    height: 90%;
+    width: 66%;
+    height: 88%;
 
-    top: 48%;
-    left: 50%;
+    left: 65%;
+    top: 52.5%;
 
-    transform: translateX(-50%) translateY(-50%);
+    margin-bottom: 15px;
 
-    opacity: 1;
-    overflow: hidden;
+
 }
 
 .smallmap-title {
