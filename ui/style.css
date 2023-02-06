@@ -6520,7 +6520,7 @@ input[type="range"].vehicle-info-points-input::-moz-range-track {
     margin-right: 10px;
 }
 
-.map-new {
+.map-clear {
     width: 13.7%;
     font-size: 15px;
     font-weight: lighter;
@@ -6537,7 +6537,7 @@ input[type="range"].vehicle-info-points-input::-moz-range-track {
     display: block;
 }
 
-.map-new:hover {
+.map-clear:hover {
     background-color: #aa1c1c;
 }
 

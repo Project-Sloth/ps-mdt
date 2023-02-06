@@ -4286,7 +4286,6 @@ $(document).ready(() => {
         $(".dispatch-items")[0].scrollHeight
       );
     } else if (eventData.type == "call") {
-      ClearMap();
       const value = eventData.data;
       DispatchMAP(value);
       if (value && value.job.includes(playerJob)) {
