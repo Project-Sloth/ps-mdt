@@ -669,7 +669,7 @@ $(document).ready(() => {
     ".manage-incidents-create",
     function () {
       let tempalte =
-        "Summary:\n\n[Insert Report Summary Here]";
+        "📝 Summary:\n\n[Insert Report Summary Here]\n\n🧍 Hostage: [Name Here]\n\n🔪 Weapons/Items Confiscated:\n\n· [Insert List Here]\n\n-----\n💸 Fine:\n⌚ Sentence:\n-----";
       $("#manage-incidents-title-input").val(
         "Name - Charge - " + $(".date").html()
       );
