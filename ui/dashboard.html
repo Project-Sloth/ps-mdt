@@ -7,11 +7,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Project Sloth MDT</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A==" crossorigin=""/>
     <!-- <script src="nui://game/ui/jquery.js" type="text/javascript"></script> -->
     <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script  src="https://code.jquery.com/ui/1.13.1/jquery-ui.min.js" integrity="sha256-eTyxS0rkjpLEo16uXTS0uVCS4815lc40K2iVpWDvdSY=" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" integrity="sha512-xh6O/CkQoPOWDdYTDqeRdPCVd1SpvCA9XXcUnZS2FmJNp1coAFzvtCN9BmamE+4aHK8yyUHUSCcJHgXloTyT2A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+ 
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js" integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA==" crossorigin=""></script>
+
     <script src="app.js"></script>
+
+
+
 </head>
 
 <body>
@@ -110,6 +117,7 @@
                 <div class="nav-item">Profiles</div>
                 <div class="nav-item incidents-nav-item">Incidents</div>
                 <div class="nav-item">Reports</div>
+                <div class="nav-item map-nav-item">Map</div>
                 <div class="nav-item bolo-nav-item">BOLOs</div>
                 <div class="nav-item">Roster</div>
                 <div class="nav-item dmv-nav-item">DMV</div>
@@ -142,6 +150,7 @@
                 <div class="nav-item" data-page=".profile-page-container">Profiles</div>
                 <div class="nav-item incidents-nav-item" data-page=".incidents-page-container">Incidents</div>
                 <div class="nav-item" data-page=".reports-page-container">Reports</div>
+                <div class="nav-item map-nav-item" data-page=".map-page-container">Map</div>
                 <div class="nav-item bolo-nav-item" data-page=".bolos-page-container">BOLOs</div>
                 <div class="nav-item penalcode-nav-item" data-page=".penalcode-page-container">Roster</div>
                 <div class="nav-item dmv-nav-item" data-page=".dmv-page-container">DMV</div>
@@ -198,7 +207,7 @@
                 </div>
                 <div class="active-unit-list">
                 </div>
-                <div class="calls-title">Calls</div>
+                <div class="calls-title">Recent Calls</div>
                 <div class="active-calls-list">
                     <div class="active-calls-item">
                         <div class="active-call-inner-container">
@@ -232,6 +241,7 @@
                 <div class="nav-item active-nav" data-page=".profile-page-container">Profiles</div>
                 <div class="nav-item incidents-nav-item" data-page=".incidents-page-container">Incidents</div>
                 <div class="nav-item" data-page=".reports-page-container">Reports</div>
+                <div class="nav-item map-nav-item" data-page=".map-page-container">Map</div>
                 <div class="nav-item bolo-nav-item" data-page=".bolos-page-container">BOLOs</div>
                 <div class="nav-item penalcode-nav-item" data-page=".penalcode-page-container">Roster</div>
                 <div class="nav-item dmv-nav-item" data-page=".dmv-page-container">DMV</div>
@@ -344,6 +354,7 @@
                 <div class="nav-item" data-page=".profile-page-container">Profiles</div>
                 <div class="nav-item incidents-nav-item active-nav" data-page=".incidents-page-container">Incidents</div>
                 <div class="nav-item" data-page=".reports-page-container">Reports</div>
+                <div class="nav-item map-nav-item" data-page=".map-page-container">Map</div>
                 <div class="nav-item bolo-nav-item" data-page=".bolos-page-container">BOLOs</div>
                 <div class="nav-item penalcode-nav-item" data-page=".penalcode-page-container">Roster</div>
                 <div class="nav-item dmv-nav-item" data-page=".dmv-page-container">DMV</div>
@@ -447,7 +458,8 @@
                 <div class="nav-item" data-page=".dashboard-page-container">Dashboard</div>
                 <div class="nav-item" data-page=".profile-page-container">Profiles</div>
                 <div class="nav-item incidents-nav-item" data-page=".incidents-page-container">Incidents</div>
-                <div class="nav-item active-nav" data-page=".reports-page-container active-nav">Reports</div>
+                <div class="nav-item  active-nav" data-page=".reports-page-container">Reports</div>
+                <div class="nav-item map-nav-item" data-page=".map-page-container">Map</div>
                 <div class="nav-item bolo-nav-item" data-page=".bolos-page-container">BOLOs</div>
                 <div class="nav-item penalcode-nav-item" data-page=".penalcode-page-container">Roster</div>
                 <div class="nav-item dmv-nav-item" data-page=".dmv-page-container">DMV</div>
@@ -542,6 +554,7 @@
                 <div class="nav-item" data-page=".profile-page-container">Profiles</div>
                 <div class="nav-item incidents-nav-item" data-page=".incidents-page-container">Incidents</div>
                 <div class="nav-item" data-page=".reports-page-container">Reports</div>
+                <div class="nav-item map-nav-item" data-page=".map-page-container">Map</div>
                 <div class="nav-item bolo-nav-item active-nav" data-page=".bolos-page-container">BOLOs</div>
                 <div class="nav-item penalcode-nav-item" data-page=".penalcode-page-container">Roster</div>
                 <div class="nav-item dmv-nav-item" data-page=".dmv-page-container">DMV</div>
@@ -635,6 +648,7 @@
                 <div class="nav-item" data-page=".profile-page-container">Profiles</div>
                 <div class="nav-item incidents-nav-item" data-page=".incidents-page-container">Incidents</div>
                 <div class="nav-item" data-page=".reports-page-container">Reports</div>
+                <div class="nav-item map-nav-item" data-page=".map-page-container">Map</div>
                 <div class="nav-item bolo-nav-item" data-page=".bolos-page-container">BOLOs</div>
                 <div class="nav-item penalcode-nav-item active-nav" data-page=".penalcode-page-container">Roster</div>
                 <div class="nav-item dmv-nav-item" data-page=".dmv-page-container">DMV</div>
@@ -670,6 +684,7 @@
                 <div class="nav-item" data-page=".profile-page-container">Profiles</div>
                 <div class="nav-item incidents-nav-item" data-page=".incidents-page-container">Incidents</div>
                 <div class="nav-item" data-page=".reports-page-container">Reports</div>
+                <div class="nav-item map-nav-item" data-page=".map-page-container">Map</div>
                 <div class="nav-item bolo-nav-item" data-page=".bolos-page-container">BOLOs</div>
                 <div class="nav-item penalcode-nav-item" data-page=".penalcode-page-container">Roster</div>
                 <div class="nav-item dmv-nav-item active-nav" data-page=".dmv-page-container">DMV</div>
@@ -750,6 +765,7 @@
                 <div class="nav-item" data-page=".profile-page-container">Profiles</div>
                 <div class="nav-item incidents-nav-item" data-page=".incidents-page-container">Incidents</div>
                 <div class="nav-item" data-page=".reports-page-container">Reports</div>
+                <div class="nav-item map-nav-item" data-page=".map-page-container">Map</div>
                 <div class="nav-item bolo-nav-item" data-page=".bolos-page-container">BOLOs</div>
                 <div class="nav-item penalcode-nav-item" data-page=".penalcode-page-container">Roster</div>
                 <div class="nav-item dmv-nav-item" data-page=".dmv-page-container">DMV</div>
@@ -817,6 +833,7 @@
                 <div class="nav-item" data-page=".profile-page-container">Profiles</div>
                 <div class="nav-item incidents-nav-item" data-page=".incidents-page-container">Incidents</div>
                 <div class="nav-item" data-page=".reports-page-container">Reports</div>
+                <div class="nav-item map-nav-item" data-page=".map-page-container">Map</div>
                 <div class="nav-item bolo-nav-item" data-page=".bolos-page-container">BOLOs</div>
                 <div class="nav-item penalcode-nav-item" data-page=".penalcode-page-container">Roster</div>
                 <div class="nav-item dmv-nav-item" data-page=".dmv-page-container">DMV</div>
@@ -850,6 +867,7 @@
                 <div class="nav-item" data-page=".profile-page-container">Profiles</div>
                 <div class="nav-item incidents-nav-item" data-page=".incidents-page-container">Incidents</div>
                 <div class="nav-item" data-page=".reports-page-container">Reports</div>
+                <div class="nav-item map-nav-item" data-page=".map-page-container">Map</div>
                 <div class="nav-item bolo-nav-item" data-page=".bolos-page-container">BOLOs</div>
                 <div class="nav-item penalcode-nav-item" data-page=".penalcode-page-container">Roster</div>
                 <div class="nav-item dmv-nav-item" data-page=".dmv-page-container">DMV</div>
@@ -898,6 +916,61 @@
             </div>
         </div>
     </div>
+    <div class="map-page-container close-all">
+        <div class="header">
+            <img src="img/sasp_badge.webp" class="badge-logo">
+            <div class="header-left">
+                <div class="header-title" style="color: #caa95d; font-weight: bold; font-size: 20px;">SAN ANDREAS STATE POLICE</div>
+                <div style="color: white; font-weight: lighter; font-size: 18px;">Mobile Database Terminal</div>
+            </div>
+            <div class="header-middle">
+                <div class="date">Loading...</div>
+                <div class="time">00:00</div>
+            </div>
+            <div class="header-right">
+                <div style="color: white; font-weight: lighter; font-size: 25px;" class="name-shit">Welcome, Loading...
+                </div>
+                <div style="color: lightgray; font-size: 18px;"><span class="fas fa-map-pin header-pin"></span><span class="header-location"></span></div>
+            </div>
+        </div>
+        <div class="main-container">
+            <div class="nav-menu">
+                <div class="nav-item" data-page=".dashboard-page-container">Dashboard</div>
+                <div class="nav-item" data-page=".profile-page-container">Profiles</div>
+                <div class="nav-item incidents-nav-item" data-page=".incidents-page-container">Incidents</div>
+                <div class="nav-item" data-page=".reports-page-container">Reports</div>
+                <div class="nav-item map-nav-item active-nav" data-page=".map-page-container">Map</div>
+                <div class="nav-item bolo-nav-item" data-page=".bolos-page-container">BOLOs</div>
+                <div class="nav-item penalcode-nav-item" data-page=".penalcode-page-container">Roster</div>
+                <div class="nav-item dmv-nav-item" data-page=".dmv-page-container">DMV</div>
+                <div class="nav-item weapons-nav-item" data-page=".weapons-page-container">Weapons</div>
+                <div class="nav-item cams-nav-item" data-page=".cams-page-container">Cameras</div>
+                <div class="nav-item" data-page=".stafflogs-page-container">Staff Logs</div>
+            </div>
+            <div class="calls-container">
+                <div class="calls-search-title"> <span class="fas fa-search"></span> Dispatch Calls</div>
+                <div class="calls-search-input"><input id="calls-search-input" placeholder="Search Dispatch Calls..."> </div>
+
+                <div class="active-calls-list">
+                    <div class="active-calls-item">
+                        <div class="active-call-inner-container">
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="map-container">
+                <div style="display: flex;" class="map-title-holder" data-dbid=0>
+                    <div class="map-title">Dispatch Map</div>
+                    <div class="map-clear">Clear</div>
+                </div>
+          
+                <div class="map-item" id="map-item"></div>
+                  
+            </div>
+        </div>
+    </div>
     <div class="impound-form" style="display: none;">
         <form>
             <i class="far fa-id-card fa-lg"></i><input type="text" class="impound-plate" id="plate" name="plate" placeholder="Plate" disabled><br>
@@ -910,6 +983,133 @@
             <div class="impound-submit">Submit</div>
         </div>
     </div>
+
+    <script>
+
+        customcrs = L.extend({}, L.CRS.Simple, {
+            projection: L.Projection.LonLat,
+            scale: function(zoom) {
+        
+                return Math.pow(2, zoom);
+            },
+            zoom: function(sc) {
+        
+                return Math.log(sc) / 0.6931471805599453;
+            },
+            distance: function(pos1, pos2) {
+                var x_difference = pos2.lng - pos1.lng;
+                var y_difference = pos2.lat - pos1.lat;
+                return Math.sqrt(x_difference * x_difference + y_difference * y_difference);
+            },
+            transformation: new L.Transformation(0.02072, 117.3, -0.0205, 172.8),
+            infinite: false
+        });
+
+        var map = L.map("map-item", {
+        crs: customcrs,
+        minZoom: 3,
+        maxZoom: 5,
+        zoom: 5,
+    
+        noWrap: true,
+        continuousWorld: false,
+        preferCanvas: true,
+        
+        center: [0, -1024],
+        maxBoundsViscosity: 1.0
+        });
+
+        var customImageUrl = 'https://gta-assets.nopixel.net/images/dispatch-map.png';
+
+        var sw = map.unproject([0, 1024], 3 - 1);
+        var ne = map.unproject([1024, 0], 3 - 1);
+        var mapbounds = new L.LatLngBounds(sw, ne);
+        map.setView([-300, -1500], 4);
+        map.setMaxBounds(mapbounds);
+
+
+        map.attributionControl.setPrefix(false)
+
+        L.imageOverlay(customImageUrl, mapbounds).addTo(map);
+        
+        map.on('dragend', function() {
+            if (!mapbounds.contains(map.getCenter())) {
+                map.panTo(mapbounds.getCenter(), { animate: false });
+            }
+        });
+
+        // var marker = L.marker([0, -1024], {
+        // icon: L.divIcon({
+        //     className: 'my-div-icon',
+        //     html: '<i class="fa fa-location-dot fa-2x"></i>',
+        // })
+        // }).addTo(map);
+
+        // marker.bindTooltip("Discharge of a firearm", {permanent: false, direction: 'top', interactive: true, offset: [0, -10]});
+
+        var Dispatches = {};
+
+        function DispatchMAP(DISPATCH){
+            var MIN =  Math.round(Math.round((new Date() - new Date(DISPATCH.time)) / 1000) / 60);
+            // var MIN = 2;
+            if (MIN > 10)
+                return;
+
+            $.each(map, function(key, value) {
+
+                
+                var COORDS_X = DISPATCH.origin.x
+                var COORDS_Y = DISPATCH.origin.y
+                var CODE = DISPATCH.callId
+            
+
+                Dispatches[CODE] = L.marker([COORDS_Y,COORDS_X], { icon: DispatchPing })
+                
+                Dispatches[CODE].bindTooltip(`<div class="map-tooltip-info">${DISPATCH.dispatchMessage}</div></div><div class="map-tooltip-id">#${DISPATCH.callId}</div>`,
+                    {
+                        direction: 'top',
+                        permanent: false,
+                        offset: [0, -10],
+                        opacity: 1,
+                        interactive: true,
+                        className: 'map-tooltip'
+                });
+                
+                Dispatches[CODE].addTo(map);
+
+                Dispatches[CODE].on('click', function() {
+                    const callId = CODE
+                        $.post(
+                        `https://${GetParentResourceName()}/setWaypoint`,
+                        JSON.stringify({
+                            callid: callId,
+                        })
+                    );
+                });
+
+            })
+        }
+
+        function ClearMap() {
+            $(".leaflet-popup-pane").empty();
+            $(".leaflet-marker-pane").empty();
+        }
+        var DispatchPing = L.divIcon({
+            html: '<i class="fa fa-location-dot fa-2x"></i>',
+            iconSize: [20, 20],
+            className: 'map-icon map-icon-ping',
+            offset: [-10, 0]
+        });
+
+        
+        $(".map-clear").on('click', function() {
+            ClearMap();
+        });
+
+        
+
+</script>
+      
 </body>
 
 </html>

@@ -723,8 +723,6 @@ span.bulletin-item-info[contenteditable]:empty::before {
     display: flex;
     align-items: center;
     margin-bottom: 5px;
-    border-bottom-left-radius: 1vh;
-    border-top-left-radius: 1vh;
 }
 
 .active-call-inner-container {
@@ -6437,4 +6435,173 @@ input[type="range"].vehicle-info-points-input::-moz-range-track {
     transform: translate(0, 0) scale(1);
     pointer-events: auto;
     z-index: 9999;
+}
+
+.map-page-container  {
+    background-color: var(--color-9);
+    border-radius: 15px;
+    position: absolute; 
+    width: 96.5%;
+    height: 96.5%;
+    left: 2.0%;
+    top: 1.5%;
+    display: none;
+}
+
+.calls-container {
+    background-color: var(--color-1);
+    border: 2px solid var(--color-3);
+    display: flex;
+    flex-direction: column;
+    height: 74.7vh;
+    width: 30%;
+    margin-top: 10px;
+    margin-left: 10px;
+}
+
+.calls-search-title {
+    background-color: var(--color-4);
+    color: white;
+    font-size: 18px;
+    font-weight: bolder;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    text-align: center;
+    margin: auto;
+    margin-top: 10px;
+    margin-bottom: 0px;
+    width: 95%;
+    align-items: center;
+    user-select: none;
+}
+
+.calls-search-title:hover {
+    background-color: var(--color-3);
+}
+
+.calls-search-input {
+    background-color: var(--color-3);
+    color: white;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    text-align: center;
+    margin: auto;
+    margin-top: 10px;
+    margin-bottom: 0px;
+    width: 95%;
+    align-items: center;
+    user-select: none;
+    display: none;
+}
+
+#calls-search-input {
+    outline: none;
+    border: none;
+    width: 95%;
+    color: white;
+    font-size: 15px;
+    background-color: rgba(0, 0, 0, 0);
+    margin: auto;
+}
+
+#calls-search-input::placeholder {
+    color: white;
+}
+
+.map-container {
+    background-color: var(--color-1);
+    border: 2px solid var(--color-3);
+    display: flex;
+    flex-direction: column;
+    height: 74.7vh;
+    width: 70%;
+    margin-top: 10px;
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+.map-clear {
+    width: 13.7%;
+    font-size: 15px;
+    font-weight: lighter;
+    padding-top: 7px;
+    padding-bottom: 7px;
+    background-color: #8f1b1b;
+    margin: auto;
+    margin-left: 5px;
+    margin-top: 10px;
+    margin-bottom: 0px;
+    color: white;
+    text-align: center;
+    user-select: none;
+    display: block;
+}
+
+.map-clear:hover {
+    background-color: #aa1c1c;
+}
+
+.map-save {
+    width: 13.7%;
+    font-size: 15px;
+    font-weight: lighter;
+    padding-top: 7px;
+    padding-bottom: 7px;
+    background-color: #1b8f25;
+    margin: auto;
+    margin-left: 5px;
+    margin-top: 10px;
+    margin-bottom: 0px;
+    color: white;
+    text-align: center;
+    user-select: none;
+    display: block;
+}
+
+.map-save:hover {
+    background-color: #1caa28;
+}
+
+
+.map-title {
+    background-color: var(--color-4);
+    color: white;
+    font-size: 18px;
+    font-weight: bolder;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    text-align: center;
+    margin: auto;
+    margin-top: 10px;
+    margin-bottom: 0px;
+    width: 98%;
+    align-items: center;
+    user-select: none;
+}
+
+.map-item {
+    border: 2px solid var(--color-3);
+    position: absolute;
+
+    width: 58%;
+    height: 86%;
+
+    left: 40.6%;
+    top: 10.5%;
+
+    margin-bottom: 15px;
+
+
+}
+
+.leaflet-marker-pane {
+	z-index: 600;
+}
+
+.leaflet-tooltip-pane {
+	z-index: 650;
+}
+
+.leaflet-tooltip-right {
+	margin-left: 6px;
 }

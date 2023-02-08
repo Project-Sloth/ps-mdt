@@ -2985,6 +2985,37 @@ $(document).ready(() => {
     }
   });
 
+
+  $(".calls-search-title").click(function () {
+    if (canSearchForProfiles == true) {
+      if ($(".calls-search-input").css("display") == "none") {
+        $(".calls-search-input").slideDown(250);
+        $(".calls-search-input").css("display", "block");
+      } else {
+        $(".calls-search-input").slideUp(250);
+        setTimeout(() => {
+          $(".calls-search-input").css("display", "none");
+        }, 250);
+      }
+    }
+  });
+
+  $("#calls-search-input").keydown(function (e) {
+    if (e.keyCode === 13) {
+      let searchCall = $("#calls-search-input").val();
+      if (searchCall !== "") {
+        $.post(
+          `https://${GetParentResourceName()}/searchCalls`,
+          JSON.stringify({
+            searchCall: searchCall,
+          })
+        );
+        $(".calls-items").empty();
+        $(".calls-items").prepend(`<div class="profile-loader"></div>`);
+      }
+    }
+  });
+
   $(".weapons-search-title").click(function () {
     if (canSearchForWeapons == true) {
       if ($(".weapons-search-input").css("display") == "none") {
@@ -3383,6 +3414,7 @@ $(document).ready(() => {
     var currentValue = $('#vehiclePointsSliderValue');
     currentValue.html(this.value);
   });
+
 
   $(".active-calls-list").on(
     "contextmenu",
@@ -3788,6 +3820,7 @@ $(document).ready(() => {
         $(".dmv-nav-item").show();
         $(".weapons-nav-item").show()
         $(".cams-nav-item").show();
+        $(".map-nav-item").show();
         $(".dispatch-title-ofsomesort").html("Dispatch");
         $(".dispatch-comms-container").fadeIn(0);
         $(".manage-profile-name-input-1").attr("readonly", true);
@@ -4254,6 +4287,7 @@ $(document).ready(() => {
       );
     } else if (eventData.type == "call") {
       const value = eventData.data;
+      DispatchMAP(value);
       if (value && value.job.includes(playerJob)) {
         const prio = value["priority"];
         let DispatchItem = `<div class="active-calls-item" data-id="${value.callId}" data-canrespond="false"><div class="active-call-inner-container"><div class="call-item-top"><div class="call-number">#${value.callId}</div><div class="call-code priority-${value.priority}">${value.dispatchCode}</div><div class="call-title">${value.dispatchMessage}</div><div class="call-radio">${value.units.length}</div></div><div class="call-item-bottom">`;
