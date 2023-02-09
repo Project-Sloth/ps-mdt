@@ -1080,6 +1080,11 @@
                 })
             );
         });
+
+        Dispatches[CODE].on('contextmenu', function() {
+            map.removeLayer(Dispatches[CODE]);
+        });
+
     }
 
     function ClearMap() {
@@ -1090,8 +1095,6 @@
     $(".map-clear").on('click', function() {
         ClearMap();
     });
-
-        
 
 </script>
       
