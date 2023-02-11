@@ -5366,6 +5366,8 @@ window.addEventListener("load", function () {
     });
 });
 
+
+          // Dispatch Map //  
 customcrs = L.extend({}, L.CRS.Simple, {
   projection: L.Projection.LonLat,
   scale: function(zoom) {
@@ -5438,6 +5440,10 @@ function DispatchMAP(DISPATCH) {
   Dispatches[CODE] = L.marker([COORDS_Y, COORDS_X], { icon: DispatchPing });
   Dispatches[CODE].addTo(map);
 
+  // Automatic deletion after a period of 20 minutes, equivalent to 1200000 milliseconds.
+  setTimeout(function() {
+    map.removeLayer(Dispatches[CODE]);
+  }, 1200000);
   
   Dispatches[CODE].bindTooltip(`<div class="map-tooltip-info">${DISPATCH.dispatchMessage}</div></div><div class="map-tooltip-id">#${DISPATCH.callId}</div>`,
       {
