@@ -2520,12 +2520,12 @@ $(document).ready(() => {
         });
 
       $(".reports-civilians-tags-holder")
-        .find("div")
-        .each(function () {
-          if ($(this).text() != "") {
-            civilians.push($(this).text());
-          }
-        });
+      .find("div")
+      .each(function () {
+        if ($(this).text() != "") {
+          civilians.push($(this).text());
+        }
+      });
 
       let time = new Date();
 
@@ -4904,6 +4904,14 @@ $(document).ready(() => {
           `<div class="tag">${value}</div>`
         );
       });
+
+      $(".reports-civilians-tags-holder").empty();
+      $.each(table["civsinvolved"], function (index, value) {
+        $(".reports-civilians-tags-holder").append(
+          `<div class="tag">${value}</div>`
+        );
+      });
+
     } else if (eventData.type == "searchedVehicles") {
 
     } else if (eventData.type == "getVehicleData") {
