@@ -440,7 +440,7 @@ RegisterNetEvent('mdt:server:searchBolos', function(sentSearch)
 		local Player = QBCore.Functions.GetPlayer(src)
 		local JobType = GetJobType(Player.PlayerData.job.name)
 		if JobType == 'police' or JobType == 'ambulance' then
-			local matches = MySQL.query.await("SELECT * FROM `mdt_bolos` WHERE `id` LIKE :query OR LOWER(`title`) LIKE :query OR `plate` LIKE :query OR LOWER(`owner`) LIKE :query OR LOWER(`individual`) LIKE :query OR LOWER(`detail`) LIKE :query OR LOWER(`officersinvolved`) LIKE :query OR LOWER(`tags`) LIKE :query OR LOWER(`author`) LIKE :query AND jobtype = :jobtype", {
+			local matches = MySQL.query.await("SELECT * FROM `mdt_bolos` WHERE (`id` LIKE :query OR LOWER(`title`) LIKE :query OR `plate` LIKE :query OR LOWER(`owner`) LIKE :query OR LOWER(`individual`) LIKE :query OR LOWER(`detail`) LIKE :query OR LOWER(`officersinvolved`) LIKE :query OR LOWER(`tags`) LIKE :query OR LOWER(`author`) LIKE :query) AND jobtype = :jobtype", {
 				query = string.lower('%'..sentSearch..'%'), -- % wildcard, needed to search for all alike results
 				jobtype = JobType
 			})
@@ -627,11 +627,10 @@ RegisterNetEvent('mdt:server:searchReports', function(sentSearch)
 			local JobType = GetJobType(Player.PlayerData.job.name)
 			if JobType == 'police' or JobType == 'doj' or JobType == 'ambulance' then
 				if JobType == 'doj' then JobType = 'police' end
-				local matches = MySQL.query.await("SELECT * FROM `mdt_reports` WHERE `id` LIKE :query OR LOWER(`author`) LIKE :query OR LOWER(`title`) LIKE :query OR LOWER(`type`) LIKE :query OR LOWER(`details`) LIKE :query OR LOWER(`tags`) LIKE :query AND `jobtype` = :jobtype ORDER BY `id` DESC LIMIT 50", {
+				local matches = MySQL.query.await("SELECT * FROM `mdt_reports` WHERE (`id` LIKE :query OR LOWER(`author`) LIKE :query OR LOWER(`title`) LIKE :query OR LOWER(`type`) LIKE :query OR LOWER(`details`) LIKE :query OR LOWER(`tags`) LIKE :query) AND `jobtype` = :jobtype ORDER BY `id` DESC LIMIT 50", {
 					query = string.lower('%'..sentSearch..'%'), -- % wildcard, needed to search for all alike results
 					jobtype = JobType
 				})
-
 				TriggerClientEvent('mdt:client:getAllReports', src, matches)
 			end
 		end

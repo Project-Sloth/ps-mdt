@@ -4423,6 +4423,11 @@ $(document).ready(() => {
     } else if (eventData.type == "calls") {
       const table = eventData.data;
       $(".active-calls-list").empty();
+
+      $(".bolos-items").empty(); //when switching between jobs, clear this
+      $(".reports-items").empty(); //when switching between jobs, clear this
+      $(".incidents-items").empty(); //when switching between jobs, clear this
+
       $.each(table, function (index, value) {
         if (value && value.job.includes(playerJob)) {
           const prio = value["priority"];
