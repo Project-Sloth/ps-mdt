@@ -35,6 +35,7 @@ For all support questions, ask in our [Discord](https://www.discord.gg/projectsl
 # Reskins
 The below repos are direct forks of ps-mdt and have been edited to fit certain countries/look.
 
+* [US](https://github.com/OK1ez/ps-mdt/tree/OK1ez) Different layout and different colors. 
 * [UK](https://github.com/Harraa/ps-mdt)
 
 ## EchoRP MDT QBCore Edit (WIP)
