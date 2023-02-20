@@ -40,6 +40,16 @@ end)
 RegisterNetEvent("QBCore:Client:SetDuty", function(job, state)
     if AllowedJob(job) then
         TriggerServerEvent("ps-mdt:server:ToggleDuty")
+        TriggerServerEvent('QBCore:ToggleDuty')
+        if PlayerData.job.name == "police" or PlayerData.job.type == "leo" then
+            TriggerServerEvent("police:server:UpdateCurrentCops")
+        end
+        if (PlayerData.job.name == "ambulance" or PlayerData.job.type == "ems") and job then
+            TriggerServerEvent('hospital:server:AddDoctor', 'ambulance')
+        elseif (PlayerData.job.name == "ambulance" or PlayerData.job.type == "ems") and not job then
+            TriggerServerEvent('hospital:server:RemoveDoctor', 'ambulance')
+        end
+        TriggerServerEvent("police:server:UpdateBlips")
     end
 end)
 

@@ -32,6 +32,12 @@ For all support questions, ask in our [Discord](https://www.discord.gg/projectsl
 
 - **My dispatch calls are not being populated?** - You have not started the dispatch resource before the mdt or renamed the dispatch resource name and not made the necessary changes in mdt to reflect that. 
 
+# Reskins
+The below repos are direct forks of ps-mdt and have been edited to fit certain countries/look.
+
+* [US](https://github.com/OK1ez/ps-mdt/tree/OK1ez) Different layout and different colors. 
+* [UK](https://github.com/Harraa/ps-mdt)
+
 ## EchoRP MDT QBCore Edit (WIP)
 
 EchoRP MDT Released by Flawws#9999 from Echo RP rewritten and restructured for QBCore. 
