@@ -2520,12 +2520,12 @@ $(document).ready(() => {
         });
 
       $(".reports-civilians-tags-holder")
-        .find("div")
-        .each(function () {
-          if ($(this).text() != "") {
-            civilians.push($(this).text());
-          }
-        });
+      .find("div")
+      .each(function () {
+        if ($(this).text() != "") {
+          civilians.push($(this).text());
+        }
+      });
 
       let time = new Date();
 
@@ -4904,6 +4904,14 @@ $(document).ready(() => {
           `<div class="tag">${value}</div>`
         );
       });
+
+      $(".reports-civilians-tags-holder").empty();
+      $.each(table["civsinvolved"], function (index, value) {
+        $(".reports-civilians-tags-holder").append(
+          `<div class="tag">${value}</div>`
+        );
+      });
+
     } else if (eventData.type == "searchedVehicles") {
 
     } else if (eventData.type == "getVehicleData") {
@@ -5365,3 +5373,128 @@ window.addEventListener("load", function () {
       }
     });
 });
+
+
+          // Dispatch Map //  
+customcrs = L.extend({}, L.CRS.Simple, {
+  projection: L.Projection.LonLat,
+  scale: function(zoom) {
+
+      return Math.pow(2, zoom);
+  },
+  zoom: function(sc) {
+
+      return Math.log(sc) / 0.6931471805599453;
+  },
+  distance: function(pos1, pos2) {
+      var x_difference = pos2.lng - pos1.lng;
+      var y_difference = pos2.lat - pos1.lat;
+      return Math.sqrt(x_difference * x_difference + y_difference * y_difference);
+  },
+  transformation: new L.Transformation(0.02072, 117.3, -0.0205, 172.8),
+  infinite: false
+});
+
+var map = L.map("map-item", {
+crs: customcrs,
+minZoom: 3,
+maxZoom: 5,
+zoom: 5,
+
+noWrap: true,
+continuousWorld: false,
+preferCanvas: true,
+
+center: [0, -1024],
+maxBoundsViscosity: 1.0
+});
+
+var customImageUrl = 'https://i1.lensdump.com/i/gj7atT.png';
+
+var sw = map.unproject([0, 1024], 3 - 1);
+var ne = map.unproject([1024, 0], 3 - 1);
+var mapbounds = new L.LatLngBounds(sw, ne);
+map.setView([-300, -1500], 4);
+map.setMaxBounds(mapbounds);
+
+
+map.attributionControl.setPrefix(false)
+
+L.imageOverlay(customImageUrl, mapbounds).addTo(map);
+
+map.on('dragend', function() {
+  if (!mapbounds.contains(map.getCenter())) {
+      map.panTo(mapbounds.getCenter(), { animate: false });
+  }
+});
+
+var Dispatches = {};
+var DispatchPing = L.divIcon({
+  html: '<i class="fa fa-location-dot fa-2x"></i>',
+  iconSize: [20, 20],
+  className: 'map-icon map-icon-ping',
+  offset: [-10, 0]
+});
+var mapMarkers = L.layerGroup();
+
+function DispatchMAP(DISPATCH) {
+  var MIN = Math.round(Math.round((new Date() - new Date(DISPATCH.time)) / 1000) / 60);
+  if (MIN > 10) return;
+
+  var COORDS_X = DISPATCH.origin.x
+  var COORDS_Y = DISPATCH.origin.y
+  var CODE = DISPATCH.callId
+
+  Dispatches[CODE] = L.marker([COORDS_Y, COORDS_X], { icon: DispatchPing });
+  Dispatches[CODE].addTo(map);
+
+  // Automatic deletion after a period of 20 minutes, equivalent to 1200000 milliseconds.
+  setTimeout(function() {
+    map.removeLayer(Dispatches[CODE]);
+  }, 1200000);
+  
+  Dispatches[CODE].bindTooltip(`<div class="map-tooltip-info">${DISPATCH.dispatchMessage}</div></div><div class="map-tooltip-id">#${DISPATCH.callId}</div>`,
+      {
+          direction: 'top',
+          permanent: false,
+          offset: [0, -10],
+          opacity: 1,
+          interactive: true,
+          className: 'map-tooltip'
+  });
+
+  Dispatches[CODE].addTo(mapMarkers);
+
+  Dispatches[CODE].on('click', function() {
+      const callId = CODE
+      $.post(
+          `https://${GetParentResourceName()}/setWaypoint`,
+          JSON.stringify({
+              callid: callId,
+          })
+      );
+  });
+
+  Dispatches[CODE].on('contextmenu', function() {
+      map.removeLayer(Dispatches[CODE]);
+  });
+
+}
+
+function ClearMap() {
+$(".leaflet-popup-pane").empty();
+$(".leaflet-marker-pane").empty();
+}
+
+$(".map-clear").on('click', function() {
+    $(".map-clear").empty();
+    $(".map-clear").prepend(
+      `<span class="fas fa-spinner fa-spin"></span>`
+    );
+    setTimeout(() => {
+      $(".map-clear").empty();
+      $(".map-clear").html("Clear");
+      ClearMap();
+    }, 1500);
+});
+
