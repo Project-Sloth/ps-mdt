@@ -8,7 +8,8 @@ Config.RosterLink = {
 }
 
 
-Config.UseWolfknightRadar = false
+Config.UseWolfknightRadar = true
+Config.WolfknightNotifyTime = 5000 --How long the notification displays for in miliseconds (30000 = 30 seconds)
 --[[
 Adds support for Wraith ARS 2X by WolfKnight98 (wk_wars2x)
 https://github.com/WolfKnight98/wk_wars2x

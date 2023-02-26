@@ -39,12 +39,35 @@ if Config.UseWolfknightRadar == true then
 	AddEventHandler("wk:onPlateScanned", function(cam, plate, index)
 		local src = source
 		local Player = QBCore.Functions.GetPlayer(src)
-		local bolo = GetBoloStatus(plate)
+		local PlayerData = GetPlayerData(src)
+		local vehicleowner = GetVehicleOwner(plate)
+		local bolo, title, boloid = GetBoloStatus(plate, title, boloid)
+		local warrant, owner, incidentid = GetWarrantStatus(plate, owner, incidentid)
+		local driverslicense = PlayerData.metadata['licences'].driver
+		local driverunlicensed = nil
+
 		if bolo == true then
-			TriggerClientEvent("wk:togglePlateLock", src, cam, true, bolo)
+			TriggerClientEvent('QBCore:Notify', src, 'BOLO ID: '..boloid..' | Title: '..title..' | Registered Owner: '..vehicleowner..' | Plate: '..plate, 'error', Config.WolfknightNotifyTime)
 		end
+		if warrant == true then
+			TriggerClientEvent('QBCore:Notify', src, 'WANTED - INCIDENT ID: '..incidentid..' | Registered Owner: '..owner..' | Plate: '..plate, 'error', Config.WolfknightNotifyTime)
+		end
+
+		if driverslicense == false then
+			driverunlicensed = true
+			if driverunlicensed == true then
+			TriggerClientEvent('QBCore:Notify', src, 'NO DRIVERS LICENCE | Registered Owner: '..vehicleowner..' | Plate: '..plate, 'error', Config.WolfknightNotifyTime)
+			end
+		end
+
+
+		if bolo or warrant or driverunlicensed == true then
+		TriggerClientEvent("wk:togglePlateLock", src, cam, true, 1)
+		end
+
 	end)
 end
+
 RegisterNetEvent("ps-mdt:server:OnPlayerUnload", function()
 	--// Delete player from the MDT on logout
 	local src = source
@@ -1434,12 +1457,26 @@ RegisterServerEvent("mdt:server:AddLog", function(text)
 	AddLog(text)
 end)
 
-function GetBoloStatus(plate)
+function GetBoloStatus(plate, title, boloid)
     local result = MySQL.query.await("SELECT * FROM mdt_bolos where plate = @plate", {['@plate'] = plate})
 	if result and result[1] then
-		return true
+		local title = result[1]['title']
+		local boloid = result[1]['id']
+		return true, title, boloid
 	end
 
+	return false
+end
+
+function GetWarrantStatus(plate, owner, incidentid)
+    local result = MySQL.query.await("SELECT p.plate, p.citizenid, m.id FROM player_vehicles p INNER JOIN mdt_convictions m ON p.citizenid = m.cid WHERE m.warrant =1 AND p.plate =?", {plate})
+	if result and result[1] then
+		local citizenid = result[1]['citizenid']
+		local Player = QBCore.Functions.GetPlayerByCitizenId(citizenid)
+		local owner = Player.PlayerData.charinfo.firstname.." "..Player.PlayerData.charinfo.lastname
+		local incidentid = result[1]['id']
+		return true, owner, incidentid
+	end
 	return false
 end
 
@@ -1452,3 +1489,12 @@ function GetVehicleInformation(plate)
     end
 end
 
+function GetVehicleOwner(plate, owner)
+	local result = MySQL.query.await('SELECT plate, citizenid, id FROM player_vehicles WHERE plate = @plate', {['@plate'] = plate})
+	if result and result[1] then
+		local citizenid = result[1]['citizenid']
+		local Player = QBCore.Functions.GetPlayerByCitizenId(citizenid)
+		local owner = Player.PlayerData.charinfo.firstname.." "..Player.PlayerData.charinfo.lastname
+		return owner
+	end
+end
