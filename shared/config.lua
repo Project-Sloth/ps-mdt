@@ -5,6 +5,11 @@ Config.RosterLink = {
     ['ambulance'] = '',
     ['bcso'] = '',
     ['doj'] = '',
+    ['sast'] = '',
+    ['sasp'] = '',
+    ['doc'] = '',
+    ['lssd'] = '',
+    ['sapr'] = '',	
 }
 
 
@@ -244,6 +249,7 @@ Config.PoliceJobs = {
     ['sast'] = true,
     ['sasp'] = true,
     ['doc'] = true,
+    ['lssd'] = true,
     ['sapr'] = true,
     ['pa'] = true -- yucky
 }
