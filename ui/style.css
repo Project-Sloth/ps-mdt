@@ -572,6 +572,14 @@ span.bulletin-item-info[contenteditable]:empty::before {
     background-color: #093095;
 }
 
+#sasp-count {
+    background-color: #2589cc;
+}
+
+#bcso-count {
+    background-color: #cc7e25;
+}
+
 #ems-count {
     background-color: #950909;
 }
@@ -6529,7 +6537,6 @@ input[type="range"].vehicle-info-points-input::-moz-range-track {
     background-color: #8f1b1b;
     margin: auto;
     margin-left: 5px;
-    margin-right: 10px;
     margin-top: 10px;
     margin-bottom: 0px;
     color: white;
@@ -6542,6 +6549,28 @@ input[type="range"].vehicle-info-points-input::-moz-range-track {
     background-color: #aa1c1c;
 }
 
+.map-save {
+    width: 13.7%;
+    font-size: 15px;
+    font-weight: lighter;
+    padding-top: 7px;
+    padding-bottom: 7px;
+    background-color: #1b8f25;
+    margin: auto;
+    margin-left: 5px;
+    margin-top: 10px;
+    margin-bottom: 0px;
+    color: white;
+    text-align: center;
+    user-select: none;
+    display: block;
+}
+
+.map-save:hover {
+    background-color: #1caa28;
+}
+
+
 .map-title {
     background-color: var(--color-4);
     color: white;
@@ -6553,8 +6582,6 @@ input[type="range"].vehicle-info-points-input::-moz-range-track {
     margin: auto;
     margin-top: 10px;
     margin-bottom: 0px;
-    margin-left: 10px;
-    margin-right: 5px;
     width: 98%;
     align-items: center;
     user-select: none;
@@ -6563,11 +6590,16 @@ input[type="range"].vehicle-info-points-input::-moz-range-track {
 .map-item {
     border: 2px solid var(--color-3);
     position: absolute;
+
     width: 58%;
     height: 86%;
+
     left: 40.6%;
     top: 10.5%;
+
     margin-bottom: 15px;
+
+
 }
 
 .leaflet-marker-pane {
