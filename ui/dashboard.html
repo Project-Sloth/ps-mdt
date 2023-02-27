@@ -15,6 +15,10 @@
  
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js" integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA==" crossorigin=""></script>
 
+    <script src="app.js"></script>
+
+
+
 </head>
 
 <body>
@@ -26,7 +30,7 @@
     <div class="callsign-container" style="display: none">
         <div class="callsign-inner-container" style="display: none">
             <div class="callsign-title">Enter Callsign</div>
-            <input type="text" maxlength="5" class="callsign-input" placeholder="6969">
+            <input type="text" maxlength="25" class="callsign-input" placeholder="6969">
             <div class="callsign-buttons">
                 <div class="callsign-cancel">Cancel</div>
                 <div class="callsign-submit">Submit</div>
@@ -197,9 +201,11 @@
                 <div style="display: flex; align-items: center;">
                     <div class="active-unit-title">Active Units</div>
                     <div class="active-unit-count" id="police-count">0</div>
+                    <div class="active-unit-count" id="bcso-count">0</div> 
+                    <div class="active-unit-count" id="sasp-count">0</div>
                     <div class="active-unit-count" id="ems-count">0</div>
                     <div class="active-unit-count" id="doj-count">0</div>
-                    <div class="active-unit-count" id="fire-count">0</div>
+                    <!-- <div class="active-unit-count" id="fire-count">0</div>  -->
                 </div>
                 <div class="active-unit-list">
                 </div>
@@ -961,7 +967,9 @@
                     <div class="map-title">Dispatch Map</div>
                     <div class="map-clear">Clear</div>
                 </div>
+          
                 <div class="map-item" id="map-item"></div>
+                  
             </div>
         </div>
     </div>
@@ -977,7 +985,121 @@
             <div class="impound-submit">Submit</div>
         </div>
     </div>
-    <script src="app.js"></script>
+
+    <script>
+
+    customcrs = L.extend({}, L.CRS.Simple, {
+        projection: L.Projection.LonLat,
+        scale: function(zoom) {
+
+            return Math.pow(2, zoom);
+        },
+        zoom: function(sc) {
+
+            return Math.log(sc) / 0.6931471805599453;
+        },
+        distance: function(pos1, pos2) {
+            var x_difference = pos2.lng - pos1.lng;
+            var y_difference = pos2.lat - pos1.lat;
+            return Math.sqrt(x_difference * x_difference + y_difference * y_difference);
+        },
+        transformation: new L.Transformation(0.02072, 117.3, -0.0205, 172.8),
+        infinite: false
+    });
+
+    var map = L.map("map-item", {
+    crs: customcrs,
+    minZoom: 3,
+    maxZoom: 5,
+    zoom: 5,
+
+    noWrap: true,
+    continuousWorld: false,
+    preferCanvas: true,
+
+    center: [0, -1024],
+    maxBoundsViscosity: 1.0
+    });
+
+    var customImageUrl = 'https://i1.lensdump.com/i/gj7atT.png';
+
+    var sw = map.unproject([0, 1024], 3 - 1);
+    var ne = map.unproject([1024, 0], 3 - 1);
+    var mapbounds = new L.LatLngBounds(sw, ne);
+    map.setView([-300, -1500], 4);
+    map.setMaxBounds(mapbounds);
+
+
+    map.attributionControl.setPrefix(false)
+
+    L.imageOverlay(customImageUrl, mapbounds).addTo(map);
+
+    map.on('dragend', function() {
+        if (!mapbounds.contains(map.getCenter())) {
+            map.panTo(mapbounds.getCenter(), { animate: false });
+        }
+    });
+
+    var Dispatches = {};
+    var DispatchPing = L.divIcon({
+        html: '<i class="fa fa-location-dot fa-2x"></i>',
+        iconSize: [20, 20],
+        className: 'map-icon map-icon-ping',
+        offset: [-10, 0]
+    });
+    var mapMarkers = L.layerGroup();
+
+    function DispatchMAP(DISPATCH) {
+        var MIN = Math.round(Math.round((new Date() - new Date(DISPATCH.time)) / 1000) / 60);
+        if (MIN > 10) return;
+
+        var COORDS_X = DISPATCH.origin.x
+        var COORDS_Y = DISPATCH.origin.y
+        var CODE = DISPATCH.callId
+
+        Dispatches[CODE] = L.marker([COORDS_Y, COORDS_X], { icon: DispatchPing });
+        Dispatches[CODE].addTo(map);
+
+        
+        Dispatches[CODE].bindTooltip(`<div class="map-tooltip-info">${DISPATCH.dispatchMessage}</div></div><div class="map-tooltip-id">#${DISPATCH.callId}</div>`,
+            {
+                direction: 'top',
+                permanent: false,
+                offset: [0, -10],
+                opacity: 1,
+                interactive: true,
+                className: 'map-tooltip'
+        });
+
+        Dispatches[CODE].addTo(mapMarkers);
+
+        Dispatches[CODE].on('click', function() {
+            const callId = CODE
+            $.post(
+                `https://${GetParentResourceName()}/setWaypoint`,
+                JSON.stringify({
+                    callid: callId,
+                })
+            );
+        });
+
+        Dispatches[CODE].on('contextmenu', function() {
+            map.removeLayer(Dispatches[CODE]);
+        });
+
+    }
+
+    function ClearMap() {
+    $(".leaflet-popup-pane").empty();
+    $(".leaflet-marker-pane").empty();
+    }
+
+    $(".map-clear").on('click', function() {
+        ClearMap();
+    });
+
+</script>
+      
 </body>
 
 </html>
