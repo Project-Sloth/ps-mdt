@@ -284,6 +284,24 @@ Config.LogPerms = {
 	['police'] = {
 		[4] = true,
 	},
+    ['bcso'] = {
+		[4] = true,
+	},
+    ['sast'] = {
+		[4] = true,
+	},
+    ['sasp'] = {
+		[4] = true,
+	},
+    ['sapr'] = {
+		[4] = true,
+	},
+    ['doc'] = {
+		[4] = true,
+	},
+    ['lssd'] = {
+		[4] = true,
+	},
 }
 
 Config.ColorNames = {
