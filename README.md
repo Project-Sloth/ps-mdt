@@ -42,6 +42,8 @@ For all support questions, ask in our [Discord](https://www.discord.gg/projectsl
 
 - **If there are 7 diffrent departments why is there only 5 active unit counters?** - The counters are catagorized from left to right City, County, State, EMS and DOJ, this was done to keep the UI clean and becasue most aren't going to use all 7 departments.
 
+- **Why cant I see __X__ department panel?** - to see the each panel your job must be named correctly and are case sensitive, if you cant see the LSPD panel make sure your job is named police. The others are direct lower case versons of their names in the preview above.
+
 # Reskins
 The below repos are direct forks of ps-mdt and have been edited to fit certain countries/look.
 
