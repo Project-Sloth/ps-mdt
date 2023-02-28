@@ -20,15 +20,15 @@ For all support questions, ask in our [Discord](https://www.discord.gg/projectsl
 ![image](https://i.imgur.com/2HmsTa3.png)
 * BCSO
 ![image](https://i.imgur.com/9WVU0Kz.png)
-* sasp
+* SASP
 ![image](https://i.imgur.com/6tLNVkb.png)
-* sast
+* SAST
 ![image](https://i.imgur.com/G5b2vGU.png)
-* sapr
+* SAPR
 ![image](https://i.imgur.com/cu1ZsfW.png)
-* lssd
+* LSSD
 ![image](https://i.imgur.com/IsqZddu.png)
-* doc
+* DOC
 ![image](https://i.imgur.com/lFi4jDH.png)
 
 ## FAQ
