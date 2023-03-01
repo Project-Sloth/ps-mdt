@@ -16,20 +16,14 @@ For all support questions, ask in our [Discord](https://www.discord.gg/projectsl
 * Restart your server.
 
 # Preview
-* LSPD 
-![image](https://i.imgur.com/2HmsTa3.png)
-* BCSO
-![image](https://i.imgur.com/9WVU0Kz.png)
-* SASP
-![image](https://i.imgur.com/6tLNVkb.png)
-* SAST
-![image](https://i.imgur.com/G5b2vGU.png)
-* SAPR
-![image](https://i.imgur.com/cu1ZsfW.png)
-* LSSD
-![image](https://i.imgur.com/IsqZddu.png)
-* DOC
-![image](https://i.imgur.com/lFi4jDH.png)
+![image](https://user-images.githubusercontent.com/82112471/217596976-5147fefa-24e2-4b98-b167-4e151b8a9a8c.png)
+![image](https://user-images.githubusercontent.com/82112471/217597024-2c1493fc-4439-4b56-abbd-f9149e987b9e.png)
+![image](https://user-images.githubusercontent.com/82112471/217597103-c271720a-4c1b-4a13-8e17-a27727cb0e95.png)
+![image](https://user-images.githubusercontent.com/82112471/217597192-f9a63728-d2d0-4dfe-bd8b-373df1f9e969.png)
+![image](https://user-images.githubusercontent.com/82112471/217597248-85d2d074-7fcd-4a54-ac57-8d1103047bc0.png)
+![image](https://user-images.githubusercontent.com/82112471/217597338-aefcaed1-db9e-4b17-be45-3e0a66416b63.png)
+![image](https://user-images.githubusercontent.com/82112471/217597379-d936fb8e-e33a-4817-8997-16447158afb8.png)
+![image](https://user-images.githubusercontent.com/82112471/217597433-cd24bd41-a515-4fac-a896-807494501c39.png)
 
 ## FAQ
 - **How do I add charges to a criminal in an Incident?** - After finding and adding the criminal citizen to the incident, right-click in the space under the criminal's name and select "Add Charge".
@@ -37,12 +31,6 @@ For all support questions, ask in our [Discord](https://www.discord.gg/projectsl
 ![](https://i.imgur.com/WVEDLnJ.png)
 
 - **My dispatch calls are not being populated?** - You have not started the dispatch resource before the mdt or renamed the dispatch resource name and not made the necessary changes in mdt to reflect that. 
-
-- **How do i access the other police panels?** - Just add the names to your jobs.lua in the shared folder.
-
-- **If there are 7 diffrent departments why is there only 5 active unit counters?** - The counters are catagorized from left to right City, County, State, EMS and DOJ, this was done to keep the UI clean and becasue most aren't going to use all 7 departments.
-
-- **Why cant I see __X__ department panel?** - to see the each panel your job must be named correctly and are case sensitive, if you cant see the LSPD panel make sure your job is named police. The others are direct lower case versons of their names in the preview above.
 
 # Reskins
 The below repos are direct forks of ps-mdt and have been edited to fit certain countries/look.
