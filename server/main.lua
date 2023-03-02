@@ -258,11 +258,22 @@ QBCore.Functions.CreateCallback('mdt:server:GetProfileData', function(source, cb
 
 	if Config.PoliceJobs[JobName] or Config.DojJobs[JobName] then
 		local convictions = GetConvictions({person.cid})
+		local incidents = {}
 		person.convictions2 = {}
 		local convCount = 1
 		if next(convictions) then
 			for _, conv in pairs(convictions) do
 				if conv.warrant then person.warrant = true end
+
+				-- Get the incident details
+				local id = conv.linkedincident
+				local incident = GetIncidentName(id)
+				incidents[#incidents + 1] = {
+					id = id,
+					title = incident.title,
+					time = conv.time
+				}
+
 				local charges = json.decode(conv.charges)
 				for _, charge in pairs(charges) do
 					person.convictions2[convCount] = charge
@@ -270,6 +281,9 @@ QBCore.Functions.CreateCallback('mdt:server:GetProfileData', function(source, cb
 				end
 			end
 		end
+
+		person.incidents = incidents
+
 		local hash = {}
 		person.convictions = {}
 
@@ -279,6 +293,7 @@ QBCore.Functions.CreateCallback('mdt:server:GetProfileData', function(source, cb
 				hash[v] = true
 			end
 		end
+
 		local vehicles = GetPlayerVehicles(person.cid)
 
 		if vehicles then
