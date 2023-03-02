@@ -1571,6 +1571,51 @@ span.tag-input[contenteditable]:empty::before {
     user-select: none;
 }
 
+.manage-profile-incidents-container {
+    display: flex;
+    flex-direction: column;
+    background-color: var(--color-1);
+    width: 100%;
+    border: 2px solid var(--color-3);
+    margin-top: 10px;
+    max-height: 200px;
+    overflow: scroll;
+}
+
+.profile-incidents-title {
+    background-color: var(--color-4);
+    color: white;
+    font-size: 18px;
+    font-weight: bolder;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    text-align: center;
+    margin: auto;
+    margin-top: 10px;
+    margin-bottom: 0px;
+    width: 95%;
+    align-items: center;
+    user-select: none;
+}
+
+.profile-incidents-holder {
+    overflow: auto;
+    margin: auto;
+    margin-top: 10px;
+    width: 95%;
+    user-select: none;
+}
+
+.incident-number {
+    padding-right: 8px;
+}
+
+.incident-timestamp {
+    color: #303030;
+    font-size: 10px;
+    font-weight: 500;
+}
+
 .loader {
     position: absolute;
     left: 50%;

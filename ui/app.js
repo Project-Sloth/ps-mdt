@@ -201,17 +201,19 @@ $(document).ready(() => {
     $(".manage-profile-fingerprint").removeAttr("disabled");
     $(".manage-profile-pic").attr("src", result["profilepic"] ?? "img/male.png");
 
-    const { vehicles, tags, gallery, convictions, properties } = result
+    const { vehicles, tags, gallery, convictions, incidents, properties } = result
 
     $(".licenses-holder").empty();
     $(".tags-holder").empty();
     $(".vehs-holder").empty();
     $(".gallery-inner-container").empty();
     $(".convictions-holder").empty();
+    $(".profile-incidents-holder").empty();
 
     let licencesHTML = '<div style="color: #fff; text-align:center;">No Licenses</div>';
     let tagsHTML = '<div style="color: #fff; text-align:center;">No Tags</div>';
-    let convHTML = '<div style="color: #fff; text-align:center;">Clean Record ?</div>';
+    let convHTML = '<div style="color: #fff; text-align:center;">Clean Record</div>';
+    let incidentsHTML = '<div style="color: #fff; text-align:center;">No Incidents</div>';
     let vehHTML = '<div style="color: #fff; text-align:center;">No Vehicles</div>';
     let galleryHTML = '<div style="color: #fff; text-align:center;">No Photos</div>';
     let propertyHTML = '<div style="color: #fff; text-align:center;">No Properties</div>';
@@ -225,25 +227,43 @@ $(document).ready(() => {
     }
 
     if (licenses.length > 0 && (PoliceJobs[playerJob] !== undefined || DojJobs[playerJob] !== undefined)) {
-        licencesHTML = '';
-        for (const [lic, hasLic] of licenses) {
+      licencesHTML = '';
+      for (const [lic, hasLic] of licenses) {
+        let tagColour = hasLic == true ? "green-tag" : "red-tag";
+        licencesHTML += `<span class="license-tag ${tagColour} ${lic}" data-type="${lic}">${titleCase(lic)}</span>`;
+      }
 
-          let tagColour = hasLic == true ? "green-tag" : "red-tag";
-          licencesHTML += `<span class="license-tag ${tagColour} ${lic}" data-type="${lic}">${titleCase(lic)}</span>`;
-        }
       if (vehicles && vehicles.length > 0) {
-
         vehHTML = '';
         vehicles.forEach(value => {
           vehHTML += `<div class="veh-tag" data-plate="${value.plate}">${value.plate} - ${value.model} </div>`
         })
       }
+
       if (convictions && convictions.length > 0) {
         convHTML = '';
         convictions.forEach(value => {
           convHTML += `<div class="white-tag">${value} </div>`;
         })
       }
+
+      if (incidents && incidents.length > 0) {
+        incidentsHTML='';
+        // Sort incidents so most recent appear first
+        const sortedIncidents = incidents.sort((a,b) => b.time - a.time);
+        sortedIncidents.forEach(value => {
+          incidentsHTML += `<div class="white-tag" data-id=${value.id}>
+            <div style="display: flex">
+              <div class="incident-number">${value.id}</div>
+              <div>
+                ${value.title}
+                <div class="incident-timestamp">${getFormattedDate(new Date(Number(value.time)))}</div>
+              </div>
+            </div>
+          </div>`
+        })
+      }
+
       if (properties && properties.length > 0) {
         propertyHTML = '';
         properties.forEach(value => {
@@ -251,6 +271,7 @@ $(document).ready(() => {
         })
       }
     }
+
     if (tags && tags.length > 0) {
       tagsHTML = '';
       tags.forEach((tag) => {
@@ -278,6 +299,7 @@ $(document).ready(() => {
     $(".licenses-holder").html(licencesHTML);
     $(".tags-holder").html(tagsHTML);
     $(".convictions-holder").html(convHTML);
+    $(".profile-incidents-holder").html(incidentsHTML);
     $(".vehs-holder").html(vehHTML);
     $(".gallery-inner-container").html(galleryHTML);
     $(".houses-holder").html(propertyHTML);
@@ -2122,6 +2144,20 @@ $(document).ready(() => {
     ];
     openContextMenu(e, args);
   });
+
+  $(".profile-incidents-holder").on("contextmenu", ".white-tag", function (e) {
+    const args = [
+      {
+        className: "view-incident",
+        icon: "fas fa-search",
+        text: "View Incident",
+        info: $(this).data("id"),
+        status: "",
+      },
+    ];
+    openContextMenu(e, args);
+  });
+
   $(".reports-search-title").click(function () {
     if (canSearchReports == true) {
       if ($(".reports-search-input").css("display") == "none") {
@@ -4600,6 +4636,7 @@ $(document).ready(() => {
         if (PoliceJobs[playerJob] !== undefined || DojJobs[playerJob] !== undefined) {
           $(".manage-profile-licenses-container").removeClass("display_hidden");
           $(".manage-convictions-container").removeClass("display_hidden");
+          $(".manage-profile-incidents-container").removeClass("display_hidden");
           $(".manage-profile-vehs-container").removeClass("display_hidden");
           $(".manage-profile-houses-container").removeClass("display_hidden");
         }

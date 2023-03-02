@@ -44,10 +44,10 @@ function GetPfpFingerPrintInformation(cid)
 	return result[1]
 end
 
--- idk but I guess sure?
 function GetIncidentName(id)
 	-- Should also be a scalar
-	return MySQL.query.await('SELECT title FROM `mdt_incidents` WHERE id = :id LIMIT 1', { id = id })
+	local result = MySQL.query.await('SELECT title FROM `mdt_incidents` WHERE id = :id LIMIT 1', { id = id })
+    return result[1]
 	-- return exports.oxmysql:executeSync('SELECT title FROM `mdt_incidents` WHERE id = :id LIMIT 1', { id = id })
 end
 
