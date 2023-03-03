@@ -359,6 +359,12 @@ RegisterNUICallback("updateLicence", function(data, cb)
     cb(true)
 end)
 
+--====================================================================================
+------------------------------------------
+--             INCIDENTS PAGE             --
+------------------------------------------
+--====================================================================================
+
 RegisterNUICallback("searchIncidents", function(data, cb)
     local incident = data.incident
     TriggerServerEvent('mdt:server:searchIncidents', incident)
@@ -375,6 +381,64 @@ RegisterNUICallback("incidentSearchPerson", function(data, cb)
     local name = data.name
     TriggerServerEvent('mdt:server:incidentSearchPerson', name )
     cb(true)
+end)
+
+-- Handle sending the player to jail
+-- Uses QB-Core/qb-policejob function to send the player to jail
+-- If you use a different jail system, you will need to change this
+RegisterNUICallback("sendToJail", function(data, cb)
+    local citizenId, sentence = data.citizenId, data.sentence
+
+    -- Gets the player id from the citizenId
+    local p = promise.new()
+    QBCore.Functions.TriggerCallback('mdt:server:GetPlayerSourceId', function(result)
+        p:resolve(result)
+    end, citizenId)
+
+    local targetSourceId = Citizen.Await(p)
+
+    if sentence > 0 then
+        -- Uses qb-policejob JailPlayer event
+        TriggerServerEvent("police:server:JailPlayer", targetSourceId, sentence)
+    end
+end)
+
+-- Handle sending a fine to a player
+-- Uses the QB-Core bill command to send a fine to a player
+-- If you use a different fine system, you will need to change this
+RegisterNUICallback("sendFine", function(data, cb)
+    local citizenId, fine = data.citizenId, data.fine
+    
+    -- Gets the player id from the citizenId
+    local p = promise.new()
+    QBCore.Functions.TriggerCallback('mdt:server:GetPlayerSourceId', function(result)
+        p:resolve(result)
+    end, citizenId)
+
+    local targetSourceId = Citizen.Await(p)
+
+    if fine > 0 then
+        -- Uses QB-Core /bill command
+        ExecuteCommand(('bill %s %s'):format(targetSourceId, fine))
+    end
+end)
+
+-- Handle sending the player to community service
+-- If you use a different community service system, you will need to change this
+RegisterNUICallback("sendToCommunityService", function(data, cb)
+    local citizenId, sentence = data.citizenId, data.sentence
+
+    -- Gets the player id from the citizenId
+    local p = promise.new()
+    QBCore.Functions.TriggerCallback('mdt:server:GetPlayerSourceId', function(result)
+        p:resolve(result)
+    end, citizenId)
+
+    local targetSourceId = Citizen.Await(p)
+
+    if sentence > 0 then
+        TriggerServerEvent("qb-communityservice:server:StartCommunityService", targetSourceId, sentence)
+    end
 end)
 
 RegisterNetEvent('mdt:client:getProfileData', function(sentData, isLimited)
