@@ -23,6 +23,8 @@ var LastName = "";
 var DispatchNum = 0;
 var playerJob = "";
 let rosterLink  = "";
+//Set this to false if you don't want to show the send to community service button on the incidents page
+const canSendToCommunityService = true
 
 let impoundChanged = false;
 
@@ -394,8 +396,8 @@ $(document).ready(() => {
     }
   });
   $(".associated-incidents-tags-add-btn").on("click", "", function () {
-    document.addEventListener("mouseup", onMouseDownIcidents);
-    $(".icidents-person-search-container").fadeIn(250);
+    document.addEventListener("mouseup", onMouseDownIncidents);
+    $(".incidents-person-search-container").fadeIn(250);
     $(".close-all").css("filter", "brightness(15%)");
   });
   $(".gallery-add-btn").click(function () {
@@ -1097,10 +1099,10 @@ $(document).ready(() => {
       }
 
       if (
-        $(".icidents-person-search-container").css("display") != "none"
+        $(".incidents-person-search-container").css("display") != "none"
       ) {
         shouldClose = false;
-        $(".icidents-person-search-container").fadeOut(250);
+        $(".incidents-person-search-container").fadeOut(250);
         $(".close-all").css("filter", "none");
       }
 
@@ -1148,9 +1150,9 @@ $(document).ready(() => {
     }
   });
 
-  $(".icidents-person-search-name-input").on("keydown", "", function (e) {
+  $(".incidents-person-search-name-input").on("keydown", "", function (e) {
     if (e.keyCode === 13) {
-      let name = $(".icidents-person-search-name-input").val();
+      let name = $(".incidents-person-search-name-input").val();
       $.post(
         `https://${GetParentResourceName()}/incidentSearchPerson`,
         JSON.stringify({
@@ -1886,6 +1888,9 @@ $(document).ready(() => {
           $(".associated-incidents-sentence-input")
             .filter(`[data-id="${$(this).data("id")}"]`)
             .css("display", "none");
+          $(".associated-incidents-controls")
+            .filter(`[data-id="${$(this).data("id")}"]`)
+            .css("display", "none");
         }
       } else {
         $(this).removeClass("green-tag");
@@ -1903,10 +1908,38 @@ $(document).ready(() => {
           $(".associated-incidents-sentence-input")
             .filter(`[data-id="${$(this).data("id")}"]`)
             .fadeIn(100);
+          $(".associated-incidents-controls")
+            .filter(`[data-id="${$(this).data("id")}"]`)
+            .fadeIn(100);
         }
       }
     }
   );
+
+  $('.incidents-ghost-holder').on('click', '#jail-button', function() {
+    // Get the current sentence and recommended sentence values
+    const citizenId = $(this).data("id");
+    const sentence = $(".sentence-amount").filter(`[data-id=${citizenId}]`).val();
+    const recommendSentence = $(".sentence-recommended-amount").filter(`[data-id=${citizenId}]`).val();
+    sendToJail(citizenId, sentence, recommendSentence);
+  });
+
+  $('.incidents-ghost-holder').on('click', '#fine-button', function() {
+    // Get the current fine and recommended fine values
+    const citizenId = $(this).data("id");
+    const fine = $(".fine-amount").filter(`[data-id=${citizenId}]`).val();
+    const recommendFine = $(".fine-recommended-amount").filter(`[data-id=${citizenId}]`).val();
+    sendFine(citizenId, fine, recommendFine);
+  });
+
+  $('.incidents-ghost-holder').on('click', '#community-service-button', function() {
+    // Get the current sentence and recommended sentence values
+    const citizenId = $(this).data("id");
+    const sentence = $(".sentence-amount").filter(`[data-id=${citizenId}]`).val();
+    const recommendSentence = $(".sentence-recommended-amount").filter(`[data-id=${citizenId}]`).val();
+    sendToCommunityService(citizenId, sentence, recommendSentence);
+  });
+
   $(".contextmenu").on(
     "click",
     ".associated-incidents-remove-tag",
@@ -1949,11 +1982,11 @@ $(document).ready(() => {
       openContextMenu(e, args);
     }
   );
-  $(".icidents-person-search-holder").on(
+  $(".incidents-person-search-holder").on(
     "click",
-    ".icidents-person-search-item",
+    ".incidents-person-search-item",
     function () {
-      $(".icidents-person-search-container").fadeOut(250);
+      $(".incidents-person-search-container").fadeOut(250);
       $(".close-all").css("filter", "none");
       $(".associated-incidents-tags-holder").prepend(
         `<div class="associated-incidents-tag" data-id="${$(this).data(
@@ -1961,74 +1994,33 @@ $(document).ready(() => {
         )}">${$(this).data("name")}</div>`
       );
 
+      // This section handles populating the fields when you add a new associated user to the incident
       $(".incidents-ghost-holder").prepend(
         `
-            <div class="associated-incidents-user-container" data-id="${$(
-          this
-        ).data("cid")}">
-                <div class="associated-incidents-user-title">${$(this).data(
-          "info"
-        )}</div>
+            <div class="associated-incidents-user-container" data-id="${$(this).data("cid")}">
+                <div class="associated-incidents-user-title">${$(this).data("info")}</div>
                 <div class="associated-incidents-user-tags-holder">
-                    <div class="associated-incidents-user-tag red-tag" data-id="${$(
-          this
-        ).data("cid")}">Warrant</div>
-                    <div class="associated-incidents-user-tag red-tag" data-id="${$(
-          this
-        ).data("cid")}">Guilty</div>
-                    <div class="associated-incidents-user-tag red-tag" data-id="${$(
-          this
-        ).data("cid")}">Processed</div>
-                    <div class="associated-incidents-user-tag red-tag" data-id="${$(
-          this
-        ).data("cid")}">Associated</div>
+                    <div class="associated-incidents-user-tag red-tag" data-id="${$(this).data("cid")}">Warrant</div>
+                    <div class="associated-incidents-user-tag red-tag" data-id="${$(this).data("cid")}">Guilty</div>
+                    <div class="associated-incidents-user-tag red-tag" data-id="${$(this).data("cid")}">Processed</div>
+                    <div class="associated-incidents-user-tag red-tag" data-id="${$(this).data("cid")}">Associated</div>
                 </div>
-                <div class="associated-incidents-user-holder" data-name="${$(
-          this
-        ).data("cid")}">
+                <div class="associated-incidents-user-holder" data-name="${$(this).data("cid")}"></div>
+                <div class="manage-incidents-title-tag" data-id="${$(this).data("cid")}">Recommended Fine</div>
+                <div class="associated-incidents-fine-input" data-id="${$(this).data("cid")}"><img src="img/h7S5f9J.webp"> <input disabled placeholder="0" class="fine-recommended-amount" id="fine-recommended-amount" data-id="${$(this).data("cid")}" type="number"></div>
+                <div class="manage-incidents-title-tag" data-id="${$(this).data("cid")}">Recommended Sentence</div>
+                <div class="associated-incidents-sentence-input" data-id="${$(this).data("cid")}"><img src="img/9Xn6xXK.webp"> <input disabled placeholder="0" class="sentence-recommended-amount" id="sentence-recommended-amount" data-id="${$(this).data("cid")}" type="number"></div>
+                <div class="manage-incidents-title-tag" data-id="${$(this).data("cid")}">Fine</div>
+                <div class="associated-incidents-fine-input" data-id="${$(this).data("cid")}"><img src="img/h7S5f9J.webp"> <input placeholder="Enter fine here..." value="0" class="fine-amount" data-id="${$(this).data("cid")}" type="number"></div>
+                <div class="manage-incidents-title-tag" data-id="${$(this).data("cid")}">Sentence</div>
+                <div class="associated-incidents-sentence-input" data-id="${$(this).data("cid")}"><img src="img/9Xn6xXK.webp"> <input placeholder="Enter months here..." value="0" class="sentence-amount" data-id="${$(this).data("cid")}" type="number"></div>
+                <div class="associated-incidents-controls" data-id="${$(this).data("cid")}">
+                    <div id="jail-button" class="control-button" data-id="${$(this).data("cid")}"><span class="fa-solid fa-building-columns" style="margin-top: 3.5px;"></span> Jail</div>
+                    <div id="fine-button" class="control-button" data-id="${$(this).data("cid")}"><span class="fa-solid fa-file-invoice-dollar" style="margin-top: 3.5px;"></span> Fine</div>
+                    ${canSendToCommunityService ? `<div id="community-service-button" class="control-button" data-id="${$(this).data("cid")}"> <span class="fa-solid fa-person-digging" style="margin-top: 3.5px;"></span>Community Service</div>` : ''}
                 </div>
-                <div class="manage-incidents-title-tag" data-id="${$(this).data(
-          "cid"
-        )}">Recommended Fine</div>
-                <div class="associated-incidents-fine-input" data-id="${$(
-          this
-        ).data(
-          "cid"
-        )}"><img src="img/h7S5f9J.webp"> <input disabled placeholder="0" class="fine-recommended-amount" id="fine-recommended-amount" data-id="${$(
-          this
-        ).data("cid")}" type="number"></div>
-                <div class="manage-incidents-title-tag" data-id="${$(this).data(
-          "cid"
-        )}">Recommended Sentence</div>
-                <div class="associated-incidents-sentence-input" data-id="${$(
-          this
-        ).data(
-          "cid"
-        )}"><img src="img/9Xn6xXK.webp"> <input disabled placeholder="0" class="sentence-recommended-amount" id="sentence-recommended-amount" data-id="${$(
-          this
-        ).data("cid")}" type="number"></div>
-                <div class="manage-incidents-title-tag" data-id="${$(this).data(
-          "cid"
-        )}">Fine</div>
-                <div class="associated-incidents-fine-input" data-id="${$(
-          this
-        ).data(
-          "cid"
-        )}"><img src="img/h7S5f9J.webp"> <input placeholder="Enter fine here..." value="0" class="fine-amount" data-id="${$(
-          this
-        ).data("cid")}" type="number"></div>
-                <div class="manage-incidents-title-tag" data-id="${$(this).data(
-          "cid"
-        )}">Sentence</div>
-                <div class="associated-incidents-sentence-input" data-id="${$(
-          this
-        ).data(
-          "cid"
-        )}"><img src="img/9Xn6xXK.webp"> <input placeholder="Enter months here..." value="0" class="sentence-amount" data-id="${$(
-          this
-        ).data("cid")}" type="number"></div>
             </div>
-            `
+        `
       );
     }
   );
@@ -2164,7 +2156,7 @@ $(document).ready(() => {
       }
     }
   });
-  $(".icidents-person-search-container").hover(
+  $(".incidents-person-search-container").hover(
     function () {
       mouse_is_inside = true;
     },
@@ -4089,7 +4081,7 @@ $(document).ready(() => {
         $(".callsign-container").fadeOut(0);
         $(".radio-inner-container").fadeOut(0);
         $(".radio-container").fadeOut(0);
-        $(".icidents-person-search-container").fadeOut(0);
+        $(".incidents-person-search-container").fadeOut(0);
         $(".dispatch-attached-units").fadeOut(0);
         $(".respond-calls").fadeOut(0);
         $(".respond-calls-container").fadeOut(0);
@@ -4693,51 +4685,36 @@ $(document).ready(() => {
 
         const cid = value.cid;
 
-        if (value.associated == 1) {
-          $(".incidents-ghost-holder").prepend(
-            `<div class="associated-incidents-user-container" data-id="${value.cid}">
-                            <div class="associated-incidents-user-title">${value.name} (#${value.cid})</div>
-                            <div class="associated-incidents-user-tags-holder">
-                                <div class="associated-incidents-user-tag ${warrantTag}" data-id="${value.cid}">Warrant</div>
-                                <div class="associated-incidents-user-tag ${guiltyTag}" data-id="${value.cid}">Guilty</div>
-                                <div class="associated-incidents-user-tag ${processedTag}" data-id="${value.cid}">Processed</div>
-                                <div class="associated-incidents-user-tag ${associatedTag}" data-id="${value.cid}">Associated</div>
-                            </div>
-                            <div class="associated-incidents-user-holder" data-name="${value.cid}" style="display:none;">
-                            </div>
-                            <div class="manage-incidents-title-tag" data-id="${value.cid}" style="display:none;">Recommended Fine</div>
-                            <div class="associated-incidents-fine-input" data-id="${value.cid}" style="display:none;"><img src="img/h7S5f9J.webp"> <input placeholder="0" disabled class="fine-recommended-amount" id="fine-recommended-amount" data-id="${value.cid}" type="number"></div>
-                            <div class="manage-incidents-title-tag" data-id="${value.cid}" style="display:none;">Recommended Sentence</div>
-                            <div class="associated-incidents-sentence-input" data-id="${value.cid}" style="display:none;"><img src="img/9Xn6xXK.webp"> <input placeholder="0" disabled class="sentence-recommended-amount" id="sentence-recommended-amount" data-id="${value.cid}" type="number"></div>
-                            <div class="manage-incidents-title-tag" data-id="${value.cid}" style="display:none;">Fine</div>
-                            <div class="associated-incidents-fine-input" data-id="${value.cid}" style="display:none;"><img src="img/h7S5f9J.webp"> <input placeholder="Enter fine here..." value="0" class="fine-amount" data-id="${value.cid}" type="number"></div>
-                            <div class="manage-incidents-title-tag" data-id="${value.cid}" style="display:none;">Sentence</div>
-                            <div class="associated-incidents-sentence-input" data-id="${value.cid}" style="display:none;"><img src="img/9Xn6xXK.webp"> <input placeholder="Enter months here..." value="0" class="sentence-amount" data-id="${value.cid}" type="number"></div>
-                        </div>`
-          );
-        } else {
-          $(".incidents-ghost-holder").prepend(
-            `<div class="associated-incidents-user-container" data-id="${value.cid}">
-                            <div class="associated-incidents-user-title">${value.name} (#${value.cid})</div>
-                            <div class="associated-incidents-user-tags-holder">
-                                <div class="associated-incidents-user-tag ${warrantTag}" data-id="${value.cid}">Warrant</div>
-                                <div class="associated-incidents-user-tag ${guiltyTag}" data-id="${value.cid}">Guilty</div>
-                                <div class="associated-incidents-user-tag ${processedTag}" data-id="${value.cid}">Processed</div>
-                                <div class="associated-incidents-user-tag ${associatedTag}" data-id="${value.cid}">Associated</div>
-                            </div>
-                            <div class="associated-incidents-user-holder" data-name="${value.cid}">
-                            </div>
-                            <div class="manage-incidents-title-tag" data-id="${value.cid}">Recommended Fine</div>
-                            <div class="associated-incidents-fine-input" data-id="${value.cid}"><img src="img/h7S5f9J.webp"> <input placeholder="0" disabled class="fine-recommended-amount" id="fine-recommended-amount" data-id="${value.cid}" type="number"></div>
-                            <div class="manage-incidents-title-tag" data-id="${value.cid}">Recommended Sentence</div>
-                            <div class="associated-incidents-sentence-input" data-id="${value.cid}"><img src="img/9Xn6xXK.webp"> <input placeholder="0" disabled class="sentence-recommended-amount" id="sentence-recommended-amount" data-id="${value.cid}" type="number"></div>
-                            <div class="manage-incidents-title-tag" data-id="${value.cid}">Fine</div>
-                            <div class="associated-incidents-fine-input" data-id="${value.cid}"><img src="img/h7S5f9J.webp"> <input placeholder="Enter fine here..." value="0" class="fine-amount" data-id="${value.cid}" type="number"></div>
-                            <div class="manage-incidents-title-tag" data-id="${value.cid}">Sentence</div>
-                            <div class="associated-incidents-sentence-input" data-id="${value.cid}"><img src="img/9Xn6xXK.webp"> <input placeholder="Enter months here..." value="0" class="sentence-amount" data-id="${value.cid}" type="number"></div>
-                        </div>`
-          );
-        }
+        // If the associated field is not checked, then populate the recommended fine and sentence fields
+        const associatedIncidentsContainer = (value.associated != 1) && `
+          <div class="associated-incidents-user-holder" data-name="${cid}" ></div>
+          <div class="manage-incidents-title-tag" data-id="${cid}">Recommended Fine</div>
+          <div class="associated-incidents-fine-input" data-id="${cid}"><img src="img/h7S5f9J.webp"> <input placeholder="0" disabled class="fine-recommended-amount" id="fine-recommended-amount" data-id="${cid}" type="number"></div>
+          <div class="manage-incidents-title-tag" data-id="${cid}">Recommended Sentence</div>
+          <div class="associated-incidents-sentence-input" data-id="${cid}"><img src="img/9Xn6xXK.webp"> <input placeholder="0" disabled class="sentence-recommended-amount" id="sentence-recommended-amount" data-id="${cid}" type="number"></div>
+          <div class="manage-incidents-title-tag" data-id="${cid}">Fine</div>
+          <div class="associated-incidents-fine-input" data-id="${cid}"><img src="img/h7S5f9J.webp"> <input placeholder="Enter fine here..." value="0" class="fine-amount" data-id="${cid}" type="number"></div>
+          <div class="manage-incidents-title-tag" data-id="${cid}">Sentence</div>
+          <div class="associated-incidents-sentence-input" data-id="${cid}"><img src="img/9Xn6xXK.webp"> <input placeholder="Enter months here..." value="0" class="sentence-amount" data-id="${cid}" type="number"></div>
+          <div class="associated-incidents-controls" data-id="${cid}">
+            <div id="jail-button" class="control-button" data-id="${cid}"><span class="fa-solid fa-building-columns" style="margin-top: 3.5px;"></span> Jail</div>
+            <div id="fine-button" class="control-button" data-id="${cid}"><span class="fa-solid fa-file-invoice-dollar" style="margin-top: 3.5px;"></span> Fine</div>
+            ${canSendToCommunityService ? `<div id="community-service-button" class="control-button" data-id="${cid}"> <span class="fa-solid fa-person-digging" style="margin-top: 3.5px;"></span>Community Service</div>` : ''}
+          </div>
+        `;
+
+        $(".incidents-ghost-holder").prepend(
+          `<div class="associated-incidents-user-container" data-id="${cid}">
+              <div class="associated-incidents-user-title">${value.name} (#${cid})</div>
+              <div class="associated-incidents-user-tags-holder">
+                  <div class="associated-incidents-user-tag ${warrantTag}" data-id="${cid}">Warrant</div>
+                  <div class="associated-incidents-user-tag ${guiltyTag}" data-id="${cid}">Guilty</div>
+                  <div class="associated-incidents-user-tag ${processedTag}" data-id="${cid}">Processed</div>
+                  <div class="associated-incidents-user-tag ${associatedTag}" data-id="${cid}">Associated</div>
+              </div>
+              ${associatedIncidentsContainer}
+          </div>`
+        );
 
         $(".fine-amount")
           .filter("[data-id='" + value.cid + "']")
@@ -4767,18 +4744,18 @@ $(document).ready(() => {
       });
     } else if (eventData.type == "incidentSearchPerson") {
       let table = eventData.data;
-      $(".icidents-person-search-holder").empty();
+      $(".incidents-person-search-holder").empty();
       $.each(table, function (index, value) {
         let name = value.firstname + " " + value.lastname;
-        $(".icidents-person-search-holder").prepend(
+        $(".incidents-person-search-holder").prepend(
           `
-                    <div class="icidents-person-search-item" data-info="${name} (#${value.id})" data-cid="${value.id}" data-name="${name}">
-                        <img src="${value.profilepic}" class="icidents-person-search-item-pfp">
-                        <div class="icidents-person-search-item-right">
-                            <div class="icidents-person-search-item-right-cid-title">Citizen ID</div>
-                            <div class="icidents-person-search-item-right-cid-input"><span class="fas fa-id-card"></span> ${value.id}</div>
-                            <div class="icidents-person-search-item-right-name-title">Name</div>
-                            <div class="icidents-person-search-item-right-name-input"><span class="fas fa-user"></span> ${name}</div>
+                    <div class="incidents-person-search-item" data-info="${name} (#${value.id})" data-cid="${value.id}" data-name="${name}">
+                        <img src="${value.profilepic}" class="incidents-person-search-item-pfp">
+                        <div class="incidents-person-search-item-right">
+                            <div class="incidents-person-search-item-right-cid-title">Citizen ID</div>
+                            <div class="incidents-person-search-item-right-cid-input"><span class="fas fa-id-card"></span> ${value.id}</div>
+                            <div class="incidents-person-search-item-right-name-title">Name</div>
+                            <div class="incidents-person-search-item-right-name-input"><span class="fas fa-user"></span> ${name}</div>
                         </div>
                     </div>
                     `
@@ -5172,6 +5149,39 @@ function addTag(tagInput) {
   );
 }
 
+// Use the customSentence if defined, otherwise use the recommendedSentence
+// This uses the assumption that customSentence will be 0 if not defined
+function sendToJail(citizenId, customSentence, recommendedSentence) {
+  const sentence = Number(customSentence) || Number(recommendedSentence);
+
+  $.post(`https://${GetParentResourceName()}/sendToJail`, JSON.stringify({
+    citizenId,
+    sentence,
+  }));
+}
+
+// Use the customSentence if defined, otherwise use the recommendedSentence
+// This uses the assumption that customSentence will be 0 if not defined
+function sendToCommunityService(citizenId, customSentence, recommendedSentence) {
+  const sentence = Number(customSentence) || Number(recommendedSentence);
+
+  $.post(`https://${GetParentResourceName()}/sendToCommunityService`, JSON.stringify({
+    citizenId,
+    sentence,
+  }));
+}
+
+// Use the customFine if defined, otherwise use the recommendedFine
+// This uses the assumption that customFine will be 0 if not defined
+function sendFine(citizenId, customFine, recommendedFine) {
+  const fine = Number(customFine) || Number(recommendedFine);
+
+  $.post(`https://${GetParentResourceName()}/sendFine`, JSON.stringify({
+    citizenId,
+    fine,
+  }));
+}
+
 // Context menu
 
 var menu = document.querySelector(".contextmenu");
@@ -5264,19 +5274,19 @@ function removeImage(url) {
     .remove();
 }
 
-function hideIcidentsMenu() {
+function hideIncidentsMenu() {
   if (
-    $(".icidents-person-search-container").css("display") != "none" &&
+    $(".incidents-person-search-container").css("display") != "none" &&
     !mouse_is_inside
   ) {
-    $(".icidents-person-search-container").fadeOut(250);
+    $(".incidents-person-search-container").fadeOut(250);
     $(".close-all").css("filter", "none");
   }
 }
 
-function onMouseDownIcidents(e) {
-  hideIcidentsMenu();
-  document.removeEventListener("mouseup", onMouseDownIcidents);
+function onMouseDownIncidents(e) {
+  hideIncidentsMenu();
+  document.removeEventListener("mouseup", onMouseDownIncidents);
 }
 
 function titleCase(str) {

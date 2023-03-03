@@ -1467,3 +1467,11 @@ function GetVehicleInformation(plate)
     end
 end
 
+-- Returns the source for the given citizenId
+QBCore.Functions.CreateCallback('mdt:server:GetPlayerSourceId', function(source, cb, targetCitizenId)
+	local targetPlayer = QBCore.Functions.GetPlayerByCitizenId(targetCitizenId)
+	local targetSource = targetPlayer.PlayerData.source
+	
+	cb(targetSource)
+end)
+

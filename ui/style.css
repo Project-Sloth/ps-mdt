@@ -2789,7 +2789,30 @@ span.civilians-incident-input[contenteditable]:empty::before {
     background-color: rgba(0, 0, 0, 0);
 }
 
-.icidents-person-search {
+.associated-incidents-controls {
+    display: flex;
+    justify-content: space-evenly;
+    width: 90%;
+    margin-top: 5px;
+    margin-bottom: 15px;
+}
+
+.control-button {
+    text-align: center;
+    background-color: var(--color-4);
+    padding: 10px;
+}
+
+.control-button span {
+    padding-right: 8px;
+}
+
+.control-button:hover {
+    background-color: var(--color-3);
+    cursor: pointer;
+}
+
+.incidents-person-search {
     display: flex;
     flex-direction: column;
     width: 100%;
@@ -2797,7 +2820,7 @@ span.civilians-incident-input[contenteditable]:empty::before {
     margin-top: 32.5vh;
 }
 
-.icidents-person-search-container {
+.incidents-person-search-container {
     background-color: var(--color-5);
     width: 95vh;
     height: 45vh;
@@ -2808,7 +2831,7 @@ span.civilians-incident-input[contenteditable]:empty::before {
     display: none;
 }
 
-.icidents-person-search-title {
+.incidents-person-search-title {
     background-color: var(--color-4);
     color: white;
     font-size: 20px;
@@ -2823,7 +2846,7 @@ span.civilians-incident-input[contenteditable]:empty::before {
     user-select: none;
 }
 
-.icidents-person-search-name-title {
+.incidents-person-search-name-title {
     width: 95%;
     margin: auto;
     margin-top: 10px;
@@ -2834,7 +2857,7 @@ span.civilians-incident-input[contenteditable]:empty::before {
     user-select: none;
 }
 
-.icidents-person-search-name-input {
+.incidents-person-search-name-input {
     background-color: rgba(0, 0, 0, 0);
     border: none;
     outline: none;
@@ -2847,7 +2870,7 @@ span.civilians-incident-input[contenteditable]:empty::before {
     padding-bottom: 2.5px;
 }
 
-.icidents-person-search-holder {
+.incidents-person-search-holder {
     overflow: auto;
     height: 30vh;
     width: 95%;
@@ -2856,18 +2879,18 @@ span.civilians-incident-input[contenteditable]:empty::before {
     margin-bottom: 15px;
 }
 
-.icidents-person-search-item {
+.incidents-person-search-item {
     width: 100%;
     height: 12.5vh;
     display: flex;
     flex-direction: row;
 }
 
-.icidents-person-search-item:hover {
+.incidents-person-search-item:hover {
     background-color: var(--color-3);
 }
 
-.icidents-person-search-item-pfp {
+.incidents-person-search-item-pfp {
     width: 11vh;
     height: 11vh;
     margin-top: auto;
@@ -2875,7 +2898,7 @@ span.civilians-incident-input[contenteditable]:empty::before {
     margin-left: 10px;
 }
 
-.icidents-person-search-item-right {
+.incidents-person-search-item-right {
     display: flex;
     flex-direction: column;
     width: 100%;
@@ -2886,7 +2909,7 @@ span.civilians-incident-input[contenteditable]:empty::before {
     height: 11vh;
 }
 
-.icidents-person-search-item-right-cid-title {
+.incidents-person-search-item-right-cid-title {
     width: 100%;
     margin: auto;
     margin-top: 0px;
@@ -2897,7 +2920,7 @@ span.civilians-incident-input[contenteditable]:empty::before {
     user-select: none;
 }
 
-.icidents-person-search-item-right-cid-input {
+.incidents-person-search-item-right-cid-input {
     width: 100%;
     margin: auto;
     margin-top: 5px;
@@ -2910,7 +2933,7 @@ span.civilians-incident-input[contenteditable]:empty::before {
     user-select: none;
 }
 
-.icidents-person-search-item-right-name-title {
+.incidents-person-search-item-right-name-title {
     width: 100%;
     margin: auto;
     margin-top: auto;
@@ -2921,7 +2944,7 @@ span.civilians-incident-input[contenteditable]:empty::before {
     user-select: none;
 }
 
-.icidents-person-search-item-right-name-input {
+.incidents-person-search-item-right-name-input {
     width: 100%;
     margin: auto;
     margin-top: 5px;
