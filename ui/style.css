@@ -2789,6 +2789,29 @@ span.civilians-incident-input[contenteditable]:empty::before {
     background-color: rgba(0, 0, 0, 0);
 }
 
+.associated-incidents-controls {
+    display: flex;
+    justify-content: space-evenly;
+    width: 90%;
+    margin-top: 5px;
+    margin-bottom: 15px;
+}
+
+.control-button {
+    text-align: center;
+    background-color: var(--color-4);
+    padding: 10px;
+}
+
+.control-button span {
+    padding-right: 8px;
+}
+
+.control-button:hover {
+    background-color: var(--color-3);
+    cursor: pointer;
+}
+
 .icidents-person-search {
     display: flex;
     flex-direction: column;
