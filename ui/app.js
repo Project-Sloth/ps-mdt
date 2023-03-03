@@ -3778,683 +3778,219 @@ $(document).ready(() => {
       draggedElement = 0;
     }
   });
-
+  const customThemes = {
+    lspd: {
+      color1: "#1E3955",
+      color2: "#213f5f",
+      color3: "#2C537B",
+      color4: "#23405E",
+      color5: "#152638",
+      color6: "#121f2c",
+      color7: "rgb(28, 54, 82)",
+      color8: "#2554cc",
+      color9: "#6E707C",
+      color10: "#8F741B",
+    },
+    bcso: {
+      color1: "#333333",
+      color2: "#57471a",
+      color3: "#614f1d",
+      color4: "#594b27",
+      color5: "#4d3f17",
+      color6: "#433714",
+      color7: "#57471a",
+      color8: "#2554cc",
+      color9: "#6E707C",
+      color10: "#8F741B",
+    },
+    sasp: {
+      color1: "#423f39",
+      color2: "#8f7c3f",
+      color3: "#16537e",
+      color4: "#8f7c3f",
+      color5: "#0f3a58",
+      color6: "#121f2c",
+      color7: "#0f3a58",
+      color8: "#2554cc",
+      color9: "#9c9485",
+      color10: "#8F741B",
+    },
+    sast: {
+      color1: "#2c2c2c",
+      color2: "#232323",
+      color3: "#16537e",
+      color4: "#1c1c1c",
+      color5: "#232323",
+      color6: "#121f2c",
+      color7: "#232323",
+      color8: "#2554cc",
+      color9: "#bcbcbc",
+      color10: "#8F741B",
+    },
+    sapr: {
+      color1: "#3b4c3a",
+      color2: "#57471a",
+      color3: "#614f1d",
+      color4: "#594b27",
+      color5: "#4d3f17",
+      color6: "#433714",
+      color7: "#57471a",
+      olor8: "#2554cc",
+      color9: "#6E707C",
+      color10: "#8F741B",
+    },
+    lssd: {
+      color1: "#3b4c3a",
+      color2: "#8f7c3f",
+      color3: "#8f7c3f",
+      color4: "#806f38",
+      color5: "#4d3f17",
+      color6: "#f1c232",
+      color7: "#57471a",
+      color8: "#2554cc",
+      color9: "#6E707C",
+      color10: "#8F741B",
+    },
+    doc: {
+      color1: "#191919",
+      color2: "#323232",
+      color3: "#000000",
+      color4: "#666666",
+      color5: "#46474f",
+      color6: "#191919",
+      color7: "#666666",
+      color8: "#2554cc",
+      color9: "#6E707C",
+      color10: "#8F741B",  
+    },
+  }
+  function applyCustomTheme(theme) {
+    document.documentElement.style.setProperty(
+      "--color-1", /* Panels */
+        theme.color1
+        );
+    document.documentElement.style.setProperty(
+      "--color-2", /* Clock */
+        theme.color2
+        );
+    document.documentElement.style.setProperty(
+      "--color-3", /* Outlines and hover */
+        theme.color3
+        );
+    document.documentElement.style.setProperty(
+      "--color-4", /* Button Base */
+        theme.color4
+        );
+    document.documentElement.style.setProperty(
+        "--color-5",
+        theme.color5
+        );  
+    document.documentElement.style.setProperty(
+        "--color-6",
+        theme.color6
+        );
+    document.documentElement.style.setProperty(
+        "--color-7",
+        theme.color7
+        );
+    document.documentElement.style.setProperty(
+        "--color-8",
+        theme.color8
+        );
+    document.documentElement.style.setProperty(
+        "--color-9",
+        theme.color9
+        );
+    document.documentElement.style.setProperty(
+        "--color-10",
+        theme.color10
+        );
+  }
   function JobColors(sentJob) {
     if (sentJob) {
       if (PoliceJobs[sentJob] !== undefined)  {
         if (sentJob == "police") {
-        document.documentElement.style.setProperty(
-          "--color-1", /* Panels */
-          "#1E3955"
-        );
-        document.documentElement.style.setProperty(
-          "--color-2", /* Clock */
-          "#213F5F"
-        );
-        document.documentElement.style.setProperty(
-          "--color-3", /* Outlines and hover */
-          "#2C537B"
-        );
-        document.documentElement.style.setProperty(
-          "--color-4", /* Button Base */
-          "#23405E"
-        );
-        document.documentElement.style.setProperty(
-          "--color-5", /* interactables */
-          "#152638"
-        );
-        document.documentElement.style.setProperty(
-          "--color-6", /* context text box? */
-          "#121f2c"
-        );
-        document.documentElement.style.setProperty(
-          "--color-7", /* Dispatch Msg box */
-          "rgb(28, 54, 82)"
-        );
-        document.documentElement.style.setProperty(
-          "--color-8", /* ? */ /* ? */
-          "#2554cc"
-        );
-        document.documentElement.style.setProperty(
-          "--color-9", /* backround */
-          "#6E707C"
-        );
-        document.documentElement.style.setProperty(
-          "--color-10", /* Refresh button */
-          "#8F741B"
-        );
-        $(".badge-logo").attr("src", "img/LSPD.webp");
-        $(".header-title").html("LOS SANTOS POLICE");
-        $(".bolo-nav-item").html("BOLOs");
-        $(".bolos-search-title").html("Bolos");
-        $("#bolos-search-input").attr("placeholder", "Search Bolo...");
-        $(".manage-bolos-title").html("Manage Bolo");
-        $(".manage-bolos-editing-title").html(
-          "You are currently creating a new BOLO"
-        );
-        $(".boloplate-title").html("Plate");
-        $(".boloowner-title").html("Owner");
-        $(".boloindividual-title").html("Individual");
-        $("#boloplate").attr("placeholder", "Place plate here...");
-        $("#bolodetail").attr(
-          "placeholder",
-          "Bolo detail goes here..."
-        );
-        $("#boloowner").attr(
-          "placeholder",
-          "Place vehicle owner here..."
-        );
-        $("#boloindividual").attr(
-          "placeholder",
-          "Place invidivual here..."
-        );
-        $("#home-warrants-container").fadeIn(0);
-        $("#home-reports-container").fadeOut(0);
-        //$(".quote-span").html("TUCKER MALD, BEST MALD");
-        $(".incidents-nav-item").show();
-        $(".bolo-nav-item").show();
-        $(".dmv-nav-item").show();
-        $(".weapons-nav-item").show()
-        $(".cams-nav-item").show();
-        $(".map-nav-item").show();
-        $(".dispatch-title-ofsomesort").html("Dispatch");
-        $(".dispatch-comms-container").fadeIn(0);
-        $(".manage-profile-name-input-1").attr("readonly", true);
-        $(".manage-profile-name-input-2").attr("readonly", true);
-        $("#reports-officers-involved-tag-title").html(
-          "Officers Involved"
-        );
-        $(".roster-iframe").attr("src", rosterLink);
-
-        $(".manage-profile-save").css("display", "block");
-        $(".manage-profile-editing-title").css("display", "block");
-        $(".manage-incidents-create").css("display", "block");
-        $(".manage-incidents-save").css("display", "block");
-        $(".manage-incidents-editing-title").css("display", "block");
-        $(".manage-reports-new").css("display", "block");
-        $(".manage-reports-save").css("display", "block");
-        $(".manage-reports-editing-title").css("display", "block");
-        $(".vehicle-information-save").css("display", "block");
-        $(".vehicle-information-title").css("margin-right", "0px").css("width", "81%");
-        $(".manage-incidents-title ").css("margin-right", "0px")
-        $(".manage-reports-title").css("margin-right", "0px").css("width", "66%");
-        } else if (sentJob == "sasp")  {
-          document.documentElement.style.setProperty(
-            "--color-1", /* Panels */
-            "#423f39"
-          );
-          document.documentElement.style.setProperty(
-            "--color-2", /* Clock */
-            "#8f7c3f"
-          );
-          document.documentElement.style.setProperty(
-            "--color-3", /* Outlines and hover */
-            "#16537e"
-          );
-          document.documentElement.style.setProperty(
-            "--color-4", /* Button Base */
-            "#8f7c3f"
-          );
-          document.documentElement.style.setProperty(
-            "--color-5", /* interactables */
-            "#0f3a58"
-          );
-          document.documentElement.style.setProperty(
-            "--color-6", /* context text box? */
-            "#121f2c"
-          );
-          document.documentElement.style.setProperty(
-            "--color-7", /* Dispatch Msg box */
-            "#0f3a58"
-          );
-          document.documentElement.style.setProperty(
-            "--color-8", /* ? */ /* ? */
-            "#2554cc"
-          );
-          document.documentElement.style.setProperty(
-            "--color-9", /* backround */
-            "#9c9485"
-          );
-          document.documentElement.style.setProperty(
-            "--color-10", /* Refresh button */
-            "#8F741B"
-        );
-        $(".badge-logo").attr("src", "img/sasp_badge.webp");
-        $(".header-title").html("SAN ANDREAS STATE POLICE");
-        $(".bolo-nav-item").html("BOLOs");
-        $(".bolos-search-title").html("Bolos");
-        $("#bolos-search-input").attr("placeholder", "Search Bolo...");
-        $(".manage-bolos-title").html("Manage Bolo");
-        $(".manage-bolos-editing-title").html(
-          "You are currently creating a new BOLO"
-        );
-        $(".boloplate-title").html("Plate");
-        $(".boloowner-title").html("Owner");
-        $(".boloindividual-title").html("Individual");
-        $("#boloplate").attr("placeholder", "Place plate here...");
-        $("#bolodetail").attr(
-          "placeholder",
-          "Bolo detail goes here..."
-        );
-        $("#boloowner").attr(
-          "placeholder",
-          "Place vehicle owner here..."
-        );
-        $("#boloindividual").attr(
-          "placeholder",
-          "Place invidivual here..."
-        );
-        $("#home-warrants-container").fadeIn(0);
-        $("#home-reports-container").fadeOut(0);
-        //$(".quote-span").html("TUCKER MALD, BEST MALD");
-        $(".incidents-nav-item").show();
-        $(".bolo-nav-item").show();
-        $(".dmv-nav-item").show();
-        $(".weapons-nav-item").show()
-        $(".cams-nav-item").show();
-        $(".map-nav-item").show();
-        $(".dispatch-title-ofsomesort").html("Dispatch");
-        $(".dispatch-comms-container").fadeIn(0);
-        $(".manage-profile-name-input-1").attr("readonly", true);
-        $(".manage-profile-name-input-2").attr("readonly", true);
-        $("#reports-officers-involved-tag-title").html(
-          "Officers Involved"
-        );
-        $(".roster-iframe").attr("src", rosterLink);
-
-        $(".manage-profile-save").css("display", "block");
-        $(".manage-profile-editing-title").css("display", "block");
-        $(".manage-incidents-create").css("display", "block");
-        $(".manage-incidents-save").css("display", "block");
-        $(".manage-incidents-editing-title").css("display", "block");
-        $(".manage-reports-new").css("display", "block");
-        $(".manage-reports-save").css("display", "block");
-        $(".manage-reports-editing-title").css("display", "block");
-        $(".vehicle-information-save").css("display", "block");
-        $(".vehicle-information-title").css("margin-right", "0px").css("width", "81%");
-        $(".manage-incidents-title ").css("margin-right", "0px")
-        $(".manage-reports-title").css("margin-right", "0px").css("width", "66%");
-        } else if (sentJob == "sast")  {
-            document.documentElement.style.setProperty(
-              "--color-1", /* Panels */
-              "#2c2c2c"
-            );
-            document.documentElement.style.setProperty(
-              "--color-2", /* Clock */
-              "#232323"
-            );
-            document.documentElement.style.setProperty(
-              "--color-3", /* Outlines and hover */
-              "#16537e"
-            );
-            document.documentElement.style.setProperty(
-              "--color-4", /* Button Base */
-              "#1c1c1c"
-            );
-            document.documentElement.style.setProperty(
-              "--color-5", /* interactables */
-              "#232323"
-            );
-            document.documentElement.style.setProperty(
-              "--color-6", /* context text box? */
-              "#121f2c"
-            );
-            document.documentElement.style.setProperty(
-              "--color-7", /* Dispatch Msg box */
-              "#232323"
-            );
-            document.documentElement.style.setProperty(
-              "--color-8", /* ? */ /* ? */
-              "#2554cc"
-            );
-            document.documentElement.style.setProperty(
-              "--color-9", /* backround */
-              "#bcbcbc"
-            );
-            document.documentElement.style.setProperty(
-              "--color-10", /* Refresh button */
-              "#8F741B"
-            );
+            applyCustomTheme(customThemes.lspd)
+            $(".badge-logo").attr("src", "img/LSPD.webp");
+            $(".header-title").html("LOS SANTOS POLICE");
+          } else if (sentJob == "bcso"){
+            applyCustomTheme(customThemes.bcso)
+            $(".badge-logo").attr("src", "img/BCSO.webp");
+            $(".header-title").html("BLAINE COUNTY SHERIFF OFFICE"); 
+          } else if (sentJob == "sasp") {
+            applyCustomTheme(customThemes.sasp)
+            $(".badge-logo").attr("src", "img/sasp_badge.webp");
+            $(".header-title").html("SAN ANDREAS STATE POLICE");
+          } else if (sentJob == "sast") {
+            applyCustomTheme(customThemes.sast)
             $(".badge-logo").attr("src", "img/sast_badge.webp");
             $(".header-title").html("SAN ANDREAS STATE TROOPERS");
-            $(".bolo-nav-item").html("BOLOs");
-            $(".bolos-search-title").html("Bolos");
-            $("#bolos-search-input").attr("placeholder", "Search Bolo...");
-            $(".manage-bolos-title").html("Manage Bolo");
-            $(".manage-bolos-editing-title").html(
-              "You are currently creating a new BOLO"
-            );
-            $(".boloplate-title").html("Plate");
-            $(".boloowner-title").html("Owner");
-            $(".boloindividual-title").html("Individual");
-            $("#boloplate").attr("placeholder", "Place plate here...");
-            $("#bolodetail").attr(
-              "placeholder",
-              "Bolo detail goes here..."
-            );
-            $("#boloowner").attr(
-              "placeholder",
-              "Place vehicle owner here..."
-            );
-            $("#boloindividual").attr(
-              "placeholder",
-              "Place invidivual here..."
-            );
-            $("#home-warrants-container").fadeIn(0);
-            $("#home-reports-container").fadeOut(0);
-            //$(".quote-span").html("TUCKER MALD, BEST MALD");
-            $(".incidents-nav-item").show();
-            $(".bolo-nav-item").show();
-            $(".dmv-nav-item").show();
-            $(".weapons-nav-item").show()
-            $(".cams-nav-item").show();
-            $(".map-nav-item").show();
-            $(".dispatch-title-ofsomesort").html("Dispatch");
-            $(".dispatch-comms-container").fadeIn(0);
-            $(".manage-profile-name-input-1").attr("readonly", true);
-            $(".manage-profile-name-input-2").attr("readonly", true);
-            $("#reports-officers-involved-tag-title").html(
-              "Officers Involved"
-            );
-            $(".roster-iframe").attr("src", rosterLink);
-    
-            $(".manage-profile-save").css("display", "block");
-            $(".manage-profile-editing-title").css("display", "block");
-            $(".manage-incidents-create").css("display", "block");
-            $(".manage-incidents-save").css("display", "block");
-            $(".manage-incidents-editing-title").css("display", "block");
-            $(".manage-reports-new").css("display", "block");
-            $(".manage-reports-save").css("display", "block");
-            $(".manage-reports-editing-title").css("display", "block");
-            $(".vehicle-information-save").css("display", "block");
-            $(".vehicle-information-title").css("margin-right", "0px").css("width", "81%");
-            $(".manage-incidents-title ").css("margin-right", "0px")
-            $(".manage-reports-title").css("margin-right", "0px").css("width", "66%");
-        } else if (sentJob == "bcso")  {
-          document.documentElement.style.setProperty(
-            "--color-1", /* Panels */
-            "#333333"
-          );
-          document.documentElement.style.setProperty(
-            "--color-2", /* Clock */
-            "#57471a"
-          );
-          document.documentElement.style.setProperty(
-            "--color-3", /* Outlines and hover */
-            "#614f1d"
-          );
-          document.documentElement.style.setProperty(
-            "--color-4", /* Button Base */
-            "#594b27"
-          );
-          document.documentElement.style.setProperty(
-            "--color-5", /* interactables */
-            "#4d3f17"
-          );
-          document.documentElement.style.setProperty(
-            "--color-6", /* context text box? */
-            "#433714"
-          );
-          document.documentElement.style.setProperty(
-            "--color-7", /* Dispatch Msg box */
-            "#57471a"
-          );
-          document.documentElement.style.setProperty(
-            "--color-8", /* ? */ /* ? no idea */
-            "#2554cc"
-          );
-          document.documentElement.style.setProperty(
-            "--color-9", /* backround */
-            "#6E707C"
-          );
-          document.documentElement.style.setProperty(
-            "--color-10", /* Refresh button */
-            "#8F741B"
-          );
-          $(".badge-logo").attr("src", "img/BCSO.webp");
-          $(".header-title").html("BLAINE COUNTY SHERIFF OFFICE");
-          $(".bolo-nav-item").html("BOLOs");
-          $(".bolos-search-title").html("Bolos");
-          $("#bolos-search-input").attr("placeholder", "Search Bolo...");
-          $(".manage-bolos-title").html("Manage Bolo");
-          $(".manage-bolos-editing-title").html(
-            "You are currently creating a new BOLO"
-          );
-          $(".boloplate-title").html("Plate");
-          $(".boloowner-title").html("Owner");
-          $(".boloindividual-title").html("Individual");
-          $("#boloplate").attr("placeholder", "Place plate here...");
-          $("#bolodetail").attr(
-            "placeholder",
-            "Bolo detail goes here..."
-          );
-          $("#boloowner").attr(
-            "placeholder",
-            "Place vehicle owner here..."
-          );
-          $("#boloindividual").attr(
-            "placeholder",
-            "Place invidivual here..."
-          );
-          $("#home-warrants-container").fadeIn(0);
-          $("#home-reports-container").fadeOut(0);
-          //$(".quote-span").html("TUCKER MALD, BEST MALD");
-          $(".incidents-nav-item").show();
-          $(".bolo-nav-item").show();
-          $(".dmv-nav-item").show();
-          $(".weapons-nav-item").show()
-          $(".cams-nav-item").show();
-          $(".map-nav-item").show();
-          $(".dispatch-title-ofsomesort").html("Dispatch");
-          $(".dispatch-comms-container").fadeIn(0);
-          $(".manage-profile-name-input-1").attr("readonly", true);
-          $(".manage-profile-name-input-2").attr("readonly", true);
-          $("#reports-officers-involved-tag-title").html(
-            "Officers Involved"
-          );
-          $(".roster-iframe").attr("src", rosterLink);
-  
-          $(".manage-profile-save").css("display", "block");
-          $(".manage-profile-editing-title").css("display", "block");
-          $(".manage-incidents-create").css("display", "block");
-          $(".manage-incidents-save").css("display", "block");
-          $(".manage-incidents-editing-title").css("display", "block");
-          $(".manage-reports-new").css("display", "block");
-          $(".manage-reports-save").css("display", "block");
-          $(".manage-reports-editing-title").css("display", "block");
-          $(".vehicle-information-save").css("display", "block");
-          $(".vehicle-information-title").css("margin-right", "0px").css("width", "81%");
-          $(".manage-incidents-title ").css("margin-right", "0px")
-          $(".manage-reports-title").css("margin-right", "0px").css("width", "66%");
-        } else if (sentJob == "sapr")  {
-          document.documentElement.style.setProperty(
-            "--color-1", /* Panels */
-            "#3b4c3a"
-          );
-          document.documentElement.style.setProperty(
-            "--color-2", /* Clock */
-            "#57471a"
-          );
-          document.documentElement.style.setProperty(
-            "--color-3", /* Outlines and hover */
-            "#614f1d"
-          );
-          document.documentElement.style.setProperty(
-            "--color-4", /* Button Base */
-            "#594b27"
-          );
-          document.documentElement.style.setProperty(
-            "--color-5", /* interactables */
-            "#4d3f17"
-          );
-          document.documentElement.style.setProperty(
-            "--color-6", /* context text box? */
-            "#433714"
-          );
-          document.documentElement.style.setProperty(
-            "--color-7", /* Dispatch Msg box */
-            "#57471a"
-          );
-          document.documentElement.style.setProperty(
-            "--color-8", /* ? */ /* ? no idea */
-            "#2554cc"
-          );
-          document.documentElement.style.setProperty(
-            "--color-9", /* backround */
-            "#6E707C"
-          );
-          document.documentElement.style.setProperty(
-            "--color-10", /* Refresh button */
-            "#8F741B"
-          );
-          $(".badge-logo").attr("src", "img/sapr.webp");
-          $(".header-title").html("SAN ANDREAS PARK RANGERS");
-          $(".bolo-nav-item").html("BOLOs");
-          $(".bolos-search-title").html("Bolos");
-          $("#bolos-search-input").attr("placeholder", "Search Bolo...");
-          $(".manage-bolos-title").html("Manage Bolo");
-          $(".manage-bolos-editing-title").html(
-            "You are currently creating a new BOLO"
-          );
-          $(".boloplate-title").html("Plate");
-          $(".boloowner-title").html("Owner");
-          $(".boloindividual-title").html("Individual");
-          $("#boloplate").attr("placeholder", "Place plate here...");
-          $("#bolodetail").attr(
-            "placeholder",
-            "Bolo detail goes here..."
-          );
-          $("#boloowner").attr(
-            "placeholder",
-            "Place vehicle owner here..."
-          );
-          $("#boloindividual").attr(
-            "placeholder",
-            "Place invidivual here..."
-          );
-          $("#home-warrants-container").fadeIn(0);
-          $("#home-reports-container").fadeOut(0);
-          //$(".quote-span").html("TUCKER MALD, BEST MALD");
-          $(".incidents-nav-item").show();
-          $(".bolo-nav-item").show();
-          $(".dmv-nav-item").show();
-          $(".weapons-nav-item").show()
-          $(".cams-nav-item").show();
-          $(".map-nav-item").show();
-          $(".dispatch-title-ofsomesort").html("Dispatch");
-          $(".dispatch-comms-container").fadeIn(0);
-          $(".manage-profile-name-input-1").attr("readonly", true);
-          $(".manage-profile-name-input-2").attr("readonly", true);
-          $("#reports-officers-involved-tag-title").html(
-            "Officers Involved"
-          );
-          $(".roster-iframe").attr("src", rosterLink);
-  
-          $(".manage-profile-save").css("display", "block");
-          $(".manage-profile-editing-title").css("display", "block");
-          $(".manage-incidents-create").css("display", "block");
-          $(".manage-incidents-save").css("display", "block");
-          $(".manage-incidents-editing-title").css("display", "block");
-          $(".manage-reports-new").css("display", "block");
-          $(".manage-reports-save").css("display", "block");
-          $(".manage-reports-editing-title").css("display", "block");
-          $(".vehicle-information-save").css("display", "block");
-          $(".vehicle-information-title").css("margin-right", "0px").css("width", "81%");
-          $(".manage-incidents-title ").css("margin-right", "0px")
-          $(".manage-reports-title").css("margin-right", "0px").css("width", "66%");
-        } else if (sentJob == "doc")  {
-          document.documentElement.style.setProperty(
-            "--color-1", /* Panels */
-            "#191919"
-          );
-          document.documentElement.style.setProperty(
-            "--color-2", /* Clock */
-            "#323232"
-          );
-          document.documentElement.style.setProperty(
-            "--color-3", /* Outlines and hover */
-            "#000000"
-          );
-          document.documentElement.style.setProperty(
-            "--color-4", /* Button Base */
-            "#666666"
-          );
-          document.documentElement.style.setProperty(
-            "--color-5", /* interactables */
-            "#46474f"
-          );
-          document.documentElement.style.setProperty(
-            "--color-6", /* context text box? */
-            "#191919"
-          );
-          document.documentElement.style.setProperty(
-            "--color-7", /* Dispatch Msg box */
-            "#666666"
-          );
-          document.documentElement.style.setProperty(
-            "--color-8", /* ? */ /* ? no idea */
-            "#2554cc"
-          );
-          document.documentElement.style.setProperty(
-            "--color-9", /* backround */
-            "#6E707C"
-          );
-          document.documentElement.style.setProperty(
-            "--color-10", /* Refresh button */
-            "#8F741B"
-          );
-          $(".badge-logo").attr("src", "img/BBSP.webp");
-          $(".header-title").html("DEPARTMENT OF CORRECTIONS");
-          $(".bolo-nav-item").html("BOLOs");
-          $(".bolos-search-title").html("Bolos");
-          $("#bolos-search-input").attr("placeholder", "Search Bolo...");
-          $(".manage-bolos-title").html("Manage Bolo");
-          $(".manage-bolos-editing-title").html(
-            "You are currently creating a new BOLO"
-          );
-          $(".boloplate-title").html("Plate");
-          $(".boloowner-title").html("Owner");
-          $(".boloindividual-title").html("Individual");
-          $("#boloplate").attr("placeholder", "Place plate here...");
-          $("#bolodetail").attr(
-            "placeholder",
-            "Bolo detail goes here..."
-          );
-          $("#boloowner").attr(
-            "placeholder",
-            "Place vehicle owner here..."
-          );
-          $("#boloindividual").attr(
-            "placeholder",
-            "Place invidivual here..."
-          );
-          $("#home-warrants-container").fadeIn(0);
-          $("#home-reports-container").fadeOut(0);
-          //$(".quote-span").html("TUCKER MALD, BEST MALD");
-          $(".incidents-nav-item").show();
-          $(".bolo-nav-item").show();
-          $(".dmv-nav-item").show();
-          $(".weapons-nav-item").show()
-          $(".cams-nav-item").show();
-          $(".map-nav-item").show();
-          $(".dispatch-title-ofsomesort").html("Dispatch");
-          $(".dispatch-comms-container").fadeIn(0);
-          $(".manage-profile-name-input-1").attr("readonly", true);
-          $(".manage-profile-name-input-2").attr("readonly", true);
-          $("#reports-officers-involved-tag-title").html(
-            "Officers Involved"
-          );
-          $(".roster-iframe").attr("src", rosterLink);
-  
-          $(".manage-profile-save").css("display", "block");
-          $(".manage-profile-editing-title").css("display", "block");
-          $(".manage-incidents-create").css("display", "block");
-          $(".manage-incidents-save").css("display", "block");
-          $(".manage-incidents-editing-title").css("display", "block");
-          $(".manage-reports-new").css("display", "block");
-          $(".manage-reports-save").css("display", "block");
-          $(".manage-reports-editing-title").css("display", "block");
-          $(".vehicle-information-save").css("display", "block");
-          $(".vehicle-information-title").css("margin-right", "0px").css("width", "81%");
-          $(".manage-incidents-title ").css("margin-right", "0px")
-          $(".manage-reports-title").css("margin-right", "0px").css("width", "66%");
-        } else if (sentJob == "lssd")  {
-          document.documentElement.style.setProperty(
-            "--color-1", /* Panels */
-            "#3b4c3a"
-          );
-          document.documentElement.style.setProperty(
-            "--color-2", /* Clock */
-            "#8f7c3f"
-          );
-          document.documentElement.style.setProperty(
-            "--color-3", /* Outlines and hover */
-            "#8f7c3f"
-          );
-          document.documentElement.style.setProperty(
-            "--color-4", /* Button Base */
-            "#806f38"
-          );
-          document.documentElement.style.setProperty(
-            "--color-5", /* interactables */
-            "#4d3f17"
-          );
-          document.documentElement.style.setProperty(
-            "--color-6", /* context text box? */
-            "#f1c232"
-          );
-          document.documentElement.style.setProperty(
-            "--color-7", /* Dispatch Msg box */
-            "#57471a"
-          );
-          document.documentElement.style.setProperty(
-            "--color-8", /* ? */ /* ? no idea */
-            "#2554cc"
-          );
-          document.documentElement.style.setProperty(
-            "--color-9", /* backround */
-            "#6E707C"
-          );
-          document.documentElement.style.setProperty(
-            "--color-10", /* Refresh button */
-            "#8F741B"
-          );
-          $(".badge-logo").attr("src", "img/LSSD.webp");
-          $(".header-title").html("LOS SANTOS SHERIFF DEPARTMENT");
-          $(".bolo-nav-item").html("BOLOs");
-          $(".bolos-search-title").html("Bolos");
-          $("#bolos-search-input").attr("placeholder", "Search Bolo...");
-          $(".manage-bolos-title").html("Manage Bolo");
-          $(".manage-bolos-editing-title").html(
-            "You are currently creating a new BOLO"
-          );
-          $(".boloplate-title").html("Plate");
-          $(".boloowner-title").html("Owner");
-          $(".boloindividual-title").html("Individual");
-          $("#boloplate").attr("placeholder", "Place plate here...");
-          $("#bolodetail").attr(
-            "placeholder",
-            "Bolo detail goes here..."
-          );
-          $("#boloowner").attr(
-            "placeholder",
-            "Place vehicle owner here..."
-          );
-          $("#boloindividual").attr(
-            "placeholder",
-            "Place invidivual here..."
-          );
-          $("#home-warrants-container").fadeIn(0);
-          $("#home-reports-container").fadeOut(0);
-          //$(".quote-span").html("TUCKER MALD, BEST MALD");
-          $(".incidents-nav-item").show();
-          $(".bolo-nav-item").show();
-          $(".dmv-nav-item").show();
-          $(".weapons-nav-item").show()
-          $(".cams-nav-item").show();
-          $(".map-nav-item").show();
-          $(".dispatch-title-ofsomesort").html("Dispatch");
-          $(".dispatch-comms-container").fadeIn(0);
-          $(".manage-profile-name-input-1").attr("readonly", true);
-          $(".manage-profile-name-input-2").attr("readonly", true);
-          $("#reports-officers-involved-tag-title").html(
-            "Officers Involved"
-          );
-          $(".roster-iframe").attr("src", rosterLink);
-  
-          $(".manage-profile-save").css("display", "block");
-          $(".manage-profile-editing-title").css("display", "block");
-          $(".manage-incidents-create").css("display", "block");
-          $(".manage-incidents-save").css("display", "block");
-          $(".manage-incidents-editing-title").css("display", "block");
-          $(".manage-reports-new").css("display", "block");
-          $(".manage-reports-save").css("display", "block");
-          $(".manage-reports-editing-title").css("display", "block");
-          $(".vehicle-information-save").css("display", "block");
-          $(".vehicle-information-title").css("margin-right", "0px").css("width", "81%");
-          $(".manage-incidents-title ").css("margin-right", "0px")
-          $(".manage-reports-title").css("margin-right", "0px").css("width", "66%");
-        }
+          } else if (sentJob == "sapr") {
+            applyCustomTheme(customThemes.sapr)
+            $(".badge-logo").attr("src", "img/sapr.webp");
+            $(".header-title").html("SAN ANDREAS PARK RANGERS");
+          } else if (sentJob == "lssd") {
+            applyCustomTheme(customThemes.lssd)
+            $(".badge-logo").attr("src", "img/LSSD.webp");
+            $(".header-title").html("LOS SANTOS SHERIFF DEPARTMENT");
+          } else if (sentJob == "doc") {
+            applyCustomTheme(customThemes.doc)
+            $(".badge-logo").attr("src", "img/BBSP.webp");
+            $(".header-title").html("DEPARTMENT OF CORRECTIONS");
+          }
+        $(".bolo-nav-item").html("BOLOs");
+        $(".bolos-search-title").html("Bolos");
+        $("#bolos-search-input").attr("placeholder", "Search Bolo...");
+        $(".manage-bolos-title").html("Manage Bolo");
+        $(".manage-bolos-editing-title").html(
+          "You are currently creating a new BOLO"
+        );
+        $(".boloplate-title").html("Plate");
+        $(".boloowner-title").html("Owner");
+        $(".boloindividual-title").html("Individual");
+        $("#boloplate").attr("placeholder", "Place plate here...");
+        $("#bolodetail").attr(
+          "placeholder",
+          "Bolo detail goes here..."
+        );
+        $("#boloowner").attr(
+          "placeholder",
+          "Place vehicle owner here..."
+        );
+        $("#boloindividual").attr(
+          "placeholder",
+          "Place invidivual here..."
+        );
+        $("#home-warrants-container").fadeIn(0);
+        $("#home-reports-container").fadeOut(0);
+        //$(".quote-span").html("TUCKER MALD, BEST MALD");
+        $(".incidents-nav-item").show();
+        $(".bolo-nav-item").show();
+        $(".dmv-nav-item").show();
+        $(".weapons-nav-item").show()
+        $(".cams-nav-item").show();
+        $(".map-nav-item").show();
+        $(".dispatch-title-ofsomesort").html("Dispatch");
+        $(".dispatch-comms-container").fadeIn(0);
+        $(".manage-profile-name-input-1").attr("readonly", true);
+        $(".manage-profile-name-input-2").attr("readonly", true);
+        $("#reports-officers-involved-tag-title").html(
+          "Officers Involved"
+        );
+        $(".roster-iframe").attr("src", rosterLink);
+
+        $(".manage-profile-save").css("display", "block");
+        $(".manage-profile-editing-title").css("display", "block");
+        $(".manage-incidents-create").css("display", "block");
+        $(".manage-incidents-save").css("display", "block");
+        $(".manage-incidents-editing-title").css("display", "block");
+        $(".manage-reports-new").css("display", "block");
+        $(".manage-reports-save").css("display", "block");
+        $(".manage-reports-editing-title").css("display", "block");
+        $(".vehicle-information-save").css("display", "block");
+        $(".vehicle-information-title").css("margin-right", "0px").css("width", "81%");
+        $(".manage-incidents-title ").css("margin-right", "0px")
+        $(".manage-reports-title").css("margin-right", "0px").css("width", "66%");
       } else if (AmbulanceJobs[sentJob] !== undefined) {
         $("#home-warrants-container").fadeOut(0);
         $("#home-reports-container").fadeIn(0);
