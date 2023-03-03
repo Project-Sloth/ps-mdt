@@ -61,7 +61,8 @@ if Config.UseWolfknightRadar == true then
 		end
 
 
-		if bolo or warrant or driverunlicensed == true then
+		if bolo or warrant or not driverslicense then
+
 		TriggerClientEvent("wk:togglePlateLock", src, cam, true, 1)
 		end
 
