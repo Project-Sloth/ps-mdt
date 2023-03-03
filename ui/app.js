@@ -396,8 +396,8 @@ $(document).ready(() => {
     }
   });
   $(".associated-incidents-tags-add-btn").on("click", "", function () {
-    document.addEventListener("mouseup", onMouseDownIcidents);
-    $(".icidents-person-search-container").fadeIn(250);
+    document.addEventListener("mouseup", onMouseDownIncidents);
+    $(".incidents-person-search-container").fadeIn(250);
     $(".close-all").css("filter", "brightness(15%)");
   });
   $(".gallery-add-btn").click(function () {
@@ -1099,10 +1099,10 @@ $(document).ready(() => {
       }
 
       if (
-        $(".icidents-person-search-container").css("display") != "none"
+        $(".incidents-person-search-container").css("display") != "none"
       ) {
         shouldClose = false;
-        $(".icidents-person-search-container").fadeOut(250);
+        $(".incidents-person-search-container").fadeOut(250);
         $(".close-all").css("filter", "none");
       }
 
@@ -1150,9 +1150,9 @@ $(document).ready(() => {
     }
   });
 
-  $(".icidents-person-search-name-input").on("keydown", "", function (e) {
+  $(".incidents-person-search-name-input").on("keydown", "", function (e) {
     if (e.keyCode === 13) {
-      let name = $(".icidents-person-search-name-input").val();
+      let name = $(".incidents-person-search-name-input").val();
       $.post(
         `https://${GetParentResourceName()}/incidentSearchPerson`,
         JSON.stringify({
@@ -1982,11 +1982,11 @@ $(document).ready(() => {
       openContextMenu(e, args);
     }
   );
-  $(".icidents-person-search-holder").on(
+  $(".incidents-person-search-holder").on(
     "click",
-    ".icidents-person-search-item",
+    ".incidents-person-search-item",
     function () {
-      $(".icidents-person-search-container").fadeOut(250);
+      $(".incidents-person-search-container").fadeOut(250);
       $(".close-all").css("filter", "none");
       $(".associated-incidents-tags-holder").prepend(
         `<div class="associated-incidents-tag" data-id="${$(this).data(
@@ -2156,7 +2156,7 @@ $(document).ready(() => {
       }
     }
   });
-  $(".icidents-person-search-container").hover(
+  $(".incidents-person-search-container").hover(
     function () {
       mouse_is_inside = true;
     },
@@ -4081,7 +4081,7 @@ $(document).ready(() => {
         $(".callsign-container").fadeOut(0);
         $(".radio-inner-container").fadeOut(0);
         $(".radio-container").fadeOut(0);
-        $(".icidents-person-search-container").fadeOut(0);
+        $(".incidents-person-search-container").fadeOut(0);
         $(".dispatch-attached-units").fadeOut(0);
         $(".respond-calls").fadeOut(0);
         $(".respond-calls-container").fadeOut(0);
@@ -4744,18 +4744,18 @@ $(document).ready(() => {
       });
     } else if (eventData.type == "incidentSearchPerson") {
       let table = eventData.data;
-      $(".icidents-person-search-holder").empty();
+      $(".incidents-person-search-holder").empty();
       $.each(table, function (index, value) {
         let name = value.firstname + " " + value.lastname;
-        $(".icidents-person-search-holder").prepend(
+        $(".incidents-person-search-holder").prepend(
           `
-                    <div class="icidents-person-search-item" data-info="${name} (#${value.id})" data-cid="${value.id}" data-name="${name}">
-                        <img src="${value.profilepic}" class="icidents-person-search-item-pfp">
-                        <div class="icidents-person-search-item-right">
-                            <div class="icidents-person-search-item-right-cid-title">Citizen ID</div>
-                            <div class="icidents-person-search-item-right-cid-input"><span class="fas fa-id-card"></span> ${value.id}</div>
-                            <div class="icidents-person-search-item-right-name-title">Name</div>
-                            <div class="icidents-person-search-item-right-name-input"><span class="fas fa-user"></span> ${name}</div>
+                    <div class="incidents-person-search-item" data-info="${name} (#${value.id})" data-cid="${value.id}" data-name="${name}">
+                        <img src="${value.profilepic}" class="incidents-person-search-item-pfp">
+                        <div class="incidents-person-search-item-right">
+                            <div class="incidents-person-search-item-right-cid-title">Citizen ID</div>
+                            <div class="incidents-person-search-item-right-cid-input"><span class="fas fa-id-card"></span> ${value.id}</div>
+                            <div class="incidents-person-search-item-right-name-title">Name</div>
+                            <div class="incidents-person-search-item-right-name-input"><span class="fas fa-user"></span> ${name}</div>
                         </div>
                     </div>
                     `
@@ -5274,19 +5274,19 @@ function removeImage(url) {
     .remove();
 }
 
-function hideIcidentsMenu() {
+function hideIncidentsMenu() {
   if (
-    $(".icidents-person-search-container").css("display") != "none" &&
+    $(".incidents-person-search-container").css("display") != "none" &&
     !mouse_is_inside
   ) {
-    $(".icidents-person-search-container").fadeOut(250);
+    $(".incidents-person-search-container").fadeOut(250);
     $(".close-all").css("filter", "none");
   }
 }
 
-function onMouseDownIcidents(e) {
-  hideIcidentsMenu();
-  document.removeEventListener("mouseup", onMouseDownIcidents);
+function onMouseDownIncidents(e) {
+  hideIncidentsMenu();
+  document.removeEventListener("mouseup", onMouseDownIncidents);
 }
 
 function titleCase(str) {
