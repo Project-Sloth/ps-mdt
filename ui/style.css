@@ -5627,6 +5627,10 @@ span.civilian-tag-reports-input[contenteditable]:empty::before {
     background-color: #950909;
 }
 
+.remove-call:hover {
+    background-color: #950909;
+}
+
 .dispatch-attached-units {
     display: flex;
     flex-direction: column;
