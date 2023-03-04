@@ -5302,7 +5302,6 @@ function titleCase(str) {
 
 function searchProfilesResults(result) {
   canSearchForProfiles = true;
-  console.log('searchProfilesResults', result)
   $(".profile-items").empty();
 
   if (result.length < 1) {
