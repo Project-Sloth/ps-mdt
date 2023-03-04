@@ -1471,7 +1471,8 @@ RegisterServerEvent("mdt:server:AddLog", function(text)
 	AddLog(text)
 end)
 
-function GetBoloStatus(plate, title, boloId)
+function GetBoloStatus(plate)
+
     local result = MySQL.query.await("SELECT * FROM mdt_bolos where plate = @plate", {['@plate'] = plate})
 	if result and result[1] then
 		local title = result[1]['title']
