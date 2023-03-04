@@ -137,7 +137,7 @@ QBCore.Functions.CreateCallback('mdt:server:SearchProfile', function(source, cb,
 
 			if next(convictions) then
 				for _, conv in pairs(convictions) do
-					if conv.warrant then people[citizenIdIndexMap[conv.cid]].warrant = true end
+					if conv.warrant == "1" then people[citizenIdIndexMap[conv.cid]].warrant = true end
 
 					local charges = json.decode(conv.charges)
 					people[citizenIdIndexMap[conv.cid]].convictions = people[citizenIdIndexMap[conv.cid]].convictions + #charges
@@ -263,8 +263,8 @@ QBCore.Functions.CreateCallback('mdt:server:GetProfileData', function(source, cb
 		local convCount = 1
 		if next(convictions) then
 			for _, conv in pairs(convictions) do
-				if conv.warrant then person.warrant = true end
-
+				if conv.warrant == "1" then person.warrant = true end
+				
 				-- Get the incident details
 				local id = conv.linkedincident
 				local incident = GetIncidentName(id)
