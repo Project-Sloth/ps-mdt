@@ -3395,6 +3395,17 @@ $(document).ready(() => {
     );
   });
 
+  $(".contextmenu").on("click", ".remove-call", function () {
+    const callId = $(this).data("info");
+    $.post(
+      `https://${GetParentResourceName()}/removeCall`,
+      JSON.stringify({
+        callid: callId,
+      })
+    );
+    $(`[data-id="${callId}"]`).remove();
+  });
+
   $(".contextmenu").on("click", ".attached-units", function () {
     const callId = $(this).data("info");
     $.post(
@@ -3495,6 +3506,13 @@ $(document).ready(() => {
               info: callId,
               status: "",
             },
+            {
+              className: "remove-call",
+              icon: "fa-solid fa-trash",
+              text: "Remove Call",
+              info: callId,
+              status: "",
+            },
           ];
         } else if (canRespond == false) {
           args = [
@@ -3530,6 +3548,13 @@ $(document).ready(() => {
               className: "remove-blip",
               icon: "fa-solid fa-circle-minus",
               text: "Remove Blip",
+              info: callId,
+              status: "",
+            },
+            {
+              className: "remove-call",
+              icon: "fa-solid fa-trash",
+              text: "Remove Call",
               info: callId,
               status: "",
             },
