@@ -572,6 +572,14 @@ span.bulletin-item-info[contenteditable]:empty::before {
     background-color: #093095;
 }
 
+#bcso-count {
+background-color: #cc7e25;;
+}
+
+#sasp-count {
+background-color: #2589cc;
+}
+
 #ems-count {
     background-color: #950909;
 }

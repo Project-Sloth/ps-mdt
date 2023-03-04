@@ -31,6 +31,13 @@ let impoundChanged = false;
 // TEMP CONFIG OF JOBS
 const PoliceJobs = {
   ['police']: true,
+  ['lspd']: true,
+  ['bcso']: true,
+  ['sast']: true,
+  ['sasp']: true, 
+  ['sapr']: true,
+  ['doc']: true,
+  ['lssd']: true,
 }
 
 const AmbulanceJobs = {
@@ -3771,52 +3778,197 @@ $(document).ready(() => {
       draggedElement = 0;
     }
   });
-
+  const customThemes = {
+    lspd: {
+      color1: "#1E3955",
+      color2: "#213f5f",
+      color3: "#2C537B",
+      color4: "#23405E",
+      color5: "#152638",
+      color6: "#121f2c",
+      color7: "rgb(28, 54, 82)",
+      color8: "#2554cc",
+      color9: "#6E707C",
+      color10: "#8F741B",
+      image: "img/LSPD.webp",
+      name: "LOS SANTOS POLICE",
+    },
+    bcso: {
+      color1: "#333333",
+      color2: "#57471a",
+      color3: "#614f1d",
+      color4: "#594b27",
+      color5: "#4d3f17",
+      color6: "#433714",
+      color7: "#57471a",
+      color8: "#2554cc",
+      color9: "#6E707C",
+      color10: "#8F741B",
+      image: "img/BCSO.webp",
+      name: "BLAINE COUNTY SHERIFF OFFICE",
+    },
+    sasp: {
+      color1: "#423f39",
+      color2: "#8f7c3f",
+      color3: "#16537e",
+      color4: "#8f7c3f",
+      color5: "#0f3a58",
+      color6: "#121f2c",
+      color7: "#0f3a58",
+      color8: "#2554cc",
+      color9: "#9c9485",
+      color10: "#8F741B",
+      image: "img/sasp_badge.webp",
+      name: "SAN ANDREAS STATE POLICE",
+    },
+    sast: {
+      color1: "#2c2c2c",
+      color2: "#232323",
+      color3: "#16537e",
+      color4: "#1c1c1c",
+      color5: "#232323",
+      color6: "#121f2c",
+      color7: "#232323",
+      color8: "#2554cc",
+      color9: "#bcbcbc",
+      color10: "#8F741B",
+      image: "img/sast_badge.webp",
+      name: "SAN ANDREAS STATE TROOPERS",
+    },
+    sapr: {
+      color1: "#3b4c3a",
+      color2: "#57471a",
+      color3: "#614f1d",
+      color4: "#594b27",
+      color5: "#4d3f17",
+      color6: "#433714",
+      color7: "#57471a",
+      olor8: "#2554cc",
+      color9: "#6E707C",
+      color10: "#8F741B",
+      image: "img/sapr.webp",
+      name: "SAN ANDREAS PARK RANGERS",
+    },
+    lssd: {
+      color1: "#3b4c3a",
+      color2: "#8f7c3f",
+      color3: "#8f7c3f",
+      color4: "#806f38",
+      color5: "#4d3f17",
+      color6: "#f1c232",
+      color7: "#57471a",
+      color8: "#2554cc",
+      color9: "#6E707C",
+      color10: "#8F741B",
+      image: "img/LSSD.webp",
+      name: "LOS SANTOS SHERIFF DEPARTMENT",
+    },
+    doc: {
+      color1: "#191919",
+      color2: "#323232",
+      color3: "#000000",
+      color4: "#666666",
+      color5: "#46474f",
+      color6: "#191919",
+      color7: "#666666",
+      color8: "#2554cc",
+      color9: "#6E707C",
+      color10: "#8F741B",
+      image: "img/BBSP.webp",
+      name: "DEPARTMENT OF CORRECTIONS",
+    },
+    ambulance: {
+      color1: "#5F2121",
+      color2: "#7B2C2C",
+      color3: "#4A1C1C",
+      color4: "#5E2323",
+      color5: "#381515",
+      color6: "#2C1212",
+      color7: "#521C1C",
+      color8: "#CC2525",
+      color9: "#8A8D91",
+      color10: "#444444",
+      image: "img/ems_badge.webp",
+      name: "PILLBOX HILL MEDICAL CENTER",
+    },
+    doj: {
+      color1: "#553a1e",
+      color2: "#5f4321",
+      color3: "#7b552c",
+      color4: "#5e4123",
+      color5: "#382815",
+      color6: "#2c2312",
+      color7: "rgb(82, 60, 28)",
+      color8: "#cc9225",
+      color9: "#6E707C",
+      color10: "#8F741B",
+      image: "img/court.webp",
+      name: "DEPARTMENT OF JUSTICE",
+    },
+  }
+  function applyCustomTheme(theme) {
+    document.documentElement.style.setProperty(
+      "--color-1", /* Panels */
+        theme.color1
+        );
+    document.documentElement.style.setProperty(
+      "--color-2", /* Clock */
+        theme.color2
+        );
+    document.documentElement.style.setProperty(
+      "--color-3", /* Outlines and hover */
+        theme.color3
+        );
+    document.documentElement.style.setProperty(
+      "--color-4", /* Button Base */
+        theme.color4
+        );
+    document.documentElement.style.setProperty(
+        "--color-5",
+        theme.color5
+        );  
+    document.documentElement.style.setProperty(
+        "--color-6",
+        theme.color6
+        );
+    document.documentElement.style.setProperty(
+        "--color-7",
+        theme.color7
+        );
+    document.documentElement.style.setProperty(
+        "--color-8",
+        theme.color8
+        );
+    document.documentElement.style.setProperty(
+        "--color-9",
+        theme.color9
+        );
+    document.documentElement.style.setProperty(
+        "--color-10",
+        theme.color10
+        );
+      $(".badge-logo").attr("src", theme.image );
+      $(".header-title").html(theme.name);
+  }
   function JobColors(sentJob) {
     if (sentJob) {
-      if (PoliceJobs[sentJob] !== undefined) {
-        document.documentElement.style.setProperty(
-          "--color-1",
-          "#1E3955"
-        );
-        document.documentElement.style.setProperty(
-          "--color-2",
-          "#213F5F"
-        );
-        document.documentElement.style.setProperty(
-          "--color-3",
-          "#2C537B"
-        );
-        document.documentElement.style.setProperty(
-          "--color-4",
-          "#23405E"
-        );
-        document.documentElement.style.setProperty(
-          "--color-5",
-          "#152638"
-        );
-        document.documentElement.style.setProperty(
-          "--color-6",
-          "#121f2c"
-        );
-        document.documentElement.style.setProperty(
-          "--color-7",
-          "rgb(28, 54, 82)"
-        );
-        document.documentElement.style.setProperty(
-          "--color-8",
-          "#2554cc"
-        );
-        document.documentElement.style.setProperty(
-          "--color-9",
-          "#6E707C"
-        );
-        document.documentElement.style.setProperty(
-          "--color-10",
-          "#8f741b"
-        );
-        $(".badge-logo").attr("src", "img/sasp_badge.webp");
-        $(".header-title").html("SAN ANDREAS STATE POLICE");
+      if (PoliceJobs[sentJob] !== undefined)  {
+        if (sentJob == "police") {
+            applyCustomTheme(customThemes.lspd)
+          } else if (sentJob == "bcso"){
+            applyCustomTheme(customThemes.bcso)
+          } else if (sentJob == "sasp") {
+            applyCustomTheme(customThemes.sasp)
+          } else if (sentJob == "sast") {
+            applyCustomTheme(customThemes.sast)
+
+          } else if (sentJob == "sapr") {
+            applyCustomTheme(customThemes.sapr)
+          } else if (sentJob == "lssd") {
+            applyCustomTheme(customThemes.lssd)
+          } else if (sentJob == "doc") {
+            applyCustomTheme(customThemes.doc)
+          }
         $(".bolo-nav-item").html("BOLOs");
         $(".bolos-search-title").html("Bolos");
         $("#bolos-search-input").attr("placeholder", "Search Bolo...");
@@ -3873,48 +4025,9 @@ $(document).ready(() => {
       } else if (AmbulanceJobs[sentJob] !== undefined) {
         $("#home-warrants-container").fadeOut(0);
         $("#home-reports-container").fadeIn(0);
-        document.documentElement.style.setProperty(
-          "--color-1",
-          "#5F2121"
-        );
-        document.documentElement.style.setProperty(
-          "--color-2",
-          "#7B2C2C"
-        );
-        document.documentElement.style.setProperty(
-          "--color-3",
-          "#4A1C1C"
-        );
-        document.documentElement.style.setProperty(
-          "--color-4",
-          "#5E2323"
-        );
-        document.documentElement.style.setProperty(
-          "--color-5",
-          "#381515"
-        );
-        document.documentElement.style.setProperty(
-          "--color-6",
-          "#2C1212"
-        );
-        document.documentElement.style.setProperty(
-          "--color-7",
-          "#521C1C"
-        );
-        document.documentElement.style.setProperty(
-          "--color-8",
-          "#CC2525"
-        );
-        document.documentElement.style.setProperty(
-          "--color-9",
-          "#8A8D91"
-        );
-        document.documentElement.style.setProperty(
-          "--color-10",
-          "#444444"
-        );
-        $(".badge-logo").attr("src", "img/ems_badge.webp");
-        $(".header-title").html("PILLBOX HILL MEDICAL CENTER");
+        if (sentJob == "ambulance") {
+          applyCustomTheme(customThemes.ambulance)
+        }
         //$(".quote-span").html("The simplest explanation is almost always somebody screwed up.");
         $(".bolo-nav-item").html("ICU");
         $(".bolos-search-title").html("ICU Check-ins");
@@ -3968,40 +4081,7 @@ $(document).ready(() => {
         $(".manage-incidents-title ").css("margin-right", "0px")
         $(".manage-reports-title").css("margin-right", "0px").css("width", "66%");
       } else if (DojJobs[sentJob] !== undefined) {
-        document.documentElement.style.setProperty(
-          "--color-1",
-          "#553a1e"
-        );
-        document.documentElement.style.setProperty(
-          "--color-2",
-          "#5f4321"
-        );
-        document.documentElement.style.setProperty(
-          "--color-3",
-          "#7b552c"
-        );
-        document.documentElement.style.setProperty(
-          "--color-4",
-          "#5e4123"
-        );
-        document.documentElement.style.setProperty(
-          "--color-5",
-          "#382815"
-        );
-        document.documentElement.style.setProperty(
-          "--color-6",
-          "#2c2312"
-        );
-        document.documentElement.style.setProperty(
-          "--color-7",
-          "rgb(82, 60, 28)"
-        );
-        document.documentElement.style.setProperty(
-          "--color-8",
-          "#cc9225"
-        );
-        $(".badge-logo").attr("src", "img/court.webp");
-        $(".header-title").html("DEPARTMENT OF JUSTICE");
+        applyCustomTheme(customThemes.doj)
         //$(".quote-span").html("Actually useless.");
         //$(".dmv-nav-item").hide();
         $(".weapons-nav-item").show()
@@ -4108,9 +4188,11 @@ $(document).ready(() => {
       });
 
       let policeCount = 0;
+      let saspCount = 0;
+      let bcsoCount = 0;
       let emsCount = 0;
       let dojCount = 0;
-      let fireCount = 0;
+     /*  let fireCount = 0; */
 
       let activeUnits = eventData.activeUnits;
       let cid = eventData.citizenid;
@@ -4130,8 +4212,23 @@ $(document).ready(() => {
         let callSign = unit.callSign ? unit.callSign : "000";
         let activeInfoJob = `<div class="unit-job active-info-job-unk">UNKNOWN</div>`;
         if (PoliceJobs[unit.unitType] !== undefined) {
-          policeCount++;
+          if (unit.unitType == "police") { policeCount++;
           activeInfoJob = `<div class="unit-job active-info-job-lspd">LSPD</div>`;
+          } else if(unit.unitType == "bcso")  { bcsoCount++;
+            activeInfoJob = `<div class="unit-job active-info-job-bcso">BCSO</div>`;
+          } else if(unit.unitType == "lssd")  { bcsoCount++;
+            activeInfoJob = `<div class="unit-job active-info-job-bcso">LSSD</div>`;
+          } else if(unit.unitType == "sasp")  { saspCount++;
+            activeInfoJob = `<div class="unit-job active-info-job-sasp">SASP</div>`;
+          } else if(unit.unitType == "sast")  { saspCount++;
+            activeInfoJob = `<div class="unit-job active-info-job-sasp">SAST</div>`;
+          } else if(unit.unitType == "sapr")  { saspCount++;
+            activeInfoJob = `<div class="unit-job active-info-job-sapr">SAPR</div>`;
+          } else if(unit.unitType == "judge")  { dojCount++;
+            activeInfoJob = `<div class="unit-job active-info-job-doj">DOJ</div>`;
+          } else if(unit.unitType == "doc")  { dojCount++;
+            activeInfoJob = `<div class="unit-job active-info-job-doc">DOC</div>`;
+          }
         } else if (AmbulanceJobs[unit.unitType] !== undefined) {
           activeInfoJob = `<div class="unit-job active-info-job-ambulance">Ambulance</div>`
           emsCount++;
@@ -4157,9 +4254,11 @@ $(document).ready(() => {
 
 
       $("#police-count").html(policeCount);
+      $("#sasp-count").html(saspCount);
+      $("#bcso-count").html(bcsoCount);
       $("#ems-count").html(emsCount);
       $("#doj-count").html(dojCount);
-      $("#fire-count").html(fireCount);
+      /* $("#fire-count").html(fireCount); */
     /* } else if (eventData.type == "bulletin") {
       $(".bulletin-items-continer").empty();
       $.each(eventData.data, function (index, value) {
