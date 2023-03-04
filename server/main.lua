@@ -41,7 +41,8 @@ if Config.UseWolfknightRadar == true then
 		local Player = QBCore.Functions.GetPlayer(src)
 		local PlayerData = GetPlayerData(src)
 		local vehicleOwner = GetVehicleOwner(plate)
-		local bolo, title, boloId = GetBoloStatus(plate, title, boloId)
+		local bolo, title, boloId = GetBoloStatus(plate)
+
 		--local warrant, owner, incidentId = GetWarrantStatus(plate, owner, incidentId)
 		local warrant, owner, incidentId = GetWarrantStatus(plate)
 		local driversLicense = PlayerData.metadata['licences'].driver
