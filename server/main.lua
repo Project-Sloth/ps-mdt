@@ -1160,6 +1160,16 @@ RegisterNetEvent('mdt:server:setWaypoint', function(callid)
 	end
 end)
 
+-- Dispatch Remove Call
+RegisterNetEvent('mdt:server:removeCall', function(callid)
+	local src = source
+	if callid then
+		if isDispatchRunning then
+			TriggerEvent('dispatch:removeCall', callid)
+		end
+	end
+end)
+
 RegisterNetEvent('mdt:server:callDetach', function(callid)
 	local src = source
 	local Player = QBCore.Functions.GetPlayer(src)
