@@ -42,8 +42,6 @@ if Config.UseWolfknightRadar == true then
 		local PlayerData = GetPlayerData(src)
 		local vehicleOwner = GetVehicleOwner(plate)
 		local bolo, title, boloId = GetBoloStatus(plate)
-
-		--local warrant, owner, incidentId = GetWarrantStatus(plate, owner, incidentId)
 		local warrant, owner, incidentId = GetWarrantStatus(plate)
 		local driversLicense = PlayerData.metadata['licences'].driver
 		local driverunlicensed = nil
