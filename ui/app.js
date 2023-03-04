@@ -3790,6 +3790,8 @@ $(document).ready(() => {
       color8: "#2554cc",
       color9: "#6E707C",
       color10: "#8F741B",
+      image: "img/LSPD.webp",
+      name: "LOS SANTOS POLICE",
     },
     bcso: {
       color1: "#333333",
@@ -3802,6 +3804,8 @@ $(document).ready(() => {
       color8: "#2554cc",
       color9: "#6E707C",
       color10: "#8F741B",
+      image: "img/BCSO.webp",
+      name: "BLAINE COUNTY SHERIFF OFFICE",
     },
     sasp: {
       color1: "#423f39",
@@ -3814,6 +3818,8 @@ $(document).ready(() => {
       color8: "#2554cc",
       color9: "#9c9485",
       color10: "#8F741B",
+      image: "img/sasp_badge.webp",
+      name: "SAN ANDREAS STATE POLICE",
     },
     sast: {
       color1: "#2c2c2c",
@@ -3826,6 +3832,8 @@ $(document).ready(() => {
       color8: "#2554cc",
       color9: "#bcbcbc",
       color10: "#8F741B",
+      image: "img/sast_badge.webp",
+      name: "SAN ANDREAS STATE TROOPERS",
     },
     sapr: {
       color1: "#3b4c3a",
@@ -3838,6 +3846,8 @@ $(document).ready(() => {
       olor8: "#2554cc",
       color9: "#6E707C",
       color10: "#8F741B",
+      image: "img/sapr.webp",
+      name: "SAN ANDREAS PARK RANGERS",
     },
     lssd: {
       color1: "#3b4c3a",
@@ -3850,6 +3860,8 @@ $(document).ready(() => {
       color8: "#2554cc",
       color9: "#6E707C",
       color10: "#8F741B",
+      image: "img/LSSD.webp",
+      name: "LOS SANTOS SHERIFF DEPARTMENT",
     },
     doc: {
       color1: "#191919",
@@ -3861,7 +3873,37 @@ $(document).ready(() => {
       color7: "#666666",
       color8: "#2554cc",
       color9: "#6E707C",
-      color10: "#8F741B",  
+      color10: "#8F741B",
+      image: "img/BBSP.webp",
+      name: "DEPARTMENT OF CORRECTIONS",
+    },
+    ambulance: {
+      color1: "#5F2121",
+      color2: "#7B2C2C",
+      color3: "#4A1C1C",
+      color4: "#5E2323",
+      color5: "#381515",
+      color6: "#2C1212",
+      color7: "#521C1C",
+      color8: "#CC2525",
+      color9: "#8A8D91",
+      color10: "#444444",
+      image: "img/ems_badge.webp",
+      name: "PILLBOX HILL MEDICAL CENTER",
+    },
+    doj: {
+      color1: "#553a1e",
+      color2: "#5f4321",
+      color3: "#7b552c",
+      color4: "#5e4123",
+      color5: "#382815",
+      color6: "#2c2312",
+      color7: "rgb(82, 60, 28)",
+      color8: "#cc9225",
+      color9: "#6E707C",
+      color10: "#8F741B",
+      image: "img/court.webp",
+      name: "DEPARTMENT OF JUSTICE",
     },
   }
   function applyCustomTheme(theme) {
@@ -3905,38 +3947,27 @@ $(document).ready(() => {
         "--color-10",
         theme.color10
         );
+      $(".badge-logo").attr("src", theme.image );
+      $(".header-title").html(theme.name);
   }
   function JobColors(sentJob) {
     if (sentJob) {
       if (PoliceJobs[sentJob] !== undefined)  {
         if (sentJob == "police") {
             applyCustomTheme(customThemes.lspd)
-            $(".badge-logo").attr("src", "img/LSPD.webp");
-            $(".header-title").html("LOS SANTOS POLICE");
           } else if (sentJob == "bcso"){
             applyCustomTheme(customThemes.bcso)
-            $(".badge-logo").attr("src", "img/BCSO.webp");
-            $(".header-title").html("BLAINE COUNTY SHERIFF OFFICE"); 
           } else if (sentJob == "sasp") {
             applyCustomTheme(customThemes.sasp)
-            $(".badge-logo").attr("src", "img/sasp_badge.webp");
-            $(".header-title").html("SAN ANDREAS STATE POLICE");
           } else if (sentJob == "sast") {
             applyCustomTheme(customThemes.sast)
-            $(".badge-logo").attr("src", "img/sast_badge.webp");
-            $(".header-title").html("SAN ANDREAS STATE TROOPERS");
+
           } else if (sentJob == "sapr") {
             applyCustomTheme(customThemes.sapr)
-            $(".badge-logo").attr("src", "img/sapr.webp");
-            $(".header-title").html("SAN ANDREAS PARK RANGERS");
           } else if (sentJob == "lssd") {
             applyCustomTheme(customThemes.lssd)
-            $(".badge-logo").attr("src", "img/LSSD.webp");
-            $(".header-title").html("LOS SANTOS SHERIFF DEPARTMENT");
           } else if (sentJob == "doc") {
             applyCustomTheme(customThemes.doc)
-            $(".badge-logo").attr("src", "img/BBSP.webp");
-            $(".header-title").html("DEPARTMENT OF CORRECTIONS");
           }
         $(".bolo-nav-item").html("BOLOs");
         $(".bolos-search-title").html("Bolos");
@@ -3994,48 +4025,9 @@ $(document).ready(() => {
       } else if (AmbulanceJobs[sentJob] !== undefined) {
         $("#home-warrants-container").fadeOut(0);
         $("#home-reports-container").fadeIn(0);
-        document.documentElement.style.setProperty(
-          "--color-1",
-          "#5F2121"
-        );
-        document.documentElement.style.setProperty(
-          "--color-2",
-          "#7B2C2C"
-        );
-        document.documentElement.style.setProperty(
-          "--color-3",
-          "#4A1C1C"
-        );
-        document.documentElement.style.setProperty(
-          "--color-4",
-          "#5E2323"
-        );
-        document.documentElement.style.setProperty(
-          "--color-5",
-          "#381515"
-        );
-        document.documentElement.style.setProperty(
-          "--color-6",
-          "#2C1212"
-        );
-        document.documentElement.style.setProperty(
-          "--color-7",
-          "#521C1C"
-        );
-        document.documentElement.style.setProperty(
-          "--color-8",
-          "#CC2525"
-        );
-        document.documentElement.style.setProperty(
-          "--color-9",
-          "#8A8D91"
-        );
-        document.documentElement.style.setProperty(
-          "--color-10",
-          "#444444"
-        );
-        $(".badge-logo").attr("src", "img/ems_badge.webp");
-        $(".header-title").html("PILLBOX HILL MEDICAL CENTER");
+        if (sentJob == "ambulance") {
+          applyCustomTheme(customThemes.ambulance)
+        }
         //$(".quote-span").html("The simplest explanation is almost always somebody screwed up.");
         $(".bolo-nav-item").html("ICU");
         $(".bolos-search-title").html("ICU Check-ins");
@@ -4089,40 +4081,7 @@ $(document).ready(() => {
         $(".manage-incidents-title ").css("margin-right", "0px")
         $(".manage-reports-title").css("margin-right", "0px").css("width", "66%");
       } else if (DojJobs[sentJob] !== undefined) {
-        document.documentElement.style.setProperty(
-          "--color-1",
-          "#553a1e"
-        );
-        document.documentElement.style.setProperty(
-          "--color-2",
-          "#5f4321"
-        );
-        document.documentElement.style.setProperty(
-          "--color-3",
-          "#7b552c"
-        );
-        document.documentElement.style.setProperty(
-          "--color-4",
-          "#5e4123"
-        );
-        document.documentElement.style.setProperty(
-          "--color-5",
-          "#382815"
-        );
-        document.documentElement.style.setProperty(
-          "--color-6",
-          "#2c2312"
-        );
-        document.documentElement.style.setProperty(
-          "--color-7",
-          "rgb(82, 60, 28)"
-        );
-        document.documentElement.style.setProperty(
-          "--color-8",
-          "#cc9225"
-        );
-        $(".badge-logo").attr("src", "img/court.webp");
-        $(".header-title").html("DEPARTMENT OF JUSTICE");
+        applyCustomTheme(customThemes.doj)
         //$(".quote-span").html("Actually useless.");
         //$(".dmv-nav-item").hide();
         $(".weapons-nav-item").show()
