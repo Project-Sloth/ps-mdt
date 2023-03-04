@@ -55,10 +55,7 @@ if Config.UseWolfknightRadar == true then
 		end
 
 		if driversLicense == false then
-			driverunlicensed = true
-			if driverunlicensed == true then
 			TriggerClientEvent('QBCore:Notify', src, 'NO DRIVERS LICENCE | Registered Owner: '..vehicleOwner..' | Plate: '..plate, 'error', Config.WolfknightNotifyTime)
-			end
 		end
 
 
