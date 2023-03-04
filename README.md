@@ -25,6 +25,21 @@ For all support questions, ask in our [Discord](https://www.discord.gg/projectsl
 ![image](https://user-images.githubusercontent.com/82112471/217597379-d936fb8e-e33a-4817-8997-16447158afb8.png)
 ![image](https://user-images.githubusercontent.com/82112471/217597433-cd24bd41-a515-4fac-a896-807494501c39.png)
 
+# Multi Departments
+* LSPD 
+![image](https://i.imgur.com/2HmsTa3.png)
+* BCSO
+![image](https://i.imgur.com/9WVU0Kz.png)
+* SASP
+![image](https://i.imgur.com/6tLNVkb.png)
+* SAST
+![image](https://i.imgur.com/G5b2vGU.png)
+* SAPR
+![image](https://i.imgur.com/cu1ZsfW.png)
+* LSSD
+![image](https://i.imgur.com/IsqZddu.png)
+* DOC
+![image](https://i.imgur.com/lFi4jDH.png)
 ## FAQ
 - **How do I add charges to a criminal in an Incident?** - After finding and adding the criminal citizen to the incident, right-click in the space under the criminal's name and select "Add Charge".
 
