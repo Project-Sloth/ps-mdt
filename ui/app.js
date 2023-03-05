@@ -202,6 +202,10 @@ $(document).ready(() => {
     $(".manage-profile-fingerprint").val(result["fingerprint"]);
     $(".manage-profile-fingerprint").removeAttr("disabled");
     $(".manage-profile-pic").attr("src", result["profilepic"] ?? "img/male.png");
+    $(".manage-profile-active-warrant").css("display", "none")
+    if (result["warrant"]) {
+      $(".manage-profile-active-warrant").css("display", "block");
+    }
 
     const { vehicles, tags, gallery, convictions, incidents, properties } = result
 
@@ -5476,6 +5480,10 @@ function searchProfilesResults(result) {
                           <div class="profile-item-title">${name}</div>
                               <div class="profile-tags">
                                   ${licences}
+                              </div>
+                              <div class="profile-criminal-tags">
+                                  <span class="license-tag ${warrant}">${value.warrant ? "Active" : "No"} Warrant</span>
+                                  <span class="license-tag ${convictions}">${value.convictions} Convictions </span>
                               </div>
                           </div>
                           <div class="profile-bottom-info">

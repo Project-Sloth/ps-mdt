@@ -976,6 +976,14 @@ a {
     margin-bottom: 5px;
 }
 
+.profile-criminal-tags {
+    display: flex;
+    overflow-x: auto;
+    width: 100%;
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
 .profile-tag {
     margin: auto;
     margin-left: 0px;
@@ -1199,6 +1207,15 @@ a {
     color: white;
     font-size: 16px;
     padding: 10px;
+}
+
+.manage-profile-active-warrant {
+    display: none;
+    margin: auto;
+    padding: 8px;
+    color: red;
+    font-weight: bold;
+    font-size: 20px;
 }
 
 .manage-profile-fingerprint {
