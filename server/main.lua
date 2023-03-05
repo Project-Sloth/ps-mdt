@@ -11,15 +11,6 @@ local impound = {}
 local dispatchMessages = {}
 local isDispatchRunning = false
 
-local function IsPolice(job)
-	for k, v in pairs(Config.PoliceJobs) do
-        if job == k then
-            return true
-        end
-    end
-    return false
-end
-
 local function GetActiveData(cid)
 	local player = type(cid) == "string" and cid or tostring(cid)
 	if player then
@@ -1338,7 +1329,7 @@ end)
 RegisterNetEvent('mdt:server:getCallResponses', function(callid)
 	local src = source
 	local Player = QBCore.Functions.GetPlayer(src)
-	if IsPolice(Player.PlayerData.job.name) then
+	if Config.PoliceJobs or Config.AmbulanceJobs(Player.PlayerData.job.name) then
 		if isDispatchRunning then
 			local calls = exports['ps-dispatch']:GetDispatchCalls()
 			TriggerClientEvent('mdt:client:getCallResponses', src, calls[callid]['responses'], callid)
@@ -1350,7 +1341,7 @@ RegisterNetEvent('mdt:server:sendCallResponse', function(message, time, callid)
 	local src = source
 	local Player = QBCore.Functions.GetPlayer(src)
 	local name = Player.PlayerData.charinfo.firstname.. " "..Player.PlayerData.charinfo.lastname
-	if IsPolice(Player.PlayerData.job.name) then
+	if Config.PoliceJobs or Config.AmbulanceJobs(Player.PlayerData.job.name) then
 		TriggerEvent('dispatch:sendCallResponse', src, callid, message, time, function(isGood)
 			if isGood then
 				TriggerClientEvent('mdt:client:sendCallResponse', -1, message, time, callid, name)
