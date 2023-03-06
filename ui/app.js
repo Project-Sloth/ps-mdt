@@ -4441,6 +4441,10 @@ $(document).ready(() => {
           DispatchItem += `<div class="call-bottom-info"><span class="fas fa-map-pin"></span>${value.firstStreet}</div>`;
         }
 
+        if (value['camId']) {
+          DispatchItem += `<div class="call-bottom-info"><span class="fas fa-camera"></span>${value.camId}</div>`;
+        }
+
         if (value["callsign"]) {
           DispatchItem += `<div class="call-bottom-info"><span class="fas fa-compass"></span>${value.callsign}</div>`;
         }
@@ -4575,6 +4579,10 @@ $(document).ready(() => {
 
           if (value["firstStreet"]) {
             DispatchItem += `<div class="call-bottom-info"><span class="fas fa-map-pin"></span>${value.firstStreet}</div>`;
+          }
+
+          if (value['camId']) {
+            DispatchItem += `<div class="call-bottom-info"><span class="fas fa-camera"></span>${value.camId}</div>`;
           }
 
           if (value["heading"]) {
