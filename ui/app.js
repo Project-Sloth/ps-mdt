@@ -3306,7 +3306,6 @@ $(document).ready(() => {
   });
 
   $('#vehiclePointsSlider').change(function(){
-    //console.log(this.value);
     var currentValue = $('#vehiclePointsSliderValue');
     currentValue.html(this.value);
   });
