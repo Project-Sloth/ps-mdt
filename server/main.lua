@@ -602,14 +602,21 @@ RegisterNetEvent('mdt:server:incidentSearchPerson', function(query)
 					return "img/male.png"
 				end
 
-				local result = MySQL.query.await("SELECT p.citizenid, p.charinfo, md.pfp from players p LEFT JOIN mdt_data md on p.citizenid = md.cid WHERE LOWER(`charinfo`) LIKE :query OR LOWER(`citizenid`) LIKE :query AND `jobtype` = :jobtype LIMIT 30", {
+				local result = MySQL.query.await("SELECT p.citizenid, p.charinfo, p.metadata, md.pfp from players p LEFT JOIN mdt_data md on p.citizenid = md.cid WHERE LOWER(`charinfo`) LIKE :query OR LOWER(`citizenid`) LIKE :query AND `jobtype` = :jobtype LIMIT 30", {
 					query = string.lower('%'..query..'%'), -- % wildcard, needed to search for all alike results
 					jobtype = JobType
 				})
 				local data = {}
 				for i=1, #result do
 					local charinfo = json.decode(result[i].charinfo)
-					data[i] = {id = result[i].citizenid, firstname = charinfo.firstname, lastname = charinfo.lastname, profilepic = ProfPic(charinfo.gender, result[i].pfp)}
+					local metadata = json.decode(result[i].metadata)
+					data[i] = {
+						id = result[i].citizenid,
+						firstname = charinfo.firstname,
+						lastname = charinfo.lastname,
+						profilepic = ProfPic(charinfo.gender, result[i].pfp),
+						callsign = metadata.callsign
+					}
 				end
 				TriggerClientEvent('mdt:client:incidentSearchPerson', src, data)
             end
