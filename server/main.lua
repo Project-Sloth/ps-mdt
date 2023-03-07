@@ -11,15 +11,6 @@ local impound = {}
 local dispatchMessages = {}
 local isDispatchRunning = false
 
-local function IsPolice(job)
-	for k, v in pairs(Config.PoliceJobs) do
-        if job == k then
-            return true
-        end
-    end
-    return false
-end
-
 local function GetActiveData(cid)
 	local player = type(cid) == "string" and cid or tostring(cid)
 	if player then
@@ -28,7 +19,20 @@ local function GetActiveData(cid)
 	return false
 end
 
-
+local function IsPoliceOrEms(job)
+	for k, v in pairs(Config.PoliceJobs) do
+           if job == k then
+              return true
+            end
+         end
+         
+         for k, v in pairs(Config.AmbulanceJobs) do
+           if job == k then
+              return true
+            end
+         end
+    return false
+end
 
 RegisterServerEvent("ps-mdt:dispatchStatus", function(bool)
 	isDispatchRunning = bool
@@ -602,14 +606,21 @@ RegisterNetEvent('mdt:server:incidentSearchPerson', function(query)
 					return "img/male.png"
 				end
 
-				local result = MySQL.query.await("SELECT p.citizenid, p.charinfo, md.pfp from players p LEFT JOIN mdt_data md on p.citizenid = md.cid WHERE LOWER(`charinfo`) LIKE :query OR LOWER(`citizenid`) LIKE :query AND `jobtype` = :jobtype LIMIT 30", {
+				local result = MySQL.query.await("SELECT p.citizenid, p.charinfo, p.metadata, md.pfp from players p LEFT JOIN mdt_data md on p.citizenid = md.cid WHERE LOWER(`charinfo`) LIKE :query OR LOWER(`citizenid`) LIKE :query AND `jobtype` = :jobtype LIMIT 30", {
 					query = string.lower('%'..query..'%'), -- % wildcard, needed to search for all alike results
 					jobtype = JobType
 				})
 				local data = {}
 				for i=1, #result do
 					local charinfo = json.decode(result[i].charinfo)
-					data[i] = {id = result[i].citizenid, firstname = charinfo.firstname, lastname = charinfo.lastname, profilepic = ProfPic(charinfo.gender, result[i].pfp)}
+					local metadata = json.decode(result[i].metadata)
+					data[i] = {
+						id = result[i].citizenid,
+						firstname = charinfo.firstname,
+						lastname = charinfo.lastname,
+						profilepic = ProfPic(charinfo.gender, result[i].pfp),
+						callsign = metadata.callsign
+					}
 				end
 				TriggerClientEvent('mdt:client:incidentSearchPerson', src, data)
             end
@@ -1348,7 +1359,7 @@ end)
 RegisterNetEvent('mdt:server:getCallResponses', function(callid)
 	local src = source
 	local Player = QBCore.Functions.GetPlayer(src)
-	if IsPolice(Player.PlayerData.job.name) then
+	if IsPoliceOrEms(Player.PlayerData.job.name) then
 		if isDispatchRunning then
 			local calls = exports['ps-dispatch']:GetDispatchCalls()
 			TriggerClientEvent('mdt:client:getCallResponses', src, calls[callid]['responses'], callid)
@@ -1360,7 +1371,7 @@ RegisterNetEvent('mdt:server:sendCallResponse', function(message, time, callid)
 	local src = source
 	local Player = QBCore.Functions.GetPlayer(src)
 	local name = Player.PlayerData.charinfo.firstname.. " "..Player.PlayerData.charinfo.lastname
-	if IsPolice(Player.PlayerData.job.name) then
+	if IsPoliceOrEms(Player.PlayerData.job.name) then
 		TriggerEvent('dispatch:sendCallResponse', src, callid, message, time, function(isGood)
 			if isGood then
 				TriggerClientEvent('mdt:client:sendCallResponse', -1, message, time, callid, name)
@@ -1371,19 +1382,16 @@ end)
 
 RegisterNetEvent('mdt:server:setRadio', function(cid, newRadio)
 	local src = source
-	local Player = QBCore.Functions.GetPlayer(src)
-	if Player.PlayerData.citizenid ~= cid then
-		TriggerClientEvent("QBCore:Notify", src, 'You can only change your radio!', 'error')
-		return
-	else
-		local radio = Player.Functions.GetItemByName("radio")
-		if radio ~= nil then
-			TriggerClientEvent('mdt:client:setRadio', src, newRadio)
-		else
-			TriggerClientEvent("QBCore:Notify", src, 'You do not have a radio!', 'error')
-		end
-	end
+	local targetPlayer = QBCore.Functions.GetPlayerByCitizenId(cid)
+	local targetSource = targetPlayer.PlayerData.source
+	local targetName = targetPlayer.PlayerData.charinfo.firstname .. ' ' .. targetPlayer.PlayerData.charinfo.lastname
 
+	local radio = targetPlayer.Functions.GetItemByName("radio")
+	if radio ~= nil then
+		TriggerClientEvent('mdt:client:setRadio', targetSource, newRadio)
+	else
+		TriggerClientEvent("QBCore:Notify", src, targetName..' does not have a radio!', 'error')
+	end
 end)
 
 local function isRequestVehicle(vehId)
