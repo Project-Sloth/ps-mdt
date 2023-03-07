@@ -1372,19 +1372,16 @@ end)
 
 RegisterNetEvent('mdt:server:setRadio', function(cid, newRadio)
 	local src = source
-	local Player = QBCore.Functions.GetPlayer(src)
-	if Player.PlayerData.citizenid ~= cid then
-		TriggerClientEvent("QBCore:Notify", src, 'You can only change your radio!', 'error')
-		return
-	else
-		local radio = Player.Functions.GetItemByName("radio")
-		if radio ~= nil then
-			TriggerClientEvent('mdt:client:setRadio', src, newRadio)
-		else
-			TriggerClientEvent("QBCore:Notify", src, 'You do not have a radio!', 'error')
-		end
-	end
+	local targetPlayer = QBCore.Functions.GetPlayerByCitizenId(cid)
+	local targetSource = targetPlayer.PlayerData.source
+	local targetName = targetPlayer.PlayerData.charinfo.firstname .. ' ' .. targetPlayer.PlayerData.charinfo.lastname
 
+	local radio = targetPlayer.Functions.GetItemByName("radio")
+	if radio ~= nil then
+		TriggerClientEvent('mdt:client:setRadio', targetSource, newRadio)
+	else
+		TriggerClientEvent("QBCore:Notify", src, targetName..' does not have a radio!', 'error')
+	end
 end)
 
 local function isRequestVehicle(vehId)
