@@ -406,11 +406,15 @@ $(document).ready(() => {
       $(".bulletin-add-btn").removeClass("fa-minus").addClass("fa-plus");
     }
   });
+
   $(".associated-incidents-tags-add-btn").on("click", "", function () {
     document.addEventListener("mouseup", onMouseDownIncidents);
-    $(".incidents-person-search-container").fadeIn(250);
+    const source = "associated-incidents-tags";
+    $(".incidents-person-search-holder").attr("data-source", source);
+    $(".incidents-person-search-container").fadeIn(250); // makes the container visible
     $(".close-all").css("filter", "brightness(15%)");
   });
+
   $(".gallery-add-btn").click(function () {
     if ($(".manage-profile-citizenid-input").val()) {
       if ($(".gallery-upload-input").css("display") == "none") {
@@ -1066,7 +1070,7 @@ $(document).ready(() => {
       })
     );
   });
-  $(".manage-incidents-civilians-holder").on("click", ".manage-incidents-civilians", async function () {
+  $(".manage-incidents-civilians-holder").on("click", ".tag", async function () {
       const name = $(this).text();
       fidgetSpinner(".profile-page-container");
       currentTab = ".profile-page-container";
@@ -1194,76 +1198,20 @@ $(document).ready(() => {
   );
 
   $(".manage-incidents-officers-add-btn").click(function () {
-    if ($(".officers-incident-input")[0]) {
-      $(this).removeClass("fa-minus").addClass("fa-plus");
-      $(".officers-incident-input").remove();
-    } else {
-      $(this).removeClass("fa-plus").addClass("fa-minus");
-      $(".manage-incidents-officers-holder").prepend(
-        `<span contenteditable="true" class="officers-incident-input"></span>`
-      );
-    }
+    const source = "incidents-officers";
+    document.addEventListener("mouseup", onMouseDownIncidents);
+    $(".incidents-person-search-holder").attr("data-source", source);
+    $(".incidents-person-search-container").fadeIn(250); // makes the container visible
+    $(".close-all").css("filter", "brightness(15%)");
   });
-
-  $(".manage-incidents-officers-holder").on(
-    "keydown",
-    ".officers-incident-input",
-    function (e) {
-      if (e.keyCode === 13) {
-        $(".manage-incidents-officers-holder").prepend(
-          `<div class="manage-incidents-officers">${$(
-            ".officers-incident-input"
-          ).text()}</div>`
-        );
-        // Have it save instantly if it's an existing report.
-        if (
-          $(".manage-incidents-officers-add-btn").hasClass("fa-minus")
-        ) {
-          $(".manage-incidents-officers-add-btn")
-            .removeClass("fa-minus")
-            .addClass("fa-plus");
-        }
-        $(".officers-incident-input").remove();
-      }
-    }
-  );
 
   $(".manage-incidents-civilians-add-btn").click(function () {
-    if ($(".civilians-incident-input")[0]) {
-      $(this).removeClass("fa-minus").addClass("fa-plus");
-      $(".civilians-incident-input").remove();
-    } else {
-      $(this).removeClass("fa-plus").addClass("fa-minus");
-      $(".manage-incidents-civilians-holder").prepend(
-        `<span contenteditable="true" class="civilians-incident-input"></span>`
-      );
-    }
+    const source = "incidents-civilians";
+    document.addEventListener("mouseup", onMouseDownIncidents);
+    $(".incidents-person-search-holder").attr("data-source", source);
+    $(".incidents-person-search-container").fadeIn(250); // makes the container visible
+    $(".close-all").css("filter", "brightness(15%)");
   });
-
-  $(".manage-incidents-civilians-holder").on(
-    "keydown",
-    ".civilians-incident-input",
-    function (e) {
-      if (e.keyCode === 13) {
-        $(".manage-incidents-civilians-holder").prepend(
-          `<div class="manage-incidents-civilians">${$(
-            ".civilians-incident-input"
-          ).text()}</div>`
-        );
-        // Have it save instantly if it's an existing report.
-        if (
-          $(".manage-incidents-civilians-add-btn").hasClass(
-            "fa-minus"
-          )
-        ) {
-          $(".manage-incidents-civilians-add-btn")
-            .removeClass("fa-minus")
-            .addClass("fa-plus");
-        }
-        $(".civilians-incident-input").remove();
-      }
-    }
-  );
 
   $(".manage-incidents-evidence-add-btn").click(function () {
     if ($(".incidents-upload-input").css("display") == "none") {
@@ -1343,11 +1291,6 @@ $(document).ready(() => {
       }
       if ($(".bolo-gallery-add-btn").hasClass("fa-minus")) {
         $(".bolo-gallery-add-btn")
-          .removeClass("fa-minus")
-          .addClass("fa-plus");
-      }
-      if ($(".officers-add-btn").hasClass("fa-minus")) {
-        $(".officers-add-btn")
           .removeClass("fa-minus")
           .addClass("fa-plus");
       }
@@ -1593,9 +1536,6 @@ $(document).ready(() => {
       $(".bolo-gallery-add-btn")
         .removeClass("fa-minus")
         .addClass("fa-plus");
-    }
-    if ($(".officers-add-btn").hasClass("fa-minus")) {
-      $(".officers-add-btn").removeClass("fa-minus").addClass("fa-plus");
     }
 
     if ($(".bolo-gallery-upload-input").css("display") == "block") {
@@ -1844,41 +1784,13 @@ $(document).ready(() => {
   );
 
   $(".officers-add-btn").click(function () {
-    if (canInputBoloOfficerTag) {
-      $(this).removeClass("fa-plus").addClass("fa-minus");
-      $(".manage-officers-tags-holder").prepend(
-        `<span contenteditable="true" class="officer-tag-bolo-input"></span>`
-      );
-      canInputBoloOfficerTag = false;
-    } else if (!canInputBoloOfficerTag) {
-      $(this).removeClass("fa-minus").addClass("fa-plus");
-      $(".officer-tag-bolo-input").remove();
-      canInputBoloOfficerTag = true;
-    }
+    document.addEventListener("mouseup", onMouseDownIncidents);
+    const source = "bolos-officers";
+    $(".incidents-person-search-holder").attr("data-source", source);
+    $(".incidents-person-search-container").fadeIn(250); // makes the container visible
+    $(".close-all").css("filter", "brightness(15%)");
   });
 
-  $(".manage-officers-tags-holder").on(
-    "keydown",
-    ".officer-tag-bolo-input",
-    function (e) {
-      if (e.keyCode === 13) {
-        $(".manage-officers-tags-holder").prepend(
-          `<div class="tag">${$(
-            ".officer-tag-bolo-input"
-          ).text()}</div>`
-        );
-        // Have it save instantly if it's an existing report.
-        if ($(".officers-add-btn").hasClass("fa-minus")) {
-          canInputBoloOfficerTag = true;
-          $(".officers-add-btn")
-            .removeClass("fa-minus")
-            .addClass("fa-plus");
-        }
-        canInputBoloOfficerTag = true;
-        $(".officer-tag-bolo-input").remove();
-      }
-    }
-  );
   $(".incidents-ghost-holder").on(
     "click",
     ".associated-incidents-user-tag",
@@ -1993,21 +1905,48 @@ $(document).ready(() => {
       openContextMenu(e, args);
     }
   );
+
+  // On click of the search item, it populates the results in the correct area that the search component was triggered from
   $(".incidents-person-search-holder").on(
     "click",
     ".incidents-person-search-item",
     function () {
       $(".incidents-person-search-container").fadeOut(250);
       $(".close-all").css("filter", "none");
-      $(".associated-incidents-tags-holder").prepend(
-        `<div class="associated-incidents-tag" data-id="${$(this).data(
-          "id"
-        )}">${$(this).data("name")}</div>`
-      );
+      
+      // This is the source element where we triggered the search component to open from
+      // It is the area where we want the results to populate when we click on a search result
+      const sourceElement = $(".incidents-person-search-holder").data("source");      
 
-      // This section handles populating the fields when you add a new associated user to the incident
-      $(".incidents-ghost-holder").prepend(
-        `
+      // Populate the tags for the given section that corresponds to the sourceElement
+      if (sourceElement === "incidents-civilians") {
+        $(".manage-incidents-civilians-holder").append(
+          `<div class="tag">${$(this).data("name")}</div>`
+        );
+      } else if (sourceElement === "incidents-officers") { 
+        $(".manage-incidents-officers-holder").append(
+          `<div class="tag">(${$(this).data("callsign")}) ${$(this).data("name")}</div>`
+        );
+      } else if (sourceElement === "reports-civilians") {
+        $(".reports-civilians-tags-holder").append(
+          `<div class="tag">${$(this).data("name")}</div>`
+        );
+      } else if (sourceElement === "reports-officers") {
+        $(".reports-officers-tags-holder").append(
+          `<div class="tag">(${$(this).data("callsign")}) ${$(this).data("name")}</div>`
+        );
+      } else if (sourceElement === "bolos-officers") {
+        $(".manage-officers-tags-holder").append(
+          `<div class="tag">(${$(this).data("callsign")}) ${$(this).data("name")}</div>`
+        );
+      } else if(sourceElement === "associated-incidents-tags") {
+        $(".associated-incidents-tags-holder").prepend(
+          `<div class="associated-incidents-tag" data-id="${$(this).data("id")}">${$(this).data("name")}</div>`
+        );
+  
+        // This section handles populating the fields when you add a new associated user to the incident
+        $(".incidents-ghost-holder").prepend(
+          `
             <div class="associated-incidents-user-container" data-id="${$(this).data("cid")}">
                 <div class="associated-incidents-user-title">${$(this).data("info")}</div>
                 <div class="associated-incidents-user-tags-holder">
@@ -2031,8 +1970,14 @@ $(document).ready(() => {
                     ${canSendToCommunityService ? `<div id="community-service-button" class="control-button" data-id="${$(this).data("cid")}"> <span class="fa-solid fa-person-digging" style="margin-top: 3.5px;"></span>Community Service</div>` : ''}
                 </div>
             </div>
-        `
-      );
+          `
+        );
+      }
+        
+      // Clear the search results and source
+      $(".incidents-person-search-holder").removeData("source"); // Without using this line, we end up reading stale data from the data-source attribute rather than the data-source from the field we clicked on
+      $(".incidents-person-search-holder").empty(); // Clear the search results
+      $('.incidents-person-search-name-input').val(''); // Reset the search input field
     }
   );
 
@@ -2052,20 +1997,23 @@ $(document).ready(() => {
     ];
     openContextMenu(e, args);
   });
-
-  $(".contextmenu").on("click", ".incidents-remove-officer-tag", function () {
+  
+  $(".contextmenu").on("click", ".remove-tag", function () {
     $(
-      `.manage-incidents-officers:contains(${$(this).data("info")})`
+      `.tag:contains(${$(this).data("info")})`
     ).remove();
   });
 
-  $(".manage-incidents-officers-holder").on(
+  // Setup the remove tag context menu for each holder section
+  const holdersSelectors = [".manage-incidents-civilians-holder", ".manage-incidents-officers-holder", ".reports-civilians-tags-holder", ".reports-officers-tags-holder", ".manage-officers-tags-holder"];
+  holdersSelectors.forEach(holder => {
+    $(holder).on(
     "contextmenu",
-    ".manage-incidents-officers",
+    ".tag",
     function (e) {
       let args = [
         {
-          className: "incidents-remove-officer-tag",
+          className: "remove-tag",
           icon: "fas fa-times",
           text: "Remove Tag",
           info: $(this).html(),
@@ -2073,31 +2021,8 @@ $(document).ready(() => {
         },
       ];
       openContextMenu(e, args);
-    }
-  );
-
-  $(".contextmenu").on("click", ".incidents-remove-civ-tag", function () {
-    $(
-      `.manage-incidents-civilians:contains(${$(this).data("info")})`
-    ).remove();
+    });
   });
-
-  $(".manage-incidents-civilians-holder").on(
-    "contextmenu",
-    ".manage-incidents-civilians",
-    function (e) {
-      let args = [
-        {
-          className: "incidents-remove-civ-tag",
-          icon: "fas fa-times",
-          text: "Remove Tag",
-          info: $(this).html(),
-          status: "",
-        },
-      ];
-      openContextMenu(e, args);
-    }
-  );
 
   $(".incidents-search-refresh").click(function () {
     if (canRefreshIncidents == true) {
@@ -2218,11 +2143,6 @@ $(document).ready(() => {
     }
     if ($(".reports-gallery-add-btn").hasClass("fa-minus")) {
       $(".reports-gallery-add-btn")
-        .removeClass("fa-minus")
-        .addClass("fa-plus");
-    }
-    if ($(".reports-officers-add-btn").hasClass("fa-minus")) {
-      $(".reports-officers-add-btn")
         .removeClass("fa-minus")
         .addClass("fa-plus");
     }
@@ -2368,78 +2288,20 @@ $(document).ready(() => {
   );
 
   $(".reports-officers-add-btn").click(function () {
-    if (canInputReportOfficerTag) {
-      $(this).removeClass("fa-plus").addClass("fa-minus");
-      $(".reports-officers-tags-holder").prepend(
-        `<span contenteditable="true" class="officer-tag-reports-input"></span>`
-      );
-      canInputReportOfficerTag = false;
-    } else if (!canInputReportOfficerTag) {
-      $(this).removeClass("fa-minus").addClass("fa-plus");
-      $(".officer-tag-reports-input").remove();
-      canInputReportOfficerTag = true;
-    }
+    const source = "reports-officers";
+    document.addEventListener("mouseup", onMouseDownIncidents);
+    $(".incidents-person-search-holder").attr("data-source", source);
+    $(".incidents-person-search-container").fadeIn(250); // makes the container visible
+    $(".close-all").css("filter", "brightness(15%)");
   });
-
-  $(".reports-officers-tags-holder").on(
-    "keydown",
-    ".officer-tag-reports-input",
-    function (e) {
-      if (e.keyCode === 13) {
-        $(".reports-officers-tags-holder").prepend(
-          `<div class="tag">${$(
-            ".officer-tag-reports-input"
-          ).text()}</div>`
-        );
-        // Have it save instantly if it's an existing report.
-        if ($(".reports-officers-add-btn").hasClass("fa-minus")) {
-          canInputReportOfficerTag = true;
-          $(".reports-officers-add-btn")
-            .removeClass("fa-minus")
-            .addClass("fa-plus");
-        }
-        canInputReportOfficerTag = true;
-        $(".officer-tag-reports-input").remove();
-      }
-    }
-  );
 
   $(".reports-civilians-add-btn").click(function () {
-    if (canInputReportCivilianTag) {
-      $(this).removeClass("fa-plus").addClass("fa-minus");
-      $(".reports-civilians-tags-holder").prepend(
-        `<span contenteditable="true" class="civilian-tag-reports-input"></span>`
-      );
-      canInputReportCivilianTag = false;
-    } else if (!canInputReportCivilianTag) {
-      $(this).removeClass("fa-minus").addClass("fa-plus");
-      $(".civilian-tag-reports-input").remove();
-      canInputReportCivilianTag = true;
-    }
+    document.addEventListener("mouseup", onMouseDownIncidents);
+    const source = "reports-civilians";
+    $(".incidents-person-search-holder").attr("data-source", source);
+    $(".incidents-person-search-container").fadeIn(250); // makes the container visible
+    $(".close-all").css("filter", "brightness(15%)");
   });
-
-  $(".reports-civilians-tags-holder").on(
-    "keydown",
-    ".civilian-tag-reports-input",
-    function (e) {
-      if (e.keyCode === 13) {
-        $(".reports-civilians-tags-holder").prepend(
-          `<div class="tag">${$(
-            ".civilian-tag-reports-input"
-          ).text()}</div>`
-        );
-        // Have it save instantly if it's an existing report.
-        if ($(".reports-civilians-add-btn").hasClass("fa-minus")) {
-          canInputReportCivilianTag = true;
-          $(".reports-civilians-add-btn")
-            .removeClass("fa-minus")
-            .addClass("fa-plus");
-        }
-        canInputReportCivilianTag = true;
-        $(".civilian-tag-reports-input").remove();
-      }
-    }
-  );
 
   $(".manage-reports-title-holder").on(
     "click",
@@ -2471,11 +2333,6 @@ $(document).ready(() => {
       }
       if ($(".reports-gallery-add-btn").hasClass("fa-minus")) {
         $(".reports-gallery-add-btn")
-          .removeClass("fa-minus")
-          .addClass("fa-plus");
-      }
-      if ($(".officers-add-btn").hasClass("fa-minus")) {
-        $(".officers-add-btn")
           .removeClass("fa-minus")
           .addClass("fa-plus");
       }
@@ -3449,7 +3306,6 @@ $(document).ready(() => {
   });
 
   $('#vehiclePointsSlider').change(function(){
-    //console.log(this.value);
     var currentValue = $('#vehiclePointsSliderValue');
     currentValue.html(this.value);
   });
@@ -4724,14 +4580,14 @@ $(document).ready(() => {
       $(".manage-incidents-officers-holder").empty();
       $.each(table["officersinvolved"], function (index, value) {
         $(".manage-incidents-officers-holder").append(
-          `<div class="manage-incidents-officers">${value}</div>`
+          `<div class="tag">${value}</div>`
         );
       });
 
       $(".manage-incidents-civilians-holder").empty();
       $.each(table["civsinvolved"], function (index, value) {
         $(".manage-incidents-civilians-holder").append(
-          `<div class="manage-incidents-civilians">${value}</div>`
+          `<div class="tag">${value}</div>`
         );
       });
 
@@ -4852,16 +4708,16 @@ $(document).ready(() => {
         let name = value.firstname + " " + value.lastname;
         $(".incidents-person-search-holder").prepend(
           `
-                    <div class="incidents-person-search-item" data-info="${name} (#${value.id})" data-cid="${value.id}" data-name="${name}">
-                        <img src="${value.profilepic}" class="incidents-person-search-item-pfp">
-                        <div class="incidents-person-search-item-right">
-                            <div class="incidents-person-search-item-right-cid-title">Citizen ID</div>
-                            <div class="incidents-person-search-item-right-cid-input"><span class="fas fa-id-card"></span> ${value.id}</div>
-                            <div class="incidents-person-search-item-right-name-title">Name</div>
-                            <div class="incidents-person-search-item-right-name-input"><span class="fas fa-user"></span> ${name}</div>
-                        </div>
-                    </div>
-                    `
+            <div class="incidents-person-search-item" data-info="${name} (#${value.id})" data-cid="${value.id}" data-name="${name}" data-callsign="${value.callsign}">
+                <img src="${value.profilepic}" class="incidents-person-search-item-pfp">
+                <div class="incidents-person-search-item-right">
+                    <div class="incidents-person-search-item-right-cid-title">Citizen ID</div>
+                    <div class="incidents-person-search-item-right-cid-input"><span class="fas fa-id-card"></span> ${value.id}</div>
+                    <div class="incidents-person-search-item-right-name-title">Name</div>
+                    <div class="incidents-person-search-item-right-name-input"><span class="fas fa-user"></span> ${name}</div>
+                </div>
+            </div>
+          `
         );
       });
     } else if (eventData.type == "boloData") {
