@@ -96,6 +96,64 @@ RegisterCommand('mdt', function()
     end
 end, false)
 
+RegisterCommand("issueserial", function()
+    PlayerData = QBCore.Functions.GetPlayerData()
+    if GetJobType(PlayerData.job.name) == 'gunstore' then --Add Gun Store Job Name Here
+    local dialog = exports['qb-input']:ShowInput({
+        header = "State Weapon Registration",
+        submitText = "Submit",
+        inputs = {
+            {
+                text = "Serial Number", 
+                name = "serialnumber", 
+                type = "text", 
+                isRequired = true, 
+            },
+            {
+                text = "Registered Owner Citizen ID (#)", 
+                name = "cid", 
+                type = "text", 
+                isRequired = true,
+            },
+            {
+                text = "Weapon Model",
+                name = "weaponmodel", 
+                type = "text",
+                isRequired = true, 
+            },
+            {
+                text = "Weapon Class", 
+                name = "weaponclass", 
+                type = "radio", 
+                isRequired = true, 
+                options = { 
+                    { value = "Class 1", text = "Class 1" },
+                    { value = "Class 2", text = "Class 2" }, 
+                    { value = "Class 3", text = "Class 3" }
+                },
+            },
+            {
+                text = "Weapon Image URL",
+                name = "weaponurl",
+                type = "text",
+                isRequired = true, 
+            },
+            {
+                text = "Issuing Dealer",
+                name = "weapondealer",
+                type = "text",
+                isRequired = true,
+            },
+        },
+    })
+        if dialog ~= nil then
+           TriggerServerEvent('mdt:server:registerweapon', dialog.serialnumber, dialog.weaponurl, dialog.weapondealer, dialog.cid, dialog.weaponclass, dialog.weaponmodel)
+        end
+    else
+
+    end
+end, false)
+
 Citizen.CreateThread(function()
     TriggerEvent('chat:addSuggestion', '/mdt', 'Open the emergency services MDT', {})
 end)

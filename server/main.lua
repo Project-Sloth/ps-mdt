@@ -1010,6 +1010,10 @@ RegisterNetEvent('mdt:server:getWeaponData', function(serial)
 	end
 end)
 
+RegisterNetEvent('mdt:server:registerweapon', function(serial, imageurl, notes, owner, weapClass, weapModel) 
+    exports['ps-mdt']:CreateWeaponInfo(serial, imageurl, notes, owner, weapClass, weapModel)
+end)
+
 RegisterNetEvent('mdt:server:getAllLogs', function()
 	local src = source
 	local Player = QBCore.Functions.GetPlayer(src)
