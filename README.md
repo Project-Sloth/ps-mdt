@@ -63,6 +63,9 @@ This reduces the plate reader events to player's vehicles and doesn't query the 
 ![image](https://i.imgur.com/6maboG3.png)
 ![image](https://i.imgur.com/DkhQxDq.png)
 
+**Video Demonstration**
+https://youtu.be/w9PAVc3ER_c
+
 ## FAQ
 - **How do I add charges to a criminal in an Incident?** - After finding and adding the criminal citizen to the incident, right-click in the space under the criminal's name and select "Add Charge".
 
