@@ -41,7 +41,7 @@ For all support questions, ask in our [Discord](https://www.discord.gg/projectsl
 * DOC
 ![image](https://i.imgur.com/lFi4jDH.png)
 
-## Wolfknight Radar Compatibility
+## Wolfknight Plate Reader & Radar Compatibility
 
 Support for Wolfknight Radar & Plate Reader
 https://github.com/WolfKnight98/wk_wars2x
