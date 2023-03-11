@@ -5009,6 +5009,10 @@ span.tag-reports-input[contenteditable]:empty::before {
     background-color: #950909;
 }
 
+.reports-delete:hover {
+    background-color: #950909;
+}
+
 .remove-bulletin:hover {
     background-color: #950909;
 }
