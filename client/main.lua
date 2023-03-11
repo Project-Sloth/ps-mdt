@@ -538,6 +538,12 @@ RegisterNUICallback("newBolo", function(data, cb)
     cb(true)
 end)
 
+RegisterNUICallback("deleteReports", function(data, cb)
+    local id = data.id
+    TriggerServerEvent('mdt:server:deleteReports', id)
+    cb(true)
+end)
+
 RegisterNUICallback("deleteIncidents", function(data, cb)
     local id = data.id
     TriggerServerEvent('mdt:server:deleteIncidents', id)
