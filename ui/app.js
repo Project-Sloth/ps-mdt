@@ -4512,7 +4512,7 @@ $(document).ready(() => {
       });
       $(".contextmenu").on("click", ".incidents-delete", function () {
         $(".incidents-items")
-          .find("[data-id='" + $(this).data("info") + "']")
+          .find(`[data-id="${$(this).data("info")}"]`)
           .remove();
         $.post(
           `https://${GetParentResourceName()}/deleteIncidents`,
@@ -4878,7 +4878,7 @@ $(document).ready(() => {
       });
       $(".contextmenu").on("click", ".reports-delete", function () {
         $(".reports-items")
-          .find("[data-id='" + $(this).data("info") + "']")
+          .find(`[data-id="${$(this).data("info")}"]`)
           .remove();
         $.post(
           `https://${GetParentResourceName()}/deleteReports`,
@@ -5016,7 +5016,7 @@ $(document).ready(() => {
       $(".weapon-info-imageurl-input").val(table["image"]);
       $(".contextmenu").on("click", ".weapons-delete", function () {
         $(".weapons-items")
-          .find("[data-id='" + $(this).data("info") + "']")
+          .find(`[data-id="${$(this).data("info")}"]`)
           .remove();
         $.post(
           `https://${GetParentResourceName()}/deleteWeapons`,
