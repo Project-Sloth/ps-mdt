@@ -567,6 +567,19 @@ RegisterNetEvent('mdt:server:newBolo', function(existing, id, title, plate, owne
 	end
 end)
 
+RegisterNetEvent('mdt:server:deleteReports', function(id)
+	if id then
+		local src = source
+		local Player = QBCore.Functions.GetPlayer(src)
+		local JobType = GetJobType(Player.PlayerData.job.name)
+		if JobType == 'police' then
+			local fullname = Player.PlayerData.charinfo.firstname .. ' ' .. Player.PlayerData.charinfo.lastname
+			MySQL.update("DELETE FROM `mdt_reports` WHERE id=:id", { id = id, jobtype = JobType })
+			TriggerEvent('mdt:server:AddLog', "A Report was deleted by "..fullname.." with the ID ("..id..")")
+		end
+	end
+end)
+
 RegisterNetEvent('mdt:server:deleteIncidents', function(id)
 	if id then
 		local src = source
