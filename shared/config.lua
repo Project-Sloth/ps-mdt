@@ -18,7 +18,7 @@ Config.RosterLink = { -- Google Docs Link
 Config.UseWolfknightRadar = false
 Config.WolfknightNotifyTime = 5000 -- How long the notification displays for in milliseconds (30000 = 30 seconds)
 
--- To avoid making excessive database queries, modify the 'CONFIG.use_sonorancad' setting in the configuration file located at 'wk_wars2x/config.lua'. 
+-- To avoid making excessive database queries, modify this config to true 'CONFIG.use_sonorancad = true' setting in the configuration file located at 'wk_wars2x/config.lua'. 
 -- Enabling this setting will limit plate checks to only those vehicles that have been used by a player.
 
 
