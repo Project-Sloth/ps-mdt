@@ -13,14 +13,14 @@ Config.RosterLink = { -- Google Docs Link
 }
 
 
+-- Support for Wraith ARS 2X. 
+
 Config.UseWolfknightRadar = false
-Config.WolfknightNotifyTime = 5000 --How long the notification displays for in milliseconds (30000 = 30 seconds)
---[[
-Adds support for Wraith ARS 2X by WolfKnight98 (wk_wars2x)
-https://github.com/WolfKnight98/wk_wars2x
-To save on unnecessary database queries, in wk_wars2x/config.lua set 'CONFIG.use_sonorancad = true'
-This will only check plates of vehicles that have been occupied by a player
---]]
+Config.WolfknightNotifyTime = 5000 -- How long the notification displays for in milliseconds (30000 = 30 seconds)
+
+-- To avoid making excessive database queries, modify the 'CONFIG.use_sonorancad' setting in the configuration file located at 'wk_wars2x/config.lua'. 
+-- Enabling this setting will limit plate checks to only those vehicles that have been used by a player.
+
 
 Config.OnlyShowOnDuty = true
 
@@ -252,7 +252,7 @@ Config.PoliceJobs = {
     ['doc'] = true,
     ['lssd'] = true,
     ['sapr'] = true,
-    ['pa'] = true -- yucky
+    ['pa'] = true
 }
 
 Config.AmbulanceJobs = {
@@ -265,7 +265,6 @@ Config.DojJobs = {
     ['judge'] = true
 }
 
--- Leave my hacky code alone ya goblins
 Config.AllowedJobs = {}
 for index, value in pairs(Config.PoliceJobs) do
     Config.AllowedJobs[index] = value
@@ -276,7 +275,6 @@ end
 for index, value in pairs(Config.DojJobs) do
     Config.AllowedJobs[index] = value
 end
--- Leave my hacky code alone ya goblins
 
 Config.LogPerms = {
 	['ambulance'] = {
@@ -666,8 +664,9 @@ function GetJobType(job)
 	end
 end
 
--- this is a hack, because the qb-menu in qb-policejob populates an impound location and passed it through to the event.
--- if this impound locations are changed in qb-policejob, they must also be changed here.
+-- This is a workaround solution because the qb-menu present in qb-policejob fills in an impound location and sends it to the event. 
+-- If the impound locations are modified in qb-policejob, the changes must also be implemented here to ensure consistency.
+
 Config.ImpoundLocations = {
     [1] = vector4(436.68, -1007.42, 27.32, 180.0),
     [2] = vector4(-436.14, 5982.63, 31.34, 136.0),
