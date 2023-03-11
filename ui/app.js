@@ -4510,6 +4510,31 @@ $(document).ready(() => {
                 </div>`
         );
       });
+      $(".contextmenu").on("click", ".incidents-delete", function () {
+        $(".incidents-items")
+          .find("[data-id='" + $(this).data("info") + "']")
+          .remove();
+        $.post(
+          `https://${GetParentResourceName()}/deleteIncidents`,
+          JSON.stringify({
+            id: $(this).data("info"),
+          })
+        );
+      });
+    
+      $(".incidents-items").on("contextmenu", ".incidents-item", function (e) {
+        var args = "";
+        args = [
+          {
+            className: "incidents-delete",
+            icon: "fas fa-times",
+            text: "Delete Incidents",
+            info: $(this).data("id"),
+            status: "",
+          },
+        ];
+        openContextMenu(e, args);
+      });
     } else if (eventData.type == "getPenalCode") {
       const titles = eventData.titles;
       const penalcode = eventData.penalcode;
