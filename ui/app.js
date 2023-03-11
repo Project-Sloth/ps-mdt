@@ -4876,6 +4876,31 @@ $(document).ready(() => {
                 </div>`
         );
       });
+      $(".contextmenu").on("click", ".reports-delete", function () {
+        $(".reports-items")
+          .find("[data-id='" + $(this).data("info") + "']")
+          .remove();
+        $.post(
+          `https://${GetParentResourceName()}/deleteReports`,
+          JSON.stringify({
+            id: $(this).data("info"),
+          })
+        );
+      });
+    
+      $(".reports-items").on("contextmenu", ".reports-item", function (e) {
+        var args = "";
+        args = [
+          {
+            className: "reports-delete",
+            icon: "fas fa-times",
+            text: "Delete Report",
+            info: $(this).data("id"),
+            status: "",
+          },
+        ];
+        openContextMenu(e, args);
+      });
     } else if (eventData.type == "reportData") {
       let table = eventData.data;
 
