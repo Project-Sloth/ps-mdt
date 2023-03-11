@@ -1,6 +1,6 @@
 Config = Config or {}
 
-Config.RosterLink = {
+Config.RosterLink = { -- Google Docs Link
     ['police'] = '',
     ['ambulance'] = '',
     ['bcso'] = '',
