@@ -5,8 +5,9 @@ For all support questions, ask in our [Discord](https://www.discord.gg/projectsl
 ## Dependencies
 
 - [QBCore](https://github.com/qbcore-framework/qb-core)
-- [ps-dispatch](https://github.com/Project-Sloth/ps-dispatch) [If you intend to use it, make sure this starts before the mdt!]
+- [ps-dispatch](https://github.com/Project-Sloth/ps-dispatch)
 - [oxmysql](https://github.com/overextended/oxmysql)
+- [qb-apartments](https://github.com/qbcore-framework/qb-apartments) - You can remove this by removing the query. This is used to find people's apartment. 
 
 # Installation
 * Download ZIP
