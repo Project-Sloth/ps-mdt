@@ -3,7 +3,7 @@ game 'gta5'
 
 author 'Flawws, Flakey, Idris and the Project Sloth team'
 description 'EchoRP MDT Rewrite for QBCore'
-version '1.7'
+version '1.8'
 
 lua54 'yes'
 
