@@ -368,7 +368,7 @@ end)
 RegisterNetEvent("mdt:server:saveProfile", function(pfp, information, cid, fName, sName, tags, gallery, fingerprint, licenses)
 	local src = source
 	local Player = QBCore.Functions.GetPlayer(src)
-	ManageLicenses(cid, licenses)
+	UpdateAllLicenses(cid, licenses)
 	if Player then
 		local JobType = GetJobType(Player.PlayerData.job.name)
 		if JobType == 'doj' then JobType = 'police' end
