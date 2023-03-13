@@ -258,7 +258,7 @@ QBCore.Functions.CreateCallback('mdt:server:GetProfileData', function(source, cb
 
 	local apartmentData = GetPlayerApartment(target.citizenid)
 
-	if apartmentData then
+	if Config.UsingDefaultQBApartments and apartmentData then
 		apartmentData = apartmentData[1].label .. ' (' ..apartmentData[1].name..')'
 	end
 
