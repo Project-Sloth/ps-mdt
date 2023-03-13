@@ -26,12 +26,6 @@ files {
     'ui/img/*.png',
     'ui/img/*.webp',
     'ui/dashboard.html',
-    'ui/dmv.html',
-    'ui/bolos.html',
-    'ui/incidents.html',
-    'ui/penalcode.html',
-    'ui/reports.html',
-    'ui/warrants.html',
     'ui/app.js',
     'ui/style.css',
 }
