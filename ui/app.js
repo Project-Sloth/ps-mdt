@@ -2972,7 +2972,7 @@ $(document).ready(() => {
 
                                 </div>
                                 <div class="weapons-bottom-info">
-                                  <div class="weapons-id">Serial Number: ${value.serial} · Owner: ${value.owner}</div>
+                                  <div class="weapons-id">Serial Number: ${value.serial} · Owner: ${value.owner} · ID: ${value.id}</div>
                                 </div>
                             </div>
                         </div>
@@ -4510,6 +4510,31 @@ $(document).ready(() => {
                 </div>`
         );
       });
+      $(".contextmenu").on("click", ".incidents-delete", function () {
+        $(".incidents-items")
+          .find(`[data-id="${$(this).data("info")}"]`)
+          .remove();
+        $.post(
+          `https://${GetParentResourceName()}/deleteIncidents`,
+          JSON.stringify({
+            id: $(this).data("info"),
+          })
+        );
+      });
+    
+      $(".incidents-items").on("contextmenu", ".incidents-item", function (e) {
+        var args = "";
+        args = [
+          {
+            className: "incidents-delete",
+            icon: "fas fa-times",
+            text: "Delete Incidents",
+            info: $(this).data("id"),
+            status: "",
+          },
+        ];
+        openContextMenu(e, args);
+      });
     } else if (eventData.type == "getPenalCode") {
       const titles = eventData.titles;
       const penalcode = eventData.penalcode;
@@ -4851,6 +4876,31 @@ $(document).ready(() => {
                 </div>`
         );
       });
+      $(".contextmenu").on("click", ".reports-delete", function () {
+        $(".reports-items")
+          .find(`[data-id="${$(this).data("info")}"]`)
+          .remove();
+        $.post(
+          `https://${GetParentResourceName()}/deleteReports`,
+          JSON.stringify({
+            id: $(this).data("info"),
+          })
+        );
+      });
+    
+      $(".reports-items").on("contextmenu", ".reports-item", function (e) {
+        var args = "";
+        args = [
+          {
+            className: "reports-delete",
+            icon: "fas fa-times",
+            text: "Delete Report",
+            info: $(this).data("id"),
+            status: "",
+          },
+        ];
+        openContextMenu(e, args);
+      });
     } else if (eventData.type == "reportData") {
       let table = eventData.data;
 
@@ -4964,6 +5014,31 @@ $(document).ready(() => {
       $(".weapon-info-image").attr("src", table["image"]);
 
       $(".weapon-info-imageurl-input").val(table["image"]);
+      $(".contextmenu").on("click", ".weapons-delete", function () {
+        $(".weapons-items")
+          .find(`[data-id="${$(this).data("info")}"]`)
+          .remove();
+        $.post(
+          `https://${GetParentResourceName()}/deleteWeapons`,
+          JSON.stringify({
+            id: $(this).data("info"),
+          })
+        );
+      });
+    
+      $(".weapons-items").on("contextmenu", ".weapons-item", function (e) {
+        var args = "";
+        args = [
+          {
+            className: "weapons-delete",
+            icon: "fas fa-times",
+            text: "Delete Weapon Info",
+            info: $(this).data("id"),
+            status: "",
+          },
+        ];
+        openContextMenu(e, args);
+      });
     } else if (eventData.type == "updateVehicleDbId") {
       $(".vehicle-information-title-holder").data("dbid", Number(eventData.data));
     } else if (eventData.type == "updateIncidentDbId") {
