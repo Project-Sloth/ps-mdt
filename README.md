@@ -42,6 +42,14 @@ For all support questions, ask in our [Discord](https://www.discord.gg/projectsl
 * DOC
 ![image](https://i.imgur.com/lFi4jDH.png)
 
+## Weapon Info Export
+
+Adds server export for inserting weaponinfo records, that can be used elsewhere in your server, such as weapon purchase, to add information to the mdt. Below is the syntax for this, all arguments are strings.
+
+```
+exports['ps-mdt']:CreateWeaponInfo(serial, imageurl, notes, owner, weapClass, weapModel)
+```
+
 ## Wolfknight Plate Reader & Radar Compatibility
 
 Support for Wolfknight Radar & Plate Reader
