@@ -165,7 +165,7 @@ function ManageLicense(identifier, type, status)
     end
 end
 
-function ManageLicenses(identifier, incomingLicenses)
+function UpdateAllLicenses(identifier, incomingLicenses)
     local Player = QBCore.Functions.GetPlayerByCitizenId(identifier)
     if Player ~= nil then
         Player.Functions.SetMetaData("licences", incomingLicenses)

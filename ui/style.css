@@ -5001,7 +5001,19 @@ span.tag-reports-input[contenteditable]:empty::before {
     background-color: #950909;
 }
 
+.incidents-delete:hover {
+    background-color: #950909;
+}
+
 .bolo-delete:hover {
+    background-color: #950909;
+}
+
+.weapons-delete:hover {
+    background-color: #950909;
+}
+
+.reports-delete:hover {
     background-color: #950909;
 }
 
