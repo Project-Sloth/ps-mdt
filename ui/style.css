@@ -939,7 +939,7 @@ a {
 .profile-item {
     background-color: var(--color-5);
     width: 100%;
-    height: 9vh;
+    height: 12vh;
     margin: auto;
     margin-bottom: 10px;
     margin-top: 0px;
@@ -953,8 +953,8 @@ a {
 }
 
 .profile-image {
-    width: 7vh;
-    height: 7vh;
+    width: 10vh;
+    height: 10vh;
     margin-left: 10px;
     margin-top: auto;
     margin-bottom: auto;
@@ -1237,7 +1237,7 @@ a {
 .manage-profile-right-container {
     display: flex;
     flex-direction: column;
-    height: 95.7%;
+    height: 97.9%;
     width: 50vh;
     margin-top: 10px;
     margin-left: 10px;
@@ -1260,7 +1260,7 @@ a {
     padding-bottom: 5px;
     text-align: center;
     margin: auto;
-    margin-top: 10px;
+    margin-top: 5px;
     margin-bottom: 0px;
     width: 95%;
     align-items: center;
@@ -1270,7 +1270,7 @@ a {
 .licenses-holder {
     overflow: auto;
     margin: auto;
-    margin-top: 10px;
+    margin-top: 5px;
     width: 95%;
     user-select: none;
 }
@@ -1297,8 +1297,9 @@ a {
     flex-direction: column;
     background-color: var(--color-1);
     width: 100%;
+    height: 18%;
     border: 2px solid var(--color-3);
-    margin-top: 10px;
+    margin-top: 5px;
     min-height: 100px;
     max-height: 200px;
     overflow: scroll;
@@ -1313,7 +1314,7 @@ a {
     padding-bottom: 5px;
     text-align: center;
     margin: auto;
-    margin-top: 10px;
+    margin-top: 5px;
     margin-right: 0px;
     margin-bottom: 0px;
     width: 84%;
@@ -1329,7 +1330,7 @@ a {
     padding-top: 7px;
     padding-bottom: 7px;
     margin: auto;
-    margin-top: 10px;
+    margin-top: 5px;
     margin-left: 5px;
     margin-bottom: 0px;
     width: 10%;
@@ -1352,6 +1353,7 @@ a {
     display: inline-block;
     text-decoration: none;
     margin: auto;
+    margin-bottom: 5px;
     margin-left: 0px;
     margin-right: 10px;
     padding: 4px;
@@ -1376,7 +1378,7 @@ span.tag-input[contenteditable]:empty::before {
     margin: auto;
     margin-left: 0px;
     margin-right: 10px;
-    margin-top: 10px;
+    margin-top: 5px;
     padding: 4px;
     padding-left: 8px;
     padding-right: 8px;
@@ -1396,8 +1398,9 @@ span.tag-input[contenteditable]:empty::before {
     flex-direction: column;
     background-color: var(--color-1);
     width: 100%;
+    height: 18%;
     border: 2px solid var(--color-3);
-    margin-top: 10px;
+    margin-top: 5px;
     max-height: 150px;
     overflow: scroll;
 }
@@ -1411,7 +1414,7 @@ span.tag-input[contenteditable]:empty::before {
     padding-bottom: 5px;
     text-align: center;
     margin: auto;
-    margin-top: 10px;
+    margin-top: 5px;
     margin-bottom: 0px;
     width: 95%;
     align-items: center;
@@ -1421,7 +1424,7 @@ span.tag-input[contenteditable]:empty::before {
 .vehs-holder {
     overflow: auto;
     margin: auto;
-    margin-top: 10px;
+    margin-top: 5px;
     width: 95%;
     user-select: none;
 }
@@ -1432,7 +1435,7 @@ span.tag-input[contenteditable]:empty::before {
     margin: auto;
     margin-left: 0px;
     margin-right: 10px;
-    margin-top: 10px;
+    margin-top: 5px;
     padding: 4px;
     padding-left: 8px;
     padding-right: 8px;
@@ -1449,8 +1452,9 @@ span.tag-input[contenteditable]:empty::before {
     flex-direction: column;
     background-color: var(--color-1);
     width: 100%;
+    height: 18%;
     border: 2px solid var(--color-3);
-    margin-top: 10px;
+    margin-top: 5px;
     max-height: 150px;
     overflow: scroll;
 }
@@ -1464,7 +1468,7 @@ span.tag-input[contenteditable]:empty::before {
     padding-bottom: 5px;
     text-align: center;
     margin: auto;
-    margin-top: 10px;
+    margin-top: 5px;
     margin-bottom: 0px;
     width: 95%;
     align-items: center;
@@ -1474,7 +1478,7 @@ span.tag-input[contenteditable]:empty::before {
 .houses-holder {
     overflow: auto;
     margin: auto;
-    margin-top: 10px;
+    margin-top: 5px;
     width: 95%;
     user-select: none;
 }
@@ -1485,7 +1489,7 @@ span.tag-input[contenteditable]:empty::before {
     margin: auto;
     margin-left: 0px;
     margin-right: 10px;
-    margin-top: 10px;
+    margin-top: 5px;
     padding: 4px;
     padding-left: 8px;
     padding-right: 8px;
@@ -1503,8 +1507,8 @@ span.tag-input[contenteditable]:empty::before {
     background-color: var(--color-1);
     width: 100%;
     border: 2px solid var(--color-3);
-    margin-top: 10px;
-    height: 18vh;
+    margin-top: 5px;
+    height: 15vh;
     overflow: scroll;
 }
 
@@ -1517,7 +1521,7 @@ span.tag-input[contenteditable]:empty::before {
     padding-bottom: 5px;
     text-align: center;
     margin: auto;
-    margin-top: 10px;
+    margin-top: 5px;
     margin-right: 0px;
     margin-bottom: 0px;
     width: 84%;
@@ -1533,7 +1537,7 @@ span.tag-input[contenteditable]:empty::before {
     padding-top: 7px;
     padding-bottom: 7px;
     margin: auto;
-    margin-top: 10px;
+    margin-top: 5px;
     margin-left: 5px;
     margin-bottom: 0px;
     width: 10%;
@@ -1548,7 +1552,7 @@ span.tag-input[contenteditable]:empty::before {
     overflow: auto;
     white-space: nowrap;
     margin: auto;
-    margin-top: 10px;
+    margin-top: 5px;
     width: 95%;
     user-select: none;
 }
@@ -1563,11 +1567,10 @@ span.tag-input[contenteditable]:empty::before {
     display: flex;
     flex-direction: column;
     background-color: var(--color-1);
-    width: 100%;
+    width: 49%;
+    height: 5.4%;
     border: 2px solid var(--color-3);
-    margin-top: 10px;
-    max-height: 200px;
-    overflow: scroll;
+    margin-top: 5px;
 }
 
 .convictions-title {
@@ -1579,18 +1582,18 @@ span.tag-input[contenteditable]:empty::before {
     padding-bottom: 5px;
     text-align: center;
     margin: auto;
-    margin-top: 10px;
+    margin-top: 5px;
     margin-bottom: 0px;
     width: 95%;
     align-items: center;
     user-select: none;
-    
+
 }
 
 .convictions-holder {
     overflow: auto;
     margin: auto;
-    margin-top: 10px;
+    margin-top: 5px;
     width: 95%;
     user-select: none;
 }
@@ -1599,11 +1602,11 @@ span.tag-input[contenteditable]:empty::before {
     display: flex;
     flex-direction: column;
     background-color: var(--color-1);
-    width: 100%;
+    width: 50%;
+    height: 5.4%;
     border: 2px solid var(--color-3);
-    margin-top: 10px;
-    max-height: 200px;
-    overflow: scroll;
+    margin-top: -9.2%;
+    margin-left: 50%;
 }
 
 .profile-incidents-title {
@@ -1615,7 +1618,7 @@ span.tag-input[contenteditable]:empty::before {
     padding-bottom: 5px;
     text-align: center;
     margin: auto;
-    margin-top: 10px;
+    margin-top: 5px;
     margin-bottom: 0px;
     width: 95%;
     align-items: center;
@@ -1625,7 +1628,7 @@ span.tag-input[contenteditable]:empty::before {
 .profile-incidents-holder {
     overflow: auto;
     margin: auto;
-    margin-top: 10px;
+    margin-top: 16px;
     width: 95%;
     user-select: none;
 }
