@@ -5,8 +5,9 @@ For all support questions, ask in our [Discord](https://www.discord.gg/projectsl
 ## Dependencies
 
 - [QBCore](https://github.com/qbcore-framework/qb-core)
-- [ps-dispatch](https://github.com/Project-Sloth/ps-dispatch) [If you intend to use it, make sure this starts before the mdt!]
+- [ps-dispatch](https://github.com/Project-Sloth/ps-dispatch)
 - [oxmysql](https://github.com/overextended/oxmysql)
+- [qb-apartments](https://github.com/qbcore-framework/qb-apartments) - You can remove this by removing the query. This is used to find people's apartment. 
 
 # Installation
 * Download ZIP
@@ -40,6 +41,14 @@ For all support questions, ask in our [Discord](https://www.discord.gg/projectsl
 ![image](https://i.imgur.com/IsqZddu.png)
 * DOC
 ![image](https://i.imgur.com/lFi4jDH.png)
+
+## Weapon Info Export
+
+Adds server export for inserting weaponinfo records, that can be used elsewhere in your server, such as weapon purchase, to add information to the mdt. Below is the syntax for this, all arguments are strings.
+
+```
+exports['ps-mdt']:CreateWeaponInfo(serial, imageurl, notes, owner, weapClass, weapModel)
+```
 
 ## Wolfknight Plate Reader & Radar Compatibility
 
