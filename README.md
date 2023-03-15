@@ -1,12 +1,13 @@
-# Project Sloth MDT 
+# Project Sloth MDT
 
 For all support questions, ask in our [Discord](https://www.discord.gg/projectsloth) support chat. Do not create issues if you need help. Issues are for bug reporting and new features only.
 
 ## Dependencies
 
 - [QBCore](https://github.com/qbcore-framework/qb-core)
-- [ps-dispatch](https://github.com/Project-Sloth/ps-dispatch) [If you intend to use it, make sure this starts before the mdt!]
+- [ps-dispatch](https://github.com/Project-Sloth/ps-dispatch)
 - [oxmysql](https://github.com/overextended/oxmysql)
+- [qb-apartments](https://github.com/qbcore-framework/qb-apartments) - You can remove this by removing the query. This is used to find people's apartment. 
 
 # Installation
 * Download ZIP
@@ -26,7 +27,7 @@ For all support questions, ask in our [Discord](https://www.discord.gg/projectsl
 ![image](https://user-images.githubusercontent.com/82112471/217597433-cd24bd41-a515-4fac-a896-807494501c39.png)
 
 # Multi Departments
-* LSPD 
+* LSPD
 ![image](https://i.imgur.com/2HmsTa3.png)
 * BCSO
 ![image](https://i.imgur.com/9WVU0Kz.png)
@@ -40,20 +41,54 @@ For all support questions, ask in our [Discord](https://www.discord.gg/projectsl
 ![image](https://i.imgur.com/IsqZddu.png)
 * DOC
 ![image](https://i.imgur.com/lFi4jDH.png)
+
+## Weapon Info Export
+
+Adds server export for inserting weaponinfo records, that can be used elsewhere in your server, such as weapon purchase, to add information to the mdt. Below is the syntax for this, all arguments are strings.
+
+```
+exports['ps-mdt']:CreateWeaponInfo(serial, imageurl, notes, owner, weapClass, weapModel)
+```
+
+## Wolfknight Plate Reader & Radar Compatibility
+
+Support for Wolfknight Radar & Plate Reader
+https://github.com/WolfKnight98/wk_wars2x
+
+Plate reader automatically locks and alerts Police if:
+
+* Vehicle owner is Wanted
+* Vehicle owner has no drivers licence
+* Vehicle has a BOLO
+
+**IMPORTANT:**
+
+* Ensure you set "CONFIG.use_sonorancad = true" in wk_wars2x/config.lua
+
+This reduces the plate reader events to player's vehicles and doesn't query the database for hundreds of NPC vehicles
+
+**Video Demonstration**
+https://youtu.be/w9PAVc3ER_c
+
+![image](https://i.imgur.com/KZPMHQX.png)
+![image](https://i.imgur.com/OIIrAcb.png)
+![image](https://i.imgur.com/6maboG3.png)
+![image](https://i.imgur.com/DkhQxDq.png)
+
 ## FAQ
 - **How do I add charges to a criminal in an Incident?** - After finding and adding the criminal citizen to the incident, right-click in the space under the criminal's name and select "Add Charge".
 
 ![](https://i.imgur.com/WVEDLnJ.png)
 
-- **My dispatch calls are not being populated?** - You have not started the dispatch resource before the mdt or renamed the dispatch resource name and not made the necessary changes in mdt to reflect that. 
+- **My dispatch calls are not being populated?** - You have not started the dispatch resource before the mdt or renamed the dispatch resource name and not made the necessary changes in mdt to reflect that.
 
 # Reskins
 The below repos are direct forks of ps-mdt and have been edited to fit certain countries/look.
 
-* [US](https://github.com/OK1ez/ps-mdt/tree/main) Different layout and different colors. 
+* [US](https://github.com/OK1ez/ps-mdt/tree/main) Different layout and different colors.
 * [UK](https://github.com/Harraa/ps-mdt)
 
 ## EchoRP MDT QBCore Edit (WIP)
 
-EchoRP MDT Released by Flawws#9999 from Echo RP rewritten and restructured for QBCore. 
+EchoRP MDT Released by Flawws#9999 from Echo RP rewritten and restructured for QBCore.
 This is no longer a fork so we are able to open issues on this repo.

@@ -57,7 +57,7 @@ if Config.UseWolfknightRadar == true then
 			TriggerClientEvent('QBCore:Notify', src, 'WANTED - INCIDENT ID: '..incidentId..' | Registered Owner: '..owner..' | Plate: '..plate, 'error', Config.WolfknightNotifyTime)
 		end
 
-		if driversLicense == false then
+		if driversLicense == false and vehicleOwner then
 			TriggerClientEvent('QBCore:Notify', src, 'NO DRIVERS LICENCE | Registered Owner: '..vehicleOwner..' | Plate: '..plate, 'error', Config.WolfknightNotifyTime)
 		end
 
@@ -258,7 +258,7 @@ QBCore.Functions.CreateCallback('mdt:server:GetProfileData', function(source, cb
 
 	local apartmentData = GetPlayerApartment(target.citizenid)
 
-	if apartmentData then
+	if Config.UsingDefaultQBApartments and apartmentData then
 		apartmentData = apartmentData[1].label .. ' (' ..apartmentData[1].name..')'
 	end
 
@@ -368,7 +368,7 @@ end)
 RegisterNetEvent("mdt:server:saveProfile", function(pfp, information, cid, fName, sName, tags, gallery, fingerprint, licenses)
 	local src = source
 	local Player = QBCore.Functions.GetPlayer(src)
-	ManageLicenses(cid, licenses)
+	UpdateAllLicenses(cid, licenses)
 	if Player then
 		local JobType = GetJobType(Player.PlayerData.job.name)
 		if JobType == 'doj' then JobType = 'police' end
@@ -567,6 +567,64 @@ RegisterNetEvent('mdt:server:newBolo', function(existing, id, title, plate, owne
 	end
 end)
 
+RegisterNetEvent('mdt:server:deleteWeapons', function(id)
+	if id then
+		local src = source
+		local Player = QBCore.Functions.GetPlayer(src)
+		if Config.LogPerms[Player.PlayerData.job.name] then
+			if Config.LogPerms[Player.PlayerData.job.name][Player.PlayerData.job.grade.level] then
+				local fullName = Player.PlayerData.charinfo.firstname .. ' ' .. Player.PlayerData.charinfo.lastname
+				MySQL.update("DELETE FROM `mdt_weaponinfo` WHERE id=:id", { id = id })
+				TriggerEvent('mdt:server:AddLog', "A Weapon Info was deleted by "..fullName.." with the ID ("..id..")")
+			else
+				local fullname = Player.PlayerData.charinfo.firstname .. ' ' .. Player.PlayerData.charinfo.lastname
+				TriggerClientEvent("QBCore:Notify", src, 'No Permissions to do that!', 'error')
+				TriggerEvent('mdt:server:AddLog', fullname.." tryed to delete a Weapon Info with the ID ("..id..")")
+			end
+		end
+	end
+end)
+
+RegisterNetEvent('mdt:server:deleteReports', function(id)
+	if id then
+		local src = source
+		local Player = QBCore.Functions.GetPlayer(src)
+		if Config.LogPerms[Player.PlayerData.job.name] then
+			if Config.LogPerms[Player.PlayerData.job.name][Player.PlayerData.job.grade.level] then
+				local fullName = Player.PlayerData.charinfo.firstname .. ' ' .. Player.PlayerData.charinfo.lastname
+				MySQL.update("DELETE FROM `mdt_reports` WHERE id=:id", { id = id })
+				TriggerEvent('mdt:server:AddLog', "A Report was deleted by "..fullName.." with the ID ("..id..")")
+			else
+				local fullname = Player.PlayerData.charinfo.firstname .. ' ' .. Player.PlayerData.charinfo.lastname
+				TriggerClientEvent("QBCore:Notify", src, 'No Permissions to do that!', 'error')
+				TriggerEvent('mdt:server:AddLog', fullname.." tryed to delete a Report with the ID ("..id..")")
+			end
+		end
+	end
+end)
+
+RegisterNetEvent('mdt:server:deleteIncidents', function(id)
+	local result = MySQL.update("DELETE FROM `mdt_incidents` WHERE id=:id", { id = id })
+	
+	if id then
+		local src = source
+		local Player = QBCore.Functions.GetPlayer(src)
+		if Config.LogPerms[Player.PlayerData.job.name] then
+			if Config.LogPerms[Player.PlayerData.job.name][Player.PlayerData.job.grade.level] then
+				local fullName = Player.PlayerData.charinfo.firstname .. ' ' .. Player.PlayerData.charinfo.lastname
+				MySQL.update("DELETE FROM `mdt_incidents` WHERE id=:id", { id = id }, function(rowsChanged)
+					if rowsChanged > 0 then
+						TriggerEvent('mdt:server:AddLog', "A Incident was deleted by "..fullName.." with the ID ("..id..")")
+					end
+				end)
+			else
+				local fullname = Player.PlayerData.charinfo.firstname .. ' ' .. Player.PlayerData.charinfo.lastname
+				TriggerClientEvent("QBCore:Notify", src, 'No Permissions to do that!', 'error')
+				TriggerEvent('mdt:server:AddLog', fullname.." tryed to delete a Incident with the ID ("..id..")")
+			end
+		end
+	end
+end)
 RegisterNetEvent('mdt:server:deleteBolo', function(id)
 	if id then
 		local src = source
@@ -606,14 +664,21 @@ RegisterNetEvent('mdt:server:incidentSearchPerson', function(query)
 					return "img/male.png"
 				end
 
-				local result = MySQL.query.await("SELECT p.citizenid, p.charinfo, md.pfp from players p LEFT JOIN mdt_data md on p.citizenid = md.cid WHERE LOWER(`charinfo`) LIKE :query OR LOWER(`citizenid`) LIKE :query AND `jobtype` = :jobtype LIMIT 30", {
+				local result = MySQL.query.await("SELECT p.citizenid, p.charinfo, p.metadata, md.pfp from players p LEFT JOIN mdt_data md on p.citizenid = md.cid WHERE LOWER(`charinfo`) LIKE :query OR LOWER(`citizenid`) LIKE :query AND `jobtype` = :jobtype LIMIT 30", {
 					query = string.lower('%'..query..'%'), -- % wildcard, needed to search for all alike results
 					jobtype = JobType
 				})
 				local data = {}
 				for i=1, #result do
 					local charinfo = json.decode(result[i].charinfo)
-					data[i] = {id = result[i].citizenid, firstname = charinfo.firstname, lastname = charinfo.lastname, profilepic = ProfPic(charinfo.gender, result[i].pfp)}
+					local metadata = json.decode(result[i].metadata)
+					data[i] = {
+						id = result[i].citizenid,
+						firstname = charinfo.firstname,
+						lastname = charinfo.lastname,
+						profilepic = ProfPic(charinfo.gender, result[i].pfp),
+						callsign = metadata.callsign
+					}
 				end
 				TriggerClientEvent('mdt:client:incidentSearchPerson', src, data)
             end
@@ -1365,19 +1430,16 @@ end)
 
 RegisterNetEvent('mdt:server:setRadio', function(cid, newRadio)
 	local src = source
-	local Player = QBCore.Functions.GetPlayer(src)
-	if Player.PlayerData.citizenid ~= cid then
-		TriggerClientEvent("QBCore:Notify", src, 'You can only change your radio!', 'error')
-		return
-	else
-		local radio = Player.Functions.GetItemByName("radio")
-		if radio ~= nil then
-			TriggerClientEvent('mdt:client:setRadio', src, newRadio)
-		else
-			TriggerClientEvent("QBCore:Notify", src, 'You do not have a radio!', 'error')
-		end
-	end
+	local targetPlayer = QBCore.Functions.GetPlayerByCitizenId(cid)
+	local targetSource = targetPlayer.PlayerData.source
+	local targetName = targetPlayer.PlayerData.charinfo.firstname .. ' ' .. targetPlayer.PlayerData.charinfo.lastname
 
+	local radio = targetPlayer.Functions.GetItemByName("radio")
+	if radio ~= nil then
+		TriggerClientEvent('mdt:client:setRadio', targetSource, newRadio)
+	else
+		TriggerClientEvent("QBCore:Notify", src, targetName..' does not have a radio!', 'error')
+	end
 end)
 
 local function isRequestVehicle(vehId)

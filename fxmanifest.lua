@@ -3,7 +3,7 @@ game 'gta5'
 
 author 'Flawws, Flakey, Idris and the Project Sloth team'
 description 'EchoRP MDT Rewrite for QBCore'
-version '1.6'
+version '1.8'
 
 lua54 'yes'
 
@@ -26,12 +26,6 @@ files {
     'ui/img/*.png',
     'ui/img/*.webp',
     'ui/dashboard.html',
-    'ui/dmv.html',
-    'ui/bolos.html',
-    'ui/incidents.html',
-    'ui/penalcode.html',
-    'ui/reports.html',
-    'ui/warrants.html',
     'ui/app.js',
     'ui/style.css',
 }

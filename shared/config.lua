@@ -1,6 +1,12 @@
 Config = Config or {}
 
-Config.RosterLink = {
+Config.UsingDefaultQBApartments = true
+
+Config.OnlyShowOnDuty = true
+
+Config.Fuel = "lj-fuel" -- "LegacyFuel", "lj-fuel"
+
+Config.RosterLink = { -- Google Docs Link
     ['police'] = '',
     ['ambulance'] = '',
     ['bcso'] = '',
@@ -12,19 +18,70 @@ Config.RosterLink = {
     ['sapr'] = '',	
 }
 
+Config.PoliceJobs = {
+    ['police'] = true,
+    ['lspd'] = true,
+    ['bcso'] = true,
+    ['sast'] = true,
+    ['sasp'] = true,
+    ['doc'] = true,
+    ['lssd'] = true,
+    ['sapr'] = true,
+    ['pa'] = true
+}
+
+Config.AmbulanceJobs = {
+    ['ambulance'] = true,
+    ['doctor'] = true
+}
+
+Config.DojJobs = {
+    ['lawyer'] = true,
+    ['judge'] = true
+}
+
+-- This is a workaround solution because the qb-menu present in qb-policejob fills in an impound location and sends it to the event. 
+-- If the impound locations are modified in qb-policejob, the changes must also be implemented here to ensure consistency.
+
+Config.ImpoundLocations = {
+    [1] = vector4(436.68, -1007.42, 27.32, 180.0),
+    [2] = vector4(-436.14, 5982.63, 31.34, 136.0),
+}
+
+-- Support for Wraith ARS 2X. 
 
 Config.UseWolfknightRadar = false
-Config.WolfknightNotifyTime = 5000 --How long the notification displays for in milliseconds (30000 = 30 seconds)
---[[
-Adds support for Wraith ARS 2X by WolfKnight98 (wk_wars2x)
-https://github.com/WolfKnight98/wk_wars2x
-To save on unnecessary database queries, in wk_wars2x/config.lua set 'CONFIG.use_sonorancad = true'
-This will only check plates of vehicles that have been occupied by a player
---]]
+Config.WolfknightNotifyTime = 5000 -- How long the notification displays for in milliseconds (30000 = 30 seconds)
 
-Config.OnlyShowOnDuty = true
+-- IMPORTANT: To avoid making excessive database queries, modify this config to true 'CONFIG.use_sonorancad = true' setting in the configuration file located at 'wk_wars2x/config.lua'. 
+-- Enabling this setting will limit plate checks to only those vehicles that have been used by a player.
 
-Config.Fuel = "lj-fuel" -- "LegacyFuel", "lj-fuel"
+Config.LogPerms = {
+	['ambulance'] = {
+		[4] = true,
+	},
+	['police'] = {
+		[4] = true,
+	},
+    ['bcso'] = {
+		[4] = true,
+	},
+    ['sast'] = {
+		[4] = true,
+	},
+    ['sasp'] = {
+		[4] = true,
+	},
+    ['sapr'] = {
+		[4] = true,
+	},
+    ['doc'] = {
+		[4] = true,
+	},
+    ['lssd'] = {
+		[4] = true,
+	},
+}
 
 Config.PenalCodeTitles = {
     [1] = 'OFFENSES AGAINST PERSONS',
@@ -243,29 +300,6 @@ Config.PenalCode = {
     }
 }
 
-Config.PoliceJobs = {
-    ['police'] = true,
-    ['lspd'] = true,
-    ['bcso'] = true,
-    ['sast'] = true,
-    ['sasp'] = true,
-    ['doc'] = true,
-    ['lssd'] = true,
-    ['sapr'] = true,
-    ['pa'] = true -- yucky
-}
-
-Config.AmbulanceJobs = {
-    ['ambulance'] = true,
-    ['doctor'] = true
-}
-
-Config.DojJobs = {
-    ['lawyer'] = true,
-    ['judge'] = true
-}
-
--- Leave my hacky code alone ya goblins
 Config.AllowedJobs = {}
 for index, value in pairs(Config.PoliceJobs) do
     Config.AllowedJobs[index] = value
@@ -276,34 +310,6 @@ end
 for index, value in pairs(Config.DojJobs) do
     Config.AllowedJobs[index] = value
 end
--- Leave my hacky code alone ya goblins
-
-Config.LogPerms = {
-	['ambulance'] = {
-		[4] = true,
-	},
-	['police'] = {
-		[4] = true,
-	},
-    ['bcso'] = {
-		[4] = true,
-	},
-    ['sast'] = {
-		[4] = true,
-	},
-    ['sasp'] = {
-		[4] = true,
-	},
-    ['sapr'] = {
-		[4] = true,
-	},
-    ['doc'] = {
-		[4] = true,
-	},
-    ['lssd'] = {
-		[4] = true,
-	},
-}
 
 Config.ColorNames = {
     [0] = "Metallic Black",
@@ -665,10 +671,3 @@ function GetJobType(job)
 		return nil
 	end
 end
-
--- this is a hack, because the qb-menu in qb-policejob populates an impound location and passed it through to the event.
--- if this impound locations are changed in qb-policejob, they must also be changed here.
-Config.ImpoundLocations = {
-    [1] = vector4(436.68, -1007.42, 27.32, 180.0),
-    [2] = vector4(-436.14, 5982.63, 31.34, 136.0),
-}

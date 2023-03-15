@@ -1354,7 +1354,6 @@ a {
     margin: auto;
     margin-left: 0px;
     margin-right: 10px;
-    margin-top: 10px;
     padding: 4px;
     padding-left: 8px;
     padding-right: 8px;
@@ -2172,7 +2171,7 @@ span.tag-input[contenteditable]:empty::before {
     overflow: auto;
     margin: auto;
     margin-top: 10px;
-    margin-bottom: 5px;
+    margin-bottom: 10px;
     width: 95%;
     max-height: 14vh;
     user-select: none;
@@ -2255,29 +2254,10 @@ span.tag-input[contenteditable]:empty::before {
     overflow: auto;
     margin: auto;
     margin-top: 10px;
-    margin-bottom: 5px;
+    margin-bottom: 10px;
     width: 95%;
     max-height: 14vh;
     user-select: none;
-}
-
-.manage-incidents-officers {
-    display: inline-block;
-    text-decoration: none;
-    margin: auto;
-    margin-left: 0px;
-    margin-right: 10px;
-    margin-bottom: 10px;
-    padding: 4px;
-    padding-left: 8px;
-    padding-right: 8px;
-    border-radius: 10px;
-    color: black;
-    font-size: 12px;
-    font-weight: 600;
-    background-color: white;
-    user-select: none;
-    width: fit-content;
 }
 
 .manage-incidents-civilians-container {
@@ -2338,29 +2318,10 @@ span.tag-input[contenteditable]:empty::before {
     overflow: auto;
     margin: auto;
     margin-top: 10px;
-    margin-bottom: 5px;
+    margin-bottom: 10px;
     width: 95%;
     max-height: 14vh;
     user-select: none;
-}
-
-.manage-incidents-civilians {
-    display: inline-block;
-    text-decoration: none;
-    margin: auto;
-    margin-left: 0px;
-    margin-right: 10px;
-    margin-bottom: 10px;
-    padding: 4px;
-    padding-left: 8px;
-    padding-right: 8px;
-    border-radius: 10px;
-    color: black;
-    font-size: 12px;
-    font-weight: 600;
-    background-color: white;
-    user-select: none;
-    width: fit-content;
 }
 
 .manage-incidents-evidence-container {
@@ -2442,57 +2403,6 @@ span.tag-incident-input[contenteditable]:empty::before {
     margin: auto;
     margin-left: 0px;
     margin-right: 10px;
-    margin-top: 10px;
-    padding: 4px;
-    padding-left: 8px;
-    padding-right: 8px;
-    border-radius: 10px;
-    color: black;
-    font-size: 12px;
-    font-weight: 600;
-    background-color: white;
-    user-select: none;
-    width: fit-content;
-    outline: none;
-    border: none;
-}
-
-span.officers-incident-input[contenteditable]:empty::before {
-    content: '(XXX) Officer Name';
-}
-
-.officers-incident-input {
-    display: inline-block;
-    text-decoration: none;
-    margin: auto;
-    margin-left: 0px;
-    margin-right: 10px;
-    margin-top: 10px;
-    padding: 4px;
-    padding-left: 8px;
-    padding-right: 8px;
-    border-radius: 10px;
-    color: black;
-    font-size: 12px;
-    font-weight: 600;
-    background-color: white;
-    user-select: none;
-    width: fit-content;
-    outline: none;
-    border: none;
-}
-
-span.civilians-incident-input[contenteditable]:empty::before {
-    content: 'Civilian Name';
-}
-
-.civilians-incident-input {
-    display: inline-block;
-    text-decoration: none;
-    margin: auto;
-    margin-left: 0px;
-    margin-right: 10px;
-    margin-top: 10px;
     padding: 4px;
     padding-left: 8px;
     padding-right: 8px;
@@ -2609,7 +2519,6 @@ span.civilians-incident-input[contenteditable]:empty::before {
     margin: auto;
     margin-left: 0px;
     margin-right: 10px;
-    margin-bottom: 10px;
     padding: 4px;
     padding-left: 8px;
     padding-right: 8px;
@@ -3345,6 +3254,7 @@ span.civilians-incident-input[contenteditable]:empty::before {
     width: 95%;
     max-height: 14vh;
     user-select: none;
+    margin-top: 10px;
 }
 
 .officers-add-btn {
@@ -4180,6 +4090,10 @@ span.officer-tag-bolo-input[contenteditable]:empty::before {
     background-color: #aa1c1c;
 }
 
+.remove-tag:hover {
+    background-color: #aa1c1c;
+}
+
 .manage-reports-editing-title {
     background-color: var(--color-3);
     color: white;
@@ -4259,6 +4173,7 @@ span.officer-tag-bolo-input[contenteditable]:empty::before {
     width: 95%;
     max-height: 14vh;
     user-select: none;
+    margin-top: 10px;
 }
 
 .reports-officers-add-btn {
@@ -4410,6 +4325,7 @@ span.officer-tag-bolo-input[contenteditable]:empty::before {
     width: 95%;
     max-height: 14vh;
     user-select: none;
+    margin-top: 10px;
 }
 
 .reports-item {
@@ -4507,55 +4423,6 @@ span.tag-reports-input[contenteditable]:empty::before {
     border: none;
 }
 
-span.officer-tag-reports-input[contenteditable]:empty::before {
-    content: 'Input Tag';
-}
-
-.officer-tag-reports-input {
-    display: inline-block;
-    text-decoration: none;
-    margin: auto;
-    margin-left: 0px;
-    margin-right: 10px;
-    margin-top: 10px;
-    padding: 4px;
-    padding-left: 8px;
-    padding-right: 8px;
-    border-radius: 10px;
-    color: black;
-    font-size: 12px;
-    font-weight: 600;
-    background-color: white;
-    user-select: none;
-    width: fit-content;
-    outline: none;
-    border: none;
-}
-
-span.civilian-tag-reports-input[contenteditable]:empty::before {
-    content: 'Input Tag';
-}
-
-.civilian-tag-reports-input {
-    display: inline-block;
-    text-decoration: none;
-    margin: auto;
-    margin-left: 0px;
-    margin-right: 10px;
-    margin-top: 10px;
-    padding: 4px;
-    padding-left: 8px;
-    padding-right: 8px;
-    border-radius: 10px;
-    color: black;
-    font-size: 12px;
-    font-weight: 600;
-    background-color: white;
-    user-select: none;
-    width: fit-content;
-    outline: none;
-    border: none;
-}
 
 .dmv-container {
     background-color: var(--color-1);
@@ -5134,7 +5001,19 @@ span.civilian-tag-reports-input[contenteditable]:empty::before {
     background-color: #950909;
 }
 
+.incidents-delete:hover {
+    background-color: #950909;
+}
+
 .bolo-delete:hover {
+    background-color: #950909;
+}
+
+.weapons-delete:hover {
+    background-color: #950909;
+}
+
+.reports-delete:hover {
     background-color: #950909;
 }
 
