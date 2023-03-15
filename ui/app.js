@@ -5426,7 +5426,7 @@ function searchProfilesResults(result) {
                               </div>
                           </div>
                           <div class="profile-bottom-info">
-                              <div class="profile-id">ID: ${value.citizenid}</div>&nbsp;
+                              <div class="profile-id"><span class="fas fa-id-card"></span> Citizen ID: ${value.citizenid}</div>&nbsp;
                           </div>
                       </div>
                   </div>
@@ -5590,4 +5590,3 @@ $(".map-clear").on('click', function() {
       ClearMap();
     }, 1500);
 });
-
