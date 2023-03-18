@@ -84,7 +84,7 @@ RegisterNetEvent('inventory:server:SetInventoryData', function(fromInventory, to
                     itemData.info.quality = 100
                 end
                 local serial = itemData.info.serie
-                local imageurl = "img/not-found.webp"
+                local imageurl = GetWeaponImageUrl(itemData.name)
                 local notes = "Purchased at Ammunation"
                 local owner = Player.PlayerData.charinfo.firstname .. " " .. Player.PlayerData.charinfo.lastname
                 local weapClass = 1
