@@ -147,6 +147,7 @@ The below repos are direct forks of ps-mdt and have been edited to fit certain c
 
 # Credits
 * Originally Echo RP MDT released by [Flawws#999](https://github.com/FlawwsX/erp_mdt)
+* [CQC-Scripting](https://github.com/CQC-Scripting) for their [cqc-mugshot](https://github.com/CQC-Scripting/cqc-mugshot)
 * [JoeSzymkowicz](https://github.com/JoeSzymkowicz)
 * [MonkeyWhisper](https://github.com/MonkeyWhisper)
 * [Snipe](https://github.com/pushkart2) 
@@ -156,4 +157,5 @@ The below repos are direct forks of ps-mdt and have been edited to fit certain c
 * [Crayons0814](https://github.com/Crayons0814) 
 * [LeSiiN](https://github.com/LeSiiN)
 * [ImXirvin](https://github.com/ImXirvin)
+* [lenzh](https://github.com/lenzh)
 * Everyone else that we may have missed, thank you! 

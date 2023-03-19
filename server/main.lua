@@ -3,6 +3,7 @@ local QBCore = exports['qb-core']:GetCoreObject()
 local incidents = {}
 local convictions = {}
 local bolos = {}
+local MugShots = {}
 
 -- TODO make it departments compatible
 local activeUnits = {}
@@ -382,6 +383,22 @@ RegisterNetEvent("mdt:server:saveProfile", function(pfp, information, cid, fName
 			fingerprint = fingerprint,
 		})
 	end
+end)
+
+-- mugshot
+RegisterNetEvent('cqc-mugshot:server:triggerSuspect', function(suspect)
+    TriggerClientEvent('cqc-mugshot:client:trigger', suspect, suspect)
+end)
+
+RegisterNetEvent('psmdt-mugshot:server:MDTupload', function(citizenid, MugShotURLs)
+    MugShots[citizenid] = MugShotURLs
+    local cid = citizenid
+    MySQL.Async.insert('INSERT INTO mdt_data (cid, pfp, gallery, tags) VALUES (:cid, :pfp, :gallery, :tags) ON DUPLICATE KEY UPDATE cid = :cid,  pfp = :pfp, tags = :tags, gallery = :gallery', {
+		cid = cid,
+		pfp = MugShotURLs[1],
+		tags = json.encode(tags),
+		gallery = json.encode(MugShotURLs),
+	})
 end)
 
 RegisterNetEvent("mdt:server:updateLicense", function(cid, type, status)
