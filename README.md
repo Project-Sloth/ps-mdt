@@ -132,7 +132,7 @@ https://youtu.be/w9PAVc3ER_c
 * DOC
 ![image](https://i.imgur.com/lFi4jDH.png)
 
-## FAQ
+# FAQ
 - **How do I add charges to a criminal in an Incident?** - After finding and adding the criminal citizen to the incident, right-click in the space under the criminal's name and select "Add Charge".
 
 ![](https://i.imgur.com/WVEDLnJ.png)
@@ -145,7 +145,15 @@ The below repos are direct forks of ps-mdt and have been edited to fit certain c
 * [US](https://github.com/OK1ez/ps-mdt/tree/main) Different layout and different colors.
 * [UK](https://github.com/Harraa/ps-mdt)
 
-## EchoRP MDT QBCore Edit (WIP)
-
-EchoRP MDT Released by Flawws#9999 from Echo RP rewritten and restructured for QBCore.
-This is no longer a fork so we are able to open issues on this repo.
+# Credits
+* Echo RP released by [Flawws#999](https://github.com/FlawwsX/erp_mdt)
+* [JoeSzymkowicz](https://github.com/JoeSzymkowicz)
+* [MonkeyWhisper](https://github.com/MonkeyWhisper), 
+* [Snipe](https://github.com/pushkart2) 
+* [BackSH00TER](https://github.com/BackSH00TER)
+* [nggcasey](https://github.com/nggcasey)
+* [OK1ez](https://github.com/OK1ez), 
+* [Crayons0814](https://github.com/Crayons0814) 
+* [LeSiiN](https://github.com/LeSiiN)
+* [ImXirvin](https://github.com/ImXirvin)
+* Everyone else that we may have missed, thank you! 
