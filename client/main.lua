@@ -319,6 +319,33 @@ local function DestoryCamera()
     createdCamera = 0
 end
 
+RegisterNetEvent('cqc-mugshot:client:trigger', function()
+    ped = PlayerPedId()
+    pedcoords = GetEntityCoords(ped)
+    CreateThread(function()
+        playerData = QBCore.Functions.GetPlayerData()
+        MugshotArray, mugshotInProgress = {}, true
+        local citizenid = playerData.citizenid
+        local animDict = 'mp_character_creation@lineup@male_a'
+        QBCore.Functions.RequestAnimDict(animDict)
+        PrepBoard()
+        Wait(250)
+        MakeBoard()
+        MugShotCamera()
+        SetEntityCoords(ped, suspectx, suspecty, suspectz)
+        SetEntityHeading(ped, suspectheading)
+        PlayerBoard()
+        TaskPlayAnim(ped, animDict, "loop_raised", 8.0, 8.0, -1, 49, 0, false, false, false)
+        PhotoProcess(ped)
+        if createdCamera ~= 0 then
+            DestoryCamera()
+            SetEntityHeading(ped, suspectheading)
+            ClearPedSecondaryTask(GetPlayerPed(ped))
+        end
+           TriggerServerEvent('psmdt-mugshot:server:MDTupload', playerData.citizenid, MugshotArray)
+        mugshotInProgress = false
+    end)
+end)
 
 --====================================================================================
 ------------------------------------------
