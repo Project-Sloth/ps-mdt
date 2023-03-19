@@ -5,6 +5,9 @@ Config.UsingDefaultQBApartments = true
 Config.OnlyShowOnDuty = true
 
 Config.UseCQCMugshot = true
+Config.MugPhotos = 4 -- Front, Back Side. Use 4 for both sides
+Config.Webhook = '' -- Images will be uploaded here
+
 
 Config.Fuel = "lj-fuel" -- "LegacyFuel", "lj-fuel"
 
