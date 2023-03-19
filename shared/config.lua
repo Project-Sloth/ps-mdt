@@ -4,6 +4,8 @@ Config.UsingDefaultQBApartments = true
 
 Config.OnlyShowOnDuty = true
 
+Config.UseCQCMugshot = true
+
 Config.Fuel = "lj-fuel" -- "LegacyFuel", "lj-fuel"
 
 Config.RosterLink = { -- Google Docs Link
