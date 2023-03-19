@@ -383,6 +383,10 @@ RegisterNetEvent("mdt:server:saveProfile", function(pfp, information, cid, fName
 		})
 	end
 end)
+-- mugshot
+RegisterNetEvent('cqc-mugshot:server:triggerSuspect', function(suspect)
+    TriggerClientEvent('cqc-mugshot:client:trigger', suspect, suspect)
+end)
 
 RegisterNetEvent('psmdt-mugshot:server:MDTupload', function(citizenid, MugShotURLs)
     MugShots[citizenid] = MugShotURLs
