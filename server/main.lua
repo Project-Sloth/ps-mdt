@@ -3,6 +3,7 @@ local QBCore = exports['qb-core']:GetCoreObject()
 local incidents = {}
 local convictions = {}
 local bolos = {}
+local MugShots = {}
 
 -- TODO make it departments compatible
 local activeUnits = {}
