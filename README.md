@@ -25,6 +25,14 @@ exports['ps-mdt']:CreateWeaponInfo(serial, imageurl, notes, owner, weapClass, we
 ```
 ![image](https://user-images.githubusercontent.com/82112471/226144189-0cf7a87c-d9bc-4d1f-a9fb-6f14f92cb68b.png)
 
+## Self Register Weapons
+* Your citizens can self-register weapons found on their inventory. Event to trigger is below if you're using qb-target.
+```
+ps-mdt:client:selfregister
+```
+
+https://user-images.githubusercontent.com/82112471/226150422-0c4776f0-0927-4b07-a272-972dd1c20077.mp4
+
 ## Inventory Edit | Automatic Add Weapons with images
 * [lj-inventory](https://github.com/loljoshie/lj-inventory) will come already with the changes needed for this to work. 
 * [qb-inventory](https://github.com/qbcore-framework/qb-inventory) follow instructions below. 
