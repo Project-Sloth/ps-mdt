@@ -147,7 +147,7 @@ The below repos are direct forks of ps-mdt and have been edited to fit certain c
 
 # Credits
 * Originally Echo RP MDT released by [Flawws#999](https://github.com/FlawwsX/erp_mdt)
-* Mugshot Integration (https://github.com/CQC-Scripting/cqc-mugshot)
+* [CQC-Scripting](https://github.com/CQC-Scripting) for their [cqc-mugshot](https://github.com/CQC-Scripting/cqc-mugshot)
 * [JoeSzymkowicz](https://github.com/JoeSzymkowicz)
 * [MonkeyWhisper](https://github.com/MonkeyWhisper)
 * [Snipe](https://github.com/pushkart2) 
