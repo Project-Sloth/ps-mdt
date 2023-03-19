@@ -383,26 +383,6 @@ RegisterNUICallback("incidentSearchPerson", function(data, cb)
     cb(true)
 end)
 
--- Handle sending the player to jail
--- Uses QB-Core/qb-policejob function to send the player to jail
--- If you use a different jail system, you will need to change this
-RegisterNUICallback("sendToJail", function(data, cb)
-    local citizenId, sentence = data.citizenId, data.sentence
-
-    -- Gets the player id from the citizenId
-    local p = promise.new()
-    QBCore.Functions.TriggerCallback('mdt:server:GetPlayerSourceId', function(result)
-        p:resolve(result)
-    end, citizenId)
-
-    local targetSourceId = Citizen.Await(p)
-
-    if sentence > 0 then
-        -- Uses qb-policejob JailPlayer event
-        TriggerServerEvent("police:server:JailPlayer", targetSourceId, sentence)
-    end
-end)
-
 -- Handle sending a fine to a player
 -- Uses the QB-Core bill command to send a fine to a player
 -- If you use a different fine system, you will need to change this
