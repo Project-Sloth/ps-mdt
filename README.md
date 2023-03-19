@@ -37,50 +37,7 @@ https://user-images.githubusercontent.com/82112471/226150422-0c4776f0-0927-4b07-
 * [lj-inventory](https://github.com/loljoshie/lj-inventory) will come already with the changes needed for this to work. 
 * [qb-inventory](https://github.com/qbcore-framework/qb-inventory) follow instructions below. 
 
-1. Add to qb-inventory > config.lua
-
-```
-Config.MDTWeaponImages = {
-    [1] = {
-        item = 'weapon_knife',
-        image = 'https://cfx-nui-qb-inventory/html/images/weapon_knife.png',
-    },
-    [2] = {
-        item = 'weapon_bat',
-        image = 'https://cfx-nui-qb-inventory/html/images/weapon_bat.png',
-    },
-    [3] = {
-        item = 'weapon_hatchet',
-        image = 'https://cfx-nui-qb-inventory/html/images/weapon_hatchet.png',
-    },
-    [4] = {
-        item = 'weapon_pistol',
-        image = 'https://cfx-nui-qb-inventory/html/images/weapon_pistol.png',
-    },
-    [5] = {
-        item = 'weapon_snspistol',
-        image = 'https://cfx-nui-qb-inventory/html/images/weapon_snspistol.png',
-    },
-    [6] = {
-        item = 'weapon_vintagepistol',
-        image = 'https://cfx-nui-qb-inventory/html/images/weapon_vintagepistol.png',
-    }
-}
-```
-2. Add this function at the start of server > main.lua
-
-```
-function GetWeaponImageUrl(itemName)
-    for _, weaponImage in ipairs(Config.MDTWeaponImages) do
-        if weaponImage.item == itemName then
-            return weaponImage.image
-        end
-    end
-    return "img/not-found.webp"
-end
-```
-
-3. Edit the following event
+1. Edit the following event
 ```
 RegisterNetEvent('inventory:server:SetInventoryData', function(fromInventory, toInventory, fromSlot, toSlot, fromAmount, toAmount)
 ```
@@ -92,7 +49,7 @@ RegisterNetEvent('inventory:server:SetInventoryData', function(fromInventory, to
                     itemData.info.quality = 100
                 end
                 local serial = itemData.info.serie
-                local imageurl = GetWeaponImageUrl(itemData.name)
+                local imageurl = ("https://cfx-nui-qb-inventory/html/images/%s"):format(item.image)
                 local notes = "Purchased at Ammunation"
                 local owner = Player.PlayerData.charinfo.firstname .. " " .. Player.PlayerData.charinfo.lastname
                 local weapClass = 1
@@ -109,7 +66,7 @@ RegisterNetEvent('inventory:server:SetInventoryData', function(fromInventory, to
                     itemData.info.quality = 100
                 end
                 local serial = itemData.info.serie
-                local imageurl = GetWeaponImageUrl(itemData.name)
+                local imageurl = ("https://cfx-nui-qb-inventory/html/images/%s"):format(item.image)
                 local notes = "Purchased at Ammunation"
                 local owner = Player.PlayerData.charinfo.firstname .. " " .. Player.PlayerData.charinfo.lastname
                 local weapClass = 1
