@@ -582,6 +582,8 @@ RegisterNUICallback("sendToJail", function(data, cb)
     if sentence > 0 then
         -- Uses qb-policejob JailPlayer event
         TriggerServerEvent("police:server:JailPlayer", targetSourceId, sentence)
+	TriggerServerEvent('cqc-mugshot:server:triggerSuspect', targetSourceId)
+	
     end
 end)
 
