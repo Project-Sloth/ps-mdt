@@ -33,6 +33,9 @@ ps-mdt:client:selfregister
 
 https://user-images.githubusercontent.com/82112471/226150422-0c4776f0-0927-4b07-a272-972dd1c20077.mp4
 
+# Automatic Mugshot Pictures
+![image](https://user-images.githubusercontent.com/82112471/226207146-086c5508-7e6f-4345-a157-3ec2fd588138.png)
+
 ## Inventory Edit | Automatic Add Weapons with images
 * [lj-inventory](https://github.com/loljoshie/lj-inventory) will come already with the changes needed for this to work. 
 * [qb-inventory](https://github.com/qbcore-framework/qb-inventory) follow instructions below. 
