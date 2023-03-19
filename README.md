@@ -7,7 +7,7 @@ For all support questions, ask in our [Discord](https://www.discord.gg/projectsl
 - [QBCore](https://github.com/qbcore-framework/qb-core)
 - [ps-dispatch](https://github.com/Project-Sloth/ps-dispatch)
 - [oxmysql](https://github.com/overextended/oxmysql)
-- [qb-apartments](https://github.com/qbcore-framework/qb-apartments) - You can remove this by removing the query. This is used to find people's apartment. 
+- [qb-apartments](https://github.com/qbcore-framework/qb-apartments) | [Config](https://github.com/Project-Sloth/ps-mdt/blob/0ce2ab88d2ca7b0a49abfb3f7f8939d0769c7b73/shared/config.lua#L3) available to enable or disable. 
 
 # Installation
 * Download ZIP
@@ -15,6 +15,131 @@ For all support questions, ask in our [Discord](https://www.discord.gg/projectsl
 * Run the attached SQL script (mdt.sql)
 * Start resource through server.cfg
 * Restart your server.
+
+# Weapon Info Export
+
+Adds server export for inserting weaponinfo records, that can be used elsewhere in your server, such as weapon purchase, to add information to the mdt. Below is the syntax for this, all arguments are strings.
+
+```
+exports['ps-mdt']:CreateWeaponInfo(serial, imageurl, notes, owner, weapClass, weapModel)
+```
+![image](https://user-images.githubusercontent.com/82112471/226144189-0cf7a87c-d9bc-4d1f-a9fb-6f14f92cb68b.png)
+
+## Inventory Edit | Automatic Add Weapons with images
+* [lj-inventory](https://github.com/loljoshie/lj-inventory) will come already with the changes needed for this to work. 
+* [qb-inventory](https://github.com/qbcore-framework/qb-inventory) follow instructions below. 
+
+1. Add to qb-inventory > config.lua
+
+```
+Config.MDTWeaponImages = {
+    [1] = {
+        item = 'weapon_knife',
+        image = 'https://cfx-nui-qb-inventory/html/images/weapon_knife.png',
+    },
+    [2] = {
+        item = 'weapon_bat',
+        image = 'https://cfx-nui-qb-inventory/html/images/weapon_bat.png',
+    },
+    [3] = {
+        item = 'weapon_hatchet',
+        image = 'https://cfx-nui-qb-inventory/html/images/weapon_hatchet.png',
+    },
+    [4] = {
+        item = 'weapon_pistol',
+        image = 'https://cfx-nui-qb-inventory/html/images/weapon_pistol.png',
+    },
+    [5] = {
+        item = 'weapon_snspistol',
+        image = 'https://cfx-nui-qb-inventory/html/images/weapon_snspistol.png',
+    },
+    [6] = {
+        item = 'weapon_vintagepistol',
+        image = 'https://cfx-nui-qb-inventory/html/images/weapon_vintagepistol.png',
+    }
+}
+```
+2. Add this function at the start of server > main.lua
+
+```
+function GetWeaponImageUrl(itemName)
+    for _, weaponImage in ipairs(Config.MDTWeaponImages) do
+        if weaponImage.item == itemName then
+            return weaponImage.image
+        end
+    end
+    return "img/not-found.webp"
+end
+```
+
+3. Edit the following event
+```
+RegisterNetEvent('inventory:server:SetInventoryData', function(fromInventory, toInventory, fromSlot, toSlot, fromAmount, toAmount)
+```
+```
+        elseif QBCore.Shared.SplitStr(shopType, "_")[1] == "Itemshop" then
+            if Player.Functions.RemoveMoney("cash", price, "itemshop-bought-item") then
+                if QBCore.Shared.SplitStr(itemData.name, "_")[1] == "weapon" then
+                    itemData.info.serie = tostring(QBCore.Shared.RandomInt(2) .. QBCore.Shared.RandomStr(3) .. QBCore.Shared.RandomInt(1) .. QBCore.Shared.RandomStr(2) .. QBCore.Shared.RandomInt(3) .. QBCore.Shared.RandomStr(4))
+                    itemData.info.quality = 100
+                end
+                local serial = itemData.info.serie
+                local imageurl = GetWeaponImageUrl(itemData.name)
+                local notes = "Purchased at Ammunation"
+                local owner = Player.PlayerData.charinfo.firstname .. " " .. Player.PlayerData.charinfo.lastname
+                local weapClass = 1
+                local weapModel = QBCore.Shared.Items[itemData.name].label
+                AddItem(src, itemData.name, fromAmount, toSlot, itemData.info)
+                TriggerClientEvent('qb-shops:client:UpdateShop', src, QBCore.Shared.SplitStr(shopType, "_")[2], itemData, fromAmount)
+                QBCore.Functions.Notify(src, itemInfo["label"] .. " bought!", "success")
+                exports['ps-mdt']:CreateWeaponInfo(serial, imageurl, notes, owner, weapClass, weapModel)
+                TriggerEvent("qb-log:server:CreateLog", "shops", "Shop item bought", "green", "**"..GetPlayerName(src) .. "** bought a " .. itemInfo["label"] .. " for $"..price)
+            elseif bankBalance >= price then
+                Player.Functions.RemoveMoney("bank", price, "itemshop-bought-item")
+                if QBCore.Shared.SplitStr(itemData.name, "_")[1] == "weapon" then
+                    itemData.info.serie = tostring(QBCore.Shared.RandomInt(2) .. QBCore.Shared.RandomStr(3) .. QBCore.Shared.RandomInt(1) .. QBCore.Shared.RandomStr(2) .. QBCore.Shared.RandomInt(3) .. QBCore.Shared.RandomStr(4))
+                    itemData.info.quality = 100
+                end
+                local serial = itemData.info.serie
+                local imageurl = GetWeaponImageUrl(itemData.name)
+                local notes = "Purchased at Ammunation"
+                local owner = Player.PlayerData.charinfo.firstname .. " " .. Player.PlayerData.charinfo.lastname
+                local weapClass = 1
+                local weapModel = QBCore.Shared.Items[itemData.name].label
+                AddItem(src, itemData.name, fromAmount, toSlot, itemData.info)
+                TriggerClientEvent('qb-shops:client:UpdateShop', src, QBCore.Shared.SplitStr(shopType, "_")[2], itemData, fromAmount)
+                QBCore.Functions.Notify(src, itemInfo["label"] .. " bought!", "success")
+				exports['ps-mdt']:CreateWeaponInfo(serial, imageurl, notes, owner, weapClass, weapModel)
+                TriggerEvent("qb-log:server:CreateLog", "shops", "Shop item bought", "green", "**"..GetPlayerName(src) .. "** bought a " .. itemInfo["label"] .. " for $"..price)
+            else
+                QBCore.Functions.Notify(src, "You don't have enough cash..", "error")
+            end
+````
+
+# Wolfknight Plate Reader & Radar Compatibility
+
+Support for Wolfknight Radar & Plate Reader
+https://github.com/WolfKnight98/wk_wars2x
+
+Plate reader automatically locks and alerts Police if:
+
+* Vehicle owner is Wanted
+* Vehicle owner has no drivers licence
+* Vehicle has a BOLO
+
+**IMPORTANT:**
+
+* Ensure you set "CONFIG.use_sonorancad = true" in wk_wars2x/config.lua
+
+This reduces the plate reader events to player's vehicles and doesn't query the database for hundreds of NPC vehicles
+
+**Video Demonstration**
+https://youtu.be/w9PAVc3ER_c
+
+![image](https://i.imgur.com/KZPMHQX.png)
+![image](https://i.imgur.com/OIIrAcb.png)
+![image](https://i.imgur.com/6maboG3.png)
+![image](https://i.imgur.com/DkhQxDq.png)
 
 # Preview
 ![image](https://user-images.githubusercontent.com/82112471/217596976-5147fefa-24e2-4b98-b167-4e151b8a9a8c.png)
@@ -41,39 +166,6 @@ For all support questions, ask in our [Discord](https://www.discord.gg/projectsl
 ![image](https://i.imgur.com/IsqZddu.png)
 * DOC
 ![image](https://i.imgur.com/lFi4jDH.png)
-
-## Weapon Info Export
-
-Adds server export for inserting weaponinfo records, that can be used elsewhere in your server, such as weapon purchase, to add information to the mdt. Below is the syntax for this, all arguments are strings.
-
-```
-exports['ps-mdt']:CreateWeaponInfo(serial, imageurl, notes, owner, weapClass, weapModel)
-```
-
-## Wolfknight Plate Reader & Radar Compatibility
-
-Support for Wolfknight Radar & Plate Reader
-https://github.com/WolfKnight98/wk_wars2x
-
-Plate reader automatically locks and alerts Police if:
-
-* Vehicle owner is Wanted
-* Vehicle owner has no drivers licence
-* Vehicle has a BOLO
-
-**IMPORTANT:**
-
-* Ensure you set "CONFIG.use_sonorancad = true" in wk_wars2x/config.lua
-
-This reduces the plate reader events to player's vehicles and doesn't query the database for hundreds of NPC vehicles
-
-**Video Demonstration**
-https://youtu.be/w9PAVc3ER_c
-
-![image](https://i.imgur.com/KZPMHQX.png)
-![image](https://i.imgur.com/OIIrAcb.png)
-![image](https://i.imgur.com/6maboG3.png)
-![image](https://i.imgur.com/DkhQxDq.png)
 
 ## FAQ
 - **How do I add charges to a criminal in an Incident?** - After finding and adding the criminal citizen to the incident, right-click in the space under the criminal's name and select "Add Charge".
