@@ -957,35 +957,6 @@ RegisterNUICallback("sendCallResponse", function(data, cb)
     cb(true)
 end)
 
---[[ RegisterNUICallback("impoundVehicle", function(data, cb)
-    local JobType = GetJobType(PlayerData.job.name)
-    if JobType == 'police' then
-        local found = 0
-        local plate = string.upper(string.gsub(data['plate'], "^%s*(.-)%s*$", "%1"))
-        local vehicles = GetGamePool('CVehicle')
-
-        for k,v in pairs(vehicles) do
-            local plt = string.upper(string.gsub(GetVehicleNumberPlateText(v), "^%s*(.-)%s*$", "%1"))
-            if plt == plate then
-                local dist = #(GetEntityCoords(PlayerPedId()) - GetEntityCoords(v))
-                if dist < 5.0 then
-                    found = VehToNet(v)
-                end
-                break
-            end
-        end
-
-        if found == 0 then
-            QBCore.Functions.Notify('Vehicle not found!', 'error')
-            return
-        end
-
-        SendNUIMessage({ type = "greenShit" })
-        TriggerServerEvent('mdt:server:impoundVehicle', data, found)
-        cb('ok')
-    end
-end) ]]
-
 RegisterNUICallback("removeImpound", function(data, cb)
     local ped = PlayerPedId()
     local playerPos = GetEntityCoords(ped)
@@ -1052,13 +1023,27 @@ RegisterNetEvent('mdt:client:sendCallResponse', function(message, time, callid, 
     SendNUIMessage({ type = "sendCallResponse", message = message, time = time, callid = callid, name = name })
 end)
 
-RegisterNetEvent('mdt:client:notifyMechanics', function(sentData)
-    --[[if exports["erp-jobsystem"]:CanTow() then
-        TriggerServerEvent('erp-sounds:PlayWithinDistance', 1.5, 'beep', 0.4)
-        TriggerEvent('erp_phone:sendNotification', {img = 'vehiclenotif.png', title = "Impound", content = "New vehicle is ready to be impounded!", time = 5000 })
-    end]]
-end)
-
 RegisterNetEvent('mdt:client:statusImpound', function(data, plate)
     SendNUIMessage({ type = "statusImpound", data = data, plate = plate })
+end)
+
+function GetPlayerWeaponInfo(cb)
+    QBCore.Functions.TriggerCallback('getWeaponInfo', function(weaponInfo)
+        cb(weaponInfo)
+    end)
+end
+
+--3rd Eye Trigger Event
+RegisterNetEvent('ps-mdt:client:selfregister', function()
+    local playerData = QBCore.Functions.GetPlayerData()
+    if GetJobType(playerData.job.name) == 'police' then
+        GetPlayerWeaponInfo(function(weaponInfo)
+            if weaponInfo then
+                TriggerServerEvent('mdt:server:registerweapon', weaponInfo.serialnumber, weaponInfo.weaponurl, weaponInfo.notes, weaponInfo.owner, weaponInfo.weapClass, weaponInfo.weaponmodel)
+                --print("Weapon added to database")
+            else
+                --print("No weapons found")
+            end
+        end)
+    end
 end)
