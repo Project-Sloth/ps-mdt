@@ -17,7 +17,8 @@ server_scripts {
 }
 client_scripts{
     'client/main.lua',
-    'client/cl_impound.lua'
+    'client/cl_impound.lua',
+    'client/cl_mugshot.lua'
 } 
 
 ui_page 'ui/dashboard.html'
