@@ -146,13 +146,13 @@ The below repos are direct forks of ps-mdt and have been edited to fit certain c
 * [UK](https://github.com/Harraa/ps-mdt)
 
 # Credits
-* Echo RP released by [Flawws#999](https://github.com/FlawwsX/erp_mdt)
+* Originally Echo RP MDT released by [Flawws#999](https://github.com/FlawwsX/erp_mdt)
 * [JoeSzymkowicz](https://github.com/JoeSzymkowicz)
-* [MonkeyWhisper](https://github.com/MonkeyWhisper), 
+* [MonkeyWhisper](https://github.com/MonkeyWhisper)
 * [Snipe](https://github.com/pushkart2) 
 * [BackSH00TER](https://github.com/BackSH00TER)
 * [nggcasey](https://github.com/nggcasey)
-* [OK1ez](https://github.com/OK1ez), 
+* [OK1ez](https://github.com/OK1ez) 
 * [Crayons0814](https://github.com/Crayons0814) 
 * [LeSiiN](https://github.com/LeSiiN)
 * [ImXirvin](https://github.com/ImXirvin)
