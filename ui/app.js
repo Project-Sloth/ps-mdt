@@ -3869,6 +3869,9 @@ $(document).ready(() => {
         $("#reports-officers-involved-tag-title").html(
           "Officers Involved"
         );
+        $("#bolos-officers-involved-tag-title").html(
+          "Officers Involved"
+        );
         $(".roster-iframe").attr("src", rosterLink);
 
         $(".manage-profile-save").css("display", "block");
@@ -3922,7 +3925,12 @@ $(document).ready(() => {
         $(".incidents-nav-item").hide();
         $(".dmv-nav-item").hide();
         $(".cams-nav-item").hide();
-        $("#reports-officers-involved-tag-title").html("EMS Involved");
+        $("#reports-officers-involved-tag-title").html(
+          "EMS Involved"
+        );
+        $("#bolos-officers-involved-tag-title").html(
+          "EMS Involved"
+        );
         $(".dispatch-title-ofsomesort").html("Dispatch");
         $(".dispatch-comms-container").fadeIn(0);
         $(".manage-profile-name-input-1").attr("readonly", true);

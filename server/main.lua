@@ -675,7 +675,7 @@ RegisterNetEvent('mdt:server:incidentSearchPerson', function(query)
 		local Player = QBCore.Functions.GetPlayer(src)
 		if Player then
 			local JobType = GetJobType(Player.PlayerData.job.name)
-			if JobType == 'police' or JobType == 'doj' then
+			if JobType == 'police' or JobType == 'doj' or JobType == 'ambulance' then
 				local function ProfPic(gender, profilepic)
 					if profilepic then return profilepic end;
 					if gender == "f" then return "img/female.png" end;
