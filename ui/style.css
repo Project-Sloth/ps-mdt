@@ -1874,6 +1874,18 @@ span.tag-input[contenteditable]:empty::before {
     background-color: #099517;
 }
 
+.view-incident:hover {
+    background-color: var(--color-3);
+}
+
+.view-incident2:hover {
+    background-color: var(--color-3);
+}
+
+.view-profile:hover {
+    background-color: var(--color-3);
+}
+
 .gallery-upload-input {
     background-color: var(--color-3);
     color: white;
