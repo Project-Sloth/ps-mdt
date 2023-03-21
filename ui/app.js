@@ -415,6 +415,30 @@ $(document).ready(() => {
     $(".close-all").css("filter", "brightness(15%)");
   });
 
+  $(".manage-convictions-container").on("click", "", function () {
+    if ($(".manage-profile-citizenid-input").val()) {
+      document.addEventListener("mouseup", onMouseDownIncidents);
+      const source = "manage-convictions-container";
+      $(".convictions-holder").attr("data-source", source);
+      $(".convictions-known-container").fadeIn(250); // makes the container visible
+      $(".close-all").css("filter", "brightness(15%)");
+    } else {
+      $(this).effect("shake", { times: 2, distance: 2 }, 500);
+    }
+  });
+
+  $(".manage-profile-incidents-container").on("click", "", function () {
+    if ($(".manage-profile-citizenid-input").val()) {
+      document.addEventListener("mouseup", onMouseDownIncidents);
+      const source = "manage-profile-incidents-container";
+      $(".profile-incidents-holder").attr("data-source", source);
+      $(".incidents-known-container").fadeIn(250); // makes the container visible
+      $(".close-all").css("filter", "brightness(15%)");
+    } else {
+      $(this).effect("shake", { times: 2, distance: 2 }, 500);
+    }
+  });
+
   $(".gallery-add-btn").click(function () {
     if ($(".manage-profile-citizenid-input").val()) {
       if ($(".gallery-upload-input").css("display") == "none") {
@@ -758,6 +782,7 @@ $(document).ready(() => {
         "pointer-events",
         "auto"
       );
+
     }
   );
   $(".tags-add-btn").click(function () {
@@ -1118,6 +1143,22 @@ $(document).ready(() => {
       ) {
         shouldClose = false;
         $(".incidents-person-search-container").fadeOut(250);
+        $(".close-all").css("filter", "none");
+      }
+
+      if (
+        $(".convictions-known-container").css("display") != "none"
+      ) {
+        shouldClose = false;
+        $(".convictions-known-container").fadeOut(250);
+        $(".close-all").css("filter", "none");
+      }
+
+      if (
+        $(".incidents-known-container").css("display") != "none"
+      ) {
+        shouldClose = false;
+        $(".incidents-known-container").fadeOut(250);
         $(".close-all").css("filter", "none");
       }
 
@@ -2093,6 +2134,24 @@ $(document).ready(() => {
     }
   });
   $(".incidents-person-search-container").hover(
+    function () {
+      mouse_is_inside = true;
+    },
+    function () {
+      mouse_is_inside = false;
+    }
+  );
+
+  $(".convictions-known-container").hover(
+    function () {
+      mouse_is_inside = true;
+    },
+    function () {
+      mouse_is_inside = false;
+    }
+  );
+
+  $(".incidents-known-container").hover(
     function () {
       mouse_is_inside = true;
     },
@@ -4600,6 +4659,7 @@ $(document).ready(() => {
         "auto"
       );
 
+
       $("#manage-incidents-title-input").val(table["title"]);
       $(".manage-incidents-reports-content").val(table["details"]);
 
@@ -5065,6 +5125,7 @@ $(document).ready(() => {
         "pointer-events",
         "auto"
       );
+
     } else if (eventData.type == "callDetach") {
       $(".active-calls-item")
         .filter("[data-id='" + eventData.callid + "']")
@@ -5322,6 +5383,20 @@ function hideIncidentsMenu() {
     !mouse_is_inside
   ) {
     $(".incidents-person-search-container").fadeOut(250);
+    $(".close-all").css("filter", "none");
+  }
+  if (
+    $(".convictions-known-container").css("display") != "none" &&
+    !mouse_is_inside
+  ) {
+    $(".convictions-known-container").fadeOut(250);
+    $(".close-all").css("filter", "none");
+  }
+  if (
+    $(".incidents-known-container").css("display") != "none" &&
+    !mouse_is_inside
+  ) {
+    $(".incidents-known-container").fadeOut(250);
     $(".close-all").css("filter", "none");
   }
 }
