@@ -3,6 +3,7 @@ local QBCore = exports['qb-core']:GetCoreObject()
 local incidents = {}
 local convictions = {}
 local bolos = {}
+local MugShots = {}
 
 -- TODO make it departments compatible
 local activeUnits = {}
@@ -272,6 +273,7 @@ QBCore.Functions.CreateCallback('mdt:server:GetProfileData', function(source, cb
 		pp = ProfPic(target.charinfo.gender),
 		licences = licencesdata,
 		dob = target.charinfo.birthdate,
+		phone = target.charinfo.phone,
 		mdtinfo = '',
 		fingerprint = '',
 		tags = {},
@@ -382,6 +384,22 @@ RegisterNetEvent("mdt:server:saveProfile", function(pfp, information, cid, fName
 			fingerprint = fingerprint,
 		})
 	end
+end)
+
+-- mugshot
+RegisterNetEvent('cqc-mugshot:server:triggerSuspect', function(suspect)
+    TriggerClientEvent('cqc-mugshot:client:trigger', suspect, suspect)
+end)
+
+RegisterNetEvent('psmdt-mugshot:server:MDTupload', function(citizenid, MugShotURLs)
+    MugShots[citizenid] = MugShotURLs
+    local cid = citizenid
+    MySQL.Async.insert('INSERT INTO mdt_data (cid, pfp, gallery, tags) VALUES (:cid, :pfp, :gallery, :tags) ON DUPLICATE KEY UPDATE cid = :cid,  pfp = :pfp, tags = :tags, gallery = :gallery', {
+		cid = cid,
+		pfp = MugShotURLs[1],
+		tags = json.encode(tags),
+		gallery = json.encode(MugShotURLs),
+	})
 end)
 
 RegisterNetEvent("mdt:server:updateLicense", function(cid, type, status)
@@ -1040,8 +1058,15 @@ RegisterNetEvent('mdt:server:saveWeaponInfo', function(serial, imageurl, notes, 
 end)
 
 function CreateWeaponInfo(serial, imageurl, notes, owner, weapClass, weapModel)
+
+	local results = MySQL.query.await('SELECT * FROM mdt_weaponinfo WHERE serial = ?', { serial })
+	if results[1] then
+		return
+	end
+
 	if serial == nil then return end
 	if imageurl == nil then imageurl = 'img/not-found.webp' end
+
 	MySQL.Async.insert('INSERT INTO mdt_weaponinfo (serial, owner, information, weapClass, weapModel, image) VALUES (:serial, :owner, :notes, :weapClass, :weapModel, :imageurl) ON DUPLICATE KEY UPDATE owner = :owner, information = :notes, weapClass = :weapClass, weapModel = :weapModel, image = :imageurl', {
 		['serial'] = serial,
 		['owner'] = owner,
@@ -1053,7 +1078,6 @@ function CreateWeaponInfo(serial, imageurl, notes, owner, weapClass, weapModel)
 end
 
 exports('CreateWeaponInfo', CreateWeaponInfo)
---exports['ps-mdt']:CreateWeaponInfo(serial, imageurl, notes, owner, weapClass, weapModel)
 
 RegisterNetEvent('mdt:server:getWeaponData', function(serial)
 	if serial then
@@ -1579,11 +1603,45 @@ function GetVehicleOwner(plate)
 		return owner
 	end
 end
+
 -- Returns the source for the given citizenId
 QBCore.Functions.CreateCallback('mdt:server:GetPlayerSourceId', function(source, cb, targetCitizenId)
 	local targetPlayer = QBCore.Functions.GetPlayerByCitizenId(targetCitizenId)
 	local targetSource = targetPlayer.PlayerData.source
 
 	cb(targetSource)
+
 end)
 
+QBCore.Functions.CreateCallback('getWeaponInfo', function(source, cb)
+    local Player = QBCore.Functions.GetPlayer(source)
+    local weaponInfo = nil
+    for _, item in pairs(Player.PlayerData.items) do
+		if item.type == "weapon" then
+			local invImage = ("https://cfx-nui-qb-inventory/html/images/%s"):format(item.image)
+			if invImage then
+				weaponInfo = {
+					serialnumber = item.info.serie,
+					owner = Player.PlayerData.charinfo.firstname .. " " .. Player.PlayerData.charinfo.lastname,
+					weaponmodel = QBCore.Shared.Items[item.name].label,
+					weaponurl = invImage,
+					notes = "Self Registered",
+					weapClass = "Class 1",
+
+				}
+				break
+			end
+		end
+	end
+    if weaponInfo then
+        TriggerClientEvent('QBCore:Notify', source, "Weapon has been added to police database. ")
+    else
+        TriggerClientEvent('QBCore:Notify', source, "Weapon already registered on database.")
+    end
+
+    cb(weaponInfo)
+end)
+
+RegisterNetEvent('mdt:server:registerweapon', function(serial, imageurl, notes, owner, weapClass, weapModel) 
+    exports['ps-mdt']:CreateWeaponInfo(serial, imageurl, notes, owner, weapClass, weapModel)
+end)
