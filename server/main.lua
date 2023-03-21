@@ -273,6 +273,7 @@ QBCore.Functions.CreateCallback('mdt:server:GetProfileData', function(source, cb
 		pp = ProfPic(target.charinfo.gender),
 		licences = licencesdata,
 		dob = target.charinfo.birthdate,
+		phone = target.charinfo.phone,
 		mdtinfo = '',
 		fingerprint = '',
 		tags = {},
