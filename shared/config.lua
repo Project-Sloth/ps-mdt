@@ -3,7 +3,7 @@ Config = Config or {}
 Config.UsingDefaultQBApartments = true
 
 Config.OnlyShowOnDuty = true
-
+Config.inv = "lj-inventory" -- "qb-inventory", "lj-inventory"
 Config.UseCQCMugshot = true
 Config.MugPhotos = 1 -- Front, Back Side. Use 4 for both sides ( default is 1 )
 Config.Webhook = '' -- Images will be uploaded here ( add a discord webhook )
