@@ -3868,7 +3868,7 @@ $(document).ready(() => {
         $("#reports-officers-involved-tag-title").html(
           "Officers Involved"
         );
-        $("#bolos-officers-involved-tag-tittle").html(
+        $("#bolos-officers-involved-tag-title").html(
           "Officers Involved"
         );
         $(".roster-iframe").attr("src", rosterLink);
@@ -3927,7 +3927,7 @@ $(document).ready(() => {
         $("#reports-officers-involved-tag-title").html(
           "EMS Involved"
         );
-        $("#bolos-officers-involved-tag-tittle").html(
+        $("#bolos-officers-involved-tag-title").html(
           "EMS Involved"
         );
         $(".dispatch-title-ofsomesort").html("Dispatch");
