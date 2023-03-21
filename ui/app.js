@@ -131,6 +131,16 @@ function timeAgo(dateParam) {
   return getFormattedDate(date);
 }
 
+function closeContainer(selector) {
+  if (
+       $(selector).css("display") != "none"
+     ) {
+       shouldClose = false;
+       $(selector).fadeOut(50);
+       $(".close-all").css("filter", "none");
+     }
+}
+
 $(document).ready(() => {
   $(".header").hover(
     function () {
@@ -1138,29 +1148,9 @@ $(document).ready(() => {
         $(".incidents-image-enlarged").css("display", "none");
       }
 
-      if (
-        $(".incidents-person-search-container").css("display") != "none"
-      ) {
-        shouldClose = false;
-        $(".incidents-person-search-container").fadeOut(250);
-        $(".close-all").css("filter", "none");
-      }
-
-      if (
-        $(".convictions-known-container").css("display") != "none"
-      ) {
-        shouldClose = false;
-        $(".convictions-known-container").fadeOut(250);
-        $(".close-all").css("filter", "none");
-      }
-
-      if (
-        $(".incidents-known-container").css("display") != "none"
-      ) {
-        shouldClose = false;
-        $(".incidents-known-container").fadeOut(250);
-        $(".close-all").css("filter", "none");
-      }
+      closeContainer(".incidents-person-search-container");
+      closeContainer(".convictions-known-container");
+      closeContainer(".incidents-known-container");
 
       if ($(".incidents-charges-table").css("display") != "none") {
         shouldClose = false;
