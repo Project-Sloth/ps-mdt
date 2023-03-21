@@ -1776,7 +1776,7 @@ span.tag-input[contenteditable]:empty::before {
     margin: 0;
     border: 1px solid var(--color-3);
     background: var(--color-5);
-    z-index: 100;
+    z-index: 9999;
     border-radius: 3px;
     box-shadow: 1px 1px 4px rgba(0,0,0,.2);
     opacity: 0;
