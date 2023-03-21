@@ -3155,7 +3155,7 @@ $(document).ready(() => {
       {
         className: "view-incident2",
         icon: "fas fa-search",
-        text: "View Incident",
+        text: `View Incident #${$(this).data("id")}`,
         info: $(this).data("id"),
         status: "",
       },
@@ -3209,7 +3209,7 @@ $(document).ready(() => {
       {
         className: "view-incident",
         icon: "fas fa-search",
-        text: "View Incident",
+        text: `View Incident #${$(this).data("id")}`,
         info: $(this).data("id"),
         status: "",
       },
