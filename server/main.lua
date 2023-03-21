@@ -622,9 +622,9 @@ RegisterNetEvent('mdt:server:deleteReports', function(id)
 end)
 
 RegisterNetEvent('mdt:server:deleteIncidents', function(id)
-	local result = MySQL.update("DELETE FROM `mdt_incidents` WHERE id=:id", { id = id })
+	local result = MySQL.update("SELECT 1 FROM `mdt_incidents` WHERE id=:id", { id = id })
 	
-	if id then
+	if result then
 		local src = source
 		local Player = QBCore.Functions.GetPlayer(src)
 		if Config.LogPerms[Player.PlayerData.job.name] then
