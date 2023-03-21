@@ -5412,14 +5412,14 @@ function hideIncidentsMenu() {
     $(".convictions-known-container").css("display") != "none" &&
     !mouse_is_inside
   ) {
-    $(".convictions-known-container").fadeOut(250);
+    $(".convictions-known-container").fadeOut(0);
     $(".close-all").css("filter", "none");
   }
   if (
     $(".incidents-known-container").css("display") != "none" &&
     !mouse_is_inside
   ) {
-    $(".incidents-known-container").fadeOut(250);
+    $(".incidents-known-container").fadeOut(0);
     $(".close-all").css("filter", "none");
   }
 }
