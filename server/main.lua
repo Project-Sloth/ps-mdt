@@ -1606,12 +1606,13 @@ end
 
 -- Returns the source for the given citizenId
 QBCore.Functions.CreateCallback('mdt:server:GetPlayerSourceId', function(source, cb, targetCitizenId)
-	local targetPlayer = QBCore.Functions.GetPlayerByCitizenId(targetCitizenId)
-	if targetPlayer == nil then return TriggerClientEvent('QBCore:Notify', source, "Citizen seems Asleep / Missing", "error") end
-	local targetSource = targetPlayer.PlayerData.source
+    local targetPlayer = QBCore.Functions.GetPlayerByCitizenId(targetCitizenId)
+    if targetPlayer == nil then 
+        return TriggerClientEvent('QBCore:Notify', source, "Citizen cannot be sent to jail, make sure they're in the city.", "error") 
+    end
+    local targetSource = targetPlayer.PlayerData.source
 
-	cb(targetSource)
-
+    cb(targetSource)
 end)
 
 QBCore.Functions.CreateCallback('getWeaponInfo', function(source, cb)
