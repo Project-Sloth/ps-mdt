@@ -199,12 +199,19 @@ $(document).ready(() => {
         .addClass("fa-plus");
     }
 
+    const { vehicles, tags, gallery, convictions, incidents, properties } = result
+
     $(".manage-profile-editing-title").html(`You are currently editing ${result["firstname"]} ${result["lastname"]}`);
     $(".manage-profile-citizenid-input").val(result['cid']);
     $(".manage-profile-name-input-1").val(result["firstname"]);
     $(".manage-profile-name-input-2").val(result["lastname"]);
     $(".manage-profile-dob-input").val(result["dob"]);
-    $(".manage-profile-fingerprint-input").val(result["fingerprint"]);
+    if (convictions.length >= 1) {
+      $(".manage-profile-fingerprint-input").val(result["fingerprint"]);
+    }
+    else {
+      $(".manage-profile-fingerprint-input").val("No Fingerprints found!");
+    }
     $(".manage-profile-phonenumber-input").val(result["phone"]);
     $(".manage-profile-job-input").val(`${result.job}, ${result.grade}`);
     $(".manage-profile-apartment-input").val(`${result.apartment}`);
@@ -216,8 +223,6 @@ $(document).ready(() => {
     if (result["warrant"]) {
       $(".manage-profile-active-warrant").css("display", "block");
     }
-
-    const { vehicles, tags, gallery, convictions, incidents, properties } = result
 
     $(".licenses-holder").empty();
     $(".tags-holder").empty();
