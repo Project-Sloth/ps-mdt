@@ -3,7 +3,7 @@ game 'gta5'
 
 author 'Flawws, Flakey, Idris and the Project Sloth team'
 description 'EchoRP MDT Rewrite for QBCore'
-version '1.8'
+version '2.1'
 
 lua54 'yes'
 
@@ -17,7 +17,8 @@ server_scripts {
 }
 client_scripts{
     'client/main.lua',
-    'client/cl_impound.lua'
+    'client/cl_impound.lua',
+    'client/cl_mugshot.lua'
 } 
 
 ui_page 'ui/dashboard.html'
