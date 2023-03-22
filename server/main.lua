@@ -1606,11 +1606,14 @@ end
 
 -- Returns the source for the given citizenId
 QBCore.Functions.CreateCallback('mdt:server:GetPlayerSourceId', function(source, cb, targetCitizenId)
-	local targetPlayer = QBCore.Functions.GetPlayerByCitizenId(targetCitizenId)
-	local targetSource = targetPlayer.PlayerData.source
+    local targetPlayer = QBCore.Functions.GetPlayerByCitizenId(targetCitizenId)
+    if targetPlayer == nil then 
+        TriggerClientEvent('QBCore:Notify', source, "Citizen seems Asleep / Missing", "error")
+        return
+    end
+    local targetSource = targetPlayer.PlayerData.source
 
-	cb(targetSource)
-
+    cb(targetSource)
 end)
 
 QBCore.Functions.CreateCallback('getWeaponInfo', function(source, cb)
