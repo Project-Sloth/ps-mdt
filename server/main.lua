@@ -356,20 +356,21 @@ QBCore.Functions.CreateCallback('mdt:server:GetProfileData', function(source, cb
 	return cb(person)
 end)
 
-RegisterNetEvent("mdt:server:saveProfile", function(pfp, information, cid, fName, sName, tags, gallery, licenses)
+RegisterNetEvent("mdt:server:saveProfile", function(pfp, information, cid, fName, sName, fingerprint, tags, gallery, licenses)
 	local src = source
 	local Player = QBCore.Functions.GetPlayer(src)
 	UpdateAllLicenses(cid, licenses)
 	if Player then
 		local JobType = GetJobType(Player.PlayerData.job.name)
 		if JobType == 'doj' then JobType = 'police' end
-		MySQL.Async.insert('INSERT INTO mdt_data (cid, information, pfp, jobtype, tags, gallery) VALUES (:cid, :information, :pfp, :jobtype, :tags, :gallery) ON DUPLICATE KEY UPDATE cid = :cid, information = :information, pfp = :pfp, tags = :tags, gallery = :gallery', {
+		MySQL.Async.insert('INSERT INTO mdt_data (cid, information, pfp, jobtype, fingerprint, tags, gallery) VALUES (:cid, :information, :pfp, :jobtype, :fingerprint, :tags, :gallery) ON DUPLICATE KEY UPDATE cid = :cid, information = :information, pfp = :pfp, fingerprint = :fingerprint, tags = :tags, gallery = :gallery', {
 			cid = cid,
 			information = information,
 			pfp = pfp,
 			jobtype = JobType,
 			tags = json.encode(tags),
 			gallery = json.encode(gallery),
+			fingerprint = fingerprint,
 		})
 	end
 end)
