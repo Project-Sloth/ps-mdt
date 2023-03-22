@@ -1526,7 +1526,7 @@ span.tag-input[contenteditable]:empty::before {
     width: 100%;
     border: 2px solid var(--color-3);
     margin-top: 5px;
-    height: 15vh;
+    height: 17vh;
     overflow: scroll;
 }
 
