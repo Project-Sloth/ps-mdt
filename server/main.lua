@@ -145,7 +145,7 @@ QBCore.Functions.CreateCallback('mdt:server:SearchProfile', function(source, cb,
 	if Player then
 		local JobType = GetJobType(Player.PlayerData.job.name)
 		if JobType ~= nil then
-			local people = MySQL.query.await("SELECT p.citizenid, p.charinfo, md.pfp FROM players p LEFT JOIN mdt_data md on p.citizenid = md.cid WHERE LOWER(CONCAT(JSON_VALUE(p.charinfo, '$.firstname'), ' ', JSON_VALUE(p.charinfo, '$.lastname'))) LIKE :query OR LOWER(`charinfo`) LIKE :query OR LOWER(`citizenid`) LIKE :query OR LOWER(`fingerprint`) LIKE :query AND jobtype = :jobtype LIMIT 20", { query = string.lower('%'..sentData..'%'), jobtype = JobType })
+			local people = MySQL.query.await("SELECT p.citizenid, p.charinfo, md.pfp FROM players p LEFT JOIN mdt_data md on p.citizenid = md.cid WHERE LOWER(CONCAT(JSON_VALUE(p.charinfo, '$.firstname'), ' ', JSON_VALUE(p.charinfo, '$.lastname'))) LIKE :query OR LOWER(`charinfo`) LIKE :query OR LOWER(`citizenid`) LIKE :query AND jobtype = :jobtype LIMIT 20", { query = string.lower('%'..sentData..'%'), jobtype = JobType })
 			local citizenIds = {}
 			local citizenIdIndexMap = {}
 			if not next(people) then cb({}) return end
@@ -273,9 +273,9 @@ QBCore.Functions.CreateCallback('mdt:server:GetProfileData', function(source, cb
 		pp = ProfPic(target.charinfo.gender),
 		licences = licencesdata,
 		dob = target.charinfo.birthdate,
+		fingerprint = target.metadata.fingerprint,
 		phone = target.charinfo.phone,
 		mdtinfo = '',
-		fingerprint = '',
 		tags = {},
 		vehicles = {},
 		properties = {},
@@ -348,33 +348,22 @@ QBCore.Functions.CreateCallback('mdt:server:GetProfileData', function(source, cb
 	local mdtData = GetPersonInformation(sentId, JobType)
 	if mdtData then
 		person.mdtinfo = mdtData.information
-		person.fingerprint = mdtData.fingerprint
 		person.profilepic = mdtData.pfp
 		person.tags = json.decode(mdtData.tags)
 		person.gallery = json.decode(mdtData.gallery)
 	end
 
-	local mdtData2 = GetPfpFingerPrintInformation(sentId)
-	if mdtData2 then
-		if mdtData2.fingerprint then
-			person.fingerprint = mdtData2.fingerprint
-		end
-		if mdtData2.pfp ~= "" then
- 			person.profilepic = mdtData2.pfp
- 		end
-	end
-
 	return cb(person)
 end)
 
-RegisterNetEvent("mdt:server:saveProfile", function(pfp, information, cid, fName, sName, tags, gallery, fingerprint, licenses)
+RegisterNetEvent("mdt:server:saveProfile", function(pfp, information, cid, fName, sName, fingerprint, tags, gallery, licenses)
 	local src = source
 	local Player = QBCore.Functions.GetPlayer(src)
 	UpdateAllLicenses(cid, licenses)
 	if Player then
 		local JobType = GetJobType(Player.PlayerData.job.name)
 		if JobType == 'doj' then JobType = 'police' end
-		MySQL.Async.insert('INSERT INTO mdt_data (cid, information, pfp, jobtype, tags, gallery, fingerprint) VALUES (:cid, :information, :pfp, :jobtype, :tags, :gallery, :fingerprint) ON DUPLICATE KEY UPDATE cid = :cid, information = :information, pfp = :pfp, tags = :tags, gallery = :gallery, fingerprint = :fingerprint', {
+		MySQL.Async.insert('INSERT INTO mdt_data (cid, information, pfp, jobtype, fingerprint, tags, gallery) VALUES (:cid, :information, :pfp, :jobtype, :fingerprint, :tags, :gallery) ON DUPLICATE KEY UPDATE cid = :cid, information = :information, pfp = :pfp, fingerprint = :fingerprint, tags = :tags, gallery = :gallery', {
 			cid = cid,
 			information = information,
 			pfp = pfp,
