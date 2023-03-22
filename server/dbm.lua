@@ -34,14 +34,9 @@ end
 
 -- idk what this is used for either
 function GetPersonInformation(cid, jobtype)
-	local result = MySQL.query.await('SELECT information, tags, gallery, pfp, fingerprint FROM mdt_data WHERE cid = ? and jobtype = ?', { cid,  jobtype})
+	local result = MySQL.query.await('SELECT information, tags, gallery, pfp FROM mdt_data WHERE cid = ? and jobtype = ?', { cid,  jobtype})
 	return result[1]
 	-- return exports.oxmysql:executeSync('SELECT information, tags, gallery FROM mdt WHERE cid= ? and type = ?', { cid, jobtype })
-end
-
-function GetPfpFingerPrintInformation(cid)
-	local result = MySQL.query.await('SELECT pfp, fingerprint FROM mdt_data WHERE cid = ?', { cid })
-	return result[1]
 end
 
 function GetIncidentName(id)
