@@ -3,10 +3,14 @@ Config = Config or {}
 Config.UsingDefaultQBApartments = true
 
 Config.OnlyShowOnDuty = true
-Config.inv = "lj-inventory" -- "qb-inventory", "lj-inventory"
 Config.UseCQCMugshot = true
 Config.MugPhotos = 1 -- Front, Back Side. Use 4 for both sides ( default is 1 )
 Config.Webhook = '' -- Images will be uploaded here ( add a discord webhook )
+
+-- Set up your inventory to automatically retrieve images when a weapon is registered at a weapon shop or self-registered.
+-- If you're utilizing lj-inventory's latest version from GitHub, no further modifications are necessary. 
+-- However, if you're using a different inventory system, please refer to the "Inventory Edit | Automatic Add Weapons with images" section in ps-mdt's README.
+Config.InventoryForWeaponsImages = "lj-inventory"
 
 Config.Fuel = "lj-fuel" -- "LegacyFuel", "lj-fuel"
 

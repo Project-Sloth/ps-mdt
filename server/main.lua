@@ -1618,7 +1618,7 @@ QBCore.Functions.CreateCallback('getWeaponInfo', function(source, cb)
 	local weaponInfo = nil
 	for _, item in pairs(Player.PlayerData.items) do
 	if item.type == "weapon" then
-		local invImage = ("https://cfx-nui-%s/html/images/%s"):format(Config.inv, item.image)
+		local invImage = ("https://cfx-nui-%s/html/images/%s"):format(Config.InventoryForWeaponsImages, item.image)
 		if invImage then
 			weaponInfo = {
 				serialnumber = item.info.serie,
