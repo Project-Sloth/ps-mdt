@@ -1314,7 +1314,7 @@ a {
     flex-direction: column;
     background-color: var(--color-1);
     width: 100%;
-    height: 15%;
+    height: 18%;
     border: 2px solid var(--color-3);
     margin-top: 5px;
     min-height: 100px;
@@ -1415,7 +1415,7 @@ span.tag-input[contenteditable]:empty::before {
     flex-direction: column;
     background-color: var(--color-1);
     width: 100%;
-    height: 15%;
+    height: 18%;
     border: 2px solid var(--color-3);
     margin-top: 5px;
     max-height: 150px;
@@ -1469,7 +1469,7 @@ span.tag-input[contenteditable]:empty::before {
     flex-direction: column;
     background-color: var(--color-1);
     width: 100%;
-    height: 15%;
+    height: 18%;
     border: 2px solid var(--color-3);
     margin-top: 5px;
     max-height: 150px;
@@ -1580,16 +1580,48 @@ span.tag-input[contenteditable]:empty::before {
     object-fit: cover;
 }
 
+.convictions-known, .incidents-known {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+}
+
+.convictions-known-container, .incidents-known-container {
+    background-color: var(--color-5);
+    width: 95vh;
+    height: 45vh;
+    margin: auto;
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+    z-index: 9998;
+    display: none;
+}
+
+.convictions-known-title, .incidents-known-title {
+    background-color: var(--color-4);
+    color: white;
+    font-size: 20px;
+    font-weight: bolder;
+    text-align: center;
+    padding-top: 15px;
+    padding-bottom: 15px;
+    width: 95%;
+    margin: auto;
+    margin-top: 15px;
+    margin-bottom: 0px;
+    user-select: none;
+}
+
 .manage-convictions-container {
     display: flex;
     flex-direction: column;
     background-color: var(--color-1);
-    width: 100%;
-    height: 15%;
+    width: 49%;
+    height: 5.4%;
     border: 2px solid var(--color-3);
     margin-top: 5px;
-    max-height: 200px;
-    overflow: scroll;
 }
 
 .convictions-title {
@@ -1606,11 +1638,15 @@ span.tag-input[contenteditable]:empty::before {
     width: 95%;
     align-items: center;
     user-select: none;
+}
 
+.convictions-title:hover {
+    background-color: var(--color-3);
 }
 
 .convictions-holder {
-    overflow: auto;
+    overflow: scroll;
+    max-height: 87%;
     margin: auto;
     margin-top: 5px;
     width: 95%;
@@ -1621,12 +1657,11 @@ span.tag-input[contenteditable]:empty::before {
     display: flex;
     flex-direction: column;
     background-color: var(--color-1);
-    width: 100%;
-    height: 15%;
+    width: 50%;
+    height: 5.4%;
     border: 2px solid var(--color-3);
-    margin-top: 5px;
-    max-height: 200px;
-    overflow: scroll;
+    margin-top: -9.2%;
+    margin-left: 50%;
 }
 
 .profile-incidents-title {
@@ -1645,8 +1680,13 @@ span.tag-input[contenteditable]:empty::before {
     user-select: none;
 }
 
+.profile-incidents-title:hover {
+    background-color: var(--color-3);
+}
+
 .profile-incidents-holder {
-    overflow: auto;
+    overflow: scroll;
+    max-height: 87%;
     margin: auto;
     margin-top: 5px;
     width: 95%;
@@ -1719,7 +1759,7 @@ span.tag-input[contenteditable]:empty::before {
     margin: 0;
     border: 1px solid var(--color-3);
     background: var(--color-5);
-    z-index: 100;
+    z-index: 9999;
     border-radius: 3px;
     box-shadow: 1px 1px 4px rgba(0,0,0,.2);
     opacity: 0;
@@ -1815,6 +1855,22 @@ span.tag-input[contenteditable]:empty::before {
 
 .copy-image-link:hover {
     background-color: #099517;
+}
+
+.view-incident:hover {
+    background-color: var(--color-3);
+}
+
+.view-incident2:hover {
+    background-color: var(--color-3);
+}
+
+.make-waypoint:hover {
+    background-color: var(--color-3);
+}
+
+.view-profile:hover {
+    background-color: var(--color-3);
 }
 
 .gallery-upload-input {

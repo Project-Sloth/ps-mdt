@@ -131,6 +131,16 @@ function timeAgo(dateParam) {
   return getFormattedDate(date);
 }
 
+function closeContainer(selector) {
+  if (
+       $(selector).css("display") != "none"
+     ) {
+       shouldClose = false;
+       $(selector).fadeOut(50);
+       $(".close-all").css("filter", "none");
+     }
+}
+
 $(document).ready(() => {
   $(".header").hover(
     function () {
@@ -414,6 +424,30 @@ $(document).ready(() => {
     $(".incidents-person-search-holder").attr("data-source", source);
     $(".incidents-person-search-container").fadeIn(250); // makes the container visible
     $(".close-all").css("filter", "brightness(15%)");
+  });
+
+  $(".manage-convictions-container").on("click", "", function () {
+    if ($(".manage-profile-citizenid-input").val()) {
+      document.addEventListener("mouseup", onMouseDownIncidents);
+      const source = "manage-convictions-container";
+      $(".convictions-holder").attr("data-source", source);
+      $(".convictions-known-container").fadeIn(250); // makes the container visible
+      $(".close-all").css("filter", "brightness(15%)");
+    } else {
+      $(this).effect("shake", { times: 2, distance: 2 }, 500);
+    }
+  });
+
+  $(".manage-profile-incidents-container").on("click", "", function () {
+    if ($(".manage-profile-citizenid-input").val()) {
+      document.addEventListener("mouseup", onMouseDownIncidents);
+      const source = "manage-profile-incidents-container";
+      $(".profile-incidents-holder").attr("data-source", source);
+      $(".incidents-known-container").fadeIn(250); // makes the container visible
+      $(".close-all").css("filter", "brightness(15%)");
+    } else {
+      $(this).effect("shake", { times: 2, distance: 2 }, 500);
+    }
   });
 
   $(".gallery-add-btn").click(function () {
@@ -759,6 +793,7 @@ $(document).ready(() => {
         "pointer-events",
         "auto"
       );
+
     }
   );
   $(".tags-add-btn").click(function () {
@@ -1114,13 +1149,9 @@ $(document).ready(() => {
         $(".incidents-image-enlarged").css("display", "none");
       }
 
-      if (
-        $(".incidents-person-search-container").css("display") != "none"
-      ) {
-        shouldClose = false;
-        $(".incidents-person-search-container").fadeOut(250);
-        $(".close-all").css("filter", "none");
-      }
+      closeContainer(".incidents-person-search-container");
+      closeContainer(".convictions-known-container");
+      closeContainer(".incidents-known-container");
 
       if ($(".incidents-charges-table").css("display") != "none") {
         shouldClose = false;
@@ -2067,19 +2098,6 @@ $(document).ready(() => {
     openContextMenu(e, args);
   });
 
-  $(".profile-incidents-holder").on("contextmenu", ".white-tag", function (e) {
-    const args = [
-      {
-        className: "view-incident",
-        icon: "fas fa-search",
-        text: "View Incident",
-        info: $(this).data("id"),
-        status: "",
-      },
-    ];
-    openContextMenu(e, args);
-  });
-
   $(".reports-search-title").click(function () {
     if (canSearchReports == true) {
       if ($(".reports-search-input").css("display") == "none") {
@@ -2094,6 +2112,24 @@ $(document).ready(() => {
     }
   });
   $(".incidents-person-search-container").hover(
+    function () {
+      mouse_is_inside = true;
+    },
+    function () {
+      mouse_is_inside = false;
+    }
+  );
+
+  $(".convictions-known-container").hover(
+    function () {
+      mouse_is_inside = true;
+    },
+    function () {
+      mouse_is_inside = false;
+    }
+  );
+
+  $(".incidents-known-container").hover(
     function () {
       mouse_is_inside = true;
     },
@@ -3072,10 +3108,12 @@ $(document).ready(() => {
     searchProfilesResults(result);
   });
 
-  $(".contextmenu").on("click", ".view-incident", function () {
+  $(".contextmenu").on("click", ".view-incident2", function () {
     const incidentId = $(this).data("info");
     fidgetSpinner(".incidents-page-container");
     currentTab = ".incidents-page-container";
+    $(".close-all").css("filter", "none");
+    $(".incidents-known-container").fadeOut(250);
     setTimeout(() => {
       $(".incidents-search-input").slideDown(250);
       $(".incidents-search-input").css("display", "block");
@@ -3103,7 +3141,51 @@ $(document).ready(() => {
       }, 250);
     }, 250);
   });
+  $(".profile-incidents-holder").on("contextmenu", ".white-tag", function (e) {
+    const args = [
+      {
+        className: "view-incident2",
+        icon: "fas fa-search",
+        text: `View Incident #${$(this).data("id")}`,
+        info: $(this).data("id"),
+        status: "",
+      },
+    ];
+    openContextMenu(e, args);
+  });
 
+  $(".contextmenu").on("click", ".view-incident", function () {
+    const incidentId = $(this).data("info");
+    fidgetSpinner(".incidents-page-container");
+    currentTab = ".incidents-page-container";
+    setTimeout(() => {
+      $(".incidents-search-input").slideDown(250);
+      $(".incidents-search-input").css("display", "block");
+      setTimeout(() => {
+        $(".close-all").css("filter", "none");
+        $("#incidents-search-input:text").val(incidentId.toString());
+        canSearchForProfiles = false;
+        $.post(
+          `https://${GetParentResourceName()}/searchIncidents`,
+          JSON.stringify({
+            incident: incidentId.toString(),
+          })
+        );
+        $(".incidents-items").empty();
+        $(".incidents-items").prepend(
+          `<div class="profile-loader"></div>`
+        );
+        setTimeout(() => {
+          $.post(
+            `https://${GetParentResourceName()}/getIncidentData`,
+            JSON.stringify({
+              id: incidentId.toString(),
+            })
+          );
+        }, 250);
+      }, 250);
+    }, 250);
+  });
   $(".warrants-items").on("contextmenu", ".warrants-item", function (e) {
     //let information = $(this).html()
     //if (information) {
@@ -3118,7 +3200,7 @@ $(document).ready(() => {
       {
         className: "view-incident",
         icon: "fas fa-search",
-        text: "View Incident",
+        text: `View Incident #${$(this).data("id")}`,
         info: $(this).data("id"),
         status: "",
       },
@@ -4609,6 +4691,7 @@ $(document).ready(() => {
         "auto"
       );
 
+
       $("#manage-incidents-title-input").val(table["title"]);
       $(".manage-incidents-reports-content").val(table["details"]);
 
@@ -5074,6 +5157,7 @@ $(document).ready(() => {
         "pointer-events",
         "auto"
       );
+
     } else if (eventData.type == "callDetach") {
       $(".active-calls-item")
         .filter("[data-id='" + eventData.callid + "']")
@@ -5331,6 +5415,20 @@ function hideIncidentsMenu() {
     !mouse_is_inside
   ) {
     $(".incidents-person-search-container").fadeOut(250);
+    $(".close-all").css("filter", "none");
+  }
+  if (
+    $(".convictions-known-container").css("display") != "none" &&
+    !mouse_is_inside
+  ) {
+    $(".convictions-known-container").fadeOut(0);
+    $(".close-all").css("filter", "none");
+  }
+  if (
+    $(".incidents-known-container").css("display") != "none" &&
+    !mouse_is_inside
+  ) {
+    $(".incidents-known-container").fadeOut(0);
     $(".close-all").css("filter", "none");
   }
 }
