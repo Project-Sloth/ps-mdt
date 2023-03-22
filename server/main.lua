@@ -1614,32 +1614,31 @@ QBCore.Functions.CreateCallback('mdt:server:GetPlayerSourceId', function(source,
 end)
 
 QBCore.Functions.CreateCallback('getWeaponInfo', function(source, cb)
-    local Player = QBCore.Functions.GetPlayer(source)
-    local weaponInfo = nil
-    for _, item in pairs(Player.PlayerData.items) do
-		if item.type == "weapon" then
-			local invImage = ("https://cfx-nui-qb-inventory/html/images/%s"):format(item.image)
-			if invImage then
-				weaponInfo = {
-					serialnumber = item.info.serie,
-					owner = Player.PlayerData.charinfo.firstname .. " " .. Player.PlayerData.charinfo.lastname,
-					weaponmodel = QBCore.Shared.Items[item.name].label,
-					weaponurl = invImage,
-					notes = "Self Registered",
-					weapClass = "Class 1",
-
-				}
-				break
-			end
+	local Player = QBCore.Functions.GetPlayer(source)
+	local weaponInfo = nil
+	for _, item in pairs(Player.PlayerData.items) do
+	if item.type == "weapon" then
+		local invImage = ("https://cfx-nui-%s/html/images/%s"):format(Config.InventoryForWeaponsImages, item.image)
+		if invImage then
+			weaponInfo = {
+				serialnumber = item.info.serie,
+				owner = Player.PlayerData.charinfo.firstname .. " " .. Player.PlayerData.charinfo.lastname,
+				weaponmodel = QBCore.Shared.Items[item.name].label,
+				weaponurl = invImage,
+				notes = "Self Registered",
+				weapClass = "Class 1",
+			}
+			break
 		end
 	end
-    if weaponInfo then
-        TriggerClientEvent('QBCore:Notify', source, "Weapon has been added to police database. ")
-    else
-        TriggerClientEvent('QBCore:Notify', source, "Weapon already registered on database.")
-    end
+end
+	if weaponInfo then
+			TriggerClientEvent('QBCore:Notify', source, "Weapon has been added to police database. ")
+	else
+			TriggerClientEvent('QBCore:Notify', source, "Weapon already registered on database.")
+	end
 
-    cb(weaponInfo)
+	cb(weaponInfo)
 end)
 
 RegisterNetEvent('mdt:server:registerweapon', function(serial, imageurl, notes, owner, weapClass, weapModel) 
