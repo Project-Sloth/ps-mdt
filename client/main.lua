@@ -315,6 +315,7 @@ RegisterNUICallback("getProfileData", function(data, cb)
     end
     local pP = nil
     local result = getProfileDataPromise(id)
+    local vehicles = result.vehicles
 
     for i=1,#vehicles do
         local vehicle=result.vehicles[i]
