@@ -315,23 +315,18 @@ RegisterNUICallback("getProfileData", function(data, cb)
     end
     local pP = nil
     local result = getProfileDataPromise(id)
+    local vehicles = result.vehicles
 
-    --[[ local getProfileProperties = function(data)
-        if pP then return end
-        pP = promise.new()
-        QBCore.Functions.TriggerCallback('qb-phone:server:MeosGetPlayerHouses', function(result)
-            pP:resolve(result)
-        end, data)
-        return Citizen.Await(pP)
-    end
-    local propertiesResult = getProfileProperties(id)
-    result.properties = propertiesResult
-    ]]
-    local vehicles=result.vehicles
     for i=1,#vehicles do
         local vehicle=result.vehicles[i]
         local vehData = QBCore.Shared.Vehicles[vehicle['vehicle']]
-        result.vehicles[i]['model'] = vehData["name"]
+        
+        if vehData == nil then
+            print("Vehicle not found for profile:", vehicle['vehicle']) -- Do not remove print, is a guide for a nil error. 
+            print("Make sure the profile you're trying to load has all cars added to the core under vehicles.lua.") -- Do not remove print, is a guide for a nil error. 
+        else
+            result.vehicles[i]['model'] = vehData["name"]
+        end
     end
     p = nil
     return cb(result)

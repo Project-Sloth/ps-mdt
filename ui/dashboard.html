@@ -69,6 +69,22 @@
             </div>
         </div>
     </div>
+
+    <div class="convictions-known">
+        <div class="convictions-known-container">
+            <div class="convictions-known-title">Convictions</div>
+            <div class="convictions-holder">
+            </div>
+        </div>
+    </div>
+
+    <div class="incidents-known">
+        <div class="incidents-known-container">
+            <div class="incidents-known-title">Known Incidents</div>
+            <div class="profile-incidents-holder">
+            </div>
+        </div>
+    </div>
     <div class="incidents-charges-table" style="display: none;">
         <div class="incidents-charges-table-container">
             <div class="incidents-charges-title-container">
@@ -276,6 +292,12 @@
                         <div class="manage-profile-dob">DOB</div>
                         <div><span class="far fa-calendar-alt manage-cid-pic"></span><input type="text" readonly class="manage-profile-dob-input"></div>
                         <div class="line"></div>
+                        <div class="manage-profile-fingerprint">Fingerprint</div>
+                        <div><span class="fas fa-fingerprint manage-cid-pic"></span><input type="text" readonly class="manage-profile-fingerprint-input"></div>
+                        <div class="line"></div>
+                        <div class="manage-profile-phonenumber">Phone Number</div>
+                        <div><span class="fas fa-phone-volume manage-cid-pic"></span><input type="text" readonly class="manage-profile-phonenumber-input"></div>
+                        <div class="line"></div>
                         <div class="manage-profile-job">Profession</div>
                         <div><span class="fas fa-briefcase manage-cid-pic"></span><input type="text" readonly class="manage-profile-job-input"></div>
                         <div class="line"></div>
@@ -287,7 +309,6 @@
                         <div class="line" style="margin-bottom: 0px;"></div>
                     </div>
                 </div>
-                <textarea class="manage-profile-fingerprint" placeholder="Enter citizen fingerprint..." disabled></textarea>
                 <textarea class="manage-profile-info" placeholder="Place user information here..." disabled></textarea>
             </div>
             <div class="manage-profile-right-container">
@@ -321,13 +342,11 @@
                 </div>
 
                 <div class="manage-convictions-container display_hidden">
-                    <div class="convictions-title">Known Convictions</div>
-                    <div class="convictions-holder"></div>
+                    <div class="convictions-title"><span class="fas fa-eye"></span> Show Convictions</div>
                 </div>
 
                 <div class="manage-profile-incidents-container display_hidden">
-                    <div class="profile-incidents-title">Incidents</div>
-                    <div class="profile-incidents-holder"></div>
+                    <div class="profile-incidents-title"><span class="fas fa-eye"></span> Show Incidents</div>
                 </div>
             </div>
         </div>
@@ -617,7 +636,7 @@
                 </div>
                 <div class="manage-officers-tags-container">
                     <div style="display: flex; align-items: center;">
-                        <div class="tags-title">Officers Involved</div>
+                        <div class="tags-title" id="bolos-officers-involved-tag-title">Officers Involved</div>
                         <div class="officers-add-btn fas fa-plus"></div>
                     </div>
                     <div class="manage-officers-tags-holder"></div>
