@@ -49,7 +49,7 @@ police:server:JailPlayer
 -- if #(playerCoords - targetCoords) > 2.5 then return DropPlayer(src, "Attempted exploit abuse") end
 ```
 
-## Inventory Edit | Automatic Add Weapons with images
+# Inventory Edit | Automatic Add Weapons with images
 * [lj-inventory](https://github.com/loljoshie/lj-inventory) will come already with the changes needed for this to work. 
 * [qb-inventory](https://github.com/qbcore-framework/qb-inventory) follow instructions below. 
 
