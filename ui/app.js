@@ -560,7 +560,6 @@ $(document).ready(() => {
             sName: sName,
             tags: tags,
             gallery: gallery,
-            fingerprint: fingerprint,
             licenses: licenses
           })
         );
@@ -5482,6 +5481,10 @@ function searchProfilesResults(result) {
 
     if (typeof value.metadata == "string") {
       metadata = JSON.parse(metadata);
+    }
+
+    if (!value.licences) {
+      value.licences = {};
     }
 
     let name = charinfo.firstname + " " + charinfo.lastname;
