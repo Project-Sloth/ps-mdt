@@ -560,7 +560,6 @@ $(document).ready(() => {
             sName: sName,
             tags: tags,
             gallery: gallery,
-            fingerprint: fingerprint,
             licenses: licenses
           })
         );
