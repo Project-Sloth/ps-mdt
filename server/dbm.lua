@@ -89,11 +89,6 @@ function GetPlayerDataById(id)
 	-- return exports.oxmysql:executeSync('SELECT citizenid, charinfo, job FROM players WHERE citizenid = ? LIMIT 1', { id })
 end
 
--- Probs also best not to use
---[[ function GetImpoundStatus(vehicleid, cb)
-	cb( #(exports.oxmysql:executeSync('SELECT id FROM `impound` WHERE `vehicleid`=:vehicleid', {['vehicleid'] = vehicleid })) > 0 )
-end ]]
-
 function GetBoloStatus(plate)
 	local result = MySQL.scalar.await('SELECT id FROM `mdt_bolos` WHERE LOWER(`plate`)=:plate', { plate = string.lower(plate)})
 	return result

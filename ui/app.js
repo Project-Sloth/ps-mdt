@@ -5483,6 +5483,10 @@ function searchProfilesResults(result) {
       metadata = JSON.parse(metadata);
     }
 
+    if (!value.licences) {
+      value.licences = {};
+    }
+
     let name = charinfo.firstname + " " + charinfo.lastname;
     let warrant = "red-tag";
     let convictions = "red-tag";
