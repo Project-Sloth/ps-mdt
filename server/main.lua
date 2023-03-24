@@ -297,7 +297,7 @@ QBCore.Functions.CreateCallback('mdt:server:GetProfileData', function(source, cb
 				local incident = GetIncidentName(id)
 				incidents[#incidents + 1] = {
 					id = id,
-					title = incidents.title,
+					title = incident.title,
 					time = conv.time
 				}
 
