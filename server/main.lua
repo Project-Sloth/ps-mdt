@@ -295,11 +295,14 @@ QBCore.Functions.CreateCallback('mdt:server:GetProfileData', function(source, cb
 				-- Get the incident details
 				local id = conv.linkedincident
 				local incident = GetIncidentName(id)
-				incidents[#incidents + 1] = {
-					id = id,
-					title = incident.title,
-					time = conv.time
-				}
+
+				if incident then
+					incidents[#incidents + 1] = {
+						id = id,
+						title = incident.title,
+						time = conv.time
+					}
+				end
 
 				local charges = json.decode(conv.charges)
 				for _, charge in pairs(charges) do
