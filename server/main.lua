@@ -370,7 +370,6 @@ RegisterNetEvent("mdt:server:saveProfile", function(pfp, information, cid, fName
 			jobtype = JobType,
 			tags = json.encode(tags),
 			gallery = json.encode(gallery),
-			fingerprint = fingerprint,
 		})
 	end
 end)
