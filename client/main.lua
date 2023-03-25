@@ -295,10 +295,9 @@ RegisterNUICallback("saveProfile", function(data, cb)
     local sName = data.sName
     local tags = data.tags
     local gallery = data.gallery
-    local fingerprint = data.fingerprint
     local licenses = data.licenses
 
-    TriggerServerEvent("mdt:server:saveProfile", profilepic, information, cid, fName, sName, tags, gallery, fingerprint, licenses)
+    TriggerServerEvent("mdt:server:saveProfile", profilepic, information, cid, fName, sName, tags, gallery, licenses)
     cb(true)
 end)
 
@@ -316,6 +315,7 @@ RegisterNUICallback("getProfileData", function(data, cb)
     local pP = nil
     local result = getProfileDataPromise(id)
     local vehicles = result.vehicles
+    local licenses = result.licences
 
     for i=1,#vehicles do
         local vehicle=result.vehicles[i]
