@@ -510,11 +510,11 @@ $(document).ready(() => {
         let licenses = {};
 
         $(".tags-holder")
-          .find("div")
+          .find("span.tag-input, div.tag")
           .each(function () {
-            if ($(this).text() != "" && $(this).text() != "No Tags") {
-              tags.push($(this).text());
-            }
+          if ($(this).text() != "" && $(this).text() != "No Tags") {
+            tags.push($(this).text());
+          }
         });
 
         $(".gallery-inner-container")
