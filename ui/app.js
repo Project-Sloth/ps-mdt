@@ -161,7 +161,7 @@ $(document).ready(() => {
     }
   );
   $(".nav-item").click(function () {
-    if ($(this).hasClass("active-nav") == false) {
+    if ($(this).hasClass("active-nav") === false) {
       fidgetSpinner($(this).data("page"));
       currentTab = $(this).data("page");
     }
@@ -186,7 +186,7 @@ $(document).ready(() => {
       canInputTag = true;
     }
 
-    if ($(".gallery-upload-input").css("display") == "block") {
+    if ($(".gallery-upload-input").css("display") === "block") {
       $(".gallery-upload-input").slideUp(250);
       setTimeout(() => {
         $(".gallery-upload-input").css("display", "none");
@@ -242,7 +242,7 @@ $(document).ready(() => {
     // convert key value pair object of licenses to array
     let licenses = Object.entries(result.licences);
 
-    if (licenses.length == 0 || licenses.length == undefined) {
+    if (licenses.length === 0 || licenses.length == undefined) {
       var licenseTypes = ['business', 'pilot', 'weapon', 'driver'];
       licenses = Object.entries(licenseTypes.reduce((licenseType, licenseValue) => (licenseType[licenseValue] = false, licenseType), {}));
     }
@@ -250,7 +250,7 @@ $(document).ready(() => {
     if (licenses.length > 0 && (PoliceJobs[playerJob] !== undefined || DojJobs[playerJob] !== undefined)) {
       licencesHTML = '';
       for (const [lic, hasLic] of licenses) {
-        let tagColour = hasLic == true ? "green-tag" : "red-tag";
+        let tagColour = hasLic === true ? "green-tag" : "red-tag";
         licencesHTML += `<span class="license-tag ${tagColour} ${lic}" data-type="${lic}">${titleCase(lic)}</span>`;
       }
 
@@ -328,7 +328,7 @@ $(document).ready(() => {
   // <div class="bulletin-id">ID: ${BulletinId}</div>
 
   $(".bulletin-add-btn").click(function () {
-    if (canCreateBulletin == 0) {
+    if (canCreateBulletin === 0) {
       $(this).removeClass("fa-plus").addClass("fa-minus");
       let BulletinId = Number($(".bulletin-item").first().data("id")) + 1;
       if (Number.isNaN(BulletinId)) {
@@ -414,7 +414,7 @@ $(document).ready(() => {
         title: title
       })
     );
-    if (canCreateBulletin == id) {
+    if (canCreateBulletin === id) {
       canCreateBulletin = 0;
     }
     if ($(".bulletin-add-btn").hasClass("fa-minus")) {
@@ -456,7 +456,7 @@ $(document).ready(() => {
 
   $(".gallery-add-btn").click(function () {
     if ($(".manage-profile-citizenid-input").val()) {
-      if ($(".gallery-upload-input").css("display") == "none") {
+      if ($(".gallery-upload-input").css("display") === "none") {
         $(".gallery-upload-input").slideDown(250);
         $(".gallery-upload-input").css("display", "block");
         $(this).removeClass("fa-plus").addClass("fa-minus");
@@ -492,7 +492,7 @@ $(document).ready(() => {
     }
   });
   $(".manage-profile-save").click(function () {
-    if (canSaveProfile == true) {
+    if (canSaveProfile === true) {
       canSaveProfile = false;
       $(".manage-profile-save").empty();
       $(".manage-profile-save").prepend(
@@ -571,7 +571,7 @@ $(document).ready(() => {
     "click",
     ".manage-incidents-save",
     function () {
-      if (canSaveProfile == true) {
+      if (canSaveProfile === true) {
         canSaveProfile = false;
         $(".manage-incidents-save").empty();
         $(".manage-incidents-save").prepend(
@@ -646,18 +646,18 @@ $(document).ready(() => {
           $(".associated-incidents-user-tags-holder")
             .children("div")
             .each(function (index) {
-              if ($(this).data("id") == cid) {
+              if ($(this).data("id") === cid) {
                 if ($(this).hasClass("green-tag")) {
-                  if ($(this).text() == "Guilty") {
+                  if ($(this).text() === "Guilty") {
                     guilty = true;
                   }
-                  if ($(this).text() == "Warrant") {
+                  if ($(this).text() === "Warrant") {
                     warrant = true;
                   }
-                  if ($(this).text() == "Processed") {
+                  if ($(this).text() === "Processed") {
                     processed = true;
                   }
-                  if ($(this).text() == "Associated") {
+                  if ($(this).text() === "Associated") {
                     isassociated = true;
                   }
                 }
@@ -671,7 +671,7 @@ $(document).ready(() => {
                   ( $(".associated-incidents-user-holder")
                     .children()
                     .eq(index)
-                    .data("id") == cid )
+                    .data("id") === cid )
               ) {
                 charges.push(
                   $(".associated-incidents-user-holder")
@@ -720,7 +720,7 @@ $(document).ready(() => {
         );
 
         setTimeout(() => {
-          if (canRefreshIncidents == true) {
+          if (canRefreshIncidents === true) {
             canRefreshIncidents = false;
             $(".incidents-search-refresh").empty();
             $(".incidents-search-refresh").prepend(
@@ -880,7 +880,7 @@ $(document).ready(() => {
     openContextMenu(e, args);
   });
   $(".gallery-inner-container").on("click", ".gallery-img", function () {
-    if ($(this).css("filter") == "none") {
+    if ($(this).css("filter") === "none") {
       $(this).css("filter", "blur(5px)");
     } else {
       $(this).css("filter", "none");
@@ -935,19 +935,19 @@ $(document).ready(() => {
     const status = $(this).data("type");
     let type = $(this).html();
 
-    if (type == "Theory") {
+    if (type === "Theory") {
       info = "theory";
-    } else if (type == "Car") {
+    } else if (type === "Car") {
       info = "drive";
-    } else if (type == "Bike") {
+    } else if (type === "Bike") {
       info = "drive_bike";
-    } else if (type == "Truck") {
+    } else if (type === "Truck") {
       info = "drive_truck";
-    } else if (type == "Hunting") {
+    } else if (type === "Hunting") {
       info = "hunting";
-    } else if (type == "Pilot") {
+    } else if (type === "Pilot") {
       info = "pilot";
-    } else if (type == "Weapon") {
+    } else if (type === "Weapon") {
       info = "weapon";
     } else {
       info = type;
@@ -1015,8 +1015,8 @@ $(document).ready(() => {
   });
 
   $(".profile-title").click(function () {
-    if (canSearchForProfiles == true) {
-      if ($(".profile-search-input").css("display") == "none") {
+    if (canSearchForProfiles === true) {
+      if ($(".profile-search-input").css("display") === "none") {
         $(".profile-search-input").slideDown(250);
         $(".profile-search-input").css("display", "block");
       } else {
@@ -1029,7 +1029,7 @@ $(document).ready(() => {
   });
 
   $("#profile-search-input").keydown(async function (e) {
-    if (e.keyCode === 13 && canSearchForProfiles == true) {
+    if (e.keyCode === 13 && canSearchForProfiles === true) {
       let name = $("#profile-search-input").val();
       if (name != "") {
         canSearchForProfiles = false;
@@ -1051,8 +1051,8 @@ $(document).ready(() => {
   });
 
   $(".incidents-title").click(function () {
-    if (canSearchForProfiles == true) {
-      if ($(".incidents-search-input").css("display") == "none") {
+    if (canSearchForProfiles === true) {
+      if ($(".incidents-search-input").css("display") === "none") {
         $(".incidents-search-input").slideDown(250);
         $(".incidents-search-input").css("display", "block");
       } else {
@@ -1065,7 +1065,7 @@ $(document).ready(() => {
   });
 
   $("#incidents-search-input").keydown(function (e) {
-    if (e.keyCode === 13 && canSearchForProfiles == true) {
+    if (e.keyCode === 13 && canSearchForProfiles === true) {
       let incident = $("#incidents-search-input").val();
       if (incident !== "") {
         canSearchForProfiles = false;
@@ -1127,10 +1127,10 @@ $(document).ready(() => {
     }
   );
   document.onkeyup = function (data) {
-    if (data.which == 27) {
+    if (data.which === 27) {
       let shouldClose = true;
 
-      if ($(".respond-calls-container").css("display") == "block") {
+      if ($(".respond-calls-container").css("display") === "block") {
         shouldClose = false;
         $(".respond-calls-container").fadeOut(500);
         setTimeout(() => {
@@ -1138,14 +1138,14 @@ $(document).ready(() => {
         }, 250);
       }
 
-      if ($(".gallery-image-enlarged").css("display") == "block") {
+      if ($(".gallery-image-enlarged").css("display") === "block") {
         shouldClose = false;
         $(".gallery-image-enlarged").fadeOut(150);
         $(".gallery-image-enlarged").css("display", "none");
         $(".close-all").css("filter", "none");
       }
 
-      if ($(".incidents-image-enlarged").css("display") == "block") {
+      if ($(".incidents-image-enlarged").css("display") === "block") {
         shouldClose = false;
         $(".incidents-image-enlarged").fadeOut(150);
         $(".incidents-image-enlarged").css("display", "none");
@@ -1182,7 +1182,7 @@ $(document).ready(() => {
         }, 550);
       }
 
-      if (shouldClose == true) {
+      if (shouldClose === true) {
         $.post(`https://${GetParentResourceName()}/escape`, JSON.stringify({}));
       }
     }
@@ -1248,7 +1248,7 @@ $(document).ready(() => {
   });
 
   $(".manage-incidents-evidence-add-btn").click(function () {
-    if ($(".incidents-upload-input").css("display") == "none") {
+    if ($(".incidents-upload-input").css("display") === "none") {
       $(".incidents-upload-input").slideDown(250);
       $(".incidents-upload-input").css("display", "block");
       $(this).removeClass("fa-plus").addClass("fa-minus");
@@ -1286,7 +1286,7 @@ $(document).ready(() => {
     "click",
     ".incidents-img",
     function () {
-      if ($(this).css("filter") == "none") {
+      if ($(this).css("filter") === "none") {
         $(this).css("filter", "blur(5px)");
       } else {
         $(this).css("filter", "none");
@@ -1302,7 +1302,7 @@ $(document).ready(() => {
       //$(".manage-bolos-new").effect("shake", { times: 2, distance: 2 }, 500)
       //} else {
       var template = "";
-      if ($(".badge-logo").attr("src") == "img/ems_badge.webp") {
+      if ($(".badge-logo").attr("src") === "img/ems_badge.webp") {
         template =
           "ICU Room #: [ # ]\n\nReport ID: [ Report ID ]\n\nTime Admitted: [ Date and Time Here ]\n\nSurgery: [Yes/No]\n\nInjuries/Ailments:\n - [ Enter List Of Injuries Here ]\n\n\nAdditional Attending:\n - [ List Any Other Staff Here ]\n\n\n🧑‍🤝‍🧑 Additional Emergency Contacts:\n - [ Name And Number ]\n\n\nNotes:\n[Additional Notes Here]";
       }
@@ -1329,7 +1329,7 @@ $(document).ready(() => {
           .addClass("fa-plus");
       }
 
-      if ($(".bolo-gallery-upload-input").css("display") == "block") {
+      if ($(".bolo-gallery-upload-input").css("display") === "block") {
         $(".bolo-gallery-upload-input").slideUp(250);
         setTimeout(() => {
           $(".bolo-gallery-upload-input").css("display", "none");
@@ -1352,7 +1352,7 @@ $(document).ready(() => {
     ".manage-bolos-save",
     function () {
       let existing = !(
-        $(".manage-bolos-editing-title").html() ==
+        $(".manage-bolos-editing-title").html() ===
         "You are currently creating a new BOLO"
       );
       let id = $(".manage-bolos-editing-title").data("id");
@@ -1441,8 +1441,8 @@ $(document).ready(() => {
   );
 
   $(".bolos-search-title").click(function () {
-    if (canSearchForProfiles == true) {
-      if ($(".bolos-search-input").css("display") == "none") {
+    if (canSearchForProfiles === true) {
+      if ($(".bolos-search-input").css("display") === "none") {
         $(".bolos-search-input").slideDown(250);
         $(".bolos-search-input").css("display", "block");
       } else {
@@ -1455,7 +1455,7 @@ $(document).ready(() => {
   });
 
   $("#bolos-search-input").keydown(function (e) {
-    if (e.keyCode === 13 && canSearchForProfiles == true) {
+    if (e.keyCode === 13 && canSearchForProfiles === true) {
       let searchVal = $("#bolos-search-input").val();
       if (searchVal !== "") {
         canSearchForProfiles = false;
@@ -1472,7 +1472,7 @@ $(document).ready(() => {
   });
 
   $(".bolos-search-refresh").click(function () {
-    if (canRefreshBolo == true) {
+    if (canRefreshBolo === true) {
       canRefreshBolo = false;
       $(".bolos-search-refresh").empty();
       $(".bolos-search-refresh").prepend(
@@ -1523,7 +1523,7 @@ $(document).ready(() => {
 
   $(".bolo-gallery-add-btn").click(function () {
     //if ($(".manage-profile-citizenid-input").val()) {
-    if ($(".bolo-gallery-upload-input").css("display") == "none") {
+    if ($(".bolo-gallery-upload-input").css("display") === "none") {
       $(".bolo-gallery-upload-input").slideDown(250);
       $(".bolo-gallery-upload-input").css("display", "block");
       $(this).removeClass("fa-plus").addClass("fa-minus");
@@ -1572,7 +1572,7 @@ $(document).ready(() => {
         .addClass("fa-plus");
     }
 
-    if ($(".bolo-gallery-upload-input").css("display") == "block") {
+    if ($(".bolo-gallery-upload-input").css("display") === "block") {
       $(".bolo-gallery-upload-input").slideUp(250);
       setTimeout(() => {
         $(".bolo-gallery-upload-input").css("display", "none");
@@ -1593,7 +1593,7 @@ $(document).ready(() => {
 
   $(".contextmenu").on("click", ".bolo-delete", function () {
     if ($(this).data("info") != 0) {
-      if ($(".badge-logo").attr("src") == "img/ems_badge.webp") {
+      if ($(".badge-logo").attr("src") === "img/ems_badge.webp") {
         $(".bolos-items")
           .find("[data-id='" + $(this).data("info") + "']")
           .remove();
@@ -1627,7 +1627,7 @@ $(document).ready(() => {
         status: "",
       },
     ];
-    if ($(".badge-logo").attr("src") == "img/ems_badge.webp") {
+    if ($(".badge-logo").attr("src") === "img/ems_badge.webp") {
       args = [
         {
           className: "bolo-delete",
@@ -1669,7 +1669,7 @@ $(document).ready(() => {
           $(".associated-incidents-user-holder")
             .children()
             .eq(index)
-            .data("id") == stupidasscid
+            .data("id") === stupidasscid
         ) {
           const randomNum = Math.ceil(
             Math.random() * 1000
@@ -1692,10 +1692,10 @@ $(document).ready(() => {
 
   var shiftPressed = false;
   $(document).keydown(function (event) {
-    shiftPressed = event.keyCode == 16;
+    shiftPressed = event.keyCode === 16;
   });
   $(document).keyup(function (event) {
-    if (event.keyCode == 16) {
+    if (event.keyCode === 16) {
       shiftPressed = false;
     }
   });
@@ -1705,7 +1705,7 @@ $(document).ready(() => {
       const newItem = $(this).find(".offense-item-offense").html();
       const Fine = +$(this).data("fine");
       const Sentence = +$(this).data("sentence");
-      if (e.which == 1) {
+      if (e.which === 1) {
         let randomNum = Math.ceil(Math.random() * 1000).toString();
         $(`[data-name="${cid}"]`).prepend(`<div class="white-tag" data-link="${randomNum}"data-id="${cid}">${$(this).find(".offense-item-offense").html()}</div>`);
         $("#current-charges-holder").prepend(`<div class="current-charges-tag" data-link="${randomNum}">${$(this).find(".offense-item-offense").html()}</div>`);
@@ -1718,10 +1718,10 @@ $(document).ready(() => {
         const NewSentence = +CurrRsentence + +Sentence;
         $(".sentence-recommended-amount").filter(`[data-id="${cid}"]`).val(NewSentence);
 
-      } else if (e.which == 3) {
+      } else if (e.which === 3) {
         $(".associated-incidents-user-holder").children("div").each(function (index) {
-          if ($(".associated-incidents-user-holder").children().eq(index).data("id") == cid) {
-            if ($(".associated-incidents-user-holder").children().eq(index).html() == newItem) {
+          if ($(".associated-incidents-user-holder").children().eq(index).data("id") === cid) {
+            if ($(".associated-incidents-user-holder").children().eq(index).html() === newItem) {
               const linkedId = $(".associated-incidents-user-holder").children().eq(index).data("link");
               //$(".current-charges-tag").filter(`[data-link="${linkedId}"]`).remove()
               $(".white-tag").filter(`[data-link="${linkedId}"]`).remove();
@@ -1729,8 +1729,8 @@ $(document).ready(() => {
               var stop = false;
 
               $("#current-charges-holder").children("div").each(function (index) {
-                if (stop == false) {
-                  if ($("#current-charges-holder").children().eq(index).html() == newItem) {
+                if (stop === false) {
+                  if ($("#current-charges-holder").children().eq(index).html() === newItem) {
                     const linkedId = $("#current-charges-holder").children().eq(index).data("link");
                     $(".current-charges-tag").filter(`[data-link="${linkedId}"]`).remove();
                     stop = true;
@@ -1775,7 +1775,7 @@ $(document).ready(() => {
   });
 
   $(".bolo-gallery-inner-container").on("click", ".bolo-img", function () {
-    if ($(this).css("filter") == "none") {
+    if ($(this).css("filter") === "none") {
       $(this).css("filter", "blur(5px)");
     } else {
       $(this).css("filter", "none");
@@ -1832,7 +1832,7 @@ $(document).ready(() => {
       if ($(this).hasClass("red-tag")) {
         $(this).removeClass("red-tag");
         $(this).addClass("green-tag");
-        if ($(this).text() == "Associated") {
+        if ($(this).text() === "Associated") {
           $(".associated-incidents-user-holder")
             .filter(`[data-name="${$(this).data("id")}"]`)
             .css("display", "none");
@@ -1852,7 +1852,7 @@ $(document).ready(() => {
       } else {
         $(this).removeClass("green-tag");
         $(this).addClass("red-tag");
-        if ($(this).text() == "Associated") {
+        if ($(this).text() === "Associated") {
           $(".associated-incidents-user-holder")
             .filter(`[data-name="${$(this).data("id")}"]`)
             .fadeIn(100);
@@ -2059,7 +2059,7 @@ $(document).ready(() => {
   });
 
   $(".incidents-search-refresh").click(function () {
-    if (canRefreshIncidents == true) {
+    if (canRefreshIncidents === true) {
       canRefreshIncidents = false;
       $(".incidents-search-refresh").empty();
       $(".incidents-search-refresh").prepend(
@@ -2101,8 +2101,8 @@ $(document).ready(() => {
   });
 
   $(".reports-search-title").click(function () {
-    if (canSearchReports == true) {
-      if ($(".reports-search-input").css("display") == "none") {
+    if (canSearchReports === true) {
+      if ($(".reports-search-input").css("display") === "none") {
         $(".reports-search-input").slideDown(250);
         $(".reports-search-input").css("display", "block");
       } else {
@@ -2141,7 +2141,7 @@ $(document).ready(() => {
   );
 
   $(".reports-search-refresh").click(function () {
-    if (canRefreshReports == true) {
+    if (canRefreshReports === true) {
       canRefreshReports = false;
       $(".reports-search-refresh").empty();
       $(".reports-search-refresh").prepend(
@@ -2186,7 +2186,7 @@ $(document).ready(() => {
         .addClass("fa-plus");
     }
 
-    if ($(".reports-gallery-upload-input").css("display") == "block") {
+    if ($(".reports-gallery-upload-input").css("display") === "block") {
       $(".reports-gallery-upload-input").slideUp(250);
       setTimeout(() => {
         $(".reports-gallery-upload-input").css("display", "none");
@@ -2241,7 +2241,7 @@ $(document).ready(() => {
 
   $(".reports-gallery-add-btn").click(function () {
     //if ($(".manage-profile-citizenid-input").val()) {
-    if ($(".reports-gallery-upload-input").css("display") == "none") {
+    if ($(".reports-gallery-upload-input").css("display") === "none") {
       $(".reports-gallery-upload-input").slideDown(250);
       $(".reports-gallery-upload-input").css("display", "block");
       $(this).removeClass("fa-plus").addClass("fa-minus");
@@ -2282,7 +2282,7 @@ $(document).ready(() => {
     "click",
     ".reports-img",
     function () {
-      if ($(this).css("filter") == "none") {
+      if ($(this).css("filter") === "none") {
         $(this).css("filter", "blur(5px)");
       } else {
         $(this).css("filter", "none");
@@ -2350,7 +2350,7 @@ $(document).ready(() => {
       //$(".manage-bolos-new").effect("shake", { times: 2, distance: 2 }, 500)
       //} else {
       let template = "";
-      if ($(".badge-logo").attr("src") == "img/ems_badge.webp") {
+      if ($(".badge-logo").attr("src") === "img/ems_badge.webp") {
         template =
           "Submitted to ICU?: [Yes/No]\n\nIncident Report:\n[ Brief summary of what happened and who did what while on scene. Note anything that stood out about the scene as well as what was done to treat the patient ]\n\n\nList of Injuries:\n- [ State what injury or injuries occurred ]\n\n\n💉 Surgical Report:\n[ Full report on what was done in surgery, list any complications or anything that was found while in operation. Note who was attending and what they did during the surgery. At the end of the report be sure to note the state of the patient after ]\n\n\nAttending:\n- [ List Any Attending Here ]\n\n\nMedications Applied:\n- [ List Any Attending Here ]\n\n\nNotes:\n[ Additional Notes Here ]";
       }
@@ -2376,7 +2376,7 @@ $(document).ready(() => {
           .addClass("fa-plus");
       }
 
-      if ($(".reports-gallery-upload-input").css("display") == "block") {
+      if ($(".reports-gallery-upload-input").css("display") === "block") {
         $(".reports-gallery-upload-input").slideUp(250);
         setTimeout(() => {
           $(".reports-gallery-upload-input").css("display", "none");
@@ -2395,7 +2395,7 @@ $(document).ready(() => {
   );
 
   $("#reports-search-input").keydown(function (e) {
-    if (e.keyCode === 13 && canSearchForReports == true) {
+    if (e.keyCode === 13 && canSearchForReports === true) {
       let name = $(this).val();
       if (name !== "") {
         canSearchForReports = false;
@@ -2418,7 +2418,7 @@ $(document).ready(() => {
     ".manage-reports-save",
     function () {
       let existing = !(
-        $(".manage-reports-editing-title").html() ==
+        $(".manage-reports-editing-title").html() ===
         "You are currently creating a new report"
       );
       let id = $(".manage-reports-editing-title").data("id");
@@ -2483,8 +2483,8 @@ $(document).ready(() => {
   );
 
   $(".dmv-search-title").click(function () {
-    if (canSearchForVehicles == true) {
-      if ($(".dmv-search-input").css("display") == "none") {
+    if (canSearchForVehicles === true) {
+      if ($(".dmv-search-input").css("display") === "none") {
         $(".dmv-search-input").slideDown(250);
         $(".dmv-search-input").css("display", "block");
       } else {
@@ -2497,7 +2497,7 @@ $(document).ready(() => {
   });
 
   $("#dmv-search-input").keydown(async function (e) {
-    if (e.keyCode === 13 && canSearchForVehicles == true) {
+    if (e.keyCode === 13 && canSearchForVehicles === true) {
       let name = $("#dmv-search-input").val();
       if (name !== "") {
         canSearchForVehicles = false;
@@ -2539,7 +2539,7 @@ $(document).ready(() => {
           let codefive = "red-tag";
           let stolen = "red-tag";
 
-          if (value.state == 'Impounded') {
+          if (value.state === 'Impounded') {
             impound = "green-tag";
           }
 
@@ -2922,8 +2922,8 @@ $(document).ready(() => {
 
 
   $(".calls-search-title").click(function () {
-    if (canSearchForProfiles == true) {
-      if ($(".calls-search-input").css("display") == "none") {
+    if (canSearchForProfiles === true) {
+      if ($(".calls-search-input").css("display") === "none") {
         $(".calls-search-input").slideDown(250);
         $(".calls-search-input").css("display", "block");
       } else {
@@ -2952,8 +2952,8 @@ $(document).ready(() => {
   });
 
   $(".weapons-search-title").click(function () {
-    if (canSearchForWeapons == true) {
-      if ($(".weapons-search-input").css("display") == "none") {
+    if (canSearchForWeapons === true) {
+      if ($(".weapons-search-input").css("display") === "none") {
         $(".weapons-search-input").slideDown(250);
         $(".weapons-search-input").css("display", "block");
       } else {
@@ -2966,7 +2966,7 @@ $(document).ready(() => {
   });
 
   $("#weapons-search-input").keydown(async function (e) {
-    if (e.keyCode === 13 && canSearchForWeapons == true) {
+    if (e.keyCode === 13 && canSearchForWeapons === true) {
       let name = $("#weapons-search-input").val();
       if (name !== "") {
         canSearchForWeapons = false;
@@ -3038,7 +3038,7 @@ $(document).ready(() => {
 );
 
   $(".weapon-information-title-holder").on("click", ".weapon-information-save", function () {
-    if (canSaveProfile == true) {
+    if (canSaveProfile === true) {
       canSaveProfile = false;
         $(".manage-profile-save").empty();
         $(".manage-profile-save").prepend(
@@ -3216,7 +3216,7 @@ $(document).ready(() => {
     let currentStatus = $(`[data-id="${info}"]`)
       .find(".unit-status")
       .html();
-    if (currentStatus == "10-8") {
+    if (currentStatus === "10-8") {
       $(`[data-id="${info}"]`).find(".unit-status").html("10-7");
       $(`[data-id="${info}"]`)
         .find(".unit-status")
@@ -3229,7 +3229,7 @@ $(document).ready(() => {
           status: 0,
         })
       );
-    } else if (currentStatus == "10-7") {
+    } else if (currentStatus === "10-7") {
       $(`[data-id="${info}"]`).find(".unit-status").html("10-8");
       $(`[data-id="${info}"]`)
         .find(".unit-status")
@@ -3403,7 +3403,7 @@ $(document).ready(() => {
       const callId = $(this).data("id");
       const canRespond = $(this).data("canrespond");
       if (callId) {
-        if (canRespond == true) {
+        if (canRespond === true) {
           args = [
             {
               className: "respond-call",
@@ -3448,7 +3448,7 @@ $(document).ready(() => {
               status: "",
             },
           ];
-        } else if (canRespond == false) {
+        } else if (canRespond === false) {
           args = [
             {
               className: "attached-units",
@@ -3898,20 +3898,20 @@ $(document).ready(() => {
   function JobColors(sentJob) {
     if (sentJob) {
       if (PoliceJobs[sentJob] !== undefined)  {
-        if (sentJob == "police") {
+        if (sentJob === "police") {
             applyCustomTheme(customThemes.lspd)
-          } else if (sentJob == "bcso"){
+          } else if (sentJob === "bcso"){
             applyCustomTheme(customThemes.bcso)
-          } else if (sentJob == "sasp") {
+          } else if (sentJob === "sasp") {
             applyCustomTheme(customThemes.sasp)
-          } else if (sentJob == "sast") {
+          } else if (sentJob === "sast") {
             applyCustomTheme(customThemes.sast)
 
-          } else if (sentJob == "sapr") {
+          } else if (sentJob === "sapr") {
             applyCustomTheme(customThemes.sapr)
-          } else if (sentJob == "lssd") {
+          } else if (sentJob === "lssd") {
             applyCustomTheme(customThemes.lssd)
-          } else if (sentJob == "doc") {
+          } else if (sentJob === "doc") {
             applyCustomTheme(customThemes.doc)
           }
         $(".bolo-nav-item").html("BOLOs");
@@ -3973,7 +3973,7 @@ $(document).ready(() => {
       } else if (AmbulanceJobs[sentJob] !== undefined) {
         $("#home-warrants-container").fadeOut(0);
         $("#home-reports-container").fadeIn(0);
-        if (sentJob == "ambulance") {
+        if (sentJob === "ambulance") {
           applyCustomTheme(customThemes.ambulance)
         }
         //$(".quote-span").html("The simplest explanation is almost always somebody screwed up.");
@@ -4067,7 +4067,7 @@ $(document).ready(() => {
   window.addEventListener("message", function (event) {
     let eventData = event.data;
     $(".dispatch-msg-notif").fadeIn(500);
-    if (eventData.type == "show") {
+    if (eventData.type === "show") {
       if (eventData.enable == true) {
         rosterLink = eventData.rosterLink;
         playerJob = eventData.job;
@@ -4121,7 +4121,7 @@ $(document).ready(() => {
         $("body").slideUp(250);
         $(".close-all").slideUp(250);
       }
-    } else if (eventData.type == "data") {
+    } else if (eventData.type === "data") {
       $(".name-shit").html(eventData.name);
       $(".header-location").html(" " + eventData.location);
       MyName = eventData.fullname;
@@ -4155,31 +4155,31 @@ $(document).ready(() => {
 
       activeUnits = Object.values(activeUnits)
       activeUnits.forEach((unit) => {
-        if (onDutyOnly && unit.duty == 0 && unit.cid != cid) {
+        if (onDutyOnly && unit.duty === 0 && unit.cid != cid) {
           return
         }
         let status = unit.duty == 1 ? "10-8" : '10-7';
-        let statusColor = unit.duty == 1 ? "green-status" : 'yellow-status';
+        let statusColor = unit.duty === 1 ? "green-status" : 'yellow-status';
         let radioBack = unit.sig100 ? "#7b2c2c" : "var(--color-3)";
         let radio = unit.radio ? unit.radio : "0";
         let callSign = unit.callSign ? unit.callSign : "000";
         let activeInfoJob = `<div class="unit-job active-info-job-unk">UNKNOWN</div>`;
         if (PoliceJobs[unit.unitType] !== undefined) {
-          if (unit.unitType == "police") { policeCount++;
+          if (unit.unitType === "police") { policeCount++;
           activeInfoJob = `<div class="unit-job active-info-job-lspd">LSPD</div>`;
-          } else if(unit.unitType == "bcso")  { bcsoCount++;
+          } else if(unit.unitType === "bcso")  { bcsoCount++;
             activeInfoJob = `<div class="unit-job active-info-job-bcso">BCSO</div>`;
-          } else if(unit.unitType == "lssd")  { bcsoCount++;
+          } else if(unit.unitType === "lssd")  { bcsoCount++;
             activeInfoJob = `<div class="unit-job active-info-job-bcso">LSSD</div>`;
-          } else if(unit.unitType == "sasp")  { saspCount++;
+          } else if(unit.unitType === "sasp")  { saspCount++;
             activeInfoJob = `<div class="unit-job active-info-job-sasp">SASP</div>`;
-          } else if(unit.unitType == "sast")  { saspCount++;
+          } else if(unit.unitType === "sast")  { saspCount++;
             activeInfoJob = `<div class="unit-job active-info-job-sasp">SAST</div>`;
-          } else if(unit.unitType == "sapr")  { saspCount++;
+          } else if(unit.unitType === "sapr")  { saspCount++;
             activeInfoJob = `<div class="unit-job active-info-job-sapr">SAPR</div>`;
-          } else if(unit.unitType == "judge")  { dojCount++;
+          } else if(unit.unitType === "judge")  { dojCount++;
             activeInfoJob = `<div class="unit-job active-info-job-doj">DOJ</div>`;
-          } else if(unit.unitType == "doc")  { dojCount++;
+          } else if(unit.unitType === "doc")  { dojCount++;
             activeInfoJob = `<div class="unit-job active-info-job-doc">DOC</div>`;
           }
         } else if (AmbulanceJobs[unit.unitType] !== undefined) {
@@ -4227,7 +4227,7 @@ $(document).ready(() => {
                 </div>
                 </div>`);
       }); */
-    } else if (eventData.type == "newBulletin") {
+    } else if (eventData.type === "newBulletin") {
       const value = eventData.data;
       $(".bulletin-items-continer")
         .prepend(`<div class="bulletin-item" data-id=${value.id}>
@@ -4240,11 +4240,11 @@ $(document).ready(() => {
         )}</div>
                 </div>
             </div>`);
-    } else if (eventData.type == "deleteBulletin") {
+    } else if (eventData.type === "deleteBulletin") {
       $(".bulletin-items-continer")
         .find("[data-id='" + eventData.data + "']")
         .remove();
-    } else if (eventData.type == "warrants") {
+    } else if (eventData.type === "warrants") {
       $(".warrants-items").empty();
       $.each(eventData.data, function (index, value) {
         $('.warrants-items').prepend(`<div class="warrants-item" data-cid=${value.cid} data-id=${value.linkedincident}><div style="display: flex; flex-direction: column; margin-top: 2.5px; margin-left: 0.75vh; width: 100%;">
@@ -4256,21 +4256,21 @@ $(document).ready(() => {
             </div>
         </div></div>`)
     })
-    } else if (eventData.type == "dispatchmessages") {
+    } else if (eventData.type === "dispatchmessages") {
       const table = eventData.data;
       LastName = "";
       DispatchNum = 0;
       $(".dispatch-items").empty();
       $.each(table, function (index, value) {
         DispatchNum = DispatchNum + 1;
-        if (LastName == value.name) {
+        if (LastName === value.name) {
           $(".dispatch-items").append(`
                     <div class="dispatch-item-grid dispatch-item-msg">
                         <div class="dispatch-item-message" data-author="${value.name}">${value.message}</div>
                     </div>
                     `);
         } else {
-          if (DispatchNum == 1) {
+          if (DispatchNum === 1) {
             $(".dispatch-items")
               .append(`<div class="dispatch-item" style="display: flex; margin-top: 0vh;" >
                         <img src="${value.profilepic
@@ -4310,19 +4310,19 @@ $(document).ready(() => {
       $(".dispatch-items").scrollTop(
         $(".dispatch-items")[0].scrollHeight
       );
-    } else if (eventData.type == "dispatchmessage") {
+    } else if (eventData.type === "dispatchmessage") {
       const value = eventData.data;
       DispatchNum = DispatchNum + 1;
       const BodyDisplay = $("body").css("display");
-      if (BodyDisplay == "block") {
-        if (LastName == value.name) {
+      if (BodyDisplay === "block") {
+        if (LastName === value.name) {
           $(".dispatch-items").append(`
                     <div class="dispatch-item-grid dispatch-item-msg">
                         <div class="dispatch-item-message" data-author="${value.name}">${value.message}</div>
                     </div>
                     `);
         } else {
-          if (DispatchNum == 1) {
+          if (DispatchNum === 1) {
             $(".dispatch-items")
               .append(`<div class="dispatch-item" style="display: flex; margin-top: 0vh;" >
                         <img src="${value.profilepic
@@ -4355,7 +4355,7 @@ $(document).ready(() => {
           }
         }
         LastName = value.name;
-      } else if (BodyDisplay == "none") {
+      } else if (BodyDisplay === "none") {
         $.post(
           `https://${GetParentResourceName()}/dispatchNotif`,
           JSON.stringify({
@@ -4366,7 +4366,7 @@ $(document).ready(() => {
       $(".dispatch-items").scrollTop(
         $(".dispatch-items")[0].scrollHeight
       );
-    } else if (eventData.type == "call") {
+    } else if (eventData.type === "call") {
       const value = eventData.data;
       DispatchMAP(value);
       if (value && value.job.includes(playerJob)) {
@@ -4374,8 +4374,8 @@ $(document).ready(() => {
         let DispatchItem = `<div class="active-calls-item" data-id="${value.callId}" data-canrespond="false"><div class="active-call-inner-container"><div class="call-item-top"><div class="call-number">#${value.callId}</div><div class="call-code priority-${value.priority}">${value.dispatchCode}</div><div class="call-title">${value.dispatchMessage}</div><div class="call-radio">${value.units.length}</div></div><div class="call-item-bottom">`;
 
         if (
-          value.dispatchCode == "911" ||
-          value.dispatchCode == "311"
+          value.dispatchCode === "911" ||
+          value.dispatchCode === "311"
         ) {
           DispatchItem = `<div class="active-calls-item" data-id="${value.callId}" data-canrespond="true"><div class="active-call-inner-container"><div class="call-item-top"><div class="call-number">#${value.callId}</div><div class="call-code priority-${value.priority}">${value.dispatchCode}</div><div class="call-title">${value.dispatchMessage}</div><div class="call-radio">${value.units.length}</div></div><div class="call-item-bottom">`;
         }
@@ -4416,7 +4416,7 @@ $(document).ready(() => {
 
         if (value["gender"]) {
           let gender = "Male";
-          if (value["gender"] == 0 || value["gender"] == 2) {
+          if (value["gender"] === 0 || value["gender"] === 2) {
             gender = "Female";
           }
           DispatchItem += `<div class="call-bottom-info"><span class="fas fa-genderless"></span>${gender}</div>`;
@@ -4434,7 +4434,7 @@ $(document).ready(() => {
           DispatchItem += `<div class="call-bottom-info"><span class="fas fa-spray-can"></span>${value["firstColor"]}</div>`;
         }
 
-        if (value["automaticGunfire"] == true) {
+        if (value["automaticGunfire"] === true) {
           DispatchItem += `<div class="call-bottom-info"><span class="fab fa-blackberry"></span>Automatic Gunfire</div>`;
         }
 
@@ -4455,7 +4455,7 @@ $(document).ready(() => {
           $(DispatchItem).hide().fadeIn("slow")
         );
       }
-    } else if (eventData.type == "attachedUnits") {
+    } else if (eventData.type === "attachedUnits") {
       const table = eventData.data;
       if (table) {
         $(".dispatch-attached-units").fadeIn(0);
@@ -4478,8 +4478,8 @@ $(document).ready(() => {
           );
         }, 1000);
       }
-    } else if (eventData.type == "sendCallResponse") {
-      if ($(".respond-calls-container").data("id") == eventData.callid) {
+    } else if (eventData.type === "sendCallResponse") {
+      if ($(".respond-calls-container").data("id") === eventData.callid) {
         $(".respond-calls-responses").prepend(
           `<div class="respond-calls-response"> ${eventData["name"]
           } responded "${eventData["message"]}" - ${timeAgo(
@@ -4487,7 +4487,7 @@ $(document).ready(() => {
           )}. </div>`
         );
       }
-    } else if (eventData.type == "getCallResponses") {
+    } else if (eventData.type === "getCallResponses") {
       const table = eventData.data;
       $(".respond-calls").fadeIn(0);
       $(".respond-calls-container").fadeIn(250);
@@ -4505,7 +4505,7 @@ $(document).ready(() => {
           )}. </div>`
         );
       });
-    } else if (eventData.type == "calls") {
+    } else if (eventData.type === "calls") {
       const table = eventData.data;
       $(".active-calls-list").empty();
       $.each(table, function (index, value) {
@@ -4514,8 +4514,8 @@ $(document).ready(() => {
           let DispatchItem = `<div class="active-calls-item" data-id="${value.callId}" data-canrespond="false"><div class="active-call-inner-container"><div class="call-item-top"><div class="call-number">#${value.callId}</div><div class="call-code priority-${value.priority}">${value.dispatchCode}</div><div class="call-title">${value.dispatchMessage}</div><div class="call-radio">${value.units.length}</div></div><div class="call-item-bottom">`;
 
           if (
-            value.dispatchCode == "911" ||
-            value.dispatchCode == "311"
+            value.dispatchCode === "911" ||
+            value.dispatchCode === "311"
           ) {
             DispatchItem = `<div class="active-calls-item" data-id="${value.callId}" data-canrespond="true"><div class="active-call-inner-container"><div class="call-item-top"><div class="call-number">#${value.callId}</div><div class="call-code priority-${value.priority}">${value.dispatchCode}</div><div class="call-title">${value.dispatchMessage}</div><div class="call-radio">${value.units.length}</div></div><div class="call-item-bottom">`;
           }
@@ -4544,7 +4544,7 @@ $(document).ready(() => {
           
           if (value["gender"]) {
             let gender = "Male";
-            if (value["gender"] == 0 || value["gender"] == 2) {
+            if (value["gender"] === 0 || value["gender"] === 2) {
               gender = "Female";
             }
             DispatchItem += `<div class="call-bottom-info"><span class="fas fa-genderless"></span>${gender}</div>`;
@@ -4562,7 +4562,7 @@ $(document).ready(() => {
             DispatchItem += `<div class="call-bottom-info"><span class="fas fa-spray-can"></span>${value["firstColor"]}</div>`;
           }
 
-          if (value["automaticGunfire"] == true) {
+          if (value["automaticGunfire"] === true) {
             DispatchItem += `<div class="call-bottom-info"><span class="fab fa-blackberry"></span>Automatic Gunfire</div>`;
           }
 
@@ -4584,7 +4584,7 @@ $(document).ready(() => {
           );
         }
       });
-    } else if (eventData.type == "incidents") {
+    } else if (eventData.type === "incidents") {
       let table = eventData.data;
       canSearchForProfiles = true;
       $(".incidents-items").empty();
@@ -4628,7 +4628,7 @@ $(document).ready(() => {
         ];
         openContextMenu(e, args);
       });
-    } else if (eventData.type == "getPenalCode") {
+    } else if (eventData.type === "getPenalCode") {
       const titles = eventData.titles;
       const penalcode = eventData.penalcode;
       $(".offenses-main-container").empty();
@@ -4657,7 +4657,7 @@ $(document).ready(() => {
                     `);
         });
       });
-    } else if (eventData.type == "incidentData") {
+    } else if (eventData.type === "incidentData") {
       let table = eventData.data;
 
       $(".incidents-ghost-holder").html("");
@@ -4756,16 +4756,16 @@ $(document).ready(() => {
         var processedTag = "red-tag";
         var associatedTag = "red-tag";
 
-        if (value.warrant == 1) {
+        if (value.warrant === 1) {
           warrantTag = "green-tag";
         }
-        if (value.guilty == 1) {
+        if (value.guilty === 1) {
           guiltyTag = "green-tag";
         }
-        if (value.processed == 1) {
+        if (value.processed === 1) {
           processedTag = "green-tag";
         }
-        if (value.associated == 1) {
+        if (value.associated === 1) {
           associatedTag = "green-tag";
         }
 
@@ -4828,7 +4828,7 @@ $(document).ready(() => {
           );
         }
       });
-    } else if (eventData.type == "incidentSearchPerson") {
+    } else if (eventData.type === "incidentSearchPerson") {
       let table = eventData.data;
       $(".incidents-person-search-holder").empty();
       $.each(table, function (index, value) {
@@ -4847,13 +4847,13 @@ $(document).ready(() => {
           `
         );
       });
-    } else if (eventData.type == "boloData") {
+    } else if (eventData.type === "boloData") {
       let table = eventData.data;
       $(".manage-bolos-editing-title").html(
         "You are currently editing BOLO " + table["id"]
       );
 
-      if ($(".badge-logo").attr("src") == "img/ems_badge.webp") {
+      if ($(".badge-logo").attr("src") === "img/ems_badge.webp") {
         $(".manage-bolos-editing-title").html(
           "You are editing ICU Check-in " + table["id"]
         );
@@ -4889,12 +4889,12 @@ $(document).ready(() => {
           `<div class="tag">${value}</div>`
         );
       });
-    } else if (eventData.type == "bolos") {
+    } else if (eventData.type === "bolos") {
       let table = eventData.data;
       var reportName = "General BOLO";
       canSearchForProfiles = true;
       $(".bolos-items").empty();
-      if ($(".badge-logo").attr("src") == "img/ems_badge.webp") {
+      if ($(".badge-logo").attr("src") === "img/ems_badge.webp") {
         reportName = "ICU Check-in";
       }
       $.each(table, function (index, value) {
@@ -4912,9 +4912,9 @@ $(document).ready(() => {
                 </div>`
         );
       });
-    } else if (eventData.type == "boloComplete") {
+    } else if (eventData.type === "boloComplete") {
       let id = eventData.data;
-      if (canRefreshBolo == true) {
+      if (canRefreshBolo === true) {
         canRefreshBolo = false;
         $(".bolos-search-refresh").empty();
         $(".bolos-search-refresh").prepend(
@@ -4931,9 +4931,9 @@ $(document).ready(() => {
         "You are currently editing BOLO " + id
       );
       $(".manage-bolos-editing-title").data("id", Number(id));
-    } else if (eventData.type == "reportComplete") {
+    } else if (eventData.type === "reportComplete") {
       let id = eventData.data;
-      if (canRefreshReports == true) {
+      if (canRefreshReports === true) {
         canRefreshReports = false;
         $(".reports-search-refresh").empty();
         $(".reports-search-refresh").prepend(
@@ -4950,7 +4950,7 @@ $(document).ready(() => {
         "You are currently editing report " + id
       );
       $(".manage-reports-editing-title").data("id", Number(id));
-    } else if (eventData.type == "reports") {
+    } else if (eventData.type === "reports") {
       let table = eventData.data;
       canSearchForReports = true;
       $(".reports-items").empty();
@@ -4995,7 +4995,7 @@ $(document).ready(() => {
         ];
         openContextMenu(e, args);
       });
-    } else if (eventData.type == "reportData") {
+    } else if (eventData.type === "reportData") {
       let table = eventData.data;
 
       $(".manage-reports-editing-title").html(
@@ -5037,9 +5037,9 @@ $(document).ready(() => {
         );
       });
 
-    } else if (eventData.type == "searchedVehicles") {
+    } else if (eventData.type === "searchedVehicles") {
 
-    } else if (eventData.type == "getVehicleData") {
+    } else if (eventData.type === "getVehicleData") {
       impoundChanged = false;
       let table = eventData.data;
 
@@ -5091,7 +5091,7 @@ $(document).ready(() => {
       $(".vehicle-tags").append(`<div class="vehicle-tag ${codefive} code5-tag">Code 5</div>`);
       $(".vehicle-tags").append(`<div class="vehicle-tag ${stolen} stolen-tag">Stolen</div>`);
       $(".vehicle-info-imageurl-input").val(table["image"]);
-    } else if (eventData.type == "getWeaponData") {
+    } else if (eventData.type === "getWeaponData") {
       impoundChanged = false;
       let table = eventData.data;
 
@@ -5133,9 +5133,9 @@ $(document).ready(() => {
         ];
         openContextMenu(e, args);
       });
-    } else if (eventData.type == "updateVehicleDbId") {
+    } else if (eventData.type === "updateVehicleDbId") {
       $(".vehicle-information-title-holder").data("dbid", Number(eventData.data));
-    } else if (eventData.type == "updateIncidentDbId") {
+    } else if (eventData.type === "updateIncidentDbId") {
       $(".manage-incidents-editing-title").data("id", Number(eventData.data));
 
       $(".manage-incidents-tags-add-btn").css("pointer-events", "auto");
@@ -5160,21 +5160,21 @@ $(document).ready(() => {
         "auto"
       );
 
-    } else if (eventData.type == "callDetach") {
+    } else if (eventData.type === "callDetach") {
       $(".active-calls-item")
         .filter("[data-id='" + eventData.callid + "']")
         .children()
         .children()
         .find(".call-radio")
         .html(eventData.data);
-    } else if (eventData.type == "callAttach") {
+    } else if (eventData.type === "callAttach") {
       $(".active-calls-item")
         .filter("[data-id='" + eventData.callid + "']")
         .children()
         .children()
         .find(".call-radio")
         .html(eventData.data);
-    } else if (eventData.type == "getAllLogs") {
+    } else if (eventData.type === "getAllLogs") {
       let table = eventData.data;
       $(".stafflogs-container").empty();
       $.each(table, function (index, value) {
@@ -5185,7 +5185,7 @@ $(document).ready(() => {
           )})</span></p>`
         );
       });
-    } else if (eventData.type == "statusImpound") {
+    } else if (eventData.type === "statusImpound") {
       const table = eventData.data;
       const plate = eventData.plate;
       const linkedreport = table["linkedreport"];
@@ -5221,12 +5221,12 @@ $(document).ready(() => {
       $(".impound-submit").fadeOut(250);
       $(".impound-form").slideDown(250);
       $(".impound-form").fadeIn(250);
-    } else if (eventData.type == "greenImpound") {
+    } else if (eventData.type === "greenImpound") {
       $(".vehicle-tags")
         .find(".impound-tag")
         .addClass("green-tag")
         .removeClass("red-tag");
-    } else if (eventData.type == "redImpound") {
+    } else if (eventData.type === "redImpound") {
       $(".vehicle-tags")
         .find(".impound-tag")
         .removeClass("green-tag")
@@ -5238,19 +5238,19 @@ $(document).ready(() => {
 function fidgetSpinner(page) {
   $(".close-all").fadeOut(0);
   $(".container-load").fadeIn(0);
-  if (page == ".dashboard-page-container"){
+  if (page === ".dashboard-page-container"){
     $.post(`https://${GetParentResourceName()}/getAllDashboardData`, JSON.stringify({}));
   }
-  if (page == ".bolos-page-container") {
+  if (page === ".bolos-page-container") {
     $.post(`https://${GetParentResourceName()}/getAllBolos`, JSON.stringify({}));
   }
-  if (page == ".reports-page-container") {
+  if (page === ".reports-page-container") {
     $.post(`https://${GetParentResourceName()}/getAllReports`, JSON.stringify({}));
   }
-  if (page == ".stafflogs-page-container") {
+  if (page === ".stafflogs-page-container") {
     $.post(`https://${GetParentResourceName()}/getAllLogs`, JSON.stringify({}));
   }
-  if (page == ".incidents-page-container") {
+  if (page === ".incidents-page-container") {
     $.post(`https://${GetParentResourceName()}/getAllIncidents`, JSON.stringify({}));
   }
   setTimeout(() => {
@@ -5475,11 +5475,11 @@ function searchProfilesResults(result) {
     let charinfo = value.charinfo;
     let metadata = value.metadata;
   
-    if (typeof value.charinfo == "string") {
+    if (typeof value.charinfo === "string") {
       charinfo = JSON.parse(charinfo);
     }
   
-    if (typeof value.metadata == "string") {
+    if (typeof value.metadata === "string") {
       metadata = JSON.parse(metadata);
     }
   
@@ -5498,7 +5498,7 @@ function searchProfilesResults(result) {
     let licences = "";
     let licArr = Object.entries(metadata.licences);
 
-    if (licArr.length == 0 || licArr.length == undefined) {
+    if (licArr.length === 0 || licArr.length == undefined) {
       var licenseTypes = ['business', 'pilot', 'weapon', 'driver'];
       licArr = Object.entries(licenseTypes.reduce((licenseType, licenseValue) => (licenseType[licenseValue] = false, licenseType), {}));
     }
@@ -5506,12 +5506,12 @@ function searchProfilesResults(result) {
     if (licArr.length > 0 && (PoliceJobs[playerJob] !== undefined || DojJobs[playerJob] !== undefined)) {
       for (const [lic, hasLic] of licArr) {
         let tagColour =
-          hasLic == true ? "green-tag" : "red-tag";
+          hasLic === true ? "green-tag" : "red-tag";
         licences += `<span class="license-tag ${tagColour}">${titleCase(lic)}</span>`;
       }
     }
 
-    if (value.warrant == true) {
+    if (value.warrant === true) {
       warrant = "green-tag";
     }
 
@@ -5524,7 +5524,7 @@ function searchProfilesResults(result) {
       convictions = "orange-tag";
     }
 
-    if (value.pp == '') {
+    if (value.pp === '') {
       value.pp = 'img/not-found.webp'
     }
 
