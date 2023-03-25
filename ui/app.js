@@ -5473,26 +5473,30 @@ function searchProfilesResults(result) {
 
   result.forEach((value) => {
     let charinfo = value.charinfo;
-    let metadata = value.licences;
-
+    let metadata = value.metadata;
+  
     if (typeof value.charinfo == "string") {
       charinfo = JSON.parse(charinfo);
     }
-
+  
     if (typeof value.metadata == "string") {
       metadata = JSON.parse(metadata);
     }
-
-    if (!value.licences) {
-      value.licences = {};
+  
+    if (!metadata) {
+      metadata = {};
     }
-
+  
+    if (!metadata.licences) {
+      metadata.licences = {};
+    }
+  
     let name = charinfo.firstname + " " + charinfo.lastname;
     let warrant = "red-tag";
     let convictions = "red-tag";
-
+  
     let licences = "";
-    let licArr = Object.entries(value.licences);
+    let licArr = Object.entries(metadata.licences);
 
     if (licArr.length == 0 || licArr.length == undefined) {
       var licenseTypes = ['business', 'pilot', 'weapon', 'driver'];
