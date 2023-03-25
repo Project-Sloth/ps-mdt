@@ -4370,7 +4370,7 @@ $(document).ready(() => {
     } else if (eventData.type == "call") {
       const value = eventData.data;
       DispatchMAP(value);
-      if (value && (value.job.includes(playerJob) || value.job == "FirstResponder")) {
+      if (value && (value.job.includes(playerJob) || value.job.includes("FirstResponder"))) {
         const prio = value["priority"];
         let DispatchItem = `<div class="active-calls-item" data-id="${value.callId}" data-canrespond="false"><div class="active-call-inner-container"><div class="call-item-top"><div class="call-number">#${value.callId}</div><div class="call-code priority-${value.priority}">${value.dispatchCode}</div><div class="call-title">${value.dispatchMessage}</div><div class="call-radio">${value.units.length}</div></div><div class="call-item-bottom">`;
 
@@ -4510,7 +4510,7 @@ $(document).ready(() => {
       const table = eventData.data;
       $(".active-calls-list").empty();
       $.each(table, function (index, value) {
-        if (value && (value.job.includes(playerJob) || value.job == "FirstResponder")) {
+        if (value && (value.job.includes(playerJob) || value.job.includes("FirstResponder"))) {
           const prio = value["priority"];
           let DispatchItem = `<div class="active-calls-item" data-id="${value.callId}" data-canrespond="false"><div class="active-call-inner-container"><div class="call-item-top"><div class="call-number">#${value.callId}</div><div class="call-code priority-${value.priority}">${value.dispatchCode}</div><div class="call-title">${value.dispatchMessage}</div><div class="call-radio">${value.units.length}</div></div><div class="call-item-bottom">`;
 
