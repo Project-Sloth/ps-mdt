@@ -296,10 +296,11 @@ RegisterNUICallback("saveProfile", function(data, cb)
     local tags = data.tags
     local gallery = data.gallery
     local licenses = data.licenses
-
+    
     TriggerServerEvent("mdt:server:saveProfile", profilepic, information, cid, fName, sName, tags, gallery, licenses)
     cb(true)
 end)
+
 
 RegisterNUICallback("getProfileData", function(data, cb)
     local id = data.id
