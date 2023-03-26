@@ -7,16 +7,21 @@ version '2.3.5'
 
 lua54 'yes'
 
-shared_script 'shared/config.lua'
+shared_scripts {
+    'shared/config.lua',
+    'bridge/shared.lua',
+}
 
 server_scripts {
     '@oxmysql/lib/MySQL.lua',
+    'bridge/**/server.lua',
     'server/utils.lua',
     'server/dbm.lua',
     'server/main.lua'
 }
 client_scripts{
     'client/main.lua',
+    'bridge/**/client.lua',
     'client/cl_impound.lua',
     'client/cl_mugshot.lua'
 } 

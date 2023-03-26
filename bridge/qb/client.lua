@@ -94,7 +94,7 @@ end
 
 -- Events from qbcore
 RegisterNetEvent('QBCore:Client:OnPlayerLoaded', function()
-    Framework.PlayerData = QBCore.Functions.GetPlayerData()
+    Framework.PlayerData = Framework.object.Functions.GetPlayerData()
 end)
 
 RegisterNetEvent('QBCore:Client:OnPlayerUnload', function()
