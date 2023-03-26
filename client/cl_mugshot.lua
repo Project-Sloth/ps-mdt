@@ -1,11 +1,9 @@
-QBCore = exports['qb-core']:GetCoreObject()
-local PlayerData = {}
-local mugshotInProgress, createdCamera, MugshotArray, playerData = false, 0, {}, nil
+local mugshotInProgress, createdCamera, MugshotArray = false, 0, {}
 local handle, board, board_scaleform, overlay, ped, pedcoords, x, y, z, r, suspectheading, suspectx, suspecty, suspectz, board_pos
 local MugShots = {}
 
 -- Mugshot location  ( Position is the default QBCore Prison Interior )
-	x = 1828.69
+    x = 1828.69
     y = 2581.72
     z = 46.3
     r = {x = 0.0, y = 0.0, z = 92.23}
@@ -13,7 +11,7 @@ local MugShots = {}
     suspectx = 1827.63
     suspecty = 2581.7
     suspectz = 44.89
-	
+    
 -- Mugshot functions
 
 local function TakeMugShot()
@@ -28,7 +26,7 @@ local function PhotoProcess(ped)
     for photo = 1, Config.MugPhotos, 1 do
         Wait(1500)
         TakeMugShot()
-        PlaySoundFromCoord(-1, "SHUTTER_FLASH", x, y, z, "CAMERA_FLASH_SOUNDSET", true, 5, 0)
+        PlaySoundFromCoord(-1, "SHUTTER_FLASH", x, y, z, "CAMERA_FLASH_SOUNDSET", true, 5, false)
         Wait(1500)
         rotation = rotation - 90.0
         SetEntityHeading(ped, rotation)
@@ -37,13 +35,13 @@ end
 
 local function MugShotCamera()
     if createdCamera ~= 0 then
-        DestroyCam(createdCamera, 0)
+        DestroyCam(createdCamera, false)
         createdCamera = 0
     end
-    local cam = CreateCam("DEFAULT_SCRIPTED_CAMERA", 1)
+    local cam = CreateCam("DEFAULT_SCRIPTED_CAMERA", true)
     SetCamCoord(cam, x, y, z)
     SetCamRot(cam, r.x, r.y, r.z, 2)
-    RenderScriptCams(1, 0, 0, 1, 1)
+    RenderScriptCams(true, false, 0, true, true)
     Wait(250)
     createdCamera = cam
     CreateThread(function()
@@ -59,48 +57,48 @@ local function MugShotCamera()
 end
 
 local function CreateNamedRenderTargetForModel(name, model)
-	local handle = 0
-	if not IsNamedRendertargetRegistered(name) then
-		RegisterNamedRendertarget(name, 0)
-	end
-	if not IsNamedRendertargetLinked(model) then
-		LinkNamedRendertarget(model)
-	end
-	if IsNamedRendertargetRegistered(name) then
-		handle = GetNamedRendertargetRenderId(name)
-	end
-	return handle
+    local handle = 0
+    if not IsNamedRendertargetRegistered(name) then
+        RegisterNamedRendertarget(name, false)
+    end
+    if not IsNamedRendertargetLinked(model) then
+        LinkNamedRendertarget(model)
+    end
+    if IsNamedRendertargetRegistered(name) then
+        handle = GetNamedRendertargetRenderId(name)
+    end
+    return handle
 end
 
 local function LoadScaleform (scaleform)
-	local handle = RequestScaleformMovie(scaleform)
-	if handle ~= 0 then
-		while not HasScaleformMovieLoaded(handle) do
-			Wait(0)
-		end
-	end
-	return handle
+    local handle = RequestScaleformMovie(scaleform)
+    if handle ~= 0 then
+        while not HasScaleformMovieLoaded(handle) do
+            Wait(0)
+        end
+    end
+    return handle
 end
 
 local function CallScaleformMethod (scaleform, method, ...)
-	local t
-	local args = { ... }
-	BeginScaleformMovieMethod(scaleform, method)
-	for k, v in ipairs(args) do
-		t = type(v)
-		if t == 'string' then
-			PushScaleformMovieMethodParameterString(v)
-		elseif t == 'number' then
-			if string.match(tostring(v), "%.") then
-				PushScaleformMovieFunctionParameterFloat(v)
-			else
-				PushScaleformMovieFunctionParameterInt(v)
-			end
-		elseif t == 'boolean' then
-			PushScaleformMovieMethodParameterBool(v)
-		end
-	end
-	EndScaleformMovieMethod()
+    local t
+    local args = { ... }
+    BeginScaleformMovieMethod(scaleform, method)
+    for k, v in ipairs(args) do
+        t = type(v)
+        if t == 'string' then
+            PushScaleformMovieMethodParameterString(v)
+        elseif t == 'number' then
+            if string.match(tostring(v), "%.") then
+                PushScaleformMovieFunctionParameterFloat(v)
+            else
+                PushScaleformMovieFunctionParameterInt(v)
+            end
+        elseif t == 'boolean' then
+            PushScaleformMovieMethodParameterBool(v)
+        end
+    end
+    EndScaleformMovieMethod()
 end
 
 local function PrepBoard()
@@ -111,45 +109,45 @@ local function PrepBoard()
             HideHudAndRadarThisFrame()
             SetTextRenderId(handle)
             Set_2dLayer(4)
-            SetScriptGfxDrawBehindPausemenu(1)
+            SetScriptGfxDrawBehindPausemenu(true)
             DrawScaleformMovie(board_scaleform, 0.405, 0.37, 0.81, 0.74, 255, 255, 255, 255, 0)
-            SetScriptGfxDrawBehindPausemenu(0)
+            SetScriptGfxDrawBehindPausemenu(false)
             SetTextRenderId(GetDefaultScriptRendertargetRenderId())
-            SetScriptGfxDrawBehindPausemenu(1)
-            SetScriptGfxDrawBehindPausemenu(0)
+            SetScriptGfxDrawBehindPausemenu(true)
+            SetScriptGfxDrawBehindPausemenu(false)
             Wait(0)
         end
     end)
 end
 
 local function MakeBoard()
-    title = "Bolingbroke Penitentiary"
-    center = playerData.charinfo.firstname.. " ".. playerData.charinfo.lastname
-    footer = playerData.citizenid
-    header = playerData.charinfo.birthdate
-	CallScaleformMethod(board_scaleform, 'SET_BOARD', title, center, footer, header, 0, 1337, 116)
+    local title = "Bolingbroke Penitentiary"
+    local center = Framework.GetPlayerFirstName().. " ".. Framework.GetPlayerLastName()
+    local footer = Framework.GetPlayerCitizenId()
+    local header = Framework.GetPlayerBirthDate()
+    CallScaleformMethod(board_scaleform, 'SET_BOARD', title, center, footer, header, 0, 1337, 116)
 end
 
 local function PlayerBoard()
-	RequestModel(`prop_police_id_board`)
-	RequestModel(`prop_police_id_text`)
-	while not HasModelLoaded(`prop_police_id_board`) or not HasModelLoaded(`prop_police_id_text`) do
+    RequestModel(`prop_police_id_board`)
+    RequestModel(`prop_police_id_text`)
+    while not HasModelLoaded(`prop_police_id_board`) or not HasModelLoaded(`prop_police_id_text`) do
         Wait(1)
     end
-	board = CreateObject(`prop_police_id_board`, pedcoords, true, true, false)
-	overlay = CreateObject(`prop_police_id_text`, pedcoords, true, true, false)
-	AttachEntityToEntity(overlay, board, -1, 4103, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, false, false, false, false, 2, true)
-	SetModelAsNoLongerNeeded(`prop_police_id_board`)
-	SetModelAsNoLongerNeeded(`prop_police_id_text`)
-    SetCurrentPedWeapon(ped, `weapon_unarmed`, 1)
-	ClearPedWetness(ped)
-	ClearPedBloodDamage(ped)
-	AttachEntityToEntity(board, ped, GetPedBoneIndex(ped, 28422), 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0, 0, 0, 0, 2, 1)
+    board = CreateObject(`prop_police_id_board`, pedcoords.x, pedcoords.y, pedcoords.z, true, true, false)
+    overlay = CreateObject(`prop_police_id_text`, pedcoords.x, pedcoords.y, pedcoords.z, true, true, false)
+    AttachEntityToEntity(overlay, board, -1, 4103, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, false, false, false, false, 2, true) -- this is probably wrong. it looks like boneIndex is -1 and xPos is 4103
+    SetModelAsNoLongerNeeded(`prop_police_id_board`)
+    SetModelAsNoLongerNeeded(`prop_police_id_text`)
+    SetCurrentPedWeapon(ped, `weapon_unarmed`, true)
+    ClearPedWetness(ped)
+    ClearPedBloodDamage(ped)
+    AttachEntityToEntity(board, ped, GetPedBoneIndex(ped, 28422), 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, false, false, false, false, 2, true)
 end
 
 local function DestoryCamera()
-    DestroyCam(createdCamera, 0)
-    RenderScriptCams(0, 0, 1, 1, 1)
+    DestroyCam(createdCamera, false)
+    RenderScriptCams(false, false, 1, true, true)
     SetFocusEntity(GetPlayerPed(ped))
     ClearPedTasksImmediately(ped)
     FreezeEntityPosition(ped, false)
@@ -163,11 +161,13 @@ RegisterNetEvent('cqc-mugshot:client:trigger', function()
     ped = PlayerPedId()
     pedcoords = GetEntityCoords(ped)
     CreateThread(function()
-        playerData = QBCore.Functions.GetPlayerData()
         MugshotArray, mugshotInProgress = {}, true
-        local citizenid = playerData.citizenid
+        local citizenid = Framework.GetPlayerCitizenId()
         local animDict = 'mp_character_creation@lineup@male_a'
-        QBCore.Functions.RequestAnimDict(animDict)
+        while not HasAnimDictLoaded(animDict) do
+            RequestAnimDict(animDict)
+            Wait(100)
+        end
         PrepBoard()
         Wait(250)
         MakeBoard()
@@ -182,7 +182,8 @@ RegisterNetEvent('cqc-mugshot:client:trigger', function()
             SetEntityHeading(ped, suspectheading)
             ClearPedSecondaryTask(GetPlayerPed(ped))
         end
-           TriggerServerEvent('psmdt-mugshot:server:MDTupload', playerData.citizenid, MugshotArray)
+        
+        TriggerServerEvent('psmdt-mugshot:server:MDTupload', citizenid, MugshotArray)
         mugshotInProgress = false
     end)
 end)
@@ -192,7 +193,7 @@ RegisterNUICallback("sendToJail", function(data, cb)
 
     -- Gets the player id from the citizenId
     local p = promise.new()
-    QBCore.Functions.TriggerCallback('mdt:server:GetPlayerSourceId', function(result)
+    Framework.TriggerServerCallback('mdt:server:GetPlayerSourceId', function(result)
         p:resolve(result)
     end, citizenId)
 
@@ -203,7 +204,6 @@ RegisterNUICallback("sendToJail", function(data, cb)
             TriggerServerEvent('cqc-mugshot:server:triggerSuspect', targetSourceId)
         end
         Citizen.Wait(5000)
-        -- Uses qb-policejob JailPlayer event
-        TriggerServerEvent("police:server:JailPlayer", targetSourceId, sentence)
+        Framework.JailPlayer(targetSourceId, sentence)
     end
 end)
