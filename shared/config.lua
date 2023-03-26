@@ -26,27 +26,57 @@ Config.RosterLink = { -- Google Docs Link
     ['sapr'] = '',	
 }
 
-Config.PoliceJobs = {
-    ['police'] = true,
-    ['lspd'] = true,
-    ['bcso'] = true,
-    ['sast'] = true,
-    ['sasp'] = true,
-    ['doc'] = true,
-    ['lssd'] = true,
-    ['sapr'] = true,
-    ['pa'] = true
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+local QBCore = exports['qb-core']:GetCoreObject()
+Config.AuthorizedJobs = {
+    LEO = { -- this is for job checks which should only return true for police officers
+        Jobs = {['police'] = true, ['lspd'] = true, ['bcso'] = true, ['sast'] = true, ['sasp'] = true, ['doc'] = true, ['lssd'] = true, ['sapr'] = true, ['pa'] = true},
+        Types = {['police'] = true, ['leo'] = true},
+        ---@param PlyData table|nil @The PlayerData table, can be nil if called from Client side
+        ---@return boolean @Returns true if the player is a LEO, nil if not
+        Check = function(PlyData)
+            PlyData = PlyData or QBCore.Functions.GetPlayerData()
+            if not PlyData or (PlyData and (not PlyData.job or not PlyData.job.type))  then return false end
+            local job, jobtype = PlyData.job.name, PlyData.job.type
+            if Config.AuthorizedJobs.LEO.Jobs[job] or Config.AuthorizedJobs.LEO.Types[jobtype] then return true end
+        end
+    },
+    EMS = { -- this if for job checks which should only return true for ems workers
+        Jobs = {['ambulance'] = true, ['doctor'] = true, ['fire'] = true},
+        Types = {['ambulance'] = true, ['fire'] = true, ['ems'] = true},
+        ---@param PlyData table|nil @The PlayerData table, can be nil if called from Client side
+        ---@return boolean @Returns true if the player is a EMS, nil if not
+        Check = function(PlyData)
+            PlyData = PlyData or QBCore.Functions.GetPlayerData()
+            if not PlyData or (PlyData and (not PlyData.job or not PlyData.job.type))  then return false end
+            local job, jobtype = PlyData.job.name, PlyData.job.type
+            if Config.AuthorizedJobs.EMS.Jobs[job] or Config.AuthorizedJobs.EMS.Types[jobtype] then return true end
+        end
+    },
+    DOJ = { -- this is for job checks which should only return true for DOJ workers
+        Jobs = {['lawyer'] = true, ['judge'] = true},
+        Types = {['lawyer'] = true, ['judge'] = true},
+        ---@param PlyData table|nil @The PlayerData table, can be nil if called from Client side
+        ---@return boolean @Returns true if the player is a DOJ, nil if not
+        Check = function(PlyData)
+            PlyData = PlyData or QBCore.Functions.GetPlayerData()
+            if not PlyData or (PlyData and (not PlyData.job or not PlyData.job.type))  then return false end
+            local job, jobtype = PlyData.job.name, PlyData.job.type
+            if Config.AuthorizedJobs.DOJ.Jobs[job] or Config.AuthorizedJobs.DOJ.Types[jobtype] then return true end
+        end
+    },
+    FirstResponder = { -- do not touch, this is a combined job checking function for emergency services (police and ems) || Purposeley doesn't include DOJ
+        ---@param PlyData table|nil @The PlayerData table, can be nil if called from Client side
+        ---@return boolean @Returns true if the player is a FirstResponder, nil if not
+        Check = function(PlyData)
+            PlyData = PlyData or QBCore.Functions.GetPlayerData()
+            if not PlyData or (PlyData and (not PlyData.job or not PlyData.job.type))  then return false end
+            local job, jobtype = PlyData.job.name, PlyData.job.type
+            if Config.AuthorizedJobs.LEO.Check(PlyData, jobtype, job) or Config.AuthorizedJobs.EMS.Check(PlyData, jobtype, job) then return true end            
+        end
+    }
 }
-
-Config.AmbulanceJobs = {
-    ['ambulance'] = true,
-    ['doctor'] = true
-}
-
-Config.DojJobs = {
-    ['lawyer'] = true,
-    ['judge'] = true
-}
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 -- This is a workaround solution because the qb-menu present in qb-policejob fills in an impound location and sends it to the event. 
 -- If the impound locations are modified in qb-policejob, the changes must also be implemented here to ensure consistency.
@@ -309,13 +339,13 @@ Config.PenalCode = {
 }
 
 Config.AllowedJobs = {}
-for index, value in pairs(Config.PoliceJobs) do
+for index, value in pairs(Config.AuthorizedJobs.LEO.Jobs) do
     Config.AllowedJobs[index] = value
 end
-for index, value in pairs(Config.AmbulanceJobs) do
+for index, value in pairs(Config.AuthorizedJobs.EMS.Jobs) do
     Config.AllowedJobs[index] = value
 end
-for index, value in pairs(Config.DojJobs) do
+for index, value in pairs(Config.AuthorizedJobs.DOJ.Jobs) do
     Config.AllowedJobs[index] = value
 end
 
@@ -668,14 +698,15 @@ Config.ClassList = {
     [21] = "Train"
 }
 
-function GetJobType(job)
-	if Config.PoliceJobs[job] then
+---@param PlyData table|nil @The PlayerData table, can be nil if called from Client side
+---@return string @The job type, can be nil if no job type is found
+function GetJobType(PlyData)
+	if Config.AuthorizedJobs.LEO.Check(PlyData) then
 		return 'police'
-	elseif Config.AmbulanceJobs[job] then
+	elseif Config.AuthorizedJobs.EMS.Check(PlyData) then
 		return 'ambulance'
-	elseif Config.DojJobs[job] then
+	elseif Config.AuthorizedJobs.DOJ.Check(PlyData) then
 		return 'doj'
-	else
-		return nil
 	end
+    return nil
 end

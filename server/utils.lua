@@ -34,16 +34,15 @@ function ProfPic(gender, profilepic)
 	return "img/male.png"
 end
 
-function IsJobAllowedToMDT(job)
-	if Config.PoliceJobs[job] then
+function IsJobAllowedToMDT(PlyData)
+	if Config.AuthorizedJobs.LEO.Check(PlyData) then
 		return true
-	elseif Config.AmbulanceJobs[job] then
+	elseif Config.AuthorizedJobs.EMS.Check(PlyData) then
 		return true
-	elseif Config.DojJobs[job] then
+	elseif Config.AuthorizedJobs.DOJ.Check(PlyData) then
 		return true
-	else
-		return false
 	end
+	return false
 end
 
 function GetNameFromPlayerData(PlayerData)

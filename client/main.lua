@@ -88,7 +88,7 @@ RegisterCommand('mdt', function()
     local plyPed = PlayerPedId()
     PlayerData = QBCore.Functions.GetPlayerData()
     if not PlayerData.metadata["isdead"] and not PlayerData.metadata["inlaststand"] and not PlayerData.metadata["ishandcuffed"] and not IsPauseMenuActive() then
-        if GetJobType(PlayerData.job.name) ~= nil then
+        if GetJobType(PlayerData) then
             TriggerServerEvent('mdt:server:openMDT')
         end
     else
@@ -657,7 +657,7 @@ RegisterNUICallback("saveVehicleInfo", function(data, cb)
     local code5 = data.code5
     local impound = data.impound
     local points = data.points
-    local JobType = GetJobType(PlayerData.job.name)
+    local JobType = GetJobType(PlayerData)
     if JobType == 'police' and impound.impoundChanged == true then
         if impound.impoundActive then
             local found = 0
@@ -721,7 +721,7 @@ RegisterNUICallback("saveWeaponInfo", function(data, cb)
     local owner = data.owner
     local weapClass = data.weapClass
     local weapModel = data.weapModel
-    local JobType = GetJobType(PlayerData.job.name)
+    local JobType = GetJobType(PlayerData)
     if JobType == 'police' then
         TriggerServerEvent('mdt:server:saveWeaponInfo', serial, imageurl, notes, owner, weapClass, weapModel)
     end
@@ -1011,8 +1011,7 @@ end
 
 --3rd Eye Trigger Event
 RegisterNetEvent('ps-mdt:client:selfregister', function()
-    local playerData = QBCore.Functions.GetPlayerData()
-    if GetJobType(playerData.job.name) == 'police' then
+    if Config.AuthorizedJobs.LEO.Check() then
         GetPlayerWeaponInfo(function(weaponInfo)
             if weaponInfo then
                 TriggerServerEvent('mdt:server:registerweapon', weaponInfo.serialnumber, weaponInfo.weaponurl, weaponInfo.notes, weaponInfo.owner, weaponInfo.weapClass, weaponInfo.weaponmodel)
