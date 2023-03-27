@@ -91,12 +91,18 @@ AddEventHandler("playerDropped", function(reason)
 	else
 		local license = QBCore.Functions.GetIdentifier(src, "license")
 		local citizenids = GetCitizenID(license)
-
-		for _, v in pairs(citizenids) do
-			if GetActiveData(v.citizenid) then
-				activeUnits[v.citizenid] = nil
-			end
-		end
+        
+        if type(citizenids) == "string" then
+            if GetActiveData(v.citizenid) then
+                activeUnits[v.citizenid] = nil
+            end
+        elseif type(citizenids) == "table" then -- CHECK: why?
+            for _, v in pairs(citizenids) do
+                if GetActiveData(v.citizenid) then
+                    activeUnits[v.citizenid] = nil
+                end
+            end
+        end
 	end
 end)
 
