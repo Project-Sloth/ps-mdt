@@ -36,7 +36,20 @@ https://user-images.githubusercontent.com/82112471/226150422-0c4776f0-0927-4b07-
 # Automatic Mugshot Pictures
 ![image](https://user-images.githubusercontent.com/82112471/226207146-086c5508-7e6f-4345-a157-3ec2fd588138.png)
 
-## Inventory Edit | Automatic Add Weapons with images
+# Jailing & Community Service
+* If you're getting kicked for attempted exploit abuse when jailing. Located the follow event below on qb-policejob > server > main.lua
+
+```lua
+police:server:JailPlayer
+```
+
+* Then comment out around line [779](https://github.com/qbcore-framework/qb-policejob/blob/937499495aa73538710737c14bd1b26d233dd599/server/main.lua#L779) as seen below
+
+```lua
+-- if #(playerCoords - targetCoords) > 2.5 then return DropPlayer(src, "Attempted exploit abuse") end
+```
+
+# Inventory Edit | Automatic Add Weapons with images
 * [lj-inventory](https://github.com/loljoshie/lj-inventory) will come already with the changes needed for this to work. 
 * [qb-inventory](https://github.com/qbcore-framework/qb-inventory) follow instructions below. 
 
