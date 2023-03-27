@@ -394,7 +394,7 @@ RegisterNUICallback("sendFine", function(data, cb)
 
     if fine > 0 then
         if Config.BillVariation then
-            -- Useed QB-Core removeMoney Functions
+            -- Uses QB-Core removeMoney Functions
             TriggerServerEvent("mdt:server:removeMoney", citizenId, fine)
         else
             -- Uses QB-Core /bill command
