@@ -199,26 +199,30 @@ $(document).ready(() => {
         .addClass("fa-plus");
     }
 
+    const { vehicles, tags, gallery, convictions, incidents, properties } = result
+
     $(".manage-profile-editing-title").html(`You are currently editing ${result["firstname"]} ${result["lastname"]}`);
     $(".manage-profile-citizenid-input").val(result['cid']);
     $(".manage-profile-name-input-1").val(result["firstname"]);
     $(".manage-profile-name-input-2").val(result["lastname"]);
     $(".manage-profile-dob-input").val(result["dob"]);
+    if (convictions.length >= 1) {
+      $(".manage-profile-fingerprint-input").val(result["fingerprint"]);
+    }
+    else {
+      $(".manage-profile-fingerprint-input").val("No Fingerprints found!");
+    }
     $(".manage-profile-phonenumber-input").val(result["phone"]);
     $(".manage-profile-job-input").val(`${result.job}, ${result.grade}`);
     $(".manage-profile-apartment-input").val(`${result.apartment}`);
     $(".manage-profile-url-input").val(result["profilepic"] ?? "");
     $(".manage-profile-info").val(result["mdtinfo"]);
     $(".manage-profile-info").removeAttr("disabled");
-    $(".manage-profile-fingerprint").val(result["fingerprint"]);
-    $(".manage-profile-fingerprint").removeAttr("disabled");
     $(".manage-profile-pic").attr("src", result["profilepic"] ?? "img/male.png");
     $(".manage-profile-active-warrant").css("display", "none")
     if (result["warrant"]) {
       $(".manage-profile-active-warrant").css("display", "block");
     }
-
-    const { vehicles, tags, gallery, convictions, incidents, properties } = result
 
     $(".licenses-holder").empty();
     $(".tags-holder").empty();
@@ -506,11 +510,11 @@ $(document).ready(() => {
         let licenses = {};
 
         $(".tags-holder")
-          .find("div")
+          .find("span.tag-input, div.tag")
           .each(function () {
-            if ($(this).text() != "" && $(this).text() != "No Tags") {
-              tags.push($(this).text());
-            }
+          if ($(this).text() != "" && $(this).text() != "No Tags") {
+            tags.push($(this).text());
+          }
         });
 
         $(".gallery-inner-container")
@@ -529,7 +533,6 @@ $(document).ready(() => {
           pfp = newpfp;
         }
         let description = $(".manage-profile-info").val();
-        let fingerprint = $(".manage-profile-fingerprint").val();
         let id = $(".manage-profile-citizenid-input").val();
 
         $(".licenses-holder")
@@ -557,7 +560,6 @@ $(document).ready(() => {
             sName: sName,
             tags: tags,
             gallery: gallery,
-            fingerprint: fingerprint,
             licenses: licenses
           })
         );
@@ -5471,22 +5473,30 @@ function searchProfilesResults(result) {
 
   result.forEach((value) => {
     let charinfo = value.charinfo;
-    let metadata = value.licences;
-
+    let metadata = value.metadata;
+  
     if (typeof value.charinfo == "string") {
       charinfo = JSON.parse(charinfo);
     }
-
+  
     if (typeof value.metadata == "string") {
       metadata = JSON.parse(metadata);
     }
-
+  
+    if (!metadata) {
+      metadata = {};
+    }
+  
+    if (!metadata.licences) {
+      metadata.licences = {};
+    }
+  
     let name = charinfo.firstname + " " + charinfo.lastname;
     let warrant = "red-tag";
     let convictions = "red-tag";
-
+  
     let licences = "";
-    let licArr = Object.entries(value.licences);
+    let licArr = Object.entries(metadata.licences);
 
     if (licArr.length == 0 || licArr.length == undefined) {
       var licenseTypes = ['business', 'pilot', 'weapon', 'driver'];

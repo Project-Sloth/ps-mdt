@@ -1159,6 +1159,23 @@ a {
     background-color: rgba(0, 0, 0, 0);
 }
 
+.manage-profile-fingerprint {
+    color: white;
+    margin-left: 10px;
+    font-size: 15px;
+    user-select: none;
+}
+
+.manage-profile-fingerprint-input {
+    border: none;
+    outline: none;
+    margin-left: 2.5px;
+    font-size: 16px;
+    margin-top: 2px;
+    color: white;
+    background-color: rgba(0, 0, 0, 0);
+}
+
 .manage-profile-phonenumber {
     color: white;
     margin-left: 10px;
@@ -1233,22 +1250,6 @@ a {
     color: red;
     font-weight: bold;
     font-size: 20px;
-}
-
-.manage-profile-fingerprint {
-    width: 92.5%;
-    margin: auto;
-    margin-top: 10px;
-    margin-bottom: 15px;
-    border: none;
-    outline: none;
-    height: 8%;
-    resize: none;
-    background-color: var(--color-5);
-    color: white;
-    font-size: 16px;
-    padding: 10px;
-    line-height: 1
 }
 
 .manage-profile-right-container {
@@ -1525,7 +1526,7 @@ span.tag-input[contenteditable]:empty::before {
     width: 100%;
     border: 2px solid var(--color-3);
     margin-top: 5px;
-    height: 15vh;
+    height: 17vh;
     overflow: scroll;
 }
 
