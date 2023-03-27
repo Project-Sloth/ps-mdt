@@ -14,14 +14,14 @@ shared_scripts {
 
 server_scripts {
     '@oxmysql/lib/MySQL.lua',
-    'bridge/**/server.lua',
+    'bridge/**/*server.lua',
     'server/utils.lua',
     'server/dbm.lua',
     'server/main.lua'
 }
 client_scripts{
     'client/main.lua',
-    'bridge/**/client.lua',
+    'bridge/**/*client.lua',
     'client/cl_impound.lua',
     'client/cl_mugshot.lua'
 } 
