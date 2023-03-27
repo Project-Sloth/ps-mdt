@@ -1647,3 +1647,10 @@ end)
 RegisterNetEvent('mdt:server:registerweapon', function(serial, imageurl, notes, owner, weapClass, weapModel) 
     exports['ps-mdt']:CreateWeaponInfo(serial, imageurl, notes, owner, weapClass, weapModel)
 end)
+
+RegisterNetEvent('mdt:server:removeMoney', function(citizenId, fine)
+	local src = source
+	local Player = QBCore.Functions.GetPlayerByCitizenId(citizenId)
+	TriggerClientEvent('QBCore:Notify', Player, fine.."$ were removed from your Bank Account.")
+	Player.Functions.RemoveMoney('bank', fine, 'lspd-fine')
+end)

@@ -393,8 +393,13 @@ RegisterNUICallback("sendFine", function(data, cb)
     local targetSourceId = Citizen.Await(p)
 
     if fine > 0 then
-        -- Uses QB-Core /bill command
-        ExecuteCommand(('bill %s %s'):format(targetSourceId, fine))
+        if Config.BillVariation then
+            -- Useed QB-Core removeMoney Functions
+            TriggerServerEvent("mdt:server:removeMoney", citizenId, fine)
+        else
+            -- Uses QB-Core /bill command
+            ExecuteCommand(('bill %s %s'):format(targetSourceId, fine))
+        end
     end
 end)
 

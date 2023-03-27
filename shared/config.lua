@@ -6,6 +6,7 @@ Config.OnlyShowOnDuty = true
 Config.UseCQCMugshot = true
 Config.MugPhotos = 1 -- Front, Back Side. Use 4 for both sides ( default is 1 )
 Config.Webhook = '' -- Images will be uploaded here ( add a discord webhook )
+Config.BillVariation = true -- true = Fine gets automatically removed from Bank // false = the fine gets added to the invoice (can not be payed by the player)
 
 -- Set up your inventory to automatically retrieve images when a weapon is registered at a weapon shop or self-registered.
 -- If you're utilizing lj-inventory's latest version from GitHub, no further modifications are necessary. 
