@@ -7,6 +7,10 @@ Config.UseCQCMugshot = true
 Config.MugPhotos = 1 -- Front, Back Side. Use 4 for both sides ( default is 1 )
 Config.Webhook = '' -- Images will be uploaded here ( add a discord webhook )
 
+-- If set to true = Fine gets automatically removed from bank automatically charging the player.
+-- If set to false = The fine gets sent as an Invoice to their phone and it us to the player to pay for it, can remain unpaid and ignored.
+Config.BillVariation = true
+
 -- Set up your inventory to automatically retrieve images when a weapon is registered at a weapon shop or self-registered.
 -- If you're utilizing lj-inventory's latest version from GitHub, no further modifications are necessary. 
 -- However, if you're using a different inventory system, please refer to the "Inventory Edit | Automatic Add Weapons with images" section in ps-mdt's README.
