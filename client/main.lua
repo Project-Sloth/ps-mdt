@@ -758,6 +758,7 @@ end)
 
 RegisterNUICallback("toggleDuty", function(data, cb)
     TriggerServerEvent('QBCore:ToggleDuty')
+    TriggerServerEvent('ps-mdt:server:ClockSystem')
     cb(true)
 end)
 
