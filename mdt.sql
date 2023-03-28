@@ -122,12 +122,14 @@ CREATE TABLE IF NOT EXISTS `mdt_impound` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-CREATE TABLE if not exists `mdt_clocking` (
-	`id` INT(10) NOT NULL AUTO_INCREMENT,
-	`user_id` VARCHAR(50) NOT NULL DEFAULT '' COLLATE 'utf8mb4_general_ci',
-	`clock_in_time` VARCHAR(255) NOT NULL DEFAULT '' COLLATE 'utf8mb4_general_ci',
-	`clock_out_time` VARCHAR(50) NULL DEFAULT NULL COLLATE 'utf8mb4_general_ci',
-	`total_time` VARCHAR(50) NOT NULL DEFAULT '0' COLLATE 'utf8mb4_general_ci',
-	PRIMARY KEY (`user_id`) USING BTREE,
-	INDEX `id` (`id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+CREATE TABLE IF NOT EXISTS `mdt_clocking` (
+  `id` int(10) NOT NULL AUTO_INCREMENT,
+  `user_id` varchar(50) NOT NULL DEFAULT '',
+  `firstname` varchar(255) NOT NULL DEFAULT '',
+  `lastname` varchar(255) NOT NULL DEFAULT '',
+  `clock_in_time` varchar(255) NOT NULL DEFAULT '',
+  `clock_out_time` varchar(50) DEFAULT NULL,
+  `total_time` varchar(50) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`user_id`) USING BTREE,
+  KEY `id` (`id`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
