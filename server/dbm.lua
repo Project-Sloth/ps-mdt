@@ -1,6 +1,6 @@
 -- Get CitizenIDs from Player License
-function GetCitizenID(license)
-    local result = DB?.GetCitizenID(license)
+function GetCitizenIDByLicense(license)
+    local result = DB?.GetCitizenIDByLicense(license)
     if result == nil then print("Cannot find a CitizenID for License: "..license) end
     return result
 end
@@ -12,9 +12,9 @@ function AddLog(text)
     -- return exports.oxmysql:execute('INSERT INTO `mdt_logs` (`text`, `time`) VALUES (:text, :time)', { text = text, time = os.time() * 1000 })
 end
 
-function GetNameFromId(cid)
-    local result = DB?.GetNameFromId(cid)
-    if result == nil then print("Cannot find a name for CID: "..cid) end
+function GetNameFromCitizenId(citizenId)
+    local result = DB?.GetNameFromCitizenId(citizenId)
+    if result == nil then print("Cannot find a name for CID: "..citizenId) end
     return result
 end
 
@@ -58,31 +58,39 @@ function GetBulletins(JobType)
     -- return exports.oxmysql:executeSync('SELECT * FROM `mdt_bulletin` WHERE `type`= ? LIMIT 10', { JobType })
 end
 
-function GetPlayerProperties(cid)
-    return DB?.GetPlayerProperties(cid)
+function GetPlayerPropertiesByCitizenId(cid)
+    return DB?.GetPlayerPropertiesByCitizenId(cid)
 end
 
-function GetPlayerDataById(id)
-    return DB?.GetPlayerDataById(id)
+function GetPlayerDataByCitizenId(id)
+    return DB?.GetPlayerDataByCitizenId(id)
 end
 
 function GetBoloStatus(plate)
-    local result = MySQL.scalar.await('SELECT id FROM `mdt_bolos` WHERE LOWER(`plate`)=:plate', { plate = string.lower(plate)})
-    return result
-    -- return exports.oxmysql:scalarSync('SELECT id FROM `mdt_bolos` WHERE LOWER(`plate`)=:plate', { plate = string.lower(plate)})
+    local result = MySQL.query.await("SELECT * FROM mdt_bolos where plate = @plate", {['@plate'] = plate})
+    if result and result[1] then
+        local title = result[1]['title']
+        local boloId = result[1]['id']
+        return true, title, boloId
+    end
+    return false
 end
 
 function GetOwnerName(cid)
     return DB?.GetOwnerName(cid)
 end
 
-function GetVehicleInformation(plate, cb)
-    local result = MySQL.query.await('SELECT id, information FROM `mdt_vehicleinfo` WHERE plate=:plate', { plate = plate})
-    cb(result)
+function GetVehicleInformationByPlate(plate)
+    local result = MySQL.query.await('SELECT * FROM mdt_vehicleinfo WHERE plate = @plate', {['@plate'] = plate})
+    if result[1] then
+        return result[1]
+    else
+        return false
+    end
 end
 
-function GetPlayerApartment(cid)
-    return DB?.GetPlayerApartment(cid)
+function GetPlayerApartmentByCitizenId(cid)
+    return DB?.GetPlayerApartmentByCitizenId(cid)
 end
 
 function GetPlayerLicenses(citizenid)
@@ -95,4 +103,35 @@ end
 
 function UpdateAllLicenses(citizenid, incomingLicenses)
     DB?.UpdateAllLicenses(citizenid, incomingLicenses)
+end
+
+function SearchAllPlayersByData(query, jobType)
+    return DB?.SearchAllPlayersByData(query, jobType)
+end
+
+function SearchPlayerIncidentByData(query, jobType)
+    return DB?.SearchPlayerIncidentByData(query, jobType)
+end
+
+function SearchAllVehiclesByData(query)
+    return DB?.SearchAllVehiclesByData(query)
+end
+
+function SearchVehicleDataByPlate(plate)
+    return DB?.SearchVehicleDataByPlate(plate)
+end
+
+function GetVehicleWarrantStatusByPlate(plate)
+    return DB?.GetVehicleWarrantStatusByPlate(plate)
+end
+
+function GetVehicleOwnerByPlate(plate)
+
+    local result = MySQL.query.await('SELECT plate, citizenid, id FROM player_vehicles WHERE plate = @plate', {['@plate'] = plate})
+    if result and result[1] then
+        local citizenid = result[1]['citizenid']
+        local Player = QBCore.Functions.GetPlayerByCitizenId(citizenid)
+        local owner = Player.PlayerData.charinfo.firstname.." "..Player.PlayerData.charinfo.lastname
+        return owner
+    end
 end

@@ -47,7 +47,7 @@ local function TakeOutImpound(vehicle) -- TODO: modify this once esx bridge is s
     local coords = Config.ImpoundLocations[currentGarage]
     if coords then
         Framework.SpawnVehicle(vehicle.vehicle, function(veh)
-            Framework.TriggerServerCallback('qb-garage:server:GetVehicleProperties', function(properties) -- change this to a general callback for compatibility with all frameworks
+            Framework.TriggerServerCallback('qb-garage:server:GetVehicleProperties', function(properties) -- TODO: change this to a general callback for compatibility with all frameworks
                 Framework.SetVehicleProperties(veh, properties)
                 SetVehicleNumberPlateText(veh, vehicle.plate)
                 SetEntityHeading(veh, coords.w)

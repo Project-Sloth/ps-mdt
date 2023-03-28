@@ -1,26 +1,11 @@
-local QBCore = exports['qb-core']:GetCoreObject()
-
-function GetPlayerData(source)
-    local Player = QBCore.Functions.GetPlayer(source)
-    return Player.PlayerData
+function UnpackJobData(data)
+    return Framework.UnpackJobData(data)
 end
 
-function UnpackJob(data)
-    local job = {
-        name = data.name,
-        label = data.label
-    }
-    local grade = {
-        name = data.grade.name,
-    }
-
-    return job, grade
-end
-
-function PermCheck(src, PlayerData)
+function PermCheckByJobName(src, jobName)
     local result = true
 
-    if not Config.AllowedJobs[PlayerData.job.name] then
+    if not Config.AllowedJobs[jobName] then
         print(("UserId: %s(%d) tried to access the mdt even though they are not authorised (server direct)"):format(GetPlayerName(src), src))
         result = false
     end
@@ -30,7 +15,7 @@ end
 
 function ProfPic(gender, profilepic)
     if profilepic then return profilepic end
-    if gender == "f" then return "img/female.png" end;
+    if gender == "f" then return "img/female.png" end
     return "img/male.png"
 end
 
@@ -44,8 +29,4 @@ function IsJobAllowedToMDT(job)
     else
         return false
     end
-end
-
-function GetNameFromPlayerData(PlayerData)
-    return ('%s %s'):format(PlayerData.charinfo.firstname, PlayerData.charinfo.lastname)
 end

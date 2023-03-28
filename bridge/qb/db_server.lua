@@ -1,12 +1,12 @@
 DB = {}
 
-function DB.GetCitizenID(license)
+function DB.GetCitizenIDByLicense(license)
     return MySQL.query.await("SELECT citizenid FROM players WHERE license = ?", {license})
 end
 
-function DB.GetNameFromId(cid) -- CHECK: this looks like it should check for cid instead of citizenid
+function DB.GetNameFromCitizenId(citizenId)
     local name
-    local result = MySQL.scalar.await('SELECT charinfo FROM players WHERE citizenid = @citizenid', { ['@citizenid'] = cid })
+    local result = MySQL.scalar.await('SELECT charinfo FROM players WHERE citizenid = @citizenid', { ['@citizenid'] = citizenId })
     if result ~= nil then
         result = json.decode(result)
         name = result['firstname']..' '..result['lastname']
@@ -18,11 +18,11 @@ function DB.GetPlayerVehicles(cid)
     return MySQL.query.await('SELECT id, plate, vehicle FROM player_vehicles WHERE citizenid=:cid', { cid = cid })
 end
 
-function DB.GetPlayerProperties(cid)
+function DB.GetPlayerPropertiesByCitizenId(cid)
     return MySQL.query.await('SELECT houselocations.label, houselocations.coords FROM player_houses INNER JOIN houselocations ON player_houses.house = houselocations.name where player_houses.citizenid = ?', {cid})
 end
 
-function DB.GetPlayerDataById(id)
+function DB.GetPlayerDataByCitizenId(id)
     local playerData
     local Player = Framework.GetPlayerByCitizenId(id)
     if Player ~= nil then
@@ -37,8 +37,12 @@ function DB.GetOwnerName(cid)
     return MySQL.scalar.await('SELECT charinfo FROM `players` WHERE LOWER(`citizenid`) = ? LIMIT 1', {cid})
 end
 
-function DB.GetPlayerApartment(cid)
-    return MySQL.query.await('SELECT name, type, label FROM apartments where citizenid = ?', {cid})
+function DB.GetPlayerApartmentByCitizenId(citizenid)
+    local apartmentData = MySQL.query.await('SELECT name, type, label FROM apartments where citizenid = ?', {citizenid})
+    if Config.UsingDefaultQBApartments and apartmentData then
+        apartmentData = apartmentData[1].label .. ' (' ..apartmentData[1].name..')'
+    end
+    return apartmentData
 end
 
 function DB.GetPlayerLicenses(citizenid)
@@ -99,4 +103,46 @@ function DB.UpdateAllLicenses(citizenid, incomingLicenses)
         end
         MySQL.query.await('UPDATE `players` SET `metadata` = @metadata WHERE citizenid = @citizenid', {['@metadata'] = json.encode(result), ['@citizenid'] = citizenid})
     end
+end
+
+function DB.SearchAllPlayersByData(data, jobType)
+    return MySQL.query.await("SELECT p.citizenid, p.charinfo, md.pfp FROM players p LEFT JOIN mdt_data md on p.citizenid = md.cid WHERE LOWER(CONCAT(JSON_VALUE(p.charinfo, '$.firstname'), ' ', JSON_VALUE(p.charinfo, '$.lastname'))) LIKE :query OR LOWER(`charinfo`) LIKE :query OR LOWER(`citizenid`) LIKE :query AND jobtype = :jobtype LIMIT 20", { query = string.lower('%'..data..'%'), jobtype = jobType })
+end
+
+function DB.SearchPlayerIncidentByData(data, jobType)
+    return MySQL.query.await("SELECT p.citizenid, p.charinfo, p.metadata, md.pfp from players p LEFT JOIN mdt_data md on p.citizenid = md.cid WHERE LOWER(`charinfo`) LIKE :query OR LOWER(`citizenid`) LIKE :query AND `jobtype` = :jobtype LIMIT 30", {
+        query = string.lower('%'..data..'%'), -- % wildcard, needed to search for all alike results
+        jobtype = jobType
+    })
+end
+
+function DB.SearchAllVehiclesByData(data)
+    return MySQL.query.await("SELECT pv.id, pv.citizenid, pv.plate, pv.vehicle, pv.mods, pv.state, p.charinfo FROM `player_vehicles` pv LEFT JOIN players p ON pv.citizenid = p.citizenid WHERE LOWER(`plate`) LIKE :query OR LOWER(`vehicle`) LIKE :query LIMIT 25", {
+        query = string.lower('%'..data..'%')
+    })
+end
+
+function DB.SearchVehicleDataByPlate(plate)
+    return MySQL.query.await("select pv.*, p.charinfo from player_vehicles pv LEFT JOIN players p ON pv.citizenid = p.citizenid where pv.plate = :plate LIMIT 1", { plate = string.gsub(plate, "^%s*(.-)%s*$", "%1")})
+end
+
+function DB.GetVehicleWarrantStatusByPlate(plate)
+    local result = MySQL.query.await("SELECT p.plate, p.citizenid, m.id FROM player_vehicles p INNER JOIN mdt_convictions m ON p.citizenid = m.cid WHERE m.warrant =1 AND p.plate =?", {plate})
+    if result and result[1] then
+        local citizenid = result[1]['citizenid']
+        local owner = DB.GetNameFromCitizenId(citizenid)
+        local incidentId = result[1]['id']
+        return true, owner, incidentId
+    end
+    return false
+end
+
+function DB.GetVehicleOwnerByPlate(plate)
+    local result = MySQL.query.await('SELECT plate, citizenid, id FROM player_vehicles WHERE plate = @plate', {['@plate'] = plate})
+    if result and result[1] then
+        local citizenid = result[1]['citizenid']
+        local owner = DB.GetNameFromCitizenId(citizenid)
+        return owner
+    end
+    return nil
 end
