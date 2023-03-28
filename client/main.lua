@@ -40,6 +40,7 @@ end)
 RegisterNetEvent("QBCore:Client:SetDuty", function(job, state)
     if AllowedJob(job) then
         TriggerServerEvent("ps-mdt:server:ToggleDuty")
+	TriggerServerEvent("ps-mdt:server:ClockSystem")
         TriggerServerEvent('QBCore:ToggleDuty')
         if PlayerData.job.name == "police" or PlayerData.job.type == "leo" then
             TriggerServerEvent("police:server:UpdateCurrentCops")
@@ -758,6 +759,7 @@ end)
 
 RegisterNUICallback("toggleDuty", function(data, cb)
     TriggerServerEvent('QBCore:ToggleDuty')
+    TriggerServerEvent('ps-mdt:server:ClockSystem')
     cb(true)
 end)
 
