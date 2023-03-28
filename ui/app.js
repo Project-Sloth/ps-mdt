@@ -5176,10 +5176,10 @@ $(document).ready(() => {
         .html(eventData.data);
     } else if (eventData.type == "getAllLogs") {
       let table = eventData.data;
-      $(".stafflogs-container").empty();
+      $(".stafflogs-box").empty();
       $.each(table, function (index, value) {
-        $(".stafflogs-container").append(
-          `<p style="margin : 0; padding-top:0.8vh;">• ${value.text
+        $(".stafflogs-box").append(
+          `<p style="margin : 0; padding-top:0.8vh;">► ${value.text
           } <span style="color: grey; float: right; padding-right: 1vh;">(${timeAgo(
             Number(value.time)
           )})</span></p>`
