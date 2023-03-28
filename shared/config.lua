@@ -28,6 +28,19 @@ Config.InventoryForWeaponsImages = "lj-inventory"
 Config.Fuel = "lj-fuel"
 
 -- Google Docs Link
+Config.sopLink = {
+    ['police'] = '',
+    ['ambulance'] = '',
+    ['bcso'] = '',
+    ['doj'] = '',
+    ['sast'] = '',
+    ['sasp'] = '',
+    ['doc'] = '',
+    ['lssd'] = '',
+    ['sapr'] = '',
+}
+
+-- Google Docs Link
 Config.RosterLink = {
     ['police'] = '',
     ['ambulance'] = '',

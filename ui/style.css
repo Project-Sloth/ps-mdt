@@ -103,6 +103,17 @@ input::-webkit-inner-spin-button {
     display: none;
 }
 
+.sop-page-container {
+    background-color: var(--color-9);
+    border-radius: 15px;
+    position: absolute; 
+    width: 96.5%;
+    height: 96.5%;
+    left: 2.0%;
+    top: 1.5%;
+    display: none;
+}
+
 .dmv-page-container {
     background-color: var(--color-9);
     border-radius: 15px;
@@ -1915,6 +1926,25 @@ span.tag-input[contenteditable]:empty::before {
 }
 
 .penalcode-embed iframe {
+    height: 96.5%;
+    width: 98%;
+    margin: auto;
+    border: none;
+    outline: none;
+}
+
+.sop-embed {
+    background-color: var(--color-1);
+    border: 2px solid var(--color-3);
+    display: flex;
+    flex-direction: column;
+    height: 96.5%;
+    width: 85%;
+    margin: auto;
+    overflow: hidden;
+}
+
+.sop-embed iframe {
     height: 96.5%;
     width: 98%;
     margin: auto;
