@@ -12,7 +12,7 @@ Config.Webhook = ''
 
 -- Clock-in notifications for duty. Add a Discord webhook.
 -- Command /mdtleaderboard, will display top players per clock-in hours.
-Config.ClockinWebhook = 'https://discord.com/api/webhooks/1090119068901711873/JzbcE10s3zzzmPKQJ9gTQrtEryGBNniYwZcrqqU7YyszP1hnaiMhlzMk4gicDzRqj5Yg'
+Config.ClockinWebhook = ''
 
 
 -- If set to true = Fine gets automatically removed from bank automatically charging the player.

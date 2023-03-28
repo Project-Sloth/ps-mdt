@@ -1710,6 +1710,30 @@ RegisterNetEvent('mdt:server:removeMoney', function(citizenId, fine)
 	Player.Functions.RemoveMoney('bank', fine, 'lspd-fine')
 end)
 
+function getTopOfficers(callback)
+    local result = {}
+    local query = 'SELECT * FROM mdt_clocking ORDER BY total_time DESC LIMIT 10'
+    MySQL.Async.fetchAll(query, {}, function(officers)
+        for k, officer in ipairs(officers) do
+            table.insert(result, {
+                rank = k,
+                name = officer.firstname .. " " .. officer.lastname,
+                callsign = officer.user_id,
+                totalTime = format_time(officer.total_time)
+            })
+        end
+        callback(result)
+    end)
+end
+
+RegisterServerEvent("mdt:requestOfficerData")
+AddEventHandler("mdt:requestOfficerData", function()
+    local src = source
+    getTopOfficers(function(officerData)
+        TriggerClientEvent("mdt:receiveOfficerData", src, officerData)
+    end)
+end)
+
 function sendToDiscord(color, name, message, footer)
 	local embed = {
 		  {
@@ -1723,7 +1747,7 @@ function sendToDiscord(color, name, message, footer)
 	  }
   
 	PerformHttpRequest(Config.ClockinWebhook, function(err, text, headers) end, 'POST', json.encode({username = name, embeds = embed}), { ['Content-Type'] = 'application/json' })
-  end
+end
 
 function format_time(time)
     local hours = math.floor(time / 3600)
