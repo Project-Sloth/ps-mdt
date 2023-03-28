@@ -39,6 +39,8 @@ https://user-images.githubusercontent.com/82112471/226150422-0c4776f0-0927-4b07-
 # Clock In/Out & Leaderboard
 * Triggers when officers Toggle Duty from inside the mdt.
 ![image](https://user-images.githubusercontent.com/82112471/228130546-6366ed1e-f5a8-428c-8680-0c384d2cff52.png)
+![image](https://user-images.githubusercontent.com/82112471/228330602-1a914461-5d61-4e12-80d4-154c8da3dee1.png)
+
 
 # Jailing & Community Service
 * If you're getting kicked for attempted exploit abuse when jailing. Located the follow event below on qb-policejob > server > main.lua
