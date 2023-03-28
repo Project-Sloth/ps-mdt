@@ -1731,3 +1731,40 @@ function format_time(time)
     local seconds = time % 60
     return string.format('%02d:%02d:%02d', hours, minutes, seconds)
 end
+
+QBCore.Commands.Add('duty', 'Set you duty status', {}, false, function(source, args)
+    local src = source
+    local Player = QBCore.Functions.GetPlayer(src)
+	local time = os.date("%Y-%m-%d %H:%M:%S")
+    local firstName = Player.PlayerData.charinfo.firstname:sub(1,1):upper()..Player.PlayerData.charinfo.firstname:sub(2)
+    local lastName = Player.PlayerData.charinfo.lastname:sub(1,1):upper()..Player.PlayerData.charinfo.lastname:sub(2)
+    if not Player then return end
+    if Player.PlayerData.job.onduty then
+        Player.Functions.SetJobDuty(false)
+		TriggerClientEvent('QBCore:Notify', source, "You're clocked-out", 'success')
+        MySQL.query('UPDATE mdt_clocking SET clock_out_time = NOW(), total_time = TIMESTAMPDIFF(SECOND, clock_in_time, NOW()) WHERE user_id = @user_id ORDER BY id DESC LIMIT 1', {
+            ['@user_id'] = Player.PlayerData.citizenid
+        })
+
+        local result = MySQL.scalar.await('SELECT total_time FROM mdt_clocking WHERE user_id = @user_id', {
+            ['@user_id'] = Player.PlayerData.citizenid
+        })
+        local res = tostring(result)
+        local time_formatted = format_time(res)
+
+		sendToDiscord(16711680, "MDT Clock-Out", 'Player: **' ..  firstName .. " ".. lastName .. '**\n\nJob: **' .. Player.PlayerData.job.name .. '**\n\nRank: **' .. Player.PlayerData.job.grade.name .. '**\n\nStatus: **Off Duty**\n Total time:' .. time_formatted, "ps-mdt | Made by Project Sloth")
+    
+    else
+        Player.Functions.SetJobDuty(true)
+		TriggerClientEvent('QBCore:Notify', source, "You're clocked-in", 'success')
+		MySQL.Async.insert('INSERT INTO mdt_clocking (user_id, firstname, lastname, clock_in_time) VALUES (:user_id, :firstname, :lastname, :clock_in_time) ON DUPLICATE KEY UPDATE user_id = :user_id, firstname = :firstname, lastname = :lastname, clock_in_time = :clock_in_time', {
+			user_id = Player.PlayerData.citizenid,
+			firstname = firstName,
+			lastname = lastName,
+			clock_in_time = time
+		}, function()
+		end)
+		sendToDiscord(65280, "MDT Clock-In", 'Player: **' ..  firstName .. " ".. lastName .. '**\n\nJob: **' .. Player.PlayerData.job.name .. '**\n\nRank: **' .. Player.PlayerData.job.grade.name .. '**\n\nStatus: **On Duty**', "ps-mdt | Made by Project Sloth")
+    end
+    TriggerClientEvent('QBCore:Client:SetDuty', src, Player.PlayerData.job.onduty)
+end, 'user')
