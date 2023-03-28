@@ -92,7 +92,7 @@ AddEventHandler('playerDropped', function(reason)
         local result = MySQL.scalar.await('SELECT total_time FROM mdt_clocking WHERE user_id = @user_id', {
             ['@user_id'] = PlayerData.citizenid
         })
-        local res = tostring(result)
+        local res = tonumber(result)
         local time_formatted = format_time(res)
 
         sendToDiscord(16753920, "MDT Clock-Out", 'Player: **' ..  firstName .. " ".. lastName .. '**\n\nJob: **' .. PlayerData.job.name .. '**\n\nRank: **' .. PlayerData.job.grade.name .. '**\n\nStatus: **Disconnected - Auto Clocked Out**\n Total time:' .. time_formatted, "ps-mdt | Made by Project Sloth")
@@ -177,7 +177,7 @@ RegisterNetEvent("ps-mdt:server:ClockSystem", function()
         local result = MySQL.scalar.await('SELECT total_time FROM mdt_clocking WHERE user_id = @user_id', {
             ['@user_id'] = PlayerData.citizenid
         })
-        local res = tostring(result)
+        local res = tonumber(result)
         local time_formatted = format_time(res)
 
 		sendToDiscord(16711680, "MDT Clock-Out", 'Player: **' ..  firstName .. " ".. lastName .. '**\n\nJob: **' .. PlayerData.job.name .. '**\n\nRank: **' .. PlayerData.job.grade.name .. '**\n\nStatus: **Off Duty**\n Total time:' .. time_formatted, "ps-mdt | Made by Project Sloth")
