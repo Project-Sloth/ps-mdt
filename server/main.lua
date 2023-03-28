@@ -111,6 +111,39 @@ RegisterNetEvent("ps-mdt:server:ToggleDuty", function()
     end
 end)
 
+RegisterNetEvent("ps-mdt:server:ClockSystem", function()
+    local src = source
+    local PlayerData = GetPlayerData(src)
+    local time = os.date("%Y-%m-%d %H:%M:%S")
+	local firstName = PlayerData.charinfo.firstname:sub(1,1):upper()..PlayerData.charinfo.firstname:sub(2)
+	local lastName = PlayerData.charinfo.lastname:sub(1,1):upper()..PlayerData.charinfo.lastname:sub(2)
+    if PlayerData.job.onduty then
+		
+        TriggerClientEvent('QBCore:Notify', source, "You're clocked-in", 'success')
+        MySQL.Async.insert('INSERT INTO mdt_clocking (user_id, clock_in_time) VALUES (:user_id, :clock_in_time) ON DUPLICATE KEY UPDATE user_id = :user_id, clock_in_time = :clock_in_time', {
+            user_id = PlayerData.citizenid,
+            clock_in_time = time
+        }, function()
+        end)
+
+        --discord webhook Config.ClockinWebhook
+		sendToDiscord(16753920, "MDT Clock-in System", 'Player: **' ..  firstName .. " ".. lastName .. '**\n\nStatus: **On Duty**', "ps-mdt")
+    else
+        TriggerClientEvent('QBCore:Notify', source, "You're clocked-out", 'success')
+        MySQL.query('UPDATE mdt_clocking SET clock_out_time = NOW(), total_time = TIMESTAMPDIFF(SECOND, clock_in_time, NOW()) WHERE user_id = @user_id ORDER BY id DESC LIMIT 1', {
+            ['@user_id'] = PlayerData.citizenid
+        })
+
+		local result = MySQL.scalar.await('SELECT total_time FROM mdt_clocking WHERE user_id = @user_id', {
+			['@user_id'] = PlayerData.citizenid
+		})
+		local res = tostring(result)
+		local time_formatted = format_time(res)
+        --discord webhook Config.ClockinWebhook
+		sendToDiscord(16753920, "MDT Clock-in System", 'Player: **' ..  firstName .. " ".. lastName .. '**\n\nStatus: **Off Duty**\n Total time:' .. time_formatted, "ps-mdt")
+    end
+end)
+
 RegisterNetEvent('mdt:server:openMDT', function()
 	local src = source
 	local PlayerData = GetPlayerData(src)
@@ -1647,3 +1680,25 @@ RegisterNetEvent('mdt:server:removeMoney', function(citizenId, fine)
 	TriggerClientEvent('QBCore:Notify', Player, fine.."$ were removed from your Bank Account.")
 	Player.Functions.RemoveMoney('bank', fine, 'lspd-fine')
 end)
+
+function sendToDiscord(color, name, message, footer)
+	local embed = {
+		  {
+			  color = color,
+			  title = "**".. name .."**",
+			  description = message,
+			  footer = {
+				  text = footer,
+			  },
+		  }
+	  }
+  
+	PerformHttpRequest(Config.ClockinWebhook, function(err, text, headers) end, 'POST', json.encode({username = name, embeds = embed}), { ['Content-Type'] = 'application/json' })
+  end
+
+  function format_time(time)
+    local hours = math.floor(time / 3600)
+    local minutes = math.floor((time % 3600) / 60)
+    local seconds = time % 60
+    return string.format('%02d:%02d:%02d', hours, minutes, seconds)
+end
