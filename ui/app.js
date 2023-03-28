@@ -4023,6 +4023,7 @@ $(document).ready(() => {
         $(".manage-profile-name-input-1").attr("readonly", true);
         $(".manage-profile-name-input-2").attr("readonly", true);
         $(".roster-iframe").attr("src", rosterLink);
+        $(".sop-iframe").attr("src", sopLink);
 
         $(".manage-profile-save").css("display", "block");
         $(".manage-profile-editing-title").css("display", "block");
