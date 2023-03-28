@@ -5553,6 +5553,29 @@ function searchProfilesResults(result) {
   $(".profile-items").html(profileHTML);
 }
 
+window.addEventListener('message', (event) => {
+  if (event.data.action === 'updateOfficerData') {
+      updateOfficerData(event.data.data);
+  }
+});
+
+function updateOfficerData(officerData) {
+  const leaderboardBox = document.querySelector('.leaderboard-box');
+  leaderboardBox.innerHTML = '';
+
+  officerData.forEach((officer, index) => {
+      const position = ['1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10th'][index];
+      const officerDiv = document.createElement('div');
+      officerDiv.className = 'leaderboard-box-test';
+      officerDiv.style.fontSize = '1.3vh';
+      officerDiv.style.fontWeight = 'lighter';
+      officerDiv.style.color = index < 3 ? 'white' : 'grey';
+
+      officerDiv.innerHTML = `► ${position}: ${officer.name} (${officer.callsign})<span style="float: right; padding-right: 1vh;">${officer.totalTime}</span>`;
+      leaderboardBox.appendChild(officerDiv);
+  });
+}
+
 window.addEventListener("load", function () {
   document
     .getElementById("offenses-search")
