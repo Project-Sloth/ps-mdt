@@ -83,17 +83,18 @@ AddEventHandler("playerDropped", function(reason)
 
     -- Auto clock out if the player is off duty
     if Framework.GetPlayerJobDutyByPlayer(player) then
-        MySQL.query('UPDATE mdt_clocking SET clock_out_time = NOW(), total_time = TIMESTAMPDIFF(SECOND, clock_in_time, NOW()) WHERE user_id = @user_id ORDER BY id DESC LIMIT 1', {
+        MySQL.query.await('UPDATE mdt_clocking SET clock_out_time = NOW(), total_time = TIMESTAMPDIFF(SECOND, clock_in_time, NOW()) WHERE user_id = @user_id ORDER BY id DESC LIMIT 1', {
             ['@user_id'] = citizenId
         })
 
         local result = MySQL.scalar.await('SELECT total_time FROM mdt_clocking WHERE user_id = @user_id', {
             ['@user_id'] = citizenId
         })
-        local res = tonumber(result)
-        local time_formatted = format_time(res)
+        if result then
+            local time_formatted = format_time(tonumber(result))
 
-        sendToDiscord(16753920, "MDT Clock-Out", 'Player: **' ..  firstName .. " ".. lastName .. '**\n\nJob: **' .. Framework.GetPlayerJobNameByPlayer(player) .. '**\n\nRank: **' .. Framework.GetPlayerJobGradeNameByPlayer(player) .. '**\n\nStatus: **Disconnected - Auto Clocked Out**\n Total time:' .. time_formatted, "ps-mdt | Made by Project Sloth")
+            sendToDiscord(16753920, "MDT Clock-Out", 'Player: **' ..  firstName .. " ".. lastName .. '**\n\nJob: **' .. Framework.GetPlayerJobNameByPlayer(player) .. '**\n\nRank: **' .. Framework.GetPlayerJobGradeNameByPlayer(player) .. '**\n\nStatus: **Disconnected - Auto Clocked Out**\n Total time:' .. time_formatted, "ps-mdt | Made by Project Sloth")
+        end
     end
 
     if citizenId ~= nil then
@@ -171,8 +172,7 @@ RegisterNetEvent("ps-mdt:server:ClockSystem", function()
             firstname = firstName,
             lastname = lastName,
             clock_in_time = time
-        }, function()
-        end)
+        })
         sendToDiscord(65280, "MDT Clock-In", 'Player: **' ..  firstName .. " ".. lastName .. '**\n\nJob: **' .. Framework.GetPlayerJobNameByPlayer(player) .. '**\n\nRank: **' .. Framework.GetPlayerJobGradeNameByPlayer(player) .. '**\n\nStatus: **On Duty**', "ps-mdt | Made by Project Sloth")
     else
         Framework.Notification(src, "You're clocked-out", 'success')
@@ -183,10 +183,10 @@ RegisterNetEvent("ps-mdt:server:ClockSystem", function()
         local result = MySQL.scalar.await('SELECT total_time FROM mdt_clocking WHERE user_id = @user_id', {
             ['@user_id'] = Framework.GetPlayerCitizenIdByPlayer(player)
         })
-        local res = tonumber(result)
-        local time_formatted = format_time(res)
-
-        sendToDiscord(16711680, "MDT Clock-Out", 'Player: **' ..  firstName .. " ".. lastName .. '**\n\nJob: **' .. Framework.GetPlayerJobNameByPlayer(player) .. '**\n\nRank: **' .. Framework.GetPlayerJobGradeNameByPlayer(player) .. '**\n\nStatus: **Off Duty**\n Total time:' .. time_formatted, "ps-mdt | Made by Project Sloth")
+        if result then
+            local time_formatted = format_time(tonumber(result))
+            sendToDiscord(16711680, "MDT Clock-Out", 'Player: **' ..  firstName .. " ".. lastName .. '**\n\nJob: **' .. Framework.GetPlayerJobNameByPlayer(player) .. '**\n\nRank: **' .. Framework.GetPlayerJobGradeNameByPlayer(player) .. '**\n\nStatus: **Off Duty**\n Total time:' .. time_formatted, "ps-mdt | Made by Project Sloth")
+        end
     end
 end)
 

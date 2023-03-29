@@ -95,14 +95,14 @@ end
 
 local function EnableGUI(enable)
     SetNuiFocus(enable, enable)
-    SendNUIMessage({ type = "show", enable = enable, job = Framework.GetPlayerJobName(), rosterLink = Config.RosterLink[Framework.GetPlayerJobName()] })
+    SendNUIMessage({ type = "show", enable = enable, job = Framework.GetPlayerJobName(), rosterLink = Config.RosterLink[Framework.GetPlayerJobName()], sopLink = Config.sopLink[Framework.GetPlayerJobName()] })
     isOpen = enable
     doAnimation()
 end
 
 local function RefreshGUI()
     SetNuiFocus(false, false)
-    SendNUIMessage({ type = "show", enable = false, job = Framework.GetPlayerJobName(), rosterLink = Config.RosterLink[Framework.GetPlayerJobName()] })
+    SendNUIMessage({ type = "show", enable = false, job = Framework.GetPlayerJobName(), rosterLink = Config.RosterLink[Framework.GetPlayerJobName()], sopLink = Config.sopLink[Framework.GetPlayerJobName()] })
     isOpen = false
 end
 

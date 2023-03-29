@@ -23,6 +23,8 @@ var LastName = "";
 var DispatchNum = 0;
 var playerJob = "";
 let rosterLink  = "";
+let sopLink = "";
+
 //Set this to false if you don't want to show the send to community service button on the incidents page
 const canSendToCommunityService = true
 
@@ -3957,6 +3959,7 @@ $(document).ready(() => {
           "Officers Involved"
         );
         $(".roster-iframe").attr("src", rosterLink);
+        $(".sop-iframe").attr("src", sopLink);
 
         $(".manage-profile-save").css("display", "block");
         $(".manage-profile-editing-title").css("display", "block");
@@ -4020,6 +4023,7 @@ $(document).ready(() => {
         $(".manage-profile-name-input-1").attr("readonly", true);
         $(".manage-profile-name-input-2").attr("readonly", true);
         $(".roster-iframe").attr("src", rosterLink);
+        $(".sop-iframe").attr("src", sopLink);
 
         $(".manage-profile-save").css("display", "block");
         $(".manage-profile-editing-title").css("display", "block");
@@ -4045,6 +4049,7 @@ $(document).ready(() => {
         $(".manage-profile-name-input-2").attr("readonly", false);
         $("#home-warrants-container").css("height", "98%");
         $(".roster-iframe").attr("src", rosterLink);
+        $(".sop-iframe").attr("src", sopLink);
 
         $(".manage-profile-save").css("display", "none");
         $(".manage-profile-editing-title").css("display", "none");
@@ -4070,6 +4075,7 @@ $(document).ready(() => {
     if (eventData.type == "show") {
       if (eventData.enable == true) {
         rosterLink = eventData.rosterLink;
+        sopLink = eventData.sopLink;
         playerJob = eventData.job;
         JobColors(playerJob);
         $(".quote-span").html(randomizeQuote());
