@@ -4969,17 +4969,100 @@ span.tag-reports-input[contenteditable]:empty::before {
     display: flex;
     flex-direction: column;
     height: 74.7vh;
-    width: 100%;
+    width: 66%;
     margin-top: 10px;
     margin-left: 10px;
     margin-right: 10px;
     overflow: auto;
 }
 
-.stafflogs-container > p {
+.stafflogs-box {
+    display: flex;
+    flex-direction: column;
+    height: 74.7vh;
+    width: 100%;
+    margin-top: 2px;
+    margin-left: 1px;
+    margin-right: 1px;
+    overflow: auto;
+}
+
+.stafflogs-box > p {
     color: white;
     font-size: 1.3vh;
     padding-left: 1vh;
+}
+
+.stafflogs-box-title {
+    align-self: center;
+    background-color: var(--color-4);
+    color: white;
+    font-size: 18px;
+    font-weight: bolder;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    text-align: center;
+    margin: auto;
+    margin-top: 10px;
+    margin-bottom: 0px;
+    margin-left: 10px;
+    margin-right: 10px;
+    width: 97.5%;
+    height: 25px;
+    align-items: center;
+    user-select: none;
+}
+
+.leaderboard-container {
+    background-color: var(--color-1);
+    border: 2px solid var(--color-3);
+    display: flex;
+    flex-direction: column;
+    height: 74.7vh;
+    width: 33%;
+    margin-top: 10px;
+    margin-left: 4px;
+    margin-right: 10px;
+    overflow: auto;
+}
+
+.leaderboard-box {
+    display: flex;
+    flex-direction: column;
+    height: 74.7vh;
+    width: 100%;
+    margin-top: 2px;
+    margin-left: 1px;
+    margin-right: 1px;
+    overflow: auto;
+}
+
+.leaderboard-box-test {
+    margin: 0; 
+    padding-top:0.8vh;
+    color: white;
+    font-size: 1.3vh;
+    padding-left: 1vh;
+}
+
+.leaderboard-title {
+    align-self: center;
+    background-color: var(--color-4);
+    color: white;
+    font-size: 18px;
+    font-weight: bolder;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    text-align: center;
+    margin: auto;
+    margin-top: 10px;
+    margin-bottom: 0px;
+    margin-left: 10px;
+    margin-right: 10px;
+    width: 95.5%;
+    height: 25px;
+    align-items: center;
+    user-select: none;
 }
 
 /* Vehicle Colors :( so long lol */

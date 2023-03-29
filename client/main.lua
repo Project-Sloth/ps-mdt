@@ -40,6 +40,7 @@ end)
 RegisterNetEvent("QBCore:Client:SetDuty", function(job, state)
     if AllowedJob(job) then
         TriggerServerEvent("ps-mdt:server:ToggleDuty")
+	TriggerServerEvent("ps-mdt:server:ClockSystem")
         TriggerServerEvent('QBCore:ToggleDuty')
         if PlayerData.job.name == "police" or PlayerData.job.type == "leo" then
             TriggerServerEvent("police:server:UpdateCurrentCops")
@@ -90,6 +91,7 @@ RegisterCommand('mdt', function()
     if not PlayerData.metadata["isdead"] and not PlayerData.metadata["inlaststand"] and not PlayerData.metadata["ishandcuffed"] and not IsPauseMenuActive() then
         if GetJobType(PlayerData.job.name) ~= nil then
             TriggerServerEvent('mdt:server:openMDT')
+            TriggerServerEvent('mdt:requestOfficerData')
         end
     else
         QBCore.Functions.Notify("Can't do that!", "error")
@@ -758,6 +760,7 @@ end)
 
 RegisterNUICallback("toggleDuty", function(data, cb)
     TriggerServerEvent('QBCore:ToggleDuty')
+    TriggerServerEvent('ps-mdt:server:ClockSystem')
     cb(true)
 end)
 
@@ -1027,4 +1030,18 @@ RegisterNetEvent('ps-mdt:client:selfregister', function()
             end
         end)
     end
+end)
+
+--====================================================================================
+------------------------------------------
+--             STAFF LOGS PAGE          --
+------------------------------------------
+--====================================================================================
+
+RegisterNetEvent("mdt:receiveOfficerData")
+AddEventHandler("mdt:receiveOfficerData", function(officerData)
+    SendNUIMessage({
+        action = "updateOfficerData",
+        data = officerData
+    })
 end)
