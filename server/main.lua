@@ -1661,7 +1661,7 @@ Framework.CreateServerCallback('mdt:server:GetPlayerSourceId', function(source, 
         Framework.Notification(source, "Citizen seems Asleep / Missing", "error")
         return
     end
-    local targetSource = Framework.GetPlayerServerIdByPlayer(player)
+    local targetSource = Framework.GetPlayerServerIdByPlayer(targetPlayer)
 
     cb(targetSource)
 end)

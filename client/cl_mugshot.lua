@@ -17,7 +17,7 @@ local MugShots = {}
 local function TakeMugShot()
     exports['screenshot-basic']:requestScreenshotUpload(Config.Webhook, 'files[]', {encoding = 'jpg'}, function(data)
         local resp = json.decode(data)
-        table.insert(MugshotArray, resp.attachments[1].url)
+        table.insert(MugshotArray, resp?.attachments[1]?.url)
     end)
 end
 
