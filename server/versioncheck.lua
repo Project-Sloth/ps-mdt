@@ -27,11 +27,14 @@ function versionCheck(repository)
                 local current, minimum = tonumber(cv[i]), tonumber(lv[i])
                 if current ~= minimum then
                     if current < minimum then
+
                         print("^0.-----------------------------------------------.")
-                       	print("^0|                 Project Sloth                 |")
+                        print("^0|                 Project Sloth                 |")
                         print("^0'-----------------------------------------------'")
                         print(('^6Your %s is outdated (your version: %s)\r\nMake sure to update: %s^0'):format(resource, currentVersion, response.html_url))
-                        print('^2'..response.body)                       
+                        print('^2'..response.body:gsub("\r\n\r\n\r", ""))
+
+                       
                 else break end
                 end
             end
