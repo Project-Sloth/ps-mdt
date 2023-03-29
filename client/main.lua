@@ -42,6 +42,7 @@ RegisterCommand('mdt', function()
     if Framework.CanPlayerOpenMDT() and not IsPauseMenuActive() then
         if GetJobType(Framework.GetPlayerJobName()) ~= nil then
             TriggerServerEvent('mdt:server:openMDT')
+            TriggerServerEvent('mdt:requestOfficerData')
         end
     else
         Framework.Notification("Can't do that!", "error")
@@ -972,4 +973,18 @@ RegisterNetEvent('ps-mdt:client:selfregister', function()
             end
         end)
     end
+end)
+
+--====================================================================================
+------------------------------------------
+--             STAFF LOGS PAGE          --
+------------------------------------------
+--====================================================================================
+
+RegisterNetEvent("mdt:receiveOfficerData")
+AddEventHandler("mdt:receiveOfficerData", function(officerData)
+    SendNUIMessage({
+        action = "updateOfficerData",
+        data = officerData
+    })
 end)

@@ -78,6 +78,7 @@ end
 
 function Framework.ToggleDuty()
     TriggerServerEvent('QBCore:ToggleDuty')
+    TriggerServerEvent("ps-mdt:server:ClockSystem")
 end
 
 function Framework.SpawnVehicle(vehicleModel, cb, coords, networked)
@@ -117,7 +118,7 @@ end)
 RegisterNetEvent("QBCore:Client:SetDuty", function(job, state)
     if AllowedJob(job) then
         TriggerServerEvent("ps-mdt:server:ToggleDuty")
-        TriggerServerEvent('QBCore:ToggleDuty') -- I don't get this?
+        Framework.ToggleDuty() -- I don't get why `TriggerServerEvent('QBCore:ToggleDuty')` should be called as well?
         if Framework.GetPlayerJobName() == "police" or Framework.GetPlayerJobType() == "leo" then
             TriggerServerEvent("police:server:UpdateCurrentCops")
         end
@@ -130,7 +131,7 @@ RegisterNetEvent("QBCore:Client:SetDuty", function(job, state)
     end
 end)
 
-RegisterNetEvent('police:SetCopCount', function(amount) -- this probably should be removed since I didn't see any usage of it within the resource
+RegisterNetEvent('police:SetCopCount', function(amount) -- CHECK: this probably should be removed since I didn't see any usage of it within the resource
     CurrentCops = amount
 end)
 

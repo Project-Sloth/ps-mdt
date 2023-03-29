@@ -65,6 +65,10 @@ function Framework.GetPlayerJobNameByPlayer(player)
     return player?.PlayerData?.job?.name
 end
 
+function Framework.GetPlayerJobGradeNameByPlayer(player)
+    return player?.PlayerData?.job?.grade?.name
+end
+
 function Framework.GetPlayerJobGradeLevelByPlayer(player)
     return player?.PlayerData?.job?.grade?.level
 end
