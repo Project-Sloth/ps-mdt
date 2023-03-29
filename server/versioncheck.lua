@@ -32,7 +32,7 @@ function versionCheck(repository)
                         print("^0|                 Project Sloth                 |")
                         print("^0'-----------------------------------------------'")
                         print(('^6Your %s is outdated (your version: %s)\r\nMake sure to update: %s^0'):format(resource, currentVersion, response.html_url))
-                        print('^2'..response.body:gsub("\r\n\r\n\r", ""))
+                        print('^2'..response.body:gsub("\r\n\r\n\r", "^0"))
 
                        
                 else break end
