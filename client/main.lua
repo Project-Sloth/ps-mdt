@@ -988,3 +988,7 @@ AddEventHandler("mdt:receiveOfficerData", function(officerData)
         data = officerData
     })
 end)
+
+Citizen.CreateThread(function()
+    TriggerEvent('chat:addSuggestion', '/mdtleaderboard', "Show MDT leaderboard", {})
+end)

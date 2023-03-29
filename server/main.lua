@@ -132,12 +132,12 @@ RegisterNetEvent("ps-mdt:server:ToggleDuty", function()
     end
 end)
 
-QBCore.Commands.Add("mdtleaderboard", "Show MDT leaderboard", {}, false, function(source, args)
-    local PlayerData = GetPlayerData(source)
-    local job = PlayerData.job.name
+RegisterCommand("mdtleaderboard", function(source, args)
+    local player = Framework.GetPlayerByServerId(source)
+    local playerJobName = Framework.GetPlayerJobNameByPlayer(player)
 
-    if not IsPoliceOrEms(job) then
-        TriggerClientEvent('QBCore:Notify', source, "You don't have permission to use this command.", 'error')
+    if not IsPoliceOrEms(playerJobName) then
+        Framework.Notification(source, "You don't have permission to use this command.", 'error')
         return
     end
 
@@ -154,39 +154,39 @@ QBCore.Commands.Add("mdtleaderboard", "Show MDT leaderboard", {}, false, functio
     end
 
     sendToDiscord(16753920, "MDT Leaderboard", leaderboard_message, "ps-mdt | Made by Project Sloth")
-    TriggerClientEvent('QBCore:Notify', source, "MDT leaderboard sent to Discord!", 'success')
-end)
+    Framework.Notification(source, "MDT leaderboard sent to Discord!", 'success')
+end, false)
 
 RegisterNetEvent("ps-mdt:server:ClockSystem", function()
     local src = source
-    local PlayerData = GetPlayerData(src)
+    local player = Framework.GetPlayerByServerId(src)
     local time = os.date("%Y-%m-%d %H:%M:%S")
-    local firstName = PlayerData.charinfo.firstname:sub(1,1):upper()..PlayerData.charinfo.firstname:sub(2)
-    local lastName = PlayerData.charinfo.lastname:sub(1,1):upper()..PlayerData.charinfo.lastname:sub(2)
-    if PlayerData.job.onduty then
-        
-        TriggerClientEvent('QBCore:Notify', source, "You're clocked-in", 'success')
+    local firstName = Framework.GetPlayerFirstNameByPlayer(player)
+    local lastName = Framework.GetPlayerLastNameByPlayer(player)
+    if Framework.GetPlayerJobDutyByPlayer(player) then
+
+        Framework.Notification(src, "You're clocked-in", 'success')
         MySQL.Async.insert('INSERT INTO mdt_clocking (user_id, firstname, lastname, clock_in_time) VALUES (:user_id, :firstname, :lastname, :clock_in_time) ON DUPLICATE KEY UPDATE user_id = :user_id, firstname = :firstname, lastname = :lastname, clock_in_time = :clock_in_time', {
-            user_id = PlayerData.citizenid,
+            user_id = Framework.GetPlayerCitizenIdByPlayer(player),
             firstname = firstName,
             lastname = lastName,
             clock_in_time = time
         }, function()
         end)
-        sendToDiscord(65280, "MDT Clock-In", 'Player: **' ..  firstName .. " ".. lastName .. '**\n\nJob: **' .. PlayerData.job.name .. '**\n\nRank: **' .. PlayerData.job.grade.name .. '**\n\nStatus: **On Duty**', "ps-mdt | Made by Project Sloth")
+        sendToDiscord(65280, "MDT Clock-In", 'Player: **' ..  firstName .. " ".. lastName .. '**\n\nJob: **' .. Framework.GetPlayerJobNameByPlayer(player) .. '**\n\nRank: **' .. Framework.GetPlayerJobGradeNameByPlayer(player) .. '**\n\nStatus: **On Duty**', "ps-mdt | Made by Project Sloth")
     else
-        TriggerClientEvent('QBCore:Notify', source, "You're clocked-out", 'success')
+        Framework.Notification(src, "You're clocked-out", 'success')
         MySQL.query('UPDATE mdt_clocking SET clock_out_time = NOW(), total_time = TIMESTAMPDIFF(SECOND, clock_in_time, NOW()) WHERE user_id = @user_id ORDER BY id DESC LIMIT 1', {
-            ['@user_id'] = PlayerData.citizenid
+            ['@user_id'] = Framework.GetPlayerCitizenIdByPlayer(player)
         })
 
         local result = MySQL.scalar.await('SELECT total_time FROM mdt_clocking WHERE user_id = @user_id', {
-            ['@user_id'] = PlayerData.citizenid
+            ['@user_id'] = Framework.GetPlayerCitizenIdByPlayer(player)
         })
         local res = tonumber(result)
         local time_formatted = format_time(res)
 
-        sendToDiscord(16711680, "MDT Clock-Out", 'Player: **' ..  firstName .. " ".. lastName .. '**\n\nJob: **' .. PlayerData.job.name .. '**\n\nRank: **' .. PlayerData.job.grade.name .. '**\n\nStatus: **Off Duty**\n Total time:' .. time_formatted, "ps-mdt | Made by Project Sloth")
+        sendToDiscord(16711680, "MDT Clock-Out", 'Player: **' ..  firstName .. " ".. lastName .. '**\n\nJob: **' .. Framework.GetPlayerJobNameByPlayer(player) .. '**\n\nRank: **' .. Framework.GetPlayerJobGradeNameByPlayer(player) .. '**\n\nStatus: **Off Duty**\n Total time:' .. time_formatted, "ps-mdt | Made by Project Sloth")
     end
 end)
 
