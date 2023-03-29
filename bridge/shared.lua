@@ -7,5 +7,5 @@ if GetResourceState("qb-core"):find("start") then
 elseif GetResourceState("es_extended"):find("start") then
     Framework.initials = "esx"
     Framework.resourceName = "es_extended"
-    Framework.object = exports[Framework.resourceName]:GetCoreObject()
+    Framework.object = exports[Framework.resourceName]:getSharedObject()
 end

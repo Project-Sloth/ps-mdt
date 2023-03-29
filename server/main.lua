@@ -92,7 +92,6 @@ AddEventHandler("playerDropped", function(reason)
         })
         if result then
             local time_formatted = format_time(tonumber(result))
-
             sendToDiscord(16753920, "MDT Clock-Out", 'Player: **' ..  firstName .. " ".. lastName .. '**\n\nJob: **' .. Framework.GetPlayerJobNameByPlayer(player) .. '**\n\nRank: **' .. Framework.GetPlayerJobGradeNameByPlayer(player) .. '**\n\nStatus: **Disconnected - Auto Clocked Out**\n Total time:' .. time_formatted, "ps-mdt | Made by Project Sloth")
         end
     end
