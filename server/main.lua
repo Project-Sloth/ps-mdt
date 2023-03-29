@@ -1569,7 +1569,7 @@ local function isRequestVehicle(vehId)
 end
 exports('isRequestVehicle', isRequestVehicle)
 
-RegisterNetEvent('mdt:server:impoundVehicle', function(sentInfo, sentVehicle) -- TODO: refactor this to be compatible with all frameworks such as esx...I cbf now
+RegisterNetEvent('mdt:server:impoundVehicle', function(sentInfo, sentVehicle)
     local src = source
     local player = Framework.GetPlayerByServerId(src)
     if player then
@@ -1578,7 +1578,7 @@ RegisterNetEvent('mdt:server:impoundVehicle', function(sentInfo, sentVehicle) --
             if sentInfo and type(sentInfo) == 'table' then
                 local plate, linkedreport, fee, time = sentInfo['plate'], sentInfo['linkedreport'], sentInfo['fee'], sentInfo['time']
                 if (plate and linkedreport and fee and time) then
-                local vehicle = MySQL.query.await("SELECT id, plate FROM `player_vehicles` WHERE plate=:plate LIMIT 1", { plate = string.gsub(plate, "^%s*(.-)%s*$", "%1") })
+                    local vehicle = SearchVehicleDataByPlate(plate)
                     if vehicle and vehicle[1] then
                         local data = vehicle[1]
                         MySQL.insert('INSERT INTO `mdt_impound` (`vehicleid`, `linkedreport`, `fee`, `time`) VALUES (:vehicleid, :linkedreport, :fee, :time)', {
@@ -1601,7 +1601,7 @@ RegisterNetEvent('mdt:server:impoundVehicle', function(sentInfo, sentVehicle) --
                             FreezeEntityPosition(vehicle, true)
                             impound[#impound+1] = data
 
-                            TriggerClientEvent("police:client:ImpoundVehicle", src, true, fee)
+                            TriggerClientEvent("police:client:ImpoundVehicle", src, true, fee) -- TODO: change this once esx bridge is setup
                         end)
                     end
                 end
@@ -1614,14 +1614,14 @@ RegisterNetEvent('mdt:server:getImpoundVehicles', function()
     TriggerClientEvent('mdt:client:getImpoundVehicles', source, impound)
 end)
 
-RegisterNetEvent('mdt:server:removeImpound', function(plate, currentSelection) -- TODO: refactor this to be compatible with all frameworks such as esx...I cbf now
+RegisterNetEvent('mdt:server:removeImpound', function(plate, currentSelection)
     print("Removing impound", plate, currentSelection)
     local src = source
     local player = Framework.GetPlayerByServerId(src)
     if player then
         local playerJobName = Framework.GetPlayerJobNameByPlayer(player)
         if GetJobType(playerJobName) == 'police' then
-            local result = MySQL.single.await("SELECT id, vehicle FROM `player_vehicles` WHERE plate=:plate LIMIT 1", { plate = string.gsub(plate, "^%s*(.-)%s*$", "%1")})
+            local result = SearchVehicleDataByPlate(plate)
             if result and result[1] then
                 local data = result[1]
                 MySQL.update("DELETE FROM `mdt_impound` WHERE vehicleid=:vehicleid", { vehicleid = data['id'] })
@@ -1631,13 +1631,13 @@ RegisterNetEvent('mdt:server:removeImpound', function(plate, currentSelection) -
     end
 end)
 
-RegisterNetEvent('mdt:server:statusImpound', function(plate) -- TODO: refactor this to be compatible with all frameworks such as esx...I cbf now
+RegisterNetEvent('mdt:server:statusImpound', function(plate)
     local src = source
     local player = Framework.GetPlayerByServerId(src)
     if player then
         local playerJobName = Framework.GetPlayerJobNameByPlayer(player)
         if GetJobType(playerJobName) == 'police' then
-            local vehicle = MySQL.query.await("SELECT id, plate FROM `player_vehicles` WHERE plate=:plate LIMIT 1", { plate = string.gsub(plate, "^%s*(.-)%s*$", "%1")})
+            local vehicle = SearchVehicleDataByPlate(plate)
             if vehicle and vehicle[1] then
                 local data = vehicle[1]
                 local impoundinfo = MySQL.query.await("SELECT * FROM `mdt_impound` WHERE vehicleid=:vehicleid LIMIT 1", { vehicleid = data['id'] })
