@@ -17,10 +17,6 @@ function Framework.GetPlayerCitizenIdByPlayer(player)
     return player?.PlayerData?.citizenid
 end
 
-function Framework.GetPlayerCitizenIdByPlayerData(playerData)
-    return playerData?.citizenid
-end
-
 function Framework.GetPlayerServerIdByPlayer(player)
     return player?.PlayerData?.source
 end
@@ -41,16 +37,8 @@ function Framework.GetPlayerFullNameByPlayer(player)
     return ("%s %s"):format(firstName, lastName)
 end
 
-function Framework.GetPlayerMetadataByPlayerData(playerData)
-    return playerData?.metadata
-end
-
 function Framework.GetPlayerLicensesByPlayer(player)
-    return Framework.GetPlayerMetadataByPlayerData(player?.PlayerData)?.licenses
-end
-
-function Framework.GetPlayerLicensesByPlayerData(playerData)
-    return Framework.GetPlayerMetadataByPlayerData(playerData)?.licenses
+    return player?.PlayerData?.metadata?.licenses
 end
 
 function Framework.GetPlayerGenderByPlayer(player)
