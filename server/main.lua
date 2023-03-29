@@ -1666,7 +1666,7 @@ Framework.CreateServerCallback('mdt:server:GetPlayerSourceId', function(source, 
     cb(targetSource)
 end)
 
-Framework.CreateServerCallback('getWeaponInfo', function(source, cb)
+Framework.CreateServerCallback('getWeaponInfo', function(source, cb) -- CHECK: I don't get this. It's supposed to get weapon data but no info is being sent to it by client. It looks like it check for a random weapon!
     local player = Framework.GetPlayerByServerId(source)
     local weaponInfo = nil
     for _, item in pairs(player.PlayerData.items) do -- TODO: refactor this to be compatible with all frameworks such as esx...I cbf now

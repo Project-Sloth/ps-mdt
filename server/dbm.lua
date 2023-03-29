@@ -126,12 +126,5 @@ function GetVehicleWarrantStatusByPlate(plate)
 end
 
 function GetVehicleOwnerByPlate(plate)
-
-    local result = MySQL.query.await('SELECT plate, citizenid, id FROM player_vehicles WHERE plate = @plate', {['@plate'] = plate})
-    if result and result[1] then
-        local citizenid = result[1]['citizenid']
-        local Player = QBCore.Functions.GetPlayerByCitizenId(citizenid)
-        local owner = Player.PlayerData.charinfo.firstname.." "..Player.PlayerData.charinfo.lastname
-        return owner
-    end
+    return DB?.GetVehicleOwnerByPlate(plate)
 end
