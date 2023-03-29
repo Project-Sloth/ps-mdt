@@ -40,6 +40,7 @@ end)
 RegisterNetEvent("QBCore:Client:SetDuty", function(job, state)
     if AllowedJob(job) then
         TriggerServerEvent("ps-mdt:server:ToggleDuty")
+	TriggerServerEvent("ps-mdt:server:ClockSystem")
         TriggerServerEvent('QBCore:ToggleDuty')
         if PlayerData.job.name == "police" or PlayerData.job.type == "leo" then
             TriggerServerEvent("police:server:UpdateCurrentCops")
@@ -90,6 +91,7 @@ RegisterCommand('mdt', function()
     if not PlayerData.metadata["isdead"] and not PlayerData.metadata["inlaststand"] and not PlayerData.metadata["ishandcuffed"] and not IsPauseMenuActive() then
         if GetJobType(PlayerData.job.name) ~= nil then
             TriggerServerEvent('mdt:server:openMDT')
+            TriggerServerEvent('mdt:requestOfficerData')
         end
     else
         QBCore.Functions.Notify("Can't do that!", "error")
@@ -295,12 +297,12 @@ RegisterNUICallback("saveProfile", function(data, cb)
     local sName = data.sName
     local tags = data.tags
     local gallery = data.gallery
-    local fingerprint = data.fingerprint
     local licenses = data.licenses
-
-    TriggerServerEvent("mdt:server:saveProfile", profilepic, information, cid, fName, sName, tags, gallery, fingerprint, licenses)
+    
+    TriggerServerEvent("mdt:server:saveProfile", profilepic, information, cid, fName, sName, tags, gallery, licenses)
     cb(true)
 end)
+
 
 RegisterNUICallback("getProfileData", function(data, cb)
     local id = data.id
@@ -316,6 +318,7 @@ RegisterNUICallback("getProfileData", function(data, cb)
     local pP = nil
     local result = getProfileDataPromise(id)
     local vehicles = result.vehicles
+    local licenses = result.licences
 
     for i=1,#vehicles do
         local vehicle=result.vehicles[i]
@@ -393,8 +396,13 @@ RegisterNUICallback("sendFine", function(data, cb)
     local targetSourceId = Citizen.Await(p)
 
     if fine > 0 then
-        -- Uses QB-Core /bill command
-        ExecuteCommand(('bill %s %s'):format(targetSourceId, fine))
+        if Config.BillVariation then
+            -- Uses QB-Core removeMoney Functions
+            TriggerServerEvent("mdt:server:removeMoney", citizenId, fine)
+        else
+            -- Uses QB-Core /bill command
+            ExecuteCommand(('bill %s %s'):format(targetSourceId, fine))
+        end
     end
 end)
 
@@ -752,6 +760,7 @@ end)
 
 RegisterNUICallback("toggleDuty", function(data, cb)
     TriggerServerEvent('QBCore:ToggleDuty')
+    TriggerServerEvent('ps-mdt:server:ClockSystem')
     cb(true)
 end)
 
@@ -1021,4 +1030,18 @@ RegisterNetEvent('ps-mdt:client:selfregister', function()
             end
         end)
     end
+end)
+
+--====================================================================================
+------------------------------------------
+--             STAFF LOGS PAGE          --
+------------------------------------------
+--====================================================================================
+
+RegisterNetEvent("mdt:receiveOfficerData")
+AddEventHandler("mdt:receiveOfficerData", function(officerData)
+    SendNUIMessage({
+        action = "updateOfficerData",
+        data = officerData
+    })
 end)

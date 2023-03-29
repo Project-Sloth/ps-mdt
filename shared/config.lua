@@ -1,20 +1,34 @@
 Config = Config or {}
 
 Config.UsingDefaultQBApartments = true
-
 Config.OnlyShowOnDuty = true
 Config.UseCQCMugshot = true
-Config.MugPhotos = 1 -- Front, Back Side. Use 4 for both sides ( default is 1 )
-Config.Webhook = '' -- Images will be uploaded here ( add a discord webhook )
+
+-- Front, Back Side. Use 4 for both sides, we recommend leaving at 1 for default.
+Config.MugPhotos = 1
+
+-- Images for mug shots will be uploaded here. Add a Discord webhook. 
+Config.Webhook = ''
+
+-- Clock-in notifications for duty. Add a Discord webhook.
+-- Command /mdtleaderboard, will display top players per clock-in hours.
+Config.ClockinWebhook = ''
+
+
+-- If set to true = Fine gets automatically removed from bank automatically charging the player.
+-- If set to false = The fine gets sent as an Invoice to their phone and it us to the player to pay for it, can remain unpaid and ignored.
+Config.BillVariation = true
 
 -- Set up your inventory to automatically retrieve images when a weapon is registered at a weapon shop or self-registered.
 -- If you're utilizing lj-inventory's latest version from GitHub, no further modifications are necessary. 
 -- However, if you're using a different inventory system, please refer to the "Inventory Edit | Automatic Add Weapons with images" section in ps-mdt's README.
 Config.InventoryForWeaponsImages = "lj-inventory"
 
-Config.Fuel = "lj-fuel" -- "LegacyFuel", "lj-fuel"
+-- "LegacyFuel", "lj-fuel"
+Config.Fuel = "lj-fuel"
 
-Config.RosterLink = { -- Google Docs Link
+-- Google Docs Link
+Config.RosterLink = {
     ['police'] = '',
     ['ambulance'] = '',
     ['bcso'] = '',
