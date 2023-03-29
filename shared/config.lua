@@ -14,7 +14,6 @@ Config.Webhook = ''
 -- Command /mdtleaderboard, will display top players per clock-in hours.
 Config.ClockinWebhook = ''
 
-
 -- If set to true = Fine gets automatically removed from bank automatically charging the player.
 -- If set to false = The fine gets sent as an Invoice to their phone and it us to the player to pay for it, can remain unpaid and ignored.
 Config.BillVariation = true
@@ -26,6 +25,19 @@ Config.InventoryForWeaponsImages = "lj-inventory"
 
 -- "LegacyFuel", "lj-fuel"
 Config.Fuel = "lj-fuel"
+
+-- Google Docs Link
+Config.sopLink = {
+    ['police'] = '',
+    ['ambulance'] = '',
+    ['bcso'] = '',
+    ['doj'] = '',
+    ['sast'] = '',
+    ['sasp'] = '',
+    ['doc'] = '',
+    ['lssd'] = '',
+    ['sapr'] = '',
+}
 
 -- Google Docs Link
 Config.RosterLink = {
