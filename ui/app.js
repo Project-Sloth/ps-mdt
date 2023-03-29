@@ -1,4 +1,5 @@
 let canSearchForProfiles = true;
+let canSearchForOfficer = true;
 let canSaveProfile = true;
 let canRefreshBolo = true;
 let canRefreshReports = true;
@@ -1048,6 +1049,42 @@ $(document).ready(() => {
         );
 
         searchProfilesResults(result);
+      }
+    }
+  });
+
+  $(".leaderboard-title").click(function () {
+    if (canSearchForOfficer == true) {
+      if ($(".leaderboard-search-input").css("display") == "none") {
+        $(".leaderboard-search-input").slideDown(250);
+        $(".leaderboard-search-input").css("display", "block");
+      } else {
+        $(".leaderboard-search-input").slideUp(250);
+        setTimeout(() => {
+          $(".leaderboard-search-input").css("display", "none");
+        }, 250);
+      }
+    }
+  });
+
+  $("#leaderboard-search-input").keydown(async function (e) {
+    if (e.keyCode === 13 && canSearchForOfficer == true) {
+      let name = $("#leaderboard-search-input").val();
+      if (name != "") {
+        canSearchForOfficer = false;
+        $(".leaderboard-items").empty();
+        $(".leaderboard-items").prepend(
+          `<div class="leaderboard-loader"></div>`
+        );
+
+        let result = await $.post(
+          `https://${GetParentResourceName()}/searchOfficerProfiles`,
+          JSON.stringify({
+            name: name,
+          })
+        );
+
+        searchOfficerResults(result);
       }
     }
   });
@@ -5475,6 +5512,7 @@ function searchProfilesResults(result) {
     return true;
   }
 
+
   let profileHTML = "";
 
   result.forEach((value) => {
@@ -5736,3 +5774,72 @@ $(".map-clear").on('click', function() {
       ClearMap();
     }, 1500);
 });
+
+function searchOfficerResults(result) {
+  canSearchForOfficer = true;
+  $(".leaderboard-items").empty();
+
+  if (result.length < 1) {
+    $(".leaderboard-items").html(
+      `
+                      <div class="leaderboard-item" data-id="0">
+
+                          <div style="display: flex; flex-direction: column; margin-top: 2.5px; margin-left: 5px; width: 100%; padding: 5px;">
+                          <div style="display: flex; flex-direction: column;">
+                              <div class="leaderboard-item-title">No Officer Matching that search</div>
+                              </div>
+                              <div class="leaderboard-bottom-info">
+                              </div>
+                          </div>
+                      </div>
+              `
+    );
+    return true;
+  }
+
+
+  let leaderboardOfficerHTML = "";
+
+  result.forEach((value) => {
+    let charinfo = value.charinfo;
+    let metadata = value.metadata;
+
+    if (typeof value.charinfo == "string") {
+      charinfo = JSON.parse(charinfo);
+    }
+  
+    if (typeof value.metadata == "string") {
+      metadata = JSON.parse(metadata);
+    }
+
+    if (!metadata) {
+      metadata = {};
+    }
+
+    if (!metadata.licences) {
+      metadata.licences = {};
+    }
+  
+    let name = charinfo.firstname + " " + charinfo.lastname;
+  
+    if (value.pp == '') {
+      value.pp = 'img/not-found.webp'
+    }
+
+    leaderboardOfficerHTML += `
+                  <div class="leaderboard-item" data-id="${value.citizenid}">
+                      <img src="${value.pp}" class="leaderboard-image">
+                        <div style="display: flex; flex-direction: column; margin-top: 2.5px; margin-left: 5px; width: 100%; padding: 5px;">
+                          <div class="leaderboard-item-title">${name}
+                        </div>
+                        <div class="leaderboard-bottom-info">
+                          <div class="leaderboard-id"><span class="fas fa-id-card"></span> Citizen ID: ${value.citizenid}</div>&nbsp;</div>
+                          <div class="leaderboard-id"><span class="fas fa-play"></span> Grade: Chief of Police</div>&nbsp;</div>
+                          <div class="leaderboard-id"><span class="fas fa-user-clock"></span> Online Activity: 00:00:00</div>&nbsp;</div>
+                        </div>
+                  </div>
+              `;
+  });
+
+  $(".leaderboard-items").html(leaderboardOfficerHTML);
+}

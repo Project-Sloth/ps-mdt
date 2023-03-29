@@ -1729,6 +1729,20 @@ span.tag-input[contenteditable]:empty::before {
     animation: spin 2s linear infinite;
 }
 
+.leaderboard-loader {
+    margin-top: 5vh;
+    margin-left: auto;
+    margin-right: auto;
+    z-index: 1;
+    width: 120px;
+    height: 120px;
+    border: 12px solid var(--color-4);
+    border-radius: 50%;
+    border-top: 12px solid var(--color-3);
+    -webkit-animation: spin 2s linear infinite;
+    animation: spin 2s linear infinite;
+}
+
 .profile-loader {
     margin-top: 5vh;
     margin-left: auto;
@@ -5093,6 +5107,106 @@ span.tag-reports-input[contenteditable]:empty::before {
     height: 25px;
     align-items: center;
     user-select: none;
+}
+
+.leaderboard-officer-title {
+    background-color: var(--color-4);
+    color: white;
+    font-size: 18px;
+    font-weight: bolder;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    text-align: center;
+    margin: auto;
+    margin-top: 10px;
+    margin-bottom: 0px;
+    width: 95%;
+    align-items: center;
+    user-select: none;
+}
+
+.leaderboard-title:hover {
+    background-color: var(--color-3);
+}
+
+.leaderboard-search-input {
+    background-color: var(--color-3);
+    color: white;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    text-align: center;
+    margin: auto;
+    margin-top: 10px;
+    margin-bottom: 0px;
+    width: 95%;
+    align-items: center;
+    user-select: none;
+    display: none;
+}
+
+#leaderboard-search-input {
+    outline: none;
+    border: none;
+    width: 95%;
+    color: white;
+    font-size: 15px;
+    background-color: rgba(0, 0, 0, 0);
+    margin: auto;
+}
+
+#leaderboard-search-input::placeholder {
+    color: white;
+}
+
+.leaderboard-items {
+    display: flex;
+    flex-direction: column;
+    overflow: auto;
+    margin: auto;
+    margin-top: 15px;
+    width: 95%;
+    height: 100%;
+    margin-bottom: 0px;
+}
+
+.leaderboard-item {
+    background-color: var(--color-5);
+    width: 100%;
+    height: 12vh;
+    margin: auto;
+    margin-bottom: 10px;
+    margin-top: 0px;
+    display: flex;
+    user-select: none;
+
+}
+
+.leaderboard-image {
+    width: 9vh;
+    height: 9vh;
+    margin-left: 10px;
+    margin-top: auto;
+    margin-bottom: auto;
+    object-fit: cover;
+}
+
+.leaderboard-item-title {
+    font-size: 16px;
+    font-weight: bold;
+    color: white;
+    padding-top: 2px;
+}
+
+.leaderboard-bottom-info {
+    display: flex;
+    margin-top: 20px;
+    width: 100%;
+}
+
+.leaderboard-id {
+    width: 100%;
+    color: white;
+    font-size: 13px;
 }
 
 /* Vehicle Colors :( so long lol */

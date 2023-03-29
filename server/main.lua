@@ -245,6 +245,29 @@ QBCore.Functions.CreateCallback('mdt:server:SearchProfile', function(source, cb,
 	return cb({})
 end)
 
+QBCore.Functions.CreateCallback('mdt:server:SearchOfficerProfile', function(source, cb, sentData)
+	if not sentData then  return cb({}) end
+	local src = source
+	local Player = QBCore.Functions.GetPlayer(src)
+	if Player then
+		local JobType = GetJobType(Player.PlayerData.job.name)
+		if JobType ~= nil then
+			local people = MySQL.query.await("SELECT p.citizenid, p.charinfo, md.pfp FROM players p LEFT JOIN mdt_data md on p.citizenid = md.cid WHERE LOWER(CONCAT(JSON_VALUE(p.charinfo, '$.firstname'), ' ', JSON_VALUE(p.charinfo, '$.lastname'))) LIKE :query OR LOWER(`charinfo`) LIKE :query OR LOWER(`citizenid`) LIKE :query AND jobtype = :jobtype LIMIT 20", { query = string.lower('%'..sentData..'%'), jobtype = JobType })
+			local citizenIds = {}
+			local citizenIdIndexMap = {}
+			if not next(people) then cb({}) return end
+			for index, data in pairs(people) do
+				people[index]['pp'] = ProfPic(data.gender, data.pfp)
+				citizenIds[#citizenIds+1] = data.citizenid
+				citizenIdIndexMap[data.citizenid] = index
+			end
+			return cb(people)
+		end
+	end
+
+	return cb({})
+end)
+
 QBCore.Functions.CreateCallback("mdt:server:getWarrants", function(source, cb)
     local WarrantData = {}
     local data = MySQL.query.await("SELECT * FROM mdt_convictions", {})
