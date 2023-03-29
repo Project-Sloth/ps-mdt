@@ -29,10 +29,10 @@ function versionCheck(repository)
                     if current < minimum then
                         print("^0.-------------------------------------------------------------.")
                         print("  ___  ____ ____    _ ____ ____ ___   ____ _    ____ ___ _  _")
-                        print("  |--' |--< [__] ___| |=== |___  |    ==== |___ [__]  |  |--|")
-                        print("^0'-------------------------------------------------------------'")
+                        print("  |--' |--< [__] ___| |=== |___  |    ==== |___ [__]  |  |--|\n")
                         print(('^6Your %s is outdated (your version: %s)\r\nMake sure to update: %s^0'):format(resource, currentVersion, response.html_url))
                         print('^2'..response.body)
+                        print("^0'-------------------------------------------------------------'")
                        
                 else break end
                 end
