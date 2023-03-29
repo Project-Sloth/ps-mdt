@@ -84,19 +84,19 @@ AddEventHandler('playerDropped', function(reason)
     local lastName = PlayerData.charinfo.lastname:sub(1,1):upper()..PlayerData.charinfo.lastname:sub(2)
 
     -- Auto clock out if the player is off duty
-    if PlayerData.job.onduty then
-        MySQL.query('UPDATE mdt_clocking SET clock_out_time = NOW(), total_time = TIMESTAMPDIFF(SECOND, clock_in_time, NOW()) WHERE user_id = @user_id ORDER BY id DESC LIMIT 1', {
-            ['@user_id'] = PlayerData.citizenid
-        })
+    if PlayerData.PlayerData.job.onduty then
+		MySQL.query('UPDATE mdt_clocking SET clock_out_time = NOW(), total_time = TIMESTAMPDIFF(SECOND, clock_in_time, NOW()) WHERE user_id = @user_id ORDER BY id DESC LIMIT 1', {
+			['@user_id'] = PlayerData.PlayerData.citizenid
+		})
 
-        local result = MySQL.scalar.await('SELECT total_time FROM mdt_clocking WHERE user_id = @user_id', {
-            ['@user_id'] = PlayerData.citizenid
-        })
-        local res = tonumber(result)
-        local time_formatted = format_time(res)
-
-        sendToDiscord(16753920, "MDT Clock-Out", 'Player: **' ..  firstName .. " ".. lastName .. '**\n\nJob: **' .. PlayerData.job.name .. '**\n\nRank: **' .. PlayerData.job.grade.name .. '**\n\nStatus: **Disconnected - Auto Clocked Out**\n Total time:' .. time_formatted, "ps-mdt | Made by Project Sloth")
-    end
+		local result = MySQL.scalar.await('SELECT total_time FROM mdt_clocking WHERE user_id = @user_id', {
+			['@user_id'] = PlayerData.PlayerData.citizenid
+		})
+		if result then
+			local time_formatted = format_time(tonumber(result))
+			sendToDiscord(16711680, "MDT Clock-Out", 'Player: **' ..  firstName .. " ".. lastName .. '**\n\nJob: **' .. PlayerData.PlayerData.job.name .. '**\n\nRank: **' .. PlayerData.PlayerData.job.grade.name .. '**\n\nStatus: **Off Duty**\n Total time:' .. time_formatted, "ps-mdt | Made by Project Sloth")
+		end
+	end
 
     -- Delete player from the MDT on logout
     if PlayerData ~= nil then
@@ -160,7 +160,7 @@ RegisterNetEvent("ps-mdt:server:ClockSystem", function()
     if PlayerData.job.onduty then
         
         TriggerClientEvent('QBCore:Notify', source, "You're clocked-in", 'success')
-        MySQL.Async.insert('INSERT INTO mdt_clocking (user_id, firstname, lastname, clock_in_time) VALUES (:user_id, :firstname, :lastname, :clock_in_time) ON DUPLICATE KEY UPDATE user_id = :user_id, firstname = :firstname, lastname = :lastname, clock_in_time = :clock_in_time', {
+		MySQL.Async.insert('INSERT INTO mdt_clocking (user_id, firstname, lastname, clock_in_time) VALUES (:user_id, :firstname, :lastname, :clock_in_time) ON DUPLICATE KEY UPDATE user_id = :user_id, firstname = :firstname, lastname = :lastname, clock_in_time = :clock_in_time', {
 			user_id = PlayerData.citizenid,
 			firstname = firstName,
 			lastname = lastName,
@@ -169,16 +169,15 @@ RegisterNetEvent("ps-mdt:server:ClockSystem", function()
 		end)
 		sendToDiscord(65280, "MDT Clock-In", 'Player: **' ..  firstName .. " ".. lastName .. '**\n\nJob: **' .. PlayerData.job.name .. '**\n\nRank: **' .. PlayerData.job.grade.name .. '**\n\nStatus: **On Duty**', "ps-mdt | Made by Project Sloth")
     else
-        TriggerClientEvent('QBCore:Notify', source, "You're clocked-out", 'success')
-        MySQL.query('UPDATE mdt_clocking SET clock_out_time = NOW(), total_time = TIMESTAMPDIFF(SECOND, clock_in_time, NOW()) WHERE user_id = @user_id ORDER BY id DESC LIMIT 1', {
-            ['@user_id'] = PlayerData.citizenid
-        })
+		TriggerClientEvent('QBCore:Notify', source, "You're clocked-out", 'success')
+		MySQL.query('UPDATE mdt_clocking SET clock_out_time = NOW(), total_time = TIMESTAMPDIFF(SECOND, clock_in_time, NOW()) WHERE user_id = @user_id ORDER BY id DESC LIMIT 1', {
+			['@user_id'] = PlayerData.citizenid
+		})
 
-        local result = MySQL.scalar.await('SELECT total_time FROM mdt_clocking WHERE user_id = @user_id', {
-            ['@user_id'] = PlayerData.citizenid
-        })
-        local res = tonumber(result)
-        local time_formatted = format_time(res)
+		local result = MySQL.scalar.await('SELECT total_time FROM mdt_clocking WHERE user_id = @user_id', {
+			['@user_id'] = PlayerData.citizenid
+		})
+		local time_formatted = format_time(tonumber(result))
 
 		sendToDiscord(16711680, "MDT Clock-Out", 'Player: **' ..  firstName .. " ".. lastName .. '**\n\nJob: **' .. PlayerData.job.name .. '**\n\nRank: **' .. PlayerData.job.grade.name .. '**\n\nStatus: **Off Duty**\n Total time:' .. time_formatted, "ps-mdt | Made by Project Sloth")
     end
