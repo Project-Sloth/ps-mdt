@@ -128,6 +128,39 @@ https://youtu.be/w9PAVc3ER_c
 ![image](https://i.imgur.com/6maboG3.png)
 ![image](https://i.imgur.com/DkhQxDq.png)
 
+# Roster and SOPs Setup
+
+* You need a Google Document / Sheet link that is viewable.
+
+Paste the link you got in the config here:
+```
+-- Google Docs Link
+Config.sopLink = {
+    ['police'] = '',
+    ['ambulance'] = '',
+    ['bcso'] = '',
+    ['doj'] = '',
+    ['sast'] = '',
+    ['sasp'] = '',
+    ['doc'] = '',
+    ['lssd'] = '',
+    ['sapr'] = '',
+}
+
+-- Google Docs Link
+Config.RosterLink = {
+    ['police'] = '',
+    ['ambulance'] = '',
+    ['bcso'] = '',
+    ['doj'] = '',
+    ['sast'] = '',
+    ['sasp'] = '',
+    ['doc'] = '',
+    ['lssd'] = '',
+    ['sapr'] = '',	
+}
+```
+
 # Preview
 ![image](https://user-images.githubusercontent.com/82112471/217596976-5147fefa-24e2-4b98-b167-4e151b8a9a8c.png)
 ![image](https://user-images.githubusercontent.com/82112471/217597024-2c1493fc-4439-4b56-abbd-f9149e987b9e.png)
