@@ -5832,10 +5832,13 @@ function searchOfficerResults(result) {
                         <div style="display: flex; flex-direction: column; margin-top: 2.5px; margin-left: 5px; width: 100%; padding: 5px;">
                           <div class="leaderboard-item-title">${name}
                         </div>
+                          <div class="leaderboard-criminal-tags">
+                              <span class="leaderboard-tag"> Online Activity: 00:00:00</span>
+                              <span class="leaderboard-tag"> Last Clock-In: 00:00:00</span>
+                          </div>
                         <div class="leaderboard-bottom-info">
-                          <div class="leaderboard-id"><span class="fas fa-id-card"></span> Citizen ID: ${value.citizenid}</div>&nbsp;</div>
-                          <div class="leaderboard-id"><span class="fas fa-play"></span> Grade: Chief of Police</div>&nbsp;</div>
-                          <div class="leaderboard-id"><span class="fas fa-user-clock"></span> Online Activity: 00:00:00</div>&nbsp;</div>
+                          <div class="leaderboard-id"><span class="fas fa-id-card"></span> Citizen ID: ${value.citizenid}</div>
+                          <div class="leaderboard-id"><span class="fas fa-graduation-cap"></span> Grade: Chief of Police ( 4 )</div>&nbsp;</div>
                         </div>
                   </div>
               `;

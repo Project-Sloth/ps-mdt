@@ -5173,7 +5173,6 @@ span.tag-reports-input[contenteditable]:empty::before {
     background-color: var(--color-5);
     width: 100%;
     height: 12vh;
-    margin: auto;
     margin-bottom: 10px;
     margin-top: 0px;
     display: flex;
@@ -5182,8 +5181,8 @@ span.tag-reports-input[contenteditable]:empty::before {
 }
 
 .leaderboard-image {
-    width: 9vh;
-    height: 9vh;
+    width: 10vh;
+    height: 10vh;
     margin-left: 10px;
     margin-top: auto;
     margin-bottom: auto;
@@ -5194,19 +5193,40 @@ span.tag-reports-input[contenteditable]:empty::before {
     font-size: 16px;
     font-weight: bold;
     color: white;
-    padding-top: 2px;
 }
 
 .leaderboard-bottom-info {
-    display: flex;
-    margin-top: 20px;
+    margin-top: 25px;
     width: 100%;
 }
 
 .leaderboard-id {
-    width: 100%;
     color: white;
+    padding-top: 3px;
+    padding-bottom: 3px;
     font-size: 13px;
+}
+
+.leaderboard-criminal-tags {
+    display: flex;
+    width: 100%;
+    height: 5px;
+    margin-top: 10px;
+    margin-bottom: 5px;
+}
+
+.leaderboard-tag {
+    margin: auto;
+    margin-left: 0px;
+    margin-right: 6px;
+    padding: 4px;
+    padding-left: 7px;
+    padding-right: 7px;
+    border-radius: 10px;
+    color: white;
+    font-size: 12px;
+    font-weight: bolder;
+    background-color: var(--color-3);
 }
 
 /* Vehicle Colors :( so long lol */
