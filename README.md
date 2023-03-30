@@ -36,6 +36,22 @@ https://user-images.githubusercontent.com/82112471/226150422-0c4776f0-0927-4b07-
 # Automatic Mugshot Pictures
 ![image](https://user-images.githubusercontent.com/82112471/226207146-086c5508-7e6f-4345-a157-3ec2fd588138.png)
 
+## Setup for Automatic Mugshot
+* Set Config.UseCQCMugshot to true, It is true by default. (Line 5 in Config.lua)
+```lua
+Config.UseCQCMugshot = true
+```
+* Choose what photos you want by changing this: (Line 8 in Config.lua)
+```lua
+-- Front, Back Side. Use 4 for both sides, we recommend leaving at 1 for default.
+Config.MugPhotos = 1
+```
+* Create a Discord Webhook and paste it here: (Line 11 in Config.lua)
+```lua
+-- Images for mug shots will be uploaded here. Add a Discord webhook. 
+Config.Webhook = ''
+```
+
 # Clock In/Out & Leaderboard
 * Triggers when officers Toggle Duty from inside the mdt.
 ![image](https://user-images.githubusercontent.com/82112471/228130546-6366ed1e-f5a8-428c-8680-0c384d2cff52.png)
