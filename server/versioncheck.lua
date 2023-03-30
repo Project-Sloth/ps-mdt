@@ -1,4 +1,4 @@
-function versionCheck(repository)
+local function versionCheck(repository)
 	local resource = GetInvokingResource() or GetCurrentResourceName()
 
 	local currentVersion = GetResourceMetadata(resource, 'version', 0)
