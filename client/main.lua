@@ -613,11 +613,11 @@ RegisterNUICallback("saveVehicleInfo", function(data, cb)
     if JobType == 'police' and impound.impoundChanged == true then
         if impound.impoundActive then
             local found = 0
-            local plate = string.upper(string.gsub(data['plate'], "^%s*(.-)%s*$", "%1"))
+            local plate = string.upper(TrimString(data['plate']))
             local vehicles = GetGamePool('CVehicle')
 
             for k,v in pairs(vehicles) do
-                local plt = string.upper(string.gsub(GetVehicleNumberPlateText(v), "^%s*(.-)%s*$", "%1"))
+                local plt = string.upper(TrimString(GetVehicleNumberPlateText(v)))
                 if plt == plate then
                     local dist = #(GetEntityCoords(PlayerPedId()) - GetEntityCoords(v))
                     if dist < 5.0 then

@@ -15,11 +15,11 @@ function Framework.GetPlayerCitizenId()
 end
 
 function Framework.GetPlayerFirstName()
-    return Framework.PlayerData?.charinfo?.firstname
+    return CapitalFirstLetter(Framework.PlayerData?.charinfo?.firstname)
 end
 
 function Framework.GetPlayerLastName()
-    return Framework.PlayerData?.charinfo?.lastname
+    return CapitalFirstLetter(Framework.PlayerData?.charinfo?.lastname)
 end
 
 function Framework.GetPlayerBirthDate()

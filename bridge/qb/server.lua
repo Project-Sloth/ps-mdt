@@ -22,13 +22,11 @@ function Framework.GetPlayerServerIdByPlayer(player)
 end
 
 function Framework.GetPlayerFirstNameByPlayer(player)
-    local firstName = player?.PlayerData?.charinfo?.firstname
-    return firstName:sub(1,1):upper()..firstName:sub(2)
+    return CapitalFirstLetter(player?.PlayerData?.charinfo?.firstname)
 end
 
 function Framework.GetPlayerLastNameByPlayer(player)
-    local lastName = player?.PlayerData?.charinfo?.lastname
-    return lastName:sub(1,1):upper()..lastName:sub(2)
+    return CapitalFirstLetter(player?.PlayerData?.charinfo?.lastname)
 end
 
 function Framework.GetPlayerFullNameByPlayer(player)
@@ -82,11 +80,11 @@ function Framework.GetPlayerHasItemByPlayer(player, item)
 end
 
 function Framework.RemoveMoneyFromPlayer(player, money, account, reason)
-    return player?.Functions?.RemoveMoney(account or 'bank', money, reason)
+    return player?.Functions?.RemoveMoney(account or "bank", money, reason)
 end
 
 function Framework.Notification(source, message, type, duration)
-    return TriggerClientEvent('QBCore:Notify', source, message, type, duration)
+    return TriggerClientEvent("QBCore:Notify", source, message, type, duration)
 end
 
 function Framework.UnpackJobData(data) -- QB Style

@@ -8,7 +8,7 @@ version '2.3.9'
 lua54 'yes'
 
 shared_scripts {
-    'shared/config.lua',
+    'shared/*.lua',
     'bridge/shared.lua',
 }
 
