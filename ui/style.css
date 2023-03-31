@@ -1730,9 +1730,7 @@ span.tag-input[contenteditable]:empty::before {
 }
 
 .leaderboard-loader {
-    margin-top: 5vh;
-    margin-left: auto;
-    margin-right: auto;
+    margin: 5vh auto 0 auto;
     z-index: 1;
     width: 120px;
     height: 120px;
@@ -5114,12 +5112,9 @@ span.tag-reports-input[contenteditable]:empty::before {
     color: white;
     font-size: 18px;
     font-weight: bolder;
-    padding-top: 5px;
-    padding-bottom: 5px;
+    padding: 5px 0;
     text-align: center;
-    margin: auto;
-    margin-top: 10px;
-    margin-bottom: 0px;
+    margin: 10px auto 0 auto;
     width: 95%;
     align-items: center;
     user-select: none;
@@ -5132,12 +5127,9 @@ span.tag-reports-input[contenteditable]:empty::before {
 .leaderboard-search-input {
     background-color: var(--color-3);
     color: white;
-    padding-top: 10px;
-    padding-bottom: 10px;
+    padding: 10px auto;
     text-align: center;
-    margin: auto;
-    margin-top: 10px;
-    margin-bottom: 0px;
+    margin: 10px auto 0 auto;
     width: 95%;
     align-items: center;
     user-select: none;
@@ -5150,7 +5142,7 @@ span.tag-reports-input[contenteditable]:empty::before {
     width: 95%;
     color: white;
     font-size: 15px;
-    background-color: rgba(0, 0, 0, 0);
+    background-color: transparent;
     margin: auto;
 }
 
@@ -5162,8 +5154,7 @@ span.tag-reports-input[contenteditable]:empty::before {
     display: flex;
     flex-direction: column;
     overflow: auto;
-    margin: auto;
-    margin-top: 15px;
+    margin: 15px auto 0 auto;
     width: 95%;
     height: 100%;
     margin-bottom: 0px;
@@ -5184,8 +5175,6 @@ span.tag-reports-input[contenteditable]:empty::before {
     width: 10vh;
     height: 10vh;
     margin-left: 10px;
-    margin-top: auto;
-    margin-bottom: auto;
     object-fit: cover;
 }
 
@@ -5216,9 +5205,7 @@ span.tag-reports-input[contenteditable]:empty::before {
 }
 
 .leaderboard-tag {
-    margin: auto;
-    margin-left: 0px;
-    margin-right: 6px;
+    margin: auto 6px auto 0px;
     padding: 4px;
     padding-left: 7px;
     padding-right: 7px;
