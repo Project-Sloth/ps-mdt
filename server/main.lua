@@ -408,16 +408,18 @@ Framework.CreateServerCallback('mdt:server:GetProfileData', function(source, cb,
         local Coords = {}
         local Houses = {}
         local properties= GetPlayerPropertiesByCitizenId(person.cid)
-        for k, v in pairs(properties) do
-            Coords[#Coords+1] = {
-                coords = json.decode(v["coords"]),
-            }
-        end
-        for index = 1, #Coords, 1 do
-            Houses[#Houses+1] = {
-                label = properties[index]["label"],
-                coords = tostring(Coords[index]["coords"]["enter"]["x"]..",".. Coords[index]["coords"]["enter"]["y"].. ",".. Coords[index]["coords"]["enter"]["z"]),
-            }
+        if properties and type(properties) == "table" then
+            for _, v in pairs(properties) do
+                Coords[#Coords+1] = {
+                    coords = json.decode(v["coords"]),
+                }
+            end
+            for index = 1, #Coords, 1 do
+                Houses[#Houses+1] = {
+                    label = properties[index]["label"],
+                    coords = tostring(Coords[index]["coords"]["enter"]["x"]..",".. Coords[index]["coords"]["enter"]["y"].. ",".. Coords[index]["coords"]["enter"]["z"]),
+                }
+            end
         end
         person.properties = Houses
     end
