@@ -76,7 +76,7 @@ function GetBoloStatus(plate)
     return false
 end
 
-function GetOwnerName(cid)
+function GetOwnerName(cid) -- CHECK: looks like it's not used in the resource
     return DB?.GetOwnerName(cid)
 end
 
