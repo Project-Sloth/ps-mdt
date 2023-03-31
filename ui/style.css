@@ -5127,9 +5127,12 @@ span.tag-reports-input[contenteditable]:empty::before {
 .leaderboard-search-input {
     background-color: var(--color-3);
     color: white;
-    padding: 10px auto;
+    padding-top: 10px;
+    padding-bottom: 10px;
     text-align: center;
-    margin: 10px auto 0 auto;
+    margin: auto;
+    margin-top: 10px;
+    margin-bottom: 0px;
     width: 95%;
     align-items: center;
     user-select: none;
@@ -5175,6 +5178,8 @@ span.tag-reports-input[contenteditable]:empty::before {
     width: 10vh;
     height: 10vh;
     margin-left: 10px;
+    margin-top: auto;
+    margin-bottom: auto;
     object-fit: cover;
 }
 
