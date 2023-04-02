@@ -1059,10 +1059,9 @@ $(document).ready(() => {
         $(".leaderboard-search-input").slideDown(250);
         $(".leaderboard-search-input").css("display", "block");
       } else {
-        $(".leaderboard-search-input").slideUp(250);
-        setTimeout(() => {
+        $(".leaderboard-search-input").slideUp(250, () => {
           $(".leaderboard-search-input").css("display", "none");
-        }, 250);
+      });
       }
     }
   });
@@ -4875,7 +4874,7 @@ $(document).ready(() => {
       let table = eventData.data;
       $(".incidents-person-search-holder").empty();
       $.each(table, function (index, value) {
-        let name = value.firstname + " " + value.lastname;
+        let name = `${value.firstname} ${value.lastname}`;
         $(".incidents-person-search-holder").prepend(
           `
             <div class="incidents-person-search-item" data-info="${name} (#${value.id})" data-cid="${value.id}" data-name="${name}" data-callsign="${value.callsign}">
@@ -5534,8 +5533,8 @@ function searchProfilesResults(result) {
     if (!metadata.licences) {
       metadata.licences = {};
     }
-  
-    let name = charinfo.firstname + " " + charinfo.lastname;
+
+    let name = `${charinfo.firstname} ${charinfo.lastname}`;
     let warrant = "red-tag";
     let convictions = "red-tag";
   
@@ -5820,7 +5819,7 @@ function searchOfficerResults(result) {
       metadata.licences = {};
     }
   
-    let name = charinfo.firstname + " " + charinfo.lastname;
+    let name = `${charinfo.firstname} ${charinfo.lastname}`;
   
     if (value.pp == '') {
       value.pp = 'img/not-found.webp'

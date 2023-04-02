@@ -5218,7 +5218,7 @@ span.tag-reports-input[contenteditable]:empty::before {
     color: white;
     font-size: 12px;
     font-weight: bolder;
-    background-color: var(--color-3);
+    background-color: var(--color-4);
 }
 
 /* Vehicle Colors :( so long lol */

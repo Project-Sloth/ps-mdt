@@ -206,7 +206,10 @@ RegisterNetEvent('mdt:server:openMDT', function()
 end)
 
 QBCore.Functions.CreateCallback('mdt:server:SearchProfile', function(source, cb, sentData)
-	if not sentData then  return cb({}) end
+	if not sentData then  
+	    print('No data received for searching after Players')
+	    return cb({}) 
+	end
 	local src = source
 	local Player = QBCore.Functions.GetPlayer(src)
 	if Player then
@@ -246,7 +249,10 @@ QBCore.Functions.CreateCallback('mdt:server:SearchProfile', function(source, cb,
 end)
 
 QBCore.Functions.CreateCallback('mdt:server:SearchOfficerProfile', function(source, cb, sentData)
-	if not sentData then  return cb({}) end
+	if not sentData then  
+	    print('No data received for searching after officer')
+	    return cb({}) 
+	end
 	local src = source
 	local Player = QBCore.Functions.GetPlayer(src)
 	if Player then
