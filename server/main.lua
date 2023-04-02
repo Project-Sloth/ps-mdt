@@ -336,7 +336,10 @@ RegisterNetEvent('mdt:server:deleteBulletin', function(id, title)
 end)
 
 QBCore.Functions.CreateCallback('mdt:server:GetProfileData', function(source, cb, sentId)
-	if not sentId then return cb({}) end
+	if not sentId then 
+		print("no ID Data found")
+		return cb({}) 
+	end
 
 	local src = source
 	local PlayerData = GetPlayerData(src)
