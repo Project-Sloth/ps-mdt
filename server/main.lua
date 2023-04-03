@@ -9,7 +9,7 @@ local dispatchMessages = {}
 local isDispatchRunning = false
 
 local function GetActiveData(cid)
-    local player = type(cid) == "string" and cid or tostring(cid)
+    local player = tostring(cid)
     if player then
         return activeUnits[player] and true or false
     end
@@ -28,6 +28,13 @@ local function IsPoliceOrEms(job)
         end
     end
     return false
+end
+
+function LogoutServerIdFromMDT(source)
+    local citizenId = Framework.GetPlayerCitizenIdByServerId(source)
+    if GetActiveData(citizenId) then
+        activeUnits[citizenId] = nil
+    end
 end
 
 RegisterServerEvent("ps-mdt:dispatchStatus", function(bool)
@@ -64,11 +71,7 @@ end
 
 RegisterNetEvent("ps-mdt:server:OnPlayerUnload", function()
     --// Delete player from the MDT on logout
-    local src = source
-    local citizenId = Framework.GetPlayerCitizenIdByServerId(src)
-    if GetActiveData(citizenId) then
-        activeUnits[citizenId] = nil
-    end
+    LogoutServerIdFromMDT(source)
 end)
 
 AddEventHandler("playerDropped", function(reason)
