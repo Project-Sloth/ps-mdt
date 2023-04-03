@@ -86,15 +86,3 @@ end
 function Framework.Notification(source, message, type, duration)
     return TriggerClientEvent("QBCore:Notify", source, message, type, duration)
 end
-
-function Framework.UnpackJobData(data) -- QB Style
-    local job = {
-        name = data.name,
-        label = data.label
-    }
-    local grade = {
-        name = data.grade.name,
-    }
-
-    return job, grade
-end

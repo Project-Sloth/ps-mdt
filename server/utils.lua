@@ -1,5 +1,13 @@
-function UnpackJobData(data)
-    return Framework.UnpackJobData(data)
+function UnpackJobData(data) -- QB Style
+    local job = {
+        name = data.name,
+        label = data.label
+    }
+    local grade = {
+        name = data.grade.name,
+    }
+
+    return job, grade
 end
 
 function PermCheckByJobName(src, jobName)
