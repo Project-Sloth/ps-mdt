@@ -17,17 +17,16 @@ local function GetActiveData(cid)
 end
 
 local function IsPoliceOrEms(job)
-    for k, v in pairs(Config.PoliceJobs) do
-           if job == k then
-              return true
-            end
-         end
-         
-         for k, v in pairs(Config.AmbulanceJobs) do
-           if job == k then
-              return true
-            end
-         end
+    for k in pairs(Config.PoliceJobs) do
+        if job == k then
+            return true
+        end
+    end
+    for k in pairs(Config.AmbulanceJobs) do
+        if job == k then
+            return true
+        end
+    end
     return false
 end
 
@@ -768,18 +767,19 @@ RegisterNetEvent('mdt:server:incidentSearchPerson', function(query)
                 end
 
                 local result = SearchPlayerIncidentByData(query, JobType)
-                
                 local data = {}
-                for i=1, #result do
-                    local charinfo = json.decode(result[i].charinfo)
-                    local metadata = json.decode(result[i].metadata)
-                    data[i] = {
-                        id = result[i].citizenid,
-                        firstname = charinfo.firstname,
-                        lastname = charinfo.lastname,
-                        profilepic = ProfPic(charinfo.gender, result[i].pfp),
-                        callsign = metadata.callsign
-                    }
+                if result and next(result) then
+                    for i = 1, #result do
+                        local charinfo = json.decode(result[i].charinfo)
+                        local metadata = json.decode(result[i].metadata)
+                        data[i] = {
+                            id = result[i].citizenid,
+                            firstname = charinfo.firstname,
+                            lastname = charinfo.lastname,
+                            profilepic = ProfPic(charinfo.gender, result[i].pfp),
+                            callsign = metadata.callsign
+                        }
+                    end
                 end
                 TriggerClientEvent('mdt:client:incidentSearchPerson', src, data)
             end
