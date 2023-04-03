@@ -151,7 +151,7 @@ RegisterCommand("mdtleaderboard", function(source, args)
         local firstName = record.firstname:sub(1,1):upper()..record.firstname:sub(2)
         local lastName = record.lastname:sub(1,1):upper()..record.lastname:sub(2)
         local total_time = format_time(record.total_time)
-    
+
         leaderboard_message = leaderboard_message .. i .. '. **' .. firstName .. ' ' .. lastName .. '** - ' .. total_time .. '\n'
     end
 
@@ -212,7 +212,7 @@ RegisterNetEvent('mdt:server:openMDT', function()
 
     local JobType = GetJobType(playerJobName)
     local bulletin = GetBulletins(JobType)
-    local calls = exports['ps-dispatch']:GetDispatchCalls()
+    local calls = GetResourceState('ps-dispatch'):find("start") and exports['ps-dispatch']:GetDispatchCalls() or {}
     --TriggerClientEvent('mdt:client:dashboardbulletin', src, bulletin)
     TriggerClientEvent('mdt:client:open', src, bulletin, activeUnits, calls, playerCitizenId)
     --TriggerClientEvent('mdt:client:GetActiveUnits', src, activeUnits)
