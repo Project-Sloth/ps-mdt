@@ -5140,7 +5140,7 @@ span.tag-reports-input[contenteditable]:empty::before {
     user-select: none;
 }
 
-.leaderboard-title:hover {
+.leaderboard-title-officer:hover {
     background-color: var(--color-3);
 }
 
