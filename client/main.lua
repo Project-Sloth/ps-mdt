@@ -1045,3 +1045,15 @@ AddEventHandler("mdt:receiveOfficerData", function(officerData)
         data = officerData
     })
 end)
+
+RegisterNUICallback("searchOfficerProfiles", function(data, cb)
+    local p = promise.new()
+
+    QBCore.Functions.TriggerCallback('mdt:server:SearchOfficerProfile', function(result)
+        p:resolve(result)
+    end, data.name)
+
+    local data = Citizen.Await(p)
+
+    cb(data)
+end)
