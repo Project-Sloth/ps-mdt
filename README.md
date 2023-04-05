@@ -144,45 +144,6 @@ https://youtu.be/w9PAVc3ER_c
 ![image](https://i.imgur.com/6maboG3.png)
 ![image](https://i.imgur.com/DkhQxDq.png)
 
-**[OPTIONAL] Traffic Stop Alert with Radialmenu**
-
-* Sends a Traffic Stop Alert to every Cop
-* Automatically grabs Vehicle Name and Plate from front Plate Reader.
-
-1. Add the following
-```
-local Vehicle = nil
-local function GetFrontPlate()
-	local data = {
-		locked = READER.vars.cams["front"].locked,
-		plate = READER.vars.cams["front"].plate,
-		veh = Vehicle,
-	}
-	return data
-end exports("GetFrontPlate", GetFrontPlate)
-``` 
-into **cl_plate_reader.lua** after 
-```
-RegisterNUICallback( "clearBoloPlate", function( plate, cb )
-	-- Clear the BOLO plate
-	READER:ClearBoloPlate()
-	cb( "ok" )
-end )
-```
-2. Add the following into **cl_plate_reader.lua** after **local veh = UTIL:GetVehicleInDirection( PLY.veh, start, offset )**
-```
-			if i == 1 then
-				Vehicle = veh
-			end
-```
-Should look like this:
-![image](https://i.imgur.com/ryefT3n.png)
-
-3. Add **ps-mdt:client:trafficStop** into the Radialmenu
-
-**Video Demonstration**
-https://youtu.be/GgKF4HCbdLc
-
 # Roster and SOPs Setup
 
 * You need a Google Document / Sheet link that is viewable.
