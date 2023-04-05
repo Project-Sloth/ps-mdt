@@ -144,31 +144,6 @@ https://youtu.be/w9PAVc3ER_c
 ![image](https://i.imgur.com/6maboG3.png)
 ![image](https://i.imgur.com/DkhQxDq.png)
 
-**[OPTIONAL] Traffic Stop Alert with Radialmenu**
-
-* Sends a Traffic Stop Alert to every Cop
-* Automatically grabs Vehicle Name and Plate from front Plate Reader.
-
-1. Add the following into **cl_plate_reader.lua line 217**
-
-```
-local Vehicle = nil
-
-local function GetFrontPlate()
-	local data = {
-		locked = READER.vars.cams["front"].locked,
-		plate = READER.vars.cams["front"].plate,
-		veh = Vehicle,
-	}
-	return data
-end exports("GetFrontPlate", GetFrontPlate)
-```
-
-2. Add **ps-mdt:client:trafficStop** into the Radialmenu
-
-**Video Demonstration**
-https://youtu.be/GgKF4HCbdLc
-
 # Roster and SOPs Setup
 
 * You need a Google Document / Sheet link that is viewable.
@@ -244,7 +219,6 @@ The below repos are direct forks of ps-mdt and have been edited to fit certain c
 # Credits
 * Originally Echo RP MDT released by [Flawws#999](https://github.com/FlawwsX/erp_mdt)
 * [CQC-Scripting](https://github.com/CQC-Scripting) for their [cqc-mugshot](https://github.com/CQC-Scripting/cqc-mugshot)
-* [QuantumMalice](https://github.com/QuantumMalice) for his [qb-platescan](https://github.com/QuantumMalice/qb-platescan)
 * [JoeSzymkowicz](https://github.com/JoeSzymkowicz)
 * [MonkeyWhisper](https://github.com/MonkeyWhisper)
 * [Snipe](https://github.com/pushkart2) 
