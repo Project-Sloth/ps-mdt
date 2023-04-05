@@ -166,7 +166,7 @@ function UpdateAllLicenses(identifier, incomingLicenses)
         result = json.decode(result)
 
         result.licences = result.licences or {
-            ['driver'] = false,
+            ['driver'] = true,
             ['business'] = false,
             ['weapon'] = false,
             ['pilot'] = false,

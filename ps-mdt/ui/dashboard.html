@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mobile Data Terminal</title>
+    <title>Project Sloth MDT</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A==" crossorigin=""/>
     <!-- <script src="nui://game/ui/jquery.js" type="text/javascript"></script> -->
@@ -64,8 +64,24 @@
         <div class="incidents-person-search-container">
             <div class="incidents-person-search-title">Person Search</div>
             <div class="incidents-person-search-name-title">Name</div>
-            <div style="width: 95%; margin: auto; border-bottom: 2px solid #2C537B;"><input class="incidents-person-search-name-input"></div>
+            <div style="width: 95%; margin: auto; border-bottom: 2px solid #132b96;"><input class="incidents-person-search-name-input"></div>
             <div class="incidents-person-search-holder">
+            </div>
+        </div>
+    </div>
+
+    <div class="convictions-known">
+        <div class="convictions-known-container">
+            <div class="convictions-known-title">Convictions</div>
+            <div class="convictions-holder">
+            </div>
+        </div>
+    </div>
+
+    <div class="incidents-known">
+        <div class="incidents-known-container">
+            <div class="incidents-known-title">Known Incidents</div>
+            <div class="profile-incidents-holder">
             </div>
         </div>
     </div>
@@ -93,7 +109,7 @@
         <div class="header">
             <img src="img/sasp_badge.webp" class="badge-logo">
             <div class="header-left">
-                <div class="header-title" style="color: #2c94c5; font-weight: bold; font-size: 20px;">Metropolitan Police Service</div>
+                <div class="header-title" style="color: #d6d3cb00; font-weight: bold; font-size: 20px;">Metropolitan Police Service</div>
                 <div style="color: white; font-weight: lighter; font-size: 18px;">Mobile Database Terminal</div>
             </div>
             <div class="header-middle">
@@ -116,6 +132,7 @@
                 <div class="nav-item map-nav-item">Map</div>
                 <div class="nav-item bolo-nav-item">BOLOs</div>
                 <div class="nav-item">Roster</div>
+                <div class="nav-item">SOPs</div>
                 <div class="nav-item dmv-nav-item">DVLA</div>
                 <div class="nav-item weapons-nav-item" data-page=".weapons-page-container">Weapons</div>
                 <div class="nav-item cams-nav-item">Cameras</div>
@@ -127,7 +144,7 @@
         <div class="header">
             <img src="img/sasp_badge.webp" class="badge-logo">
             <div class="header-left">
-                <div class="header-title" style="color: #2c94c5; font-weight: bold; font-size: 20px;">Metropolitan Police Service</div>
+                <div class="header-title" style="color: #ffffff00; font-weight: bold; font-size: 20px;">Metropolitan Police Service</div>
                 <div style="color: white; font-weight: lighter; font-size: 18px;">Mobile Database Terminal</div>
             </div>
             <div class="header-middle">
@@ -149,6 +166,7 @@
                 <div class="nav-item map-nav-item" data-page=".map-page-container">Map</div>
                 <div class="nav-item bolo-nav-item" data-page=".bolos-page-container">BOLOs</div>
                 <div class="nav-item penalcode-nav-item" data-page=".penalcode-page-container">Roster</div>
+                <div class="nav-item sop-nav-item" data-page=".sop-page-container">SOPs</div>
                 <div class="nav-item dmv-nav-item" data-page=".dmv-page-container">DVLA</div>
                 <div class="nav-item weapons-nav-item" data-page=".weapons-page-container">Weapons</div>
                 <div class="nav-item cams-nav-item" data-page=".cams-page-container">Cameras</div>
@@ -181,8 +199,8 @@
 
             <div style="display: flex; flex-direction: column;">
                 <div class="quotes-container">
-                    <div class="quote-title"><span style="color: #050100;">Motto</div>
-                    <div class="quote"><span class="quote-span">Working together for a safer London</span></div>
+                    <div class="quote-title"><span style="color: #ffffff00;">Motto</div>
+                    <div class="quote"><span class="quote-span">Keeping London Safe, Together</span></div>
                 </div>
                 <div class="bulletin-container">
                     <div style="display: flex; align-items: center;">
@@ -220,7 +238,7 @@
         <div class="header">
             <img src="img/sasp_badge.webp" class="badge-logo">
             <div class="header-left">
-                <div class="header-title" style="color: #2c94c5; font-weight: bold; font-size: 20px;">Metropolitan Police Service</div>
+                <div class="header-title" style="color: #ffffff00; font-weight: bold; font-size: 20px;">Metropolitan Police Service</div>
                 <div style="color: white; font-weight: lighter; font-size: 18px;">Mobile Database Terminal</div>
             </div>
             <div class="header-middle">
@@ -242,6 +260,7 @@
                 <div class="nav-item map-nav-item" data-page=".map-page-container">Map</div>
                 <div class="nav-item bolo-nav-item" data-page=".bolos-page-container">BOLOs</div>
                 <div class="nav-item penalcode-nav-item" data-page=".penalcode-page-container">Roster</div>
+                <div class="nav-item sop-nav-item" data-page=".sop-page-container">SOPs</div>
                 <div class="nav-item dmv-nav-item" data-page=".dmv-page-container">DVLA</div>
                 <div class="nav-item weapons-nav-item" data-page=".weapons-page-container">Weapons</div>
                 <div class="nav-item cams-nav-item" data-page=".cams-page-container">Cameras</div>
@@ -276,6 +295,9 @@
                         <div class="manage-profile-dob">DOB</div>
                         <div><span class="far fa-calendar-alt manage-cid-pic"></span><input type="text" readonly class="manage-profile-dob-input"></div>
                         <div class="line"></div>
+                        <div class="manage-profile-fingerprint">Fingerprint</div>
+                        <div><span class="fas fa-fingerprint manage-cid-pic"></span><input type="text" readonly class="manage-profile-fingerprint-input"></div>
+                        <div class="line"></div>
                         <div class="manage-profile-phonenumber">Phone Number</div>
                         <div><span class="fas fa-phone-volume manage-cid-pic"></span><input type="text" readonly class="manage-profile-phonenumber-input"></div>
                         <div class="line"></div>
@@ -290,7 +312,6 @@
                         <div class="line" style="margin-bottom: 0px;"></div>
                     </div>
                 </div>
-                <textarea class="manage-profile-fingerprint" placeholder="Enter citizen fingerprint..." disabled></textarea>
                 <textarea class="manage-profile-info" placeholder="Place user information here..." disabled></textarea>
             </div>
             <div class="manage-profile-right-container">
@@ -324,13 +345,11 @@
                 </div>
 
                 <div class="manage-convictions-container display_hidden">
-                    <div class="convictions-title">Known Convictions</div>
-                    <div class="convictions-holder"></div>
+                    <div class="convictions-title"><span class="fas fa-eye"></span> Show Convictions</div>
                 </div>
 
                 <div class="manage-profile-incidents-container display_hidden">
-                    <div class="profile-incidents-title">Incidents</div>
-                    <div class="profile-incidents-holder"></div>
+                    <div class="profile-incidents-title"><span class="fas fa-eye"></span> Show Incidents</div>
                 </div>
             </div>
         </div>
@@ -339,7 +358,7 @@
         <div class="header">
             <img src="img/sasp_badge.webp" class="badge-logo">
             <div class="header-left">
-                <div class="header-title" style="color: #2c94c5; font-weight: bold; font-size: 20px;">Metropolitan Police Service</div>
+                <div class="header-title" style="color: #ffffff00; font-weight: bold; font-size: 20px;">Metropolitan Police Service</div>
                 <div style="color: white; font-weight: lighter; font-size: 18px;">Mobile Database Terminal</div>
             </div>
             <div class="header-middle">
@@ -361,6 +380,7 @@
                 <div class="nav-item map-nav-item" data-page=".map-page-container">Map</div>
                 <div class="nav-item bolo-nav-item" data-page=".bolos-page-container">BOLOs</div>
                 <div class="nav-item penalcode-nav-item" data-page=".penalcode-page-container">Roster</div>
+                <div class="nav-item sop-nav-item" data-page=".sop-page-container">SOPs</div>
                 <div class="nav-item dmv-nav-item" data-page=".dmv-page-container">DVLA</div>
                 <div class="nav-item weapons-nav-item" data-page=".weapons-page-container">Weapons</div>
                 <div class="nav-item cams-nav-item" data-page=".cams-page-container">Cameras</div>
@@ -444,7 +464,7 @@
         <div class="header">
             <img src="img/sasp_badge.webp" class="badge-logo">
             <div class="header-left">
-                <div class="header-title" style="color: #2c94c5; font-weight: bold; font-size: 20px;">Metropolitan Police Service</div>
+                <div class="header-title" style="color: #ffffff00; font-weight: bold; font-size: 20px;">Metropolitan Police Service</div>
                 <div style="color: white; font-weight: lighter; font-size: 18px;">Mobile Database Terminal</div>
             </div>
             <div class="header-middle">
@@ -466,6 +486,7 @@
                 <div class="nav-item map-nav-item" data-page=".map-page-container">Map</div>
                 <div class="nav-item bolo-nav-item" data-page=".bolos-page-container">BOLOs</div>
                 <div class="nav-item penalcode-nav-item" data-page=".penalcode-page-container">Roster</div>
+                <div class="nav-item sop-nav-item" data-page=".sop-page-container">SOPs</div>
                 <div class="nav-item dmv-nav-item" data-page=".dmv-page-container">DVLA</div>
                 <div class="nav-item weapons-nav-item" data-page=".weapons-page-container">Weapons</div>
                 <div class="nav-item cams-nav-item" data-page=".cams-page-container">Cameras</div>
@@ -539,7 +560,7 @@
         <div class="header">
             <img src="img/sasp_badge.webp" class="badge-logo">
             <div class="header-left">
-                <div class="header-title" style="color: #2c94c5; font-weight: bold; font-size: 20px;">Metropolitan Police Service</div>
+                <div class="header-title" style="color: #ffffff00; font-weight: bold; font-size: 20px;">Metropolitan Police Service</div>
                 <div style="color: white; font-weight: lighter; font-size: 18px;">Mobile Database Terminal</div>
             </div>
             <div class="header-middle">
@@ -561,6 +582,7 @@
                 <div class="nav-item map-nav-item" data-page=".map-page-container">Map</div>
                 <div class="nav-item bolo-nav-item active-nav" data-page=".bolos-page-container">BOLOs</div>
                 <div class="nav-item penalcode-nav-item" data-page=".penalcode-page-container">Roster</div>
+                <div class="nav-item sop-nav-item" data-page=".sop-page-container">SOPs</div>
                 <div class="nav-item dmv-nav-item" data-page=".dmv-page-container">DVLA</div>
                 <div class="nav-item weapons-nav-item" data-page=".weapons-page-container">Weapons</div>
                 <div class="nav-item cams-nav-item" data-page=".cams-page-container">Cameras</div>
@@ -633,7 +655,7 @@
         <div class="header">
             <img src="img/sasp_badge.webp" class="badge-logo">
             <div class="header-left">
-                <div class="header-title" style="color: #2c94c5; font-weight: bold; font-size: 20px;">Metropolitan Police Service</div>
+                <div class="header-title" style="color: #ffffff00; font-weight: bold; font-size: 20px;">Metropolitan Police Service</div>
                 <div style="color: white; font-weight: lighter; font-size: 18px;">Mobile Database Terminal</div>
             </div>
             <div class="header-middle">
@@ -655,6 +677,7 @@
                 <div class="nav-item map-nav-item" data-page=".map-page-container">Map</div>
                 <div class="nav-item bolo-nav-item" data-page=".bolos-page-container">BOLOs</div>
                 <div class="nav-item penalcode-nav-item active-nav" data-page=".penalcode-page-container">Roster</div>
+                <div class="nav-item sop-nav-item" data-page=".sop-page-container">SOPs</div>
                 <div class="nav-item dmv-nav-item" data-page=".dmv-page-container">DVLA</div>
                 <div class="nav-item weapons-nav-item" data-page=".weapons-page-container">Weapons</div>
                 <div class="nav-item cams-nav-item" data-page=".cams-page-container">Cameras</div>
@@ -665,11 +688,11 @@
             </div>
         </div>
     </div>
-    <div class="dmv-page-container close-all">
+    <div class="sop-page-container close-all">
         <div class="header">
             <img src="img/sasp_badge.webp" class="badge-logo">
             <div class="header-left">
-                <div class="header-title" style="color: #2c94c5; font-weight: bold; font-size: 20px;">Metropolitan Police Service</div>
+                <div class="header-title" style="color: #ffffff00; font-weight: bold; font-size: 20px;">Metropolitan Police Service</div>
                 <div style="color: white; font-weight: lighter; font-size: 18px;">Mobile Database Terminal</div>
             </div>
             <div class="header-middle">
@@ -691,6 +714,44 @@
                 <div class="nav-item map-nav-item" data-page=".map-page-container">Map</div>
                 <div class="nav-item bolo-nav-item" data-page=".bolos-page-container">BOLOs</div>
                 <div class="nav-item penalcode-nav-item" data-page=".penalcode-page-container">Roster</div>
+                <div class="nav-item sop-nav-item active-nav" data-page=".sop-page-container">SOPs</div>
+                <div class="nav-item dmv-nav-item" data-page=".dmv-page-container">DVLA</div>
+                <div class="nav-item weapons-nav-item" data-page=".weapons-page-container">Weapons</div>
+                <div class="nav-item cams-nav-item" data-page=".cams-page-container">Cameras</div>
+                <div class="nav-item" data-page=".stafflogs-page-container">Staff Logs</div>
+            </div>
+            <div class="sop-embed" style="border:none;">
+                <iframe class="sop-iframe" src="" target="_blank"></iframe>
+            </div>
+        </div>
+    </div>
+    <div class="dmv-page-container close-all">
+        <div class="header">
+            <img src="img/sasp_badge.webp" class="badge-logo">
+            <div class="header-left">
+                <div class="header-title" style="color: #ffffff00; font-weight: bold; font-size: 20px;">Metropolitan Police Service</div>
+                <div style="color: white; font-weight: lighter; font-size: 18px;">Mobile Database Terminal</div>
+            </div>
+            <div class="header-middle">
+                <div class="date">Loading...</div>
+                <div class="time">00:00</div>
+            </div>
+            <div class="header-right">
+                <div style="color: white; font-weight: lighter; font-size: 25px;" class="name-shit">Welcome, Loading...
+                </div>
+                <div style="color: lightgray; font-size: 18px;"><span class="fas fa-map-pin header-pin"></span><span class="header-location"></span></div>
+            </div>
+        </div>
+        <div class="main-container">
+            <div class="nav-menu">
+                <div class="nav-item" data-page=".dashboard-page-container">Dashboard</div>
+                <div class="nav-item" data-page=".profile-page-container">Profiles</div>
+                <div class="nav-item incidents-nav-item" data-page=".incidents-page-container">Incidents</div>
+                <div class="nav-item" data-page=".reports-page-container">Reports</div>
+                <div class="nav-item map-nav-item" data-page=".map-page-container">Map</div>
+                <div class="nav-item bolo-nav-item" data-page=".bolos-page-container">BOLOs</div>
+                <div class="nav-item penalcode-nav-item" data-page=".penalcode-page-container">Roster</div>
+                <div class="nav-item sop-nav-item" data-page=".sop-page-container">SOPs</div>
                 <div class="nav-item dmv-nav-item active-nav" data-page=".dmv-page-container">DVLA</div>
                 <div class="nav-item weapons-nav-item" data-page=".weapons-page-container">Weapons</div>
                 <div class="nav-item cams-nav-item" data-page=".cams-page-container">Cameras</div>
@@ -750,7 +811,7 @@
         <div class="header">
             <img src="img/sasp_badge.webp" class="badge-logo">
             <div class="header-left">
-                <div class="header-title" style="color: #2c94c5; font-weight: bold; font-size: 20px;">Metropolitan Police Service</div>
+                <div class="header-title" style="color: #ffffff00; font-weight: bold; font-size: 20px;">Metropolitan Police Service</div>
                 <div style="color: white; font-weight: lighter; font-size: 18px;">Mobile Database Terminal</div>
             </div>
             <div class="header-middle">
@@ -772,6 +833,7 @@
                 <div class="nav-item map-nav-item" data-page=".map-page-container">Map</div>
                 <div class="nav-item bolo-nav-item" data-page=".bolos-page-container">BOLOs</div>
                 <div class="nav-item penalcode-nav-item" data-page=".penalcode-page-container">Roster</div>
+                <div class="nav-item sop-nav-item" data-page=".sop-page-container">SOPs</div>
                 <div class="nav-item dmv-nav-item" data-page=".dmv-page-container">DVLA</div>
                 <div class="nav-item weapons-nav-item active-nav" data-page=".weapons-page-container">Weapons</div>
                 <div class="nav-item cams-nav-item" data-page=".cams-page-container">Cameras</div>
@@ -818,7 +880,7 @@
         <div class="header">
             <img src="img/sasp_badge.webp" class="badge-logo">
             <div class="header-left">
-                <div class="header-title" style="color: #2c94c5; font-weight: bold; font-size: 20px;">Metropolitan Police Service</div>
+                <div class="header-title" style="color: #ffffff00; font-weight: bold; font-size: 20px;">Metropolitan Police Service</div>
                 <div style="color: white; font-weight: lighter; font-size: 18px;">Mobile Database Terminal</div>
             </div>
             <div class="header-middle">
@@ -840,19 +902,28 @@
                 <div class="nav-item map-nav-item" data-page=".map-page-container">Map</div>
                 <div class="nav-item bolo-nav-item" data-page=".bolos-page-container">BOLOs</div>
                 <div class="nav-item penalcode-nav-item" data-page=".penalcode-page-container">Roster</div>
+                <div class="nav-item sop-nav-item" data-page=".sop-page-container">SOPs</div>
                 <div class="nav-item dmv-nav-item" data-page=".dmv-page-container">DVLA</div>
                 <div class="nav-item weapons-nav-item" data-page=".weapons-page-container">Weapons</div>
                 <div class="nav-item cams-nav-item" data-page=".cams-page-container">Cameras</div>
                 <div class="nav-item active-nav" data-page=".stafflogs-page-container">Staff Logs</div>
             </div>
-            <div class="stafflogs-container"></div>
+            <div class="stafflogs-container">
+                <div class="stafflogs-box-title">Logs</div>
+                <div class="stafflogs-box"></div>
+            </div>
+            <div class="leaderboard-container">
+                <div class="leaderboard-title">Officers Activity</div>
+                <div class="leaderboard-box">
+                </div>
+            </div>
         </div>
     </div>
     <div class="cams-page-container close-all">
         <div class="header">
             <img src="img/sasp_badge.webp" class="badge-logo">
             <div class="header-left">
-                <div class="header-title" style="color: #2c94c5; font-weight: bold; font-size: 20px;">Metropolitan Police Service</div>
+                <div class="header-title" style="color: #ffffff00; font-weight: bold; font-size: 20px;">Metropolitan Police Service</div>
                 <div style="color: white; font-weight: lighter; font-size: 18px;">Mobile Database Terminal</div>
             </div>
             <div class="header-middle">
@@ -874,6 +945,7 @@
                 <div class="nav-item map-nav-item" data-page=".map-page-container">Map</div>
                 <div class="nav-item bolo-nav-item" data-page=".bolos-page-container">BOLOs</div>
                 <div class="nav-item penalcode-nav-item" data-page=".penalcode-page-container">Roster</div>
+                <div class="nav-item sop-nav-item" data-page=".sop-page-container">SOPs</div>
                 <div class="nav-item dmv-nav-item" data-page=".dmv-page-container">DVLA</div>
                 <div class="nav-item weapons-nav-item" data-page=".weapons-page-container">Weapons</div>
                 <div class="nav-item cams-nav-item active-nav" data-page=".cams-page-container">Cameras</div>
@@ -924,7 +996,7 @@
         <div class="header">
             <img src="img/sasp_badge.webp" class="badge-logo">
             <div class="header-left">
-                <div class="header-title" style="color: #2c94c5; font-weight: bold; font-size: 20px;">Metropolitan Police Service</div>
+                <div class="header-title" style="color: #ffffff00; font-weight: bold; font-size: 20px;">Metropolitan Police Service</div>
                 <div style="color: white; font-weight: lighter; font-size: 18px;">Mobile Database Terminal</div>
             </div>
             <div class="header-middle">
@@ -946,6 +1018,7 @@
                 <div class="nav-item map-nav-item active-nav" data-page=".map-page-container">Map</div>
                 <div class="nav-item bolo-nav-item" data-page=".bolos-page-container">BOLOs</div>
                 <div class="nav-item penalcode-nav-item" data-page=".penalcode-page-container">Roster</div>
+                <div class="nav-item sop-nav-item" data-page=".sop-page-container">SOPs</div>
                 <div class="nav-item dmv-nav-item" data-page=".dmv-page-container">DVLA</div>
                 <div class="nav-item weapons-nav-item" data-page=".weapons-page-container">Weapons</div>
                 <div class="nav-item cams-nav-item" data-page=".cams-page-container">Cameras</div>
