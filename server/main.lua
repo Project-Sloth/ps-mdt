@@ -206,7 +206,10 @@ RegisterNetEvent('mdt:server:openMDT', function()
 end)
 
 QBCore.Functions.CreateCallback('mdt:server:SearchProfile', function(source, cb, sentData)
-	if not sentData then  return cb({}) end
+	if not sentData then  
+	    print('No data received for searching after Players')
+	    return cb({}) 
+	end
 	local src = source
 	local Player = QBCore.Functions.GetPlayer(src)
 	if Player then
@@ -299,7 +302,10 @@ RegisterNetEvent('mdt:server:deleteBulletin', function(id, title)
 end)
 
 QBCore.Functions.CreateCallback('mdt:server:GetProfileData', function(source, cb, sentId)
-	if not sentId then return cb({}) end
+	if not sentId then 
+		print("no ID Data found")
+		return cb({}) 
+	end
 
 	local src = source
 	local PlayerData = GetPlayerData(src)
@@ -875,7 +881,10 @@ RegisterNetEvent('mdt:server:newReport', function(existing, id, title, reporttyp
 end)
 
 QBCore.Functions.CreateCallback('mdt:server:SearchVehicles', function(source, cb, sentData)
-	if not sentData then  return cb({}) end
+	if not sentData then  
+	    print('No data received for searching after Players')
+	    return cb({}) 
+	end
 	local src = source
 	local PlayerData = GetPlayerData(src)
 	if not PermCheck(source, PlayerData) then return cb({}) end
@@ -1064,7 +1073,10 @@ RegisterNetEvent('mdt:server:searchCalls', function(calls)
 end)
 
 QBCore.Functions.CreateCallback('mdt:server:SearchWeapons', function(source, cb, sentData)
-	if not sentData then  return cb({}) end
+	if not sentData then  
+	    print('No data received for searching after Players')
+	    return cb({}) 
+	end
 	local PlayerData = GetPlayerData(source)
 	if not PermCheck(source, PlayerData) then return cb({}) end
 
@@ -1710,19 +1722,27 @@ RegisterNetEvent('mdt:server:removeMoney', function(citizenId, fine)
 end)
 
 function getTopOfficers(callback)
-    local result = {}
-    local query = 'SELECT * FROM mdt_clocking ORDER BY total_time DESC LIMIT 10'
-    MySQL.Async.fetchAll(query, {}, function(officers)
-        for k, officer in ipairs(officers) do
-            table.insert(result, {
-                rank = k,
-                name = officer.firstname .. " " .. officer.lastname,
-                callsign = officer.user_id,
-                totalTime = format_time(officer.total_time)
-            })
-        end
-        callback(result)
-    end)
+	local src = source
+	local Player = QBCore.Functions.GetPlayer(src)
+	if Player then
+		if Config.LogPerms[Player.PlayerData.job.name] then
+			if Config.LogPerms[Player.PlayerData.job.name][Player.PlayerData.job.grade.level] then
+				local result = {}
+				local query = 'SELECT * FROM mdt_clocking ORDER BY total_time DESC LIMIT 10'
+				MySQL.Async.fetchAll(query, {}, function(officers)
+					for k, officer in ipairs(officers) do
+						table.insert(result, {
+							rank = k,
+							name = officer.firstname .. " " .. officer.lastname,
+							callsign = officer.user_id,
+							totalTime = format_time(officer.total_time)
+						})
+					end
+					callback(result)
+				end)
+			end
+		end
+	end
 end
 
 RegisterServerEvent("mdt:requestOfficerData")
@@ -1754,3 +1774,37 @@ function format_time(time)
     local seconds = time % 60
     return string.format('%02d:%02d:%02d', hours, minutes, seconds)
 end
+
+QBCore.Functions.CreateCallback('mdt:server:SearchOfficerProfile', function(source, cb, sentData)
+	if not sentData then  
+	    print('No data received for searching after officer')
+	    return cb({}) 
+	end
+	local src = source
+	local Player = QBCore.Functions.GetPlayer(src)
+	if Player then
+		if Config.LogPerms[Player.PlayerData.job.name] then
+			if Config.LogPerms[Player.PlayerData.job.name][Player.PlayerData.job.grade.level] then
+				local JobType = GetJobType(Player.PlayerData.job.name)
+				if JobType ~= nil then
+					local people = MySQL.query.await("SELECT p.citizenid, p.charinfo, md.pfp FROM players p LEFT JOIN mdt_data md on p.citizenid = md.cid WHERE LOWER(CONCAT(JSON_VALUE(p.charinfo, '$.firstname'), ' ', JSON_VALUE(p.charinfo, '$.lastname'))) LIKE :query OR LOWER(`charinfo`) LIKE :query OR LOWER(`citizenid`) LIKE :query AND jobtype = :jobtype LIMIT 20", { query = string.lower('%'..sentData..'%'), jobtype = JobType })
+					local citizenIds = {}
+					local citizenIdIndexMap = {}
+					if not next(people) then cb({}) return end
+					for index, data in pairs(people) do
+						people[index]['pp'] = ProfPic(data.gender, data.pfp)
+						citizenIds[#citizenIds+1] = data.citizenid
+						citizenIdIndexMap[data.citizenid] = index
+					end
+					return cb(people)
+				end
+			else
+				TriggerClientEvent('QBCore:Notify', src, 'No Permissions!', 'error', 10000)
+			end
+		else
+			TriggerClientEvent('QBCore:Notify', src, 'No Permissions!', 'error', 10000)
+		end
+	end
+
+	return cb({})
+end)

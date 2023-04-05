@@ -284,6 +284,17 @@ RegisterNUICallback("searchProfiles", function(data, cb)
     cb(data)
 end)
 
+RegisterNUICallback("searchOfficerProfiles", function(data, cb)
+    local p = promise.new()
+
+    QBCore.Functions.TriggerCallback('mdt:server:SearchOfficerProfile', function(result)
+        p:resolve(result)
+    end, data.name)
+
+    local data = Citizen.Await(p)
+
+    cb(data)
+end)
 
 RegisterNetEvent('mdt:client:searchProfile', function(sentData, isLimited)
     SendNUIMessage({ type = "profiles", data = sentData, isLimited = isLimited })

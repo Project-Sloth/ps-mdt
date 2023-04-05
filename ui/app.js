@@ -1,4 +1,5 @@
 let canSearchForProfiles = true;
+let canSearchForOfficer = true;
 let canSaveProfile = true;
 let canRefreshBolo = true;
 let canRefreshReports = true;
@@ -1081,6 +1082,41 @@ $(document).ready(() => {
         $(".incidents-items").prepend(
           `<div class="profile-loader"></div>`
         );
+      }
+    }
+  });
+
+  $(".leaderboard-title-officer").click(function () {
+    if (canSearchForOfficer == true) {
+      if ($(".leaderboard-search-input").css("display") == "none") {
+        $(".leaderboard-search-input").slideDown(250);
+        $(".leaderboard-search-input").css("display", "block");
+      } else {
+        $(".leaderboard-search-input").slideUp(250, () => {
+          $(".leaderboard-search-input").css("display", "none");
+      });
+      }
+    }
+  });
+
+  $("#leaderboard-search-input").keydown(async function (e) {
+    if (e.keyCode === 13 && canSearchForOfficer == true) {
+      let name = $("#leaderboard-search-input").val();
+      if (name != "") {
+        canSearchForOfficer = false;
+        $(".leaderboard-items").empty();
+        $(".leaderboard-items").prepend(
+          `<div class="leaderboard-loader"></div>`
+        );
+
+        let result = await $.post(
+          `https://${GetParentResourceName()}/searchOfficerProfiles`,
+          JSON.stringify({
+            name: name,
+          })
+        );
+
+        searchOfficerResults(result);
       }
     }
   });
@@ -4838,7 +4874,7 @@ $(document).ready(() => {
       let table = eventData.data;
       $(".incidents-person-search-holder").empty();
       $.each(table, function (index, value) {
-        let name = value.firstname + " " + value.lastname;
+        let name = `${value.firstname} ${value.lastname}`;
         $(".incidents-person-search-holder").prepend(
           `
             <div class="incidents-person-search-item" data-info="${name} (#${value.id})" data-cid="${value.id}" data-name="${name}" data-callsign="${value.callsign}">
@@ -5497,7 +5533,7 @@ function searchProfilesResults(result) {
       metadata.licences = {};
     }
   
-    let name = charinfo.firstname + " " + charinfo.lastname;
+    let name = `${charinfo.firstname} ${charinfo.lastname}`;
     let warrant = "red-tag";
     let convictions = "red-tag";
   
@@ -5736,3 +5772,74 @@ $(".map-clear").on('click', function() {
       ClearMap();
     }, 1500);
 });
+
+function searchOfficerResults(result) {
+  canSearchForOfficer = true;
+  $(".leaderboard-items").empty();
+
+  if (result.length < 1) {
+    $(".leaderboard-items").html(
+      `
+                      <div class="leaderboard-item" data-id="0">
+                          <div style="display: flex; flex-direction: column; margin-top: 2.5px; margin-left: 5px; width: 100%; padding: 5px;">
+                          <div style="display: flex; flex-direction: column;">
+                              <div class="leaderboard-item-title">No Officer Matching that search</div>
+                              </div>
+                              <div class="leaderboard-bottom-info">
+                              </div>
+                          </div>
+                      </div>
+              `
+    );
+    return true;
+  }
+
+
+  let leaderboardOfficerHTML = "";
+
+  result.forEach((value) => {
+    let charinfo = value.charinfo;
+    let metadata = value.metadata;
+
+    if (typeof value.charinfo == "string") {
+      charinfo = JSON.parse(charinfo);
+    }
+
+    if (typeof value.metadata == "string") {
+      metadata = JSON.parse(metadata);
+    }
+
+    if (!metadata) {
+      metadata = {};
+    }
+
+    if (!metadata.licences) {
+      metadata.licences = {};
+    }
+
+    let name = `${charinfo.firstname} ${charinfo.lastname}`;
+
+    if (value.pp == '') {
+      value.pp = 'img/not-found.webp'
+    }
+
+    leaderboardOfficerHTML += `
+                  <div class="leaderboard-item" data-id="${value.citizenid}">
+                      <img src="${value.pp}" class="leaderboard-image">
+                        <div style="display: flex; flex-direction: column; margin-top: 2.5px; margin-left: 5px; width: 100%; padding: 5px;">
+                          <div class="leaderboard-item-title">${name}
+                        </div>
+                          <div class="leaderboard-criminal-tags">
+                              <span class="leaderboard-tag"> Online Activity: 00:00:00</span>
+                              <span class="leaderboard-tag"> Last Clock-In: 00:00:00</span>
+                          </div>
+                        <div class="leaderboard-bottom-info">
+                          <div class="leaderboard-id"><span class="fas fa-id-card"></span> Citizen ID: ${value.citizenid}</div>
+                          <div class="leaderboard-id"><span class="fas fa-graduation-cap"></span> Grade: Chief of Police ( 4 )</div>&nbsp;</div>
+                        </div>
+                  </div>
+              `;
+  });
+
+  $(".leaderboard-items").html(leaderboardOfficerHTML);
+}
