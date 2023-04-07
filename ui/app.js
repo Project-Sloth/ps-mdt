@@ -44,6 +44,7 @@ const PoliceJobs = {
 
 const AmbulanceJobs = {
   ['ambulance']: true,
+  ['safr']: true,
 }
 
 const DojJobs = {
@@ -3838,6 +3839,20 @@ $(document).ready(() => {
       image: "img/ems_badge.webp",
       name: "PILLBOX HILL MEDICAL CENTER",
     },
+    safr: {
+      color1: "#5F2121",
+      color2: "#7B2C2C",
+      color3: "#4A1C1C",
+      color4: "#5E2323",
+      color5: "#381515",
+      color6: "#2C1212",
+      color7: "#521C1C",
+      color8: "#CC2525",
+      color9: "#8A8D91",
+      color10: "#444444",
+      image: "img/safr_badge.webp",
+      name: "SAN ANDREAS FIRE AND RESCUE",
+    },
     doj: {
       color1: "#553a1e",
       color2: "#5f4321",
@@ -3978,6 +3993,70 @@ $(document).ready(() => {
         $("#home-reports-container").fadeIn(0);
         if (sentJob == "ambulance") {
           applyCustomTheme(customThemes.ambulance)
+        }
+        //$(".quote-span").html("The simplest explanation is almost always somebody screwed up.");
+        $(".bolo-nav-item").html("ICU");
+        $(".bolos-search-title").html("ICU Check-ins");
+        $("#bolos-search-input").attr(
+          "placeholder",
+          "Search Check-ins..."
+        );
+        $(".manage-bolos-title").html("Manage ICU Check-in");
+        $(".manage-bolos-editing-title").html(
+          "You are creating a new ICU Check-in"
+        );
+        $(".boloplate-title").html("Estimated Recovery");
+        $(".boloowner-title").html("Emergency Contact");
+        $(".boloindividual-title").html("Patient");
+        $("#boloplate").attr(
+          "placeholder",
+          "Enter recovery time here..."
+        );
+        $("#bolodetail").attr(
+          "placeholder",
+          "Enter ICU Check-in details here..."
+        );
+        $("#boloowner").attr(
+          "placeholder",
+          "Enter emergency contact here..."
+        );
+        $("#boloindividual").attr(
+          "placeholder",
+          "Enter patient name and CID here..."
+        );
+        $(".incidents-nav-item").hide();
+        $(".dmv-nav-item").hide();
+        $(".cams-nav-item").hide();
+        $("#reports-officers-involved-tag-title").html(
+          "EMS Involved"
+        );
+        $("#bolos-officers-involved-tag-title").html(
+          "EMS Involved"
+        );
+        $(".dispatch-title-ofsomesort").html("Dispatch");
+        $(".dispatch-comms-container").fadeIn(0);
+        $(".manage-profile-name-input-1").attr("readonly", true);
+        $(".manage-profile-name-input-2").attr("readonly", true);
+        $(".roster-iframe").attr("src", rosterLink);
+        $(".sop-iframe").attr("src", sopLink);
+
+        $(".manage-profile-save").css("display", "block");
+        $(".manage-profile-editing-title").css("display", "block");
+        $(".manage-incidents-create").css("display", "block");
+        $(".manage-incidents-save").css("display", "block");
+        $(".manage-incidents-editing-title").css("display", "block");
+        $(".manage-reports-new").css("display", "block");
+        $(".manage-reports-save").css("display", "block");
+        $(".manage-reports-editing-title").css("display", "block");
+        $(".vehicle-information-save").css("display", "block");
+        $(".vehicle-information-title").css("margin-right", "0px").css("width", "81%");
+        $(".manage-incidents-title ").css("margin-right", "0px")
+        $(".manage-reports-title").css("margin-right", "0px").css("width", "66%");
+      }  else if (AmbulanceJobs[sentJob] !== undefined) {
+        $("#home-warrants-container").fadeOut(0);
+        $("#home-reports-container").fadeIn(0);
+        if (sentJob == "safr") {
+          applyCustomTheme(customThemes.safr)
         }
         //$(".quote-span").html("The simplest explanation is almost always somebody screwed up.");
         $(".bolo-nav-item").html("ICU");
@@ -4190,6 +4269,9 @@ $(document).ready(() => {
           }
         } else if (AmbulanceJobs[unit.unitType] !== undefined) {
           activeInfoJob = `<div class="unit-job active-info-job-ambulance">Ambulance</div>`
+          emsCount++;
+           else if (AmbulanceJobs[unit.unitType] !== undefined) {
+          activeInfoJob = `<div class="unit-job active-info-job-ambulance">SAFR</div>`
           emsCount++;
         /* } else if  (DojJobs[unit.unitType] !== undefined) {
           activeInfoJob = `<div class="unit-job active-info-job-fire">FIRE</div>`
