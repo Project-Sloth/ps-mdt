@@ -3814,6 +3814,10 @@ span.officer-tag-bolo-input[contenteditable]:empty::before {
     color: #cc2525;
 }
 
+.dispatch-info-job-safr {
+    color: #cc2525;
+}
+
 .dispatch-info-job-doj {
     color: #FFEAB9;
 }
@@ -3847,6 +3851,10 @@ span.officer-tag-bolo-input[contenteditable]:empty::before {
 }
 
 .active-info-job-ambulance {
+    background-color: #cc2525;
+}
+
+.active-info-job-safr {
     background-color: #cc2525;
 }
 
