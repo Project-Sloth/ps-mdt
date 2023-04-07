@@ -793,6 +793,10 @@ $(document).ready(() => {
         "pointer-events",
         "auto"
       );
+      $(".manage-incidents-evidence-add-picture").css(
+        "pointer-events",
+        "auto"
+      );
       $(".associated-incidents-tags-add-btn").css(
         "pointer-events",
         "auto"
@@ -1261,6 +1265,13 @@ $(document).ready(() => {
       }, 250);
       $(this).removeClass("fa-minus").addClass("fa-plus");
     }
+  });
+
+  $(".manage-incidents-evidence-add-picture").click(function () {
+    setTimeout(() => {
+      $(this).removeClass("fas fa-camera-rotate").addClass("fas fa-camera");
+    }, 250);
+    $(this).removeClass("fas fa-camera").addClass("fas fa-camera-rotate");
   });
 
   $("#incidents-upload-input").keydown(function (e) {
@@ -4694,6 +4705,10 @@ $(document).ready(() => {
         "pointer-events",
         "auto"
       );
+      $(".manage-incidents-evidence-add-picture").css(
+        "pointer-events",
+        "auto"
+      );
       $(".associated-incidents-tags-add-btn").css(
         "pointer-events",
         "auto"
@@ -5158,6 +5173,10 @@ $(document).ready(() => {
         "auto"
       );
       $(".manage-incidents-evidence-add-btn").css(
+        "pointer-events",
+        "auto"
+      );
+      $(".manage-incidents-evidence-add-picture").css(
         "pointer-events",
         "auto"
       );

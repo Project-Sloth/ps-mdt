@@ -2488,6 +2488,22 @@ span.tag-input[contenteditable]:empty::before {
     background-color: var(--color-3);
 }
 
+.manage-incidents-evidence-add-picture {
+    background-color: var(--color-4);
+    color: white;
+    padding-top: 7.25px;
+    padding-bottom: 7.25px;
+    margin-top: 15px;
+    margin-left: 5px;
+    width: 10%;
+    text-align: center;
+    pointer-events: none;
+}
+
+.manage-incidents-evidence-add-picture:hover {
+    background-color: var(--color-3);
+}
+
 .manage-incidents-evidence-holder {
     overflow: auto;
     margin: auto;
@@ -3375,7 +3391,7 @@ span.tag-incident-input[contenteditable]:empty::before {
     padding-top: 7px;
     padding-bottom: 7px;
     margin: auto;
-    margin-top: 10px;
+    margin-top: 5px;
     margin-left: 5px;
     margin-bottom: 0px;
     width: 10%;
@@ -3582,7 +3598,7 @@ span.officer-tag-bolo-input[contenteditable]:empty::before {
     padding-top: 7px;
     padding-bottom: 7px;
     margin: auto;
-    margin-top: 10px;
+    margin-top: 5px;
     margin-left: 5px;
     margin-bottom: 0px;
     width: 10%;
