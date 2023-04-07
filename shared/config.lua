@@ -43,6 +43,7 @@ Config.sopLink = {
 Config.RosterLink = {
     ['police'] = '',
     ['ambulance'] = '',
+    ['safr'] = '',
     ['bcso'] = '',
     ['doj'] = '',
     ['sast'] = '',
@@ -66,7 +67,8 @@ Config.PoliceJobs = {
 
 Config.AmbulanceJobs = {
     ['ambulance'] = true,
-    ['doctor'] = true
+    ['doctor'] = true,
+    ['safr'] = true
 }
 
 Config.DojJobs = {
@@ -92,6 +94,9 @@ Config.WolfknightNotifyTime = 5000 -- How long the notification displays for in 
 
 Config.LogPerms = {
 	['ambulance'] = {
+		[4] = true,
+	},
+	['safr'] = {
 		[4] = true,
 	},
 	['police'] = {
