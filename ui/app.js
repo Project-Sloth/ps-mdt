@@ -744,8 +744,8 @@ $(document).ready(() => {
     "click",
     ".manage-incidents-create",
     function () {
-      let template = '<p><strong>📝 Summary:</strong></p><p><em>[Insert Report Summary Here]</em></p><p><em><br></em></p><p><strong>🧍 Hostage: [Name Here]</strong>&nbsp;</p><p><strong>🔪 Weapons/Items Confiscated:</strong></p><p><em>· [Insert List Here]</em><br></p><p>&nbsp;</p><p>-----</p><p><strong style="background-color: var(--color-1);">💸 Fine:</strong><br></p><p><strong>⌚ Sentence:</strong></p><p>-----</p>'
-     $("#manage-incidents-title-input").val(
+      let template = '<p><strong>📝 Summary:</strong></p><p><em>[Insert Report Summary Here]</em></p><p>&nbsp;</p><p><strong>🧍 Hostage:</strong> [Name Here]</p><p>&nbsp;</p><p><strong>🔪 Weapons/Items Confiscated:</strong></p><p><em>· [Insert List Here]</em></p><p>&nbsp;</p><p>-----</p><p><strong style="background-color: var(--color-1);">💸 Fine:</strong></p><p>&nbsp;</p><p><strong>⌚ Sentence:</strong></p><p>-----</p>';
+      $("#manage-incidents-title-input").val(
         "Name - Charge - " + $(".date").html()
       );
       $(".manage-incidents-reports-content").trumbowyg({
