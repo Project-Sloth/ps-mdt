@@ -136,7 +136,7 @@ Plate reader automatically locks and alerts Police if:
 
 This reduces the plate reader events to player's vehicles and doesn't query the database for hundreds of NPC vehicles
 
-**Video Demonstration**
+### Video Demonstration
 https://youtu.be/w9PAVc3ER_c
 
 ![image](https://i.imgur.com/KZPMHQX.png)
@@ -144,12 +144,13 @@ https://youtu.be/w9PAVc3ER_c
 ![image](https://i.imgur.com/6maboG3.png)
 ![image](https://i.imgur.com/DkhQxDq.png)
 
-**[OPTIONAL] Traffic Stop Alert with Radialmenu**
+### Traffic Stop Radialmenu Alert
 
-* Sends a Traffic Stop Alert to every Cop
-* Automatically grabs Vehicle Name and Plate from front Plate Reader.
+* When initiating a traffic stop allows you to notify your fellow officers of your location and provide details about the current location and stopped vehicle through the radial menu.
 
-1. Add the following
+
+1. Add the following code right above `function READER:Main()` on `cl_plate_reader.lua`
+
 ```
 local Vehicle = nil
 local function GetFrontPlate()
@@ -161,27 +162,21 @@ local function GetFrontPlate()
 	return data
 end exports("GetFrontPlate", GetFrontPlate)
 ``` 
-into **cl_plate_reader.lua** after 
-```
-RegisterNUICallback( "clearBoloPlate", function( plate, cb )
-	-- Clear the BOLO plate
-	READER:ClearBoloPlate()
-	cb( "ok" )
-end )
-```
-2. Add the following into **cl_plate_reader.lua** after **local veh = UTIL:GetVehicleInDirection( PLY.veh, start, offset )**
+
+2. Add the following into `cl_plate_reader.lua` after `local veh = UTIL:GetVehicleInDirection( PLY.veh, start, offset )` on the function `function READER:Main()`
 ```
 			if i == 1 then
 				Vehicle = veh
 			end
 ```
-Should look like this:
+
+* Should look like this after completing the above steps.
 ![image](https://i.imgur.com/ryefT3n.png)
 
 3. Add **ps-mdt:client:trafficStop** into the Radialmenu
 
-**Video Demonstration**
-https://youtu.be/GgKF4HCbdLc
+* Preview:
+image.png
 
 # Roster and SOPs Setup
 
