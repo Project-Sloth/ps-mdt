@@ -874,6 +874,12 @@ RegisterNUICallback("removeCallBlip", function(data, cb)
     cb(true)
 end)
 
+RegisterNUICallback("removeCall", function(data, cb)
+    TriggerServerEvent('mdt:server:removeCall', data.callid)
+    TriggerEvent('ps-dispatch:client:removeCallBlip', data.callid)
+    cb(true)
+end)
+
 RegisterNUICallback("callAttach", function(data, cb)
     TriggerServerEvent('mdt:server:callAttach', data.callid)
     cb(true)

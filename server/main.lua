@@ -1315,6 +1315,25 @@ end)
 
 -- Dispatch
 
+-- Remove Call
+RegisterNetEvent('mdt:server:removeCall', function(callid)
+	local src = source
+	local Player = QBCore.Functions.GetPlayer(src)
+	if callid then
+		if Config.LogPerms[Player.PlayerData.job.name] then
+			if Config.LogPerms[Player.PlayerData.job.name][Player.PlayerData.job.grade.level] then
+				if isDispatchRunning then
+					TriggerEvent('dispatch:removeCall', callid)
+				end
+			else
+				TriggerClientEvent("QBCore:Notify", src, 'No Permissions!', 'error')
+			end
+		else
+			TriggerClientEvent("QBCore:Notify", src, 'No Permissions!', 'error')
+		end
+	end
+end)
+
 RegisterNetEvent('mdt:server:setWaypoint', function(callid)
 	local src = source
 	local Player = QBCore.Functions.GetPlayer(source)
