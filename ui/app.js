@@ -432,10 +432,10 @@ $(document).ready(() => {
     $(".close-all").css("filter", "brightness(15%)");
   });
 
-  $(".manage-convictions-container").on("click", "", function () {
+  $(".convictions-title").on("click", "", function () {
     if ($(".manage-profile-citizenid-input").val()) {
       document.addEventListener("mouseup", onMouseDownIncidents);
-      const source = "manage-convictions-container";
+      const source = "convictions-title";
       $(".convictions-holder").attr("data-source", source);
       $(".convictions-known-container").fadeIn(250); // makes the container visible
       $(".close-all").css("filter", "brightness(15%)");
@@ -444,10 +444,10 @@ $(document).ready(() => {
     }
   });
 
-  $(".manage-profile-incidents-container").on("click", "", function () {
+  $(".profile-incidents-title").on("click", "", function () {
     if ($(".manage-profile-citizenid-input").val()) {
       document.addEventListener("mouseup", onMouseDownIncidents);
-      const source = "manage-profile-incidents-container";
+      const source = "profile-incidents-title";
       $(".profile-incidents-holder").attr("data-source", source);
       $(".incidents-known-container").fadeIn(250); // makes the container visible
       $(".close-all").css("filter", "brightness(15%)");
@@ -4081,7 +4081,6 @@ $(document).ready(() => {
         $(".quote-span").html(randomizeQuote());
         if (PoliceJobs[playerJob] !== undefined || DojJobs[playerJob] !== undefined) {
           $(".manage-profile-licenses-container").removeClass("display_hidden");
-          $(".manage-convictions-container").removeClass("display_hidden");
           $(".manage-profile-incidents-container").removeClass("display_hidden");
           $(".manage-profile-vehs-container").removeClass("display_hidden");
           $(".manage-profile-houses-container").removeClass("display_hidden");
