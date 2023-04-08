@@ -10,6 +10,9 @@ local tabletProp = `prop_cs_tablet`
 local tabletBone = 60309
 local tabletOffset = vector3(0.03, 0.002, -0.0)
 local tabletRot = vector3(10.0, 160.0, 0.0)
+local coolDown = false
+local lastVeh = nil
+local lastPlate = nil
 
 CreateThread(function()
     if GetResourceState('ps-dispatch') == 'started' then
@@ -1045,3 +1048,70 @@ AddEventHandler("mdt:receiveOfficerData", function(officerData)
         data = officerData
     })
 end)
+
+--====================================================================================
+------------------------------------------
+--             TRAFFIC STOP STUFF          --
+------------------------------------------
+--====================================================================================
+
+local function vehicleData(vehicle)
+	local vData = {
+		name = GetLabelText(GetDisplayNameFromVehicleModel(GetEntityModel(vehicle))),
+	}
+	return vData
+end
+
+function getStreetandZone(coords)
+	local zone = GetLabelText(GetNameOfZone(coords.x, coords.y, coords.z))
+	local currentStreetHash = GetStreetNameAtCoord(coords.x, coords.y, coords.z)
+	currentStreetName = GetStreetNameFromHashKey(currentStreetHash)
+	playerStreetsLocation = currentStreetName .. ", " .. zone
+	return playerStreetsLocation
+end
+
+if Config.UseWolfknightRadar == true then
+    RegisterNetEvent("ps-mdt:client:trafficStop")
+    AddEventHandler("ps-mdt:client:trafficStop", function()
+        local plyData = QBCore.Functions.GetPlayerData()
+        local currentPos = GetEntityCoords(PlayerPedId())
+        local locationInfo = getStreetandZone(currentPos)
+        if not IsPedInAnyPoliceVehicle(PlayerPedId()) then
+            QBCore.Functions.Notify("Not in any Police Vehicle!", "error") 
+            return 
+        end
+        local data, vData, vehicle = exports["wk_wars2x"]:GetFrontPlate(), {}
+        if not coolDown then
+            if data.veh ~= nil and data.veh ~= 0 then
+                lastVeh = data.veh
+                lastPlate = data.plate
+                vehicle = vehicleData(data.veh)
+                exports["ps-dispatch"]:CustomAlert({
+                    coords = {
+                        x = currentPos.x,
+                        y = currentPos.y,
+                        z = currentPos.z
+                    },
+                    message = "Ongoing Traffic Stop",
+                    dispatchCode = "10-11",
+                    description = "Ongoing Traffic Stop",
+                    firstStreet = locationInfo,
+                    model = vehicle.name,
+                    plate = lastPlate,
+                    name = plyData.job.grade.name.. ", " ..plyData.charinfo.firstname:sub(1, 1):upper() .. plyData.charinfo.firstname:sub(2) .. " " .. plyData.charinfo.lastname:sub(1, 1):upper() .. plyData.charinfo.lastname:sub(2),
+                    radius = 0,
+                    sprite = 60,
+                    color = 3,
+                    scale = 1.0,
+                    length = 3,
+                })
+            end
+            coolDown = true
+            SetTimeout(15000, function()
+                coolDown = false
+            end)
+        else
+            QBCore.Functions.Notify("Traffic Stop Cooldown active!", "error") 
+        end
+    end)
+end

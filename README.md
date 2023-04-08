@@ -136,13 +136,47 @@ Plate reader automatically locks and alerts Police if:
 
 This reduces the plate reader events to player's vehicles and doesn't query the database for hundreds of NPC vehicles
 
-**Video Demonstration**
+### Video Demonstration
 https://youtu.be/w9PAVc3ER_c
 
 ![image](https://i.imgur.com/KZPMHQX.png)
 ![image](https://i.imgur.com/OIIrAcb.png)
 ![image](https://i.imgur.com/6maboG3.png)
 ![image](https://i.imgur.com/DkhQxDq.png)
+
+### Traffic Stop Radialmenu Alert
+
+* When initiating a traffic stop allows you to notify your fellow officers of your location and provide details about the current location and stopped vehicle through the radial menu.
+
+
+1. Add the following code right above `function READER:Main()` on `cl_plate_reader.lua`
+
+```
+local Vehicle = nil
+local function GetFrontPlate()
+	local data = {
+		locked = READER.vars.cams["front"].locked,
+		plate = READER.vars.cams["front"].plate,
+		veh = Vehicle,
+	}
+	return data
+end exports("GetFrontPlate", GetFrontPlate)
+``` 
+
+2. Add the following into `cl_plate_reader.lua` after `local veh = UTIL:GetVehicleInDirection( PLY.veh, start, offset )` on the function `function READER:Main()`
+```
+			if i == 1 then
+				Vehicle = veh
+			end
+```
+
+* Should look like this after completing the above steps.
+![image](https://i.imgur.com/ryefT3n.png)
+
+3. Add **ps-mdt:client:trafficStop** into the Radialmenu
+
+* Preview:
+image.png
 
 # Roster and SOPs Setup
 
