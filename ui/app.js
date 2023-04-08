@@ -208,11 +208,16 @@ $(document).ready(() => {
     $(".manage-profile-name-input-1").val(result["firstname"]);
     $(".manage-profile-name-input-2").val(result["lastname"]);
     $(".manage-profile-dob-input").val(result["dob"]);
-    if (convictions.length >= 1) {
+    if (AmbulanceJobs[playerJob] !== undefined) {
       $(".manage-profile-fingerprint-input").val(result["fingerprint"]);
     }
     else {
-      $(".manage-profile-fingerprint-input").val("No Fingerprints found!");
+      if (convictions.length >= 1) {
+        $(".manage-profile-fingerprint-input").val(result["fingerprint"]);
+      }
+      else {
+        $(".manage-profile-fingerprint-input").val("No Fingerprints found!");
+      }
     }
     $(".manage-profile-phonenumber-input").val(result["phone"]);
     $(".manage-profile-job-input").val(`${result.job}, ${result.grade}`);
