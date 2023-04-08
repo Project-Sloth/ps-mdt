@@ -4081,7 +4081,6 @@ $(document).ready(() => {
         $(".quote-span").html(randomizeQuote());
         if (PoliceJobs[playerJob] !== undefined || DojJobs[playerJob] !== undefined) {
           $(".manage-profile-licenses-container").removeClass("display_hidden");
-          $(".manage-profile-incidents-container").removeClass("display_hidden");
           $(".manage-profile-vehs-container").removeClass("display_hidden");
           $(".manage-profile-houses-container").removeClass("display_hidden");
         }

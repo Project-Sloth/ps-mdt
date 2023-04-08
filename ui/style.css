@@ -1631,17 +1631,6 @@ span.tag-input[contenteditable]:empty::before {
     user-select: none;
 }
 
-.manage-convictions-container {
-    display: flex;
-    flex-direction: column;
-    background-color: var(--color-1);
-    width: 48%;
-    height: 5.4%;
-    border: 2px solid var(--color-3);
-    margin-top: 10px;
-    margin-left: 0%;
-}
-
 .convictions-title {
     background-color: var(--color-1);
     border: 2px solid var(--color-3);
@@ -1670,17 +1659,6 @@ span.tag-input[contenteditable]:empty::before {
     margin-top: 5px;
     width: 95%;
     user-select: none;
-}
-
-.manage-profile-incidents-container {
-    display: flex;
-    flex-direction: column;
-    background-color: var(--color-1);
-    width: 48%;
-    height: 5.4%;
-    border: 2px solid var(--color-3);
-    margin-bottom: 0%;
-    margin-left: 50%;
 }
 
 .profile-incidents-title {
