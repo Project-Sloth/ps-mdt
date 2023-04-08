@@ -176,7 +176,7 @@ end exports("GetFrontPlate", GetFrontPlate)
 3. Add **ps-mdt:client:trafficStop** into the Radialmenu
 
 * Preview:
-image.png
+![image](https://user-images.githubusercontent.com/82112471/230744641-72480046-966f-4145-a4a3-ad7fd329870c.png)
 
 # Roster and SOPs Setup
 
