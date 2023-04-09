@@ -3275,6 +3275,7 @@ $(document).ready(() => {
           status: 0,
         })
       );
+      notify("info","Cool Notify!");
     } else if (currentStatus == "10-7") {
       $(`[data-id="${info}"]`).find(".unit-status").html("10-8");
       $(`[data-id="${info}"]`)
@@ -3315,6 +3316,7 @@ $(document).ready(() => {
         cid: info,
       })
     );
+    notify("success","Cool Success Notify!");
   });
 
   $(".active-unit-list").on("contextmenu", ".active-unit-item", function (e) {
@@ -5823,3 +5825,32 @@ $(".map-clear").on('click', function() {
       ClearMap();
     }, 1500);
 });
+
+// Notifications
+let notificationQueue = [];
+
+function notify(type, message) {
+  let n = document.createElement("div");
+  let id = Math.random().toString(10).substr(2,10);
+  n.setAttribute("id", id);
+  n.classList.add("notification", type);
+  n.innerText = message;
+  notificationQueue.push(n);
+  showNotification();
+}
+
+function showNotification() {
+  if(notificationQueue.length > 0) {
+    let n = notificationQueue.shift();
+    document.getElementById("notification-area").innerHTML = "";
+    document.getElementById("notification-area").appendChild(n);
+    
+    setTimeout(() => {
+      n.classList.add("slide-out");
+      n.addEventListener("animationend", () => {
+        n.remove();
+        showNotification();
+      });
+    }, 5000);
+  }
+}
