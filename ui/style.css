@@ -1179,16 +1179,20 @@ a {
     color: white;
     margin-left: 10px;
     font-size: 15px;
-    user-select: none;
 }
 
 .manage-profile-fingerprint-input {
+    resize: none;
     border: none;
     outline: none;
-    margin-left: 2.5px;
+    height: 13px;
+    width: 80%;
+    margin-left: 0px;
     font-size: 16px;
-    margin-top: 2px;
+    margin-top: 0px;
     color: white;
+    overflow: hidden;
+    line-height: 1;
     background-color: rgba(0, 0, 0, 0);
 }
 
