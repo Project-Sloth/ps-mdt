@@ -45,7 +45,9 @@ input::-webkit-inner-spin-button {
 }
 
 .badge-logo {
-    margin-left: 1vh
+    margin-left: 1vh;
+    width: 12vh;
+    height: 12vh;
 }
 
 .profile-page-container {
@@ -160,14 +162,14 @@ input::-webkit-inner-spin-button {
 }
 
 .header {
-    height: 7vh;
+    height: 4vh;
     background-color: var(--color-1);
     border: 5px solid #393B39;
     border-top-right-radius: 50px;
     border-bottom-right-radius: 50px;
     width: 96.5%;
     position: absolute;
-    top: 5.5vh;
+    top: 4vh;
     display: flex;
     align-items: center;
     user-select: none;
@@ -184,17 +186,20 @@ input::-webkit-inner-spin-button {
 .header-middle {
     background-color: var(--color-2);
     border-radius: 15px;
+    border: 5px solid #393B39;
     width: fit-content;
-    height: fit-content;
-    padding: 10px;
+    height: 3.5vh;
+    padding: 8px;
     padding-left: 20px;
     padding-right: 20px;
     display: flex;
     flex-direction: column;
     text-align: center;
+    align-items: normal;
     color: white;
     margin: auto;
-    font-size: 20px;
+    margin-top: -10px;
+    font-size: 15px;
 }
 
 .header-right {
@@ -209,7 +214,7 @@ input::-webkit-inner-spin-button {
 .main-container {
     border-top: 5px solid var(--color-3);
     width: 100%;
-    height: 79.5%;
+    height: 86%;
     position: absolute;
     display: flex;
     bottom: 0;
@@ -248,7 +253,7 @@ input::-webkit-inner-spin-button {
     border: 2px solid var(--color-3);
     display: flex;
     flex-direction: column;
-    height: 74.7vh;
+    height: 80.7vh;
     width: 50vh;
     margin-top: 10px;
     margin-left: 10px;
@@ -390,7 +395,7 @@ input::-webkit-inner-spin-button {
     height: 100%;
     width: 50vh;
     margin-top: 10px;
-    margin-bottom: 8px;
+    margin-bottom: 10px;
     margin-left: 10px;
     user-select: none;
     overflow: hidden;
@@ -499,7 +504,7 @@ span.bulletin-item-info[contenteditable]:empty::before {
     border: 2px solid var(--color-3);
     display: flex;
     flex-direction: column;
-    height: 74.7vh;
+    height: 80.7vh;
     width: 50vh;
     margin-top: 10px;
     margin-left: 10px;
@@ -879,7 +884,7 @@ a {
     border: 2px solid var(--color-3);
     display: flex;
     flex-direction: column;
-    height: 74.7vh;
+    height: 80.7vh;
     width: 50vh;
     margin-top: 10px;
     margin-left: 10px;
@@ -1025,7 +1030,7 @@ a {
     border: 2px solid var(--color-3);
     display: flex;
     flex-direction: column;
-    height: 74.7vh;
+    height: 80.7vh;
     width: 50vh;
     margin-top: 10px;
     margin-left: 10px;
@@ -1277,7 +1282,7 @@ a {
     background-color: var(--color-1);
     width: 100%;
     border: 2px solid var(--color-3);
-    height: 13%;
+    height: 20%;
 }
 
 .license-title {
@@ -1326,7 +1331,7 @@ a {
     flex-direction: column;
     background-color: var(--color-1);
     width: 100%;
-    height: 18%;
+    height: 20%;
     border: 2px solid var(--color-3);
     margin-top: 5px;
     min-height: 100px;
@@ -1427,7 +1432,7 @@ span.tag-input[contenteditable]:empty::before {
     flex-direction: column;
     background-color: var(--color-1);
     width: 100%;
-    height: 18%;
+    height: 20%;
     border: 2px solid var(--color-3);
     margin-top: 5px;
     max-height: 150px;
@@ -1481,7 +1486,7 @@ span.tag-input[contenteditable]:empty::before {
     flex-direction: column;
     background-color: var(--color-1);
     width: 100%;
-    height: 18%;
+    height: 20%;
     border: 2px solid var(--color-3);
     margin-top: 5px;
     max-height: 150px;
@@ -1537,7 +1542,7 @@ span.tag-input[contenteditable]:empty::before {
     width: 100%;
     border: 2px solid var(--color-3);
     margin-top: 5px;
-    height: 17vh;
+    height: 20%;
     overflow: scroll;
 }
 
@@ -1626,18 +1631,9 @@ span.tag-input[contenteditable]:empty::before {
     user-select: none;
 }
 
-.manage-convictions-container {
-    display: flex;
-    flex-direction: column;
-    background-color: var(--color-1);
-    width: 49%;
-    height: 5.4%;
-    border: 2px solid var(--color-3);
-    margin-top: 5px;
-}
-
 .convictions-title {
-    background-color: var(--color-4);
+    background-color: var(--color-1);
+    border: 2px solid var(--color-3);
     color: white;
     font-size: 18px;
     font-weight: bolder;
@@ -1647,7 +1643,7 @@ span.tag-input[contenteditable]:empty::before {
     margin: auto;
     margin-top: 5px;
     margin-bottom: 0px;
-    width: 95%;
+    width: 98%;
     align-items: center;
     user-select: none;
 }
@@ -1665,19 +1661,9 @@ span.tag-input[contenteditable]:empty::before {
     user-select: none;
 }
 
-.manage-profile-incidents-container {
-    display: flex;
-    flex-direction: column;
-    background-color: var(--color-1);
-    width: 50%;
-    height: 5.4%;
-    border: 2px solid var(--color-3);
-    margin-top: -9.2%;
-    margin-left: 50%;
-}
-
 .profile-incidents-title {
-    background-color: var(--color-4);
+    background-color: var(--color-1);
+    border: 2px solid var(--color-3);
     color: white;
     font-size: 18px;
     font-weight: bolder;
@@ -1687,7 +1673,7 @@ span.tag-input[contenteditable]:empty::before {
     margin: auto;
     margin-top: 5px;
     margin-bottom: 0px;
-    width: 95%;
+    width: 98%;
     align-items: center;
     user-select: none;
 }
@@ -1957,7 +1943,7 @@ span.tag-input[contenteditable]:empty::before {
     border: 2px solid var(--color-3);
     display: flex;
     flex-direction: column;
-    height: 74.7vh;
+    height: 80.7vh;
     width: 50vh;
     margin-top: 10px;
     margin-left: 10px;
@@ -2099,8 +2085,8 @@ span.tag-input[contenteditable]:empty::before {
     border: 2px solid var(--color-3);
     display: flex;
     flex-direction: column;
-    height: 74.7vh;
-    max-height: 74.7vh;
+    height: 80.7vh;
+    max-height: 80.7vh;
     width: 50vh;
     margin-top: 10px;
     margin-left: 10px;
@@ -2532,7 +2518,7 @@ span.tag-incident-input[contenteditable]:empty::before {
     border: 2px solid var(--color-3);
     display: flex;
     flex-direction: column;
-    height: 74.7vh;
+    height: 80.7vh;
     width: 50vh;
     margin-top: 10px;
     margin-left: 10px;
@@ -3005,7 +2991,7 @@ span.tag-incident-input[contenteditable]:empty::before {
     border: 2px solid var(--color-3);
     display: flex;
     flex-direction: column;
-    height: 74.7vh;
+    height: 80.7vh;
     width: 50vh;
     margin-top: 10px;
     margin-left: 10px;
@@ -3088,8 +3074,8 @@ span.tag-incident-input[contenteditable]:empty::before {
     border: 2px solid var(--color-3);
     display: flex;
     flex-direction: column;
-    height: 74.7vh;
-    max-height: 74.7vh;
+    height: 80.7vh;
+    max-height: 80.7vh;
     width: 50vh;
     margin-top: 10px;
     margin-left: 10px;
@@ -3661,7 +3647,7 @@ span.officer-tag-bolo-input[contenteditable]:empty::before {
     border: 2px solid var(--color-3);
     display: flex;
     flex-direction: column;
-    height: 74.7vh;
+    height: 80.7vh;
     width: 50vh;
     margin-top: 10px;
     margin-left: 10px;
@@ -3966,8 +3952,8 @@ span.officer-tag-bolo-input[contenteditable]:empty::before {
     border: 2px solid var(--color-3);
     display: flex;
     flex-direction: column;
-    height: 74.7vh;
-    max-height: 74.7vh;
+    height: 80.7vh;
+    max-height: 80.7vh;
     width: 50vh;
     margin-top: 10px;
     margin-left: 10px;
@@ -4539,7 +4525,7 @@ span.tag-reports-input[contenteditable]:empty::before {
     border: 2px solid var(--color-3);
     display: flex;
     flex-direction: column;
-    height: 74.7vh;
+    height: 80.7vh;
     width: 50%;
     margin-top: 10px;
     margin-left: 10px;
@@ -4630,7 +4616,7 @@ span.tag-reports-input[contenteditable]:empty::before {
     border: 2px solid var(--color-3);
     display: flex;
     flex-direction: column;
-    height: 74.7vh;
+    height: 80.7vh;
     width: 50%;
     margin-top: 10px;
     margin-left: 10px;
@@ -4998,7 +4984,7 @@ span.tag-reports-input[contenteditable]:empty::before {
     border: 2px solid var(--color-3);
     display: flex;
     flex-direction: column;
-    height: 74.7vh;
+    height: 80.7vh;
     width: 66%;
     margin-top: 10px;
     margin-left: 10px;
@@ -5009,7 +4995,7 @@ span.tag-reports-input[contenteditable]:empty::before {
 .stafflogs-box {
     display: flex;
     flex-direction: column;
-    height: 74.7vh;
+    height: 80.7vh;
     width: 100%;
     margin-top: 2px;
     margin-left: 1px;
@@ -5048,7 +5034,7 @@ span.tag-reports-input[contenteditable]:empty::before {
     border: 2px solid var(--color-3);
     display: flex;
     flex-direction: column;
-    height: 74.7vh;
+    height: 80.7vh;
     width: 33%;
     margin-top: 10px;
     margin-left: 4px;
@@ -5059,7 +5045,7 @@ span.tag-reports-input[contenteditable]:empty::before {
 .leaderboard-box {
     display: flex;
     flex-direction: column;
-    height: 74.7vh;
+    height: 80.7vh;
     width: 100%;
     margin-top: 2px;
     margin-left: 1px;
@@ -6057,7 +6043,7 @@ span.tag-reports-input[contenteditable]:empty::before {
     border: 2px solid var(--color-3);
     display: flex;
     flex-direction: column;
-    height: 74.7vh;
+    height: 80.7vh;
     width: 100%;
     margin-top: 10px;
     margin-left: 10px;
@@ -6105,7 +6091,7 @@ span.tag-reports-input[contenteditable]:empty::before {
     border: 2px solid var(--color-3);
     display: flex;
     flex-direction: column;
-    height: 74.7vh;
+    height: 80.7vh;
     width: 50%;
     margin-top: 10px;
     margin-left: 10px;
@@ -6176,7 +6162,7 @@ span.tag-reports-input[contenteditable]:empty::before {
     border: 2px solid var(--color-3);
     display: flex;
     flex-direction: column;
-    height: 74.7vh;
+    height: 80.7vh;
     width: 50%;
     margin-top: 10px;
     margin-left: 10px;
@@ -6618,7 +6604,7 @@ input[type="range"].vehicle-info-points-input::-moz-range-track {
     border: 2px solid var(--color-3);
     display: flex;
     flex-direction: column;
-    height: 74.7vh;
+    height: 80.7vh;
     width: 30%;
     margin-top: 10px;
     margin-left: 10px;
@@ -6678,7 +6664,7 @@ input[type="range"].vehicle-info-points-input::-moz-range-track {
     border: 2px solid var(--color-3);
     display: flex;
     flex-direction: column;
-    height: 74.7vh;
+    height: 80.7vh;
     width: 70%;
     margin-top: 10px;
     margin-left: 10px;
@@ -6729,9 +6715,9 @@ input[type="range"].vehicle-info-points-input::-moz-range-track {
     border: 2px solid var(--color-3);
     position: absolute;
     width: 58%;
-    height: 86%;
+    height: 88.5%;
     left: 40.6%;
-    top: 10.5%;
+    top: 8%;
     margin-bottom: 15px;
 }
 
