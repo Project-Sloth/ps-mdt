@@ -164,17 +164,21 @@ input::-webkit-inner-spin-button {
 .header {
     height: 7vh;
     background-color: var(--color-1);
-    border: 5px solid #393B39;
+    border: 2px solid #393B39;
     border-top-right-radius: 45px;
     border-bottom-right-radius: 45px;
-    width: 70%;
+    width: 95%;
     position: absolute;
     top: 2.5vh;
     display: flex;
     align-items: center;
     user-select: none;
-}
+    transition: 0.5s ease-in-out;
+  }
 
+.header:hover {
+    width: 75%;
+}
 
 .header-left {
     display: flex;
@@ -6746,66 +6750,49 @@ input[type="range"].vehicle-info-points-input::-moz-range-track {
 
 .notification-area {
     position: fixed;
-    top: 2.8rem;
+    top: 2.7rem;
     right: 1.83rem;
     max-width: 30%;
 }
 
-.notification {
-    position: relative;
+.notify-icon {
+    color: lightgray;
+    font-size: 30px;
+    margin-left: 2rem;
+  }
+  
+  .notify-title {
+    color: lightgray;
+    font-size: 20px;
+    font-weight: bolder;
+    margin-left: 1.5rem;
+    margin-top: -1.5rem;
+  }
+  
+  .notify-message {
+    color: lightgray;
+    font-size: 15px;
+    margin-left: -10.3rem;
+    margin-top: 1.5rem;
+  }
+  
+  .notify {
     display: flex;
-    align-items: center;
-    justify-content: center;
+    width: 0rem;
     height: 7vh;
-    color: white;
-    width: 39vh;
-    background-color: var(--color-1);
-    border: 4px solid #393B39;
-    border-top-left-radius: 45px;
-    border-bottom-left-radius: 45px;
-    font-size: 1rem;
+    background: var(--color-1);
+    border: 2px solid #393B39;
+    border-top-left-radius: 4.5rem;
+    border-bottom-left-radius: 4.5rem;
+    align-items: center;
+    transition: 0.4s ease-in-out;
     overflow: hidden;
-    white-space: nowrap;
-    animation-name: slideInRight;
-    animation-duration: 0.5s;
-    animation-timing-function: ease-out;
-}
-
-@keyframes slideInRight {
-    0% {
-        width: 0;
-    }
-    100% {
-        width: 39vh;
-    }
-}
-
-.notification.slide-out {
-    animation-name: slideOutRight;
-}
-
-@keyframes slideOutRight {
-    0% {
-        width: 39vh;
-    }
-    100% {
-        width: 0;
-    }
-}
-
-.notification.info {
-    border: 4px solid #393B39;
-    right: 0; /* SET THE SLIDER TO BE 0 */
-}
-
-.notification.success {
-    border: 4px solid #00B24D;
-}
-
-.notification.error {
-    border: 4px solid #D50000;
-}
-
-.notification.warning {
-    border: 4px solid #FFA200;
-}
+  }
+  
+  .notify.slide-in {
+    width: 27rem;
+  }
+  
+  .notify.slide-out {
+    width: 0rem;
+  }

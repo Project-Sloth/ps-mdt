@@ -3275,7 +3275,7 @@ $(document).ready(() => {
           status: 0,
         })
       );
-      notify("info","Cool Notify!");
+      notify("info", "Notification Title", "This is a Test Notification");
     } else if (currentStatus == "10-7") {
       $(`[data-id="${info}"]`).find(".unit-status").html("10-8");
       $(`[data-id="${info}"]`)
@@ -3316,7 +3316,7 @@ $(document).ready(() => {
         cid: info,
       })
     );
-    notify("success","Cool Success Notify!");
+    notify("warning", "Notification Title", "This is a Test Notification");
   });
 
   $(".active-unit-list").on("contextmenu", ".active-unit-item", function (e) {
@@ -5762,30 +5762,60 @@ $(".map-clear").on('click', function() {
 });
 
 // Notifications
-let notificationQueue = [];
+const notificationArea = document.getElementById("notification-area");
+let currentNotification = null;
 
-function notify(type, message) {
-  let n = document.createElement("div");
-  let id = Math.random().toString(10).substr(2,10);
-  n.setAttribute("id", id);
-  n.classList.add("notification", type);
-  n.innerText = message;
-  notificationQueue.push(n);
-  showNotification();
-}
+function notify(type, title, message) {
+  const iconMap = {
+    "info": "fa-info-circle",
+    "success": "fa-check-circle",
+    "error": "fa-exclamation-circle",
+    "warning": "fa-exclamation-triangle"
+  };
+  const colorMap = {
+    "info": "#D3D3D3",
+    "success": "#4caf50",
+    "error": "#f44336",
+    "warning": "#ff9800"
+  };
+  const icon = iconMap[type] || "fa-info-circle";
+  const color = colorMap[type] || "#2196f3";
 
-function showNotification() {
-  if(notificationQueue.length > 0) {
-    let n = notificationQueue.shift();
-    document.getElementById("notification-area").innerHTML = "";
-    document.getElementById("notification-area").appendChild(n);
-    
+  const n = document.createElement("div");
+  n.classList.add("notify", type);
+  n.innerHTML = `
+    <div><span class="fas ${icon} notify-icon" style="color: ${color};"></span></div>
+    <div class="notify-title">${title}</div>
+    <div class="notify-message">${message}</div>
+  `;
+  n.style.borderColor = color;
+
+  notificationArea.appendChild(n);
+  n.getBoundingClientRect();
+  n.classList.add("slide-in");
+
+  if (currentNotification) {
+    currentNotification.classList.add("slide-out");
+    setTimeout(() => {
+      currentNotification?.remove();
+      currentNotification = n;
+      n.classList.remove("slide-in");
+      slideNotificationOut(n);
+    }, 500);
+  } else {
+    currentNotification = n;
+    slideNotificationOut(n);
+  }
+
+  function slideNotificationOut(n) {
     setTimeout(() => {
       n.classList.add("slide-out");
-      n.addEventListener("animationend", () => {
-        n.remove();
-        showNotification();
-      });
-    }, 5000);
+      setTimeout(() => {
+        n?.remove();
+        if (n === currentNotification) {
+          currentNotification = null;
+        }
+      }, 500);
+    }, 3000);
   }
 }
