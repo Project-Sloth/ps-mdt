@@ -504,7 +504,7 @@ span.bulletin-item-info[contenteditable]:empty::before {
     border: 2px solid var(--color-3);
     display: flex;
     flex-direction: column;
-    height: 80.7vh;
+    height: 81.1vh;
     width: 50vh;
     margin-top: 10px;
     margin-left: 10px;
@@ -3666,7 +3666,7 @@ span.officer-tag-bolo-input[contenteditable]:empty::before {
     border: 2px solid var(--color-3);
     display: flex;
     flex-direction: column;
-    height: 45.5%;
+    height: 46.5%;
     width: 50vh;
     margin-top: 1vh;
     margin-left: 10px;
