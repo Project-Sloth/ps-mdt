@@ -3705,72 +3705,7 @@ $(document).ready(() => {
     );
     $.post(`https://${GetParentResourceName()}/escape`, JSON.stringify({}));
   })
-
-  var draggedElement = 0;
-  var dragging = false;
-
-  $(".active-unit-list").on("click", ".active-unit-item", function (e) {
-    if (dragging) {
-      $("#draggedItem").css("opacity", 0.0);
-      document.getElementById("draggedItem").innerHTML = "";
-      dragging = false;
-    } else {
-      dragging = true;
-      draggedElement = $(this).data("id");
-      let draggedItemHtml = $(this).html();
-      document.getElementById("draggedItem").innerHTML = draggedItemHtml;
-      document.getElementById("draggedItem").style.left = "cursorX-50";
-      document.getElementById("draggedItem").style.top = "cursorY-50";
-      document.getElementById("draggedItem").style.opacity = "0.5";
-    }
-  });
-
-  document.onmousemove = handleMouseMove;
-
-  function handleMouseMove(event) {
-    let dot, eventDoc, doc, body, pageX, pageY;
-    event = event || window.event; // IE-ism
-    if (event.pageX == null && event.clientX != null) {
-      eventDoc = (event.target && event.target.ownerDocument) || document;
-      doc = eventDoc.documentElement;
-      body = eventDoc.body;
-
-      event.pageX =
-        event.clientX +
-        ((doc && doc.scrollLeft) || (body && body.scrollLeft) || 0) -
-        ((doc && doc.clientLeft) || (body && body.clientLeft) || 0);
-      event.pageY =
-        event.clientY +
-        ((doc && doc.scrollTop) || (body && body.scrollTop) || 0) -
-        ((doc && doc.clientTop) || (body && body.clientTop) || 0);
-    }
-
-    if (dragging) {
-      cursorX = event.pageX;
-      cursorY = event.pageY;
-      document.getElementById("draggedItem").style.left =
-        "" + cursorX - 50 + "px";
-      document.getElementById("draggedItem").style.top =
-        "" + cursorY - 50 + "px";
-    }
-  }
-
-  $(".active-calls-list").on("click", ".active-calls-item", function (e) {
-    const callId = $(this).data("id");
-    $("#draggedItem").css("opacity", 0.0);
-    document.getElementById("draggedItem").innerHTML = "";
-    dragging = false;
-    if (callId && draggedElement) {
-      $.post(
-        `https://${GetParentResourceName()}/callDragAttach`,
-        JSON.stringify({
-          callid: callId,
-          cid: draggedElement,
-        })
-      );
-      draggedElement = 0;
-    }
-  });
+  
   const customThemes = {
     lspd: {
       color1: "#1E3955",
