@@ -1643,7 +1643,7 @@ span.tag-input[contenteditable]:empty::before {
     margin: auto;
     margin-top: 5px;
     margin-bottom: 0px;
-    width: 98%;
+    width: 100%;
     align-items: center;
     user-select: none;
 }
@@ -1673,7 +1673,7 @@ span.tag-input[contenteditable]:empty::before {
     margin: auto;
     margin-top: 5px;
     margin-bottom: 0px;
-    width: 98%;
+    width: 100%;
     align-items: center;
     user-select: none;
 }
