@@ -208,23 +208,14 @@ $(document).ready(() => {
     $(".manage-profile-name-input-1").val(result["firstname"]);
     $(".manage-profile-name-input-2").val(result["lastname"]);
     $(".manage-profile-dob-input").val(result["dob"]);
-    if (AmbulanceJobs[playerJob] !== undefined) {
-      $(".manage-profile-fingerprint-input").val(result["fingerprint"]);
-    }
-    else {
-      if (convictions.length >= 1) {
-        $(".manage-profile-fingerprint-input").val(result["fingerprint"]);
-      }
-      else {
-        $(".manage-profile-fingerprint-input").val("No Fingerprints found!");
-      }
-    }
     $(".manage-profile-phonenumber-input").val(result["phone"]);
     $(".manage-profile-job-input").val(`${result.job}, ${result.grade}`);
     $(".manage-profile-apartment-input").val(`${result.apartment}`);
     $(".manage-profile-url-input").val(result["profilepic"] ?? "");
     $(".manage-profile-info").val(result["mdtinfo"]);
     $(".manage-profile-info").removeAttr("disabled");
+    $(".manage-profile-fingerprint-input").val(result["fingerprint"]);
+    $(".manage-profile-fingerprint-input").removeAttr("disabled");
     $(".manage-profile-pic").attr("src", result["profilepic"] ?? "img/male.png");
     $(".manage-profile-active-warrant").css("display", "none")
     if (result["warrant"]) {
@@ -540,6 +531,7 @@ $(document).ready(() => {
           pfp = newpfp;
         }
         let description = $(".manage-profile-info").val();
+        let fingerprint = $(".manage-profile-fingerprint-input").val();
         let id = $(".manage-profile-citizenid-input").val();
 
         $(".licenses-holder")
@@ -567,6 +559,7 @@ $(document).ready(() => {
             sName: sName,
             tags: tags,
             gallery: gallery,
+            fingerprint: fingerprint,
             licenses: licenses
           })
         );
