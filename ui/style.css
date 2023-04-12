@@ -5495,7 +5495,8 @@ span.tag-reports-input[contenteditable]:empty::before {
     display: flex;
     flex-direction: column;
     z-index: 9998;
-    border: .45vh solid white;
+    border: .09vh solid var(--color-6);
+    border-radius: 0.3rem;
 }
 
 .radio-title {
@@ -5519,10 +5520,12 @@ span.tag-reports-input[contenteditable]:empty::before {
     color: white;
     text-align: center;
     padding: 1vh;
+    border-radius: .5vh;
 }
 
 .radio-buttons {
-    width: 20vh;
+    width: 30vh;
+    left: 30px;
     margin: auto;
     margin-top: 1.5vh;
     display: flex;
@@ -5531,32 +5534,34 @@ span.tag-reports-input[contenteditable]:empty::before {
 
 .radio-cancel {
     color: white;
-    padding: .5vh;
-    padding-left: 1vh;
-    padding-right: 1vh;
-    background-color: #D77A0D;
-    border-radius: 1vh;
+    padding: 1vh;
+    padding-left: 2.5vh;
+    padding-right: 2.5vh;
+    background-color: #db8c32;
+    border-radius: .5vh;
     margin: auto;
     user-select: none;
+    margin-right: 0.5vh;
 }
 
 .radio-cancel:hover {
-    background-color: #f18f1e;
+    background-color: #ca8332;
 }
 
 .radio-submit {
     color: white;
-    padding: .5vh;
-    padding-left: 1vh;
-    padding-right: 1vh;
-    background-color: #0B9509;
-    border-radius: 1vh;
+    padding: 1vh;
+    padding-left: 2.5vh;
+    padding-right: 2.5vh;
+    background-color: #37a035;
+    border-radius: .5vh;
     margin: auto;
     user-select: none;
+    margin-left: 0.5vh;
 }
 
 .radio-submit:hover {
-    background-color: #15ac12;
+    background-color: #318b30;
 }
 
 .callsign-inner-container {
@@ -5567,7 +5572,8 @@ span.tag-reports-input[contenteditable]:empty::before {
     display: flex;
     flex-direction: column;
     z-index: 9998;
-    border: .45vh solid white;
+    border: .09vh solid var(--color-6);
+    border-radius: 0.3rem;
 }
 
 .callsign-title {
@@ -5591,10 +5597,12 @@ span.tag-reports-input[contenteditable]:empty::before {
     color: white;
     text-align: center;
     padding: 1vh;
+    border-radius: .5vh;
 }
 
 .callsign-buttons {
-    width: 20vh;
+    width: 30vh;
+    left: 30px;
     margin: auto;
     margin-top: 1.5vh;
     display: flex;
@@ -5603,32 +5611,34 @@ span.tag-reports-input[contenteditable]:empty::before {
 
 .callsign-cancel {
     color: white;
-    padding: .5vh;
-    padding-left: 1vh;
-    padding-right: 1vh;
-    background-color: #D77A0D;
-    border-radius: 1vh;
+    padding: 1vh;
+    padding-left: 2.5vh;
+    padding-right: 2.5vh;
+    background-color: #db8c32;
+    border-radius: .5vh;
     margin: auto;
     user-select: none;
+    margin-right: 0.5vh;
 }
 
 .callsign-cancel:hover {
-    background-color: #f18f1e;
+    background-color: #ca8332;
 }
 
 .callsign-submit {
     color: white;
-    padding: .5vh;
-    padding-left: 1vh;
-    padding-right: 1vh;
-    background-color: #0B9509;
-    border-radius: 1vh;
+    padding: 1vh;
+    padding-left: 2.5vh;
+    padding-right: 2.5vh;
+    background-color: #37a035;
+    border-radius: .5vh;
     margin: auto;
     user-select: none;
+    margin-left: 0.5vh;
 }
 
 .callsign-submit:hover {
-    background-color: #15ac12;
+    background-color: #318b30;
 }
 
 
