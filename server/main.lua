@@ -84,7 +84,7 @@ AddEventHandler('playerDropped', function(reason)
     local lastName = PlayerData.charinfo.lastname:sub(1,1):upper()..PlayerData.charinfo.lastname:sub(2)
 
     -- Auto clock out if the player is off duty
-    if PlayerData.job.onduty then
+     if IsPoliceOrEms(job) and PlayerData.job.onduty then
 		MySQL.query('UPDATE mdt_clocking SET clock_out_time = NOW(), total_time = TIMESTAMPDIFF(SECOND, clock_in_time, NOW()) WHERE user_id = @user_id ORDER BY id DESC LIMIT 1', {
 			['@user_id'] = PlayerData.citizenid
 		})
