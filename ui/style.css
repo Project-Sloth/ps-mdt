@@ -6732,3 +6732,248 @@ input[type="range"].vehicle-info-points-input::-moz-range-track {
 .leaflet-tooltip-right {
 	margin-left: 6px;
 }
+
+.incidents-evidence-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    margin-top: 0%;
+}
+
+.incidents-evidence-container-box {
+    background-color: var(--color-5);
+    width: 55vh;
+    height: 48.5vh;
+    margin: auto;
+    display: flex;
+    flex-direction: column;
+    z-index: 9998;
+    display: none;
+}
+
+.incidents-evidence-title {
+    background-color: var(--color-4);
+    color: white;
+    font-size: 20px;
+    font-weight: bolder;
+    text-align: center;
+    padding-top: 15px;
+    padding-bottom: 15px;
+    width: 95%;
+    margin: auto;
+    margin-top: 15px;
+    margin-bottom: 0px;
+    user-select: none;
+}
+
+.incidents-evidence-name-title {
+    width: 95%;
+    margin: auto;
+    margin-top: 10px;
+    margin-bottom: 0px;
+    color: white;
+    font-size: 15px;
+    text-align: left;
+    user-select: none;
+}
+
+.incidents-evidence-name-input {
+    background-color: rgba(0, 0, 0, 0);
+    border: none;
+    outline: none;
+    color: white;
+    width: 100%;
+    margin: auto;
+    margin-top: 5px;
+    margin-bottom: 0px;
+    text-align: left;
+    padding-bottom: 2.5px;
+}
+
+.incidents-evidence-description-input {
+    background-color: rgba(0, 0, 0, 0);
+    border: none;
+    outline: none;
+    color: white;
+    width: 100%;
+    margin: auto;
+    margin-top: 5px;
+    margin-bottom: 0px;
+    text-align: left;
+    padding-bottom: 2.5px;
+}
+
+.incidents-evidence-url-input {
+    background-color: rgba(0, 0, 0, 0);
+    border: none;
+    outline: none;
+    color: white;
+    width: 93%;
+    margin: auto;
+    margin-top: 5px;
+    margin-bottom: 0px;
+    text-align: left;
+    padding-bottom: 2.5px;
+}
+
+.incidents-evidence-holder {
+    overflow: auto;
+    height: 30vh;
+    width: 95%;
+    margin: auto;
+    margin-top: 15px;
+    margin-bottom: 15px;
+}
+
+.dropdown {
+    width: 95%;
+    position: relative;
+    margin: 15px;
+}
+
+.dropdown * {
+    box-sizing: border-box;
+}
+
+.select {
+    background-color: var(--color-5);
+    color: #fff;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 2px var(--color-4) solid;
+    border-radius: 0.5em;
+    padding: 1em;
+    cursor: pointer;
+    transition: background  0.3s;
+}
+
+.select-clicked {
+    border: 2px var(--color-3) solid;
+}
+
+.select:hover {
+    background: var(--color-3);
+}
+
+.caret {
+    width: 0;
+    height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 6px solid #fff;
+    transition: 0.3s;
+}
+
+.caret-rotate {
+    transform: rotate(180deg);
+}
+
+.menu {
+    list-style: none;
+    padding: 0.2em 0.5em;
+    background: var(--color-5);
+    border: 2px var(--color-4) solid;
+    border-radius: 0.5em;
+    color: #fff;
+    position: absolute;
+    top: 3em;
+    left: 50%;
+    width: 100%;
+    transform: translateX(-50%);
+    opacity: 0;
+    display: none;
+    transition: 0.2s;
+    z-index: 9999;
+}
+
+.menu li {
+    padding: 0.7em 0.5em;
+    margin: 0.3em 0;
+    border-radius: 0.5em;
+    cursor: pointer;
+}
+
+.menu li:hover {
+    background: var(--color-4);
+}
+
+.active {
+    background: var(--color-4);
+}
+
+.menu-open {
+    display: block;
+    opacity: 1;
+}
+
+.manage-evidence-description-container {
+    width: 91%;
+    margin: auto;
+    margin-top: 10px;
+    margin-left: 15px;
+    border: 2px var(--color-4) solid;
+    border-radius: 0.5em;
+    outline: none;
+    height: 25%;
+    resize: none;
+    background-color: var(--color-5);
+    color: white;
+    font-size: 16px;
+    padding: 10px;
+}
+
+.manage-incidents-evidence-type-add-btn {
+    border-radius: 0.5em;
+    padding: 4px;
+    color: white;
+    font-size: 18px;
+    width: 4%;
+    text-align: center;
+    cursor: pointer;
+}
+
+.incidents-evidence-locker {
+    background-color: var(--color-5);
+    border: 2px solid var(--color-3);
+    color: white;
+    font-size: 18px;
+    font-weight: bolder;
+    border-radius: 0.4em;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    text-align: center;
+    margin: auto;
+    margin-top: 15px;
+    margin-left: 15px;
+    margin-bottom: 20px;
+    width: 70%;
+    user-select: none;
+    cursor: pointer;
+}
+
+.incidents-evidence-locker:hover {
+    background-color: var(--color-3);
+}
+
+.incidents-evidence-save-button {
+    width: 20%;
+    border-radius: 0.4em;
+    font-size: 15px;
+    font-weight: bolder;
+    padding-top: 9px;
+    padding-bottom: 8px;
+    background-color: #1b8f25;
+    margin: auto;
+    margin-right: 15px;
+    margin-top: -56px;
+    color: white;
+    text-align: center;
+    user-select: none;
+    cursor: pointer;
+}
+
+.incidents-evidence-save-button:hover {
+    background-color: #1caa28;
+}
