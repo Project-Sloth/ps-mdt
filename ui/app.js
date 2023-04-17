@@ -1295,6 +1295,12 @@ $(document).ready(() => {
     }
   });
 
+  $(".incidents-evidence-locker").click(function () {
+    $(".close-all").css("filter", "none");
+    let id = $(".manage-incidents-editing-title").data("id");
+    OpenEvidenceLocker(id)
+  })
+
   $(".manage-incidents-evidence-holder").on(
     "click",
     ".incidents-img",
@@ -5536,6 +5542,13 @@ function hideIncidentsMenu() {
     $(".incidents-known-container").fadeOut(0);
     $(".close-all").css("filter", "none");
   }
+}
+
+// Use evidence locker
+function OpenEvidenceLocker(id) {
+  $.post(`https://${GetParentResourceName()}/OpenEvidenceLocker`, JSON.stringify({
+    id,
+  }));
 }
 
 function onMouseDownIncidents(e) {
