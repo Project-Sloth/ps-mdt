@@ -82,6 +82,15 @@ Config.ImpoundLocations = {
     [2] = vector4(-436.14, 5982.63, 31.34, 136.0),
 }
 
+-- This is for all police stations u use (needs to be defined for the locker button)
+Config.PDStations = {
+    vector3(449.52, -987.85, 30.69), -- MRPD
+    vector3(380.79, -1614.57, 29.29), -- DAVIS
+    vector3(840.55, -1290.2, 28.65), -- LA MESA STATION
+    vector3(1851.64, 3689.25, 34.27), -- SANDY
+    vector3(-446.36, 6010.07, 31.71), -- PALETO
+}
+
 -- Support for Wraith ARS 2X. 
 
 Config.UseWolfknightRadar = false
