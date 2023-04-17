@@ -429,6 +429,34 @@ RegisterNUICallback("sendToCommunityService", function(data, cb)
     end
 end)
 
+-- Handle Evidence lockers
+RegisterNUICallback("OpenEvidenceLocker", function(data, cb)
+    TriggerEvent("mdt:client:exitMDT")
+    local lockerid = data.id
+    local PlayerJob = QBCore.Functions.GetPlayerData().job
+    local pos = GetEntityCoords(PlayerPedId())
+    local canOpen = false
+    for k,v in pairs(Config.PDStations) do
+        if #(pos - v) < 30.0 then
+            if lockerid > 0 then
+                canOpen = true
+            else
+                print("Report isnt saved")
+            end
+        end
+    end
+    if canOpen then
+        TriggerServerEvent("inventory:server:OpenInventory", "stash", " Evidence | Drawer: "..lockerid, {
+            maxweight = 4000000,
+            slots = 500,
+        })
+        TriggerEvent("inventory:client:SetCurrentStash", " Evidence | Drawer: "..lockerid)
+    else
+        QBCore.Functions.Notify("You are not near a police station.", "error")
+    end
+end)
+
+
 RegisterNetEvent('mdt:client:getProfileData', function(sentData, isLimited)
     if not isLimited then
         local vehicles = sentData['vehicles']
