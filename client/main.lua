@@ -1021,8 +1021,8 @@ function GetPlayerWeaponInfos(cb)
 end
 
 --3rd Eye Trigger Event
-RegisterNetEvent('registerAllWeapons')
-AddEventHandler('registerAllWeapons', function()
+RegisterNetEvent('ps-mdt:client:selfregister')
+AddEventHandler('ps-mdt:client:selfregister', function()
     GetPlayerWeaponInfos(function(weaponInfos)
         if weaponInfos and #weaponInfos > 0 then
             for _, weaponInfo in ipairs(weaponInfos) do
