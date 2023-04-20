@@ -1014,26 +1014,43 @@ RegisterNetEvent('mdt:client:statusImpound', function(data, plate)
     SendNUIMessage({ type = "statusImpound", data = data, plate = plate })
 end)
 
-function GetPlayerWeaponInfo(cb)
-    QBCore.Functions.TriggerCallback('getWeaponInfo', function(weaponInfo)
-        cb(weaponInfo)
+function GetPlayerWeaponInfos(cb)
+    QBCore.Functions.TriggerCallback('getWeaponInfo', function(weaponInfos)
+        cb(weaponInfos)
     end)
 end
 
 --3rd Eye Trigger Event
-RegisterNetEvent('ps-mdt:client:selfregister', function()
-    local playerData = QBCore.Functions.GetPlayerData()
-    if GetJobType(playerData.job.name) == 'police' then
-        GetPlayerWeaponInfo(function(weaponInfo)
-            if weaponInfo then
+RegisterNetEvent('registerAllWeapons')
+AddEventHandler('registerAllWeapons', function()
+    GetPlayerWeaponInfos(function(weaponInfos)
+        if weaponInfos and #weaponInfos > 0 then
+            for _, weaponInfo in ipairs(weaponInfos) do
                 TriggerServerEvent('mdt:server:registerweapon', weaponInfo.serialnumber, weaponInfo.weaponurl, weaponInfo.notes, weaponInfo.owner, weaponInfo.weapClass, weaponInfo.weaponmodel)
+                TriggerEvent('QBCore:Notify', "Weapon " .. weaponInfo.weaponmodel .. " has been added to police database.")
                 --print("Weapon added to database")
-            else
-                --print("No weapons found")
             end
-        end)
-    end
+        else
+           -- print("No weapons found")
+        end
+    end)
 end)
+
+-- Uncomment if you want to use this instead.
+
+--[[ RegisterCommand('registerweapon', function(source)
+    GetPlayerWeaponInfos(function(weaponInfos)
+        if weaponInfos and #weaponInfos > 0 then
+            for _, weaponInfo in ipairs(weaponInfos) do
+                TriggerServerEvent('mdt:server:registerweapon', weaponInfo.serialnumber, weaponInfo.weaponurl, weaponInfo.notes, weaponInfo.owner, weaponInfo.weapClass, weaponInfo.weaponmodel)
+                TriggerEvent('QBCore:Notify', "Weapon " .. weaponInfo.weaponmodel .. " has been added to police database.")
+                print("Weapon added to database")
+            end
+        else
+            print("No weapons found")
+        end
+    end)
+end, false) ]]
 
 --====================================================================================
 ------------------------------------------
