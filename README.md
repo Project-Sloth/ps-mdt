@@ -26,7 +26,7 @@ exports['ps-mdt']:CreateWeaponInfo(serial, imageurl, notes, owner, weapClass, we
 ![image](https://user-images.githubusercontent.com/82112471/226144189-0cf7a87c-d9bc-4d1f-a9fb-6f14f92cb68b.png)
 
 ## Self Register Weapons
-* Your citizens can self-register weapons found on their inventory. Event to trigger is below if you're using qb-target.
+* Your citizens can self-register weapons found on their inventory. Event to trigger is below if you're using qb-target. There's also a command available named `registerweapon` but you'll need to uncomment if you want to use it.
 ```
 ps-mdt:client:selfregister
 ```
