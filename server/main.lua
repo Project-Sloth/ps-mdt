@@ -123,6 +123,17 @@ RegisterNetEvent("ps-mdt:server:ToggleDuty", function()
 	if GetActiveData(player.PlayerData.citizenid) then
 		activeUnits[player.PlayerData.citizenid] = nil
 	end
+    else
+    	local Radio = Player(src).state.radioChannel or 0
+	activeUnits[player.PlayerData.citizenid] = {
+		cid = player.PlayerData.citizenid,
+		callSign = player.PlayerData.metadata['callsign'],
+		firstName = player.PlayerData.charinfo.firstname:sub(1,1):upper()..player.PlayerData.charinfo.firstname:sub(2),
+		lastName = player.PlayerData.charinfo.lastname:sub(1,1):upper()..player.PlayerData.charinfo.lastname:sub(2),
+		radio = Radio,
+		unitType = player.PlayerData.job.name,
+		duty = player.PlayerData.job.onduty
+	}
     end
 end)
 
