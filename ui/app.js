@@ -5656,8 +5656,10 @@ function updateOfficerData(officerData) {
   const leaderboardBox = document.querySelector('.leaderboard-box');
   leaderboardBox.innerHTML = '';
 
+  const positions = ['1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10th', '11th', '12th', '13th', '14th', '15th', '16th', '17th', '18th', '19th', '20th', '21th', '22th', '23th', '24th', '25th'];
+
   officerData.forEach((officer, index) => {
-      const position = ['1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10th'][index];
+      const position = positions[index];
       const officerDiv = document.createElement('div');
       officerDiv.className = 'leaderboard-box-test';
       officerDiv.style.fontSize = '1.3vh';
@@ -5668,6 +5670,7 @@ function updateOfficerData(officerData) {
       leaderboardBox.appendChild(officerDiv);
   });
 }
+
 
 window.addEventListener("load", function () {
   document

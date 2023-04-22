@@ -1705,7 +1705,7 @@ end)
 
 function getTopOfficers(callback)
     local result = {}
-    local query = 'SELECT * FROM mdt_clocking ORDER BY total_time DESC LIMIT 10'
+    local query = 'SELECT * FROM mdt_clocking ORDER BY total_time DESC LIMIT 25'
     MySQL.Async.fetchAll(query, {}, function(officers)
         for k, officer in ipairs(officers) do
             table.insert(result, {
@@ -1743,8 +1743,25 @@ function sendToDiscord(color, name, message, footer)
 end
 
 function format_time(time)
+    local days = math.floor(time / 86400)
+    time = time % 86400
     local hours = math.floor(time / 3600)
-    local minutes = math.floor((time % 3600) / 60)
+    time = time % 3600
+    local minutes = math.floor(time / 60)
     local seconds = time % 60
-    return string.format('%02d:%02d:%02d', hours, minutes, seconds)
+
+    local formattedTime = ""
+    if days > 0 then
+        formattedTime = string.format("%d day%s ", days, days == 1 and "" or "s")
+    end
+    if hours > 0 then
+        formattedTime = formattedTime .. string.format("%d hour%s ", hours, hours == 1 and "" or "s")
+    end
+    if minutes > 0 then
+        formattedTime = formattedTime .. string.format("%d minute%s ", minutes, minutes == 1 and "" or "s")
+    end
+    if seconds > 0 then
+        formattedTime = formattedTime .. string.format("%d second%s", seconds, seconds == 1 and "" or "s")
+    end
+    return formattedTime
 end
