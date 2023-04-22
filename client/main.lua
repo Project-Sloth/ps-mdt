@@ -40,19 +40,20 @@ RegisterNetEvent('QBCore:Client:OnGangUpdate', function(GangInfo)
     PlayerData.gang = GangInfo
 end)
 
-RegisterNetEvent("QBCore:Client:SetDuty", function(job, state)
-    if AllowedJob(job) then
+RegisterNetEvent("QBCore:Client:SetDuty", function(job)
+    if AllowedJob(PlayerData.job.name) then
         TriggerServerEvent("ps-mdt:server:ToggleDuty")
 	TriggerServerEvent("ps-mdt:server:ClockSystem")
-        TriggerServerEvent('QBCore:ToggleDuty')
         if PlayerData.job.name == "police" or PlayerData.job.type == "leo" then
             TriggerServerEvent("police:server:UpdateCurrentCops")
         end
-        if (PlayerData.job.name == "ambulance" or PlayerData.job.type == "ems") and job then
-            TriggerServerEvent('hospital:server:AddDoctor', 'ambulance')
-        elseif (PlayerData.job.name == "ambulance" or PlayerData.job.type == "ems") and not job then
-            TriggerServerEvent('hospital:server:RemoveDoctor', 'ambulance')
-        end
+        if PlayerData.job.name == "ambulance" or PlayerData.job.type == "ems" then
+            if job then
+	    	TriggerServerEvent('hospital:server:AddDoctor', 'ambulance')
+	    else
+		TriggerServerEvent('hospital:server:RemoveDoctor', 'ambulance')			
+	    end
+	end
         TriggerServerEvent("police:server:UpdateBlips")
     end
 end)
