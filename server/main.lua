@@ -80,6 +80,7 @@ AddEventHandler('playerDropped', function(reason)
     local src = source
     local PlayerData = GetPlayerData(src)
     local time = os.date("%Y-%m-%d %H:%M:%S")
+    local job = PlayerData.job.name
     local firstName = PlayerData.charinfo.firstname:sub(1,1):upper()..PlayerData.charinfo.firstname:sub(2)
     local lastName = PlayerData.charinfo.lastname:sub(1,1):upper()..PlayerData.charinfo.lastname:sub(2)
 
