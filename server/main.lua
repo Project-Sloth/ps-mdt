@@ -7,6 +7,7 @@ local activeUnits = {}
 local impound = {}
 local dispatchMessages = {}
 local isDispatchRunning = false
+local antiSpam = false
 
 local function GetActiveData(cid)
 	local player = type(cid) == "string" and cid or tostring(cid)
@@ -1712,11 +1713,36 @@ RegisterNetEvent('mdt:server:registerweapon', function(serial, imageurl, notes, 
     exports['ps-mdt']:CreateWeaponInfo(serial, imageurl, notes, owner, weapClass, weapModel)
 end)
 
-RegisterNetEvent('mdt:server:removeMoney', function(citizenId, fine)
+RegisterNetEvent('mdt:server:removeMoney', function(citizenId, fine, incidentId)
 	local src = source
 	local Player = QBCore.Functions.GetPlayerByCitizenId(citizenId)
-	TriggerClientEvent('QBCore:Notify', Player, fine.."$ were removed from your Bank Account.")
-	Player.Functions.RemoveMoney('bank', fine, 'lspd-fine')
+	local Officer = QBCore.Functions.GetPlayer(src)
+	local fullname = '(' .. Officer.PlayerData.metadata.callsign .. ') ' .. Officer.PlayerData.charinfo.firstname .. ' ' .. Officer.PlayerData.charinfo.lastname
+	if not antiSpam then
+		local date = os.date("%Y-%m-%d %H:%M")
+		if Player.Functions.RemoveMoney('bank', fine, 'lspd-fine') then
+			TriggerClientEvent('QBCore:Notify', src, citizenId.." got a Citation!")
+			TriggerClientEvent('QBCore:Notify', Player.PlayerData.source, fine.."$ were removed from your Bank Account.")
+			local info = {
+				citizenId = citizenId,
+				fine = "$"..fine,
+				date = date,
+				incidentId = "#"..incidentId,
+				officer = fullname,
+			}
+			Player.Functions.AddItem('ps-mdt:citation', 1, false, info)
+			TriggerClientEvent('inventory:client:ItemBox', Player.PlayerData.source, QBCore.Shared.Items['ps-mdt:citation'], "add")
+			TriggerEvent('mdt:server:AddLog', "A Fine was writen by "..fullname.." and was sent to "..citizenId..", the Amount was $".. fine ..". (ID: "..incidentId.. ")")
+		else
+			TriggerClientEvent('QBCore:Notify', Player.PlayerData.source, "Something went wrong!")
+		end
+		antiSpam = true
+		SetTimeout(60000, function()
+			antiSpam = false
+		end)
+	else
+		TriggerClientEvent('QBCore:Notify', src, "On Cooldown!")
+	end
 end)
 
 function getTopOfficers(callback)
