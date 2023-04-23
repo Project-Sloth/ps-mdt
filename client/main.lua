@@ -388,7 +388,7 @@ end)
 -- Uses the QB-Core bill command to send a fine to a player
 -- If you use a different fine system, you will need to change this
 RegisterNUICallback("sendFine", function(data, cb)
-    local citizenId, fine = data.citizenId, data.fine
+    local citizenId, fine, incidentId = data.citizenId, data.fine, data.incidentId
     
     -- Gets the player id from the citizenId
     local p = promise.new()
@@ -401,7 +401,7 @@ RegisterNUICallback("sendFine", function(data, cb)
     if fine > 0 then
         if Config.BillVariation then
             -- Uses QB-Core removeMoney Functions
-            TriggerServerEvent("mdt:server:removeMoney", citizenId, fine)
+            TriggerServerEvent("mdt:server:removeMoney", citizenId, fine, incidentId)
         else
             -- Uses QB-Core /bill command
             ExecuteCommand(('bill %s %s'):format(targetSourceId, fine))

@@ -1918,7 +1918,8 @@ $(document).ready(() => {
     const citizenId = $(this).data("id");
     const fine = $(".fine-amount").filter(`[data-id=${citizenId}]`).val();
     const recommendFine = $(".fine-recommended-amount").filter(`[data-id=${citizenId}]`).val();
-    sendFine(citizenId, fine, recommendFine);
+    const incidentId = $(".manage-incidents-editing-title").data("id");
+    sendFine(citizenId, fine, recommendFine, incidentId);
   });
 
   $('.incidents-ghost-holder').on('click', '#community-service-button', function() {
@@ -5403,15 +5404,15 @@ function sendToCommunityService(citizenId, customSentence, recommendedSentence) 
 
 // Use the customFine if defined, otherwise use the recommendedFine
 // This uses the assumption that customFine will be 0 if not defined
-function sendFine(citizenId, customFine, recommendedFine) {
+function sendFine(citizenId, customFine, recommendedFine, incidentId) {
   const fine = Number(customFine) || Number(recommendedFine);
 
   $.post(`https://${GetParentResourceName()}/sendFine`, JSON.stringify({
     citizenId,
     fine,
+    incidentId,
   }));
 }
-
 // Context menu
 
 var menu = document.querySelector(".contextmenu");
