@@ -20,11 +20,29 @@ CreateThread(function()
     end
 end)
 
+local function HandleDuty(state)
+    if AllowedJob(PlayerData.job.name) then
+        TriggerServerEvent("ps-mdt:server:ToggleDuty")
+	TriggerServerEvent("ps-mdt:server:ClockSystem")
+        if PlayerData.job.name == "police" or PlayerData.job.type == "leo" then
+            TriggerServerEvent("police:server:UpdateCurrentCops")
+        end
+        if PlayerData.job.name == "ambulance" or PlayerData.job.type == "ems" then
+            if state then
+                TriggerServerEvent('hospital:server:AddDoctor', 'ambulance')
+            else
+                TriggerServerEvent('hospital:server:RemoveDoctor', 'ambulance')
+            end
+        end
+        TriggerServerEvent("police:server:UpdateBlips")
+    end
+end
 
 -- Events from qbcore
 RegisterNetEvent('QBCore:Client:OnPlayerLoaded', function()
     PlayerData = QBCore.Functions.GetPlayerData()
     callSign = PlayerData.metadata.callsign
+    HandleDuty(PlayerData.job.onduty)
 end)
 
 RegisterNetEvent('QBCore:Client:OnPlayerUnload', function()
@@ -40,22 +58,8 @@ RegisterNetEvent('QBCore:Client:OnGangUpdate', function(GangInfo)
     PlayerData.gang = GangInfo
 end)
 
-RegisterNetEvent("QBCore:Client:SetDuty", function(job)
-    if AllowedJob(PlayerData.job.name) then
-        TriggerServerEvent("ps-mdt:server:ToggleDuty")
-	TriggerServerEvent("ps-mdt:server:ClockSystem")
-        if PlayerData.job.name == "police" or PlayerData.job.type == "leo" then
-            TriggerServerEvent("police:server:UpdateCurrentCops")
-        end
-        if PlayerData.job.name == "ambulance" or PlayerData.job.type == "ems" then
-            if job then
-	    	TriggerServerEvent('hospital:server:AddDoctor', 'ambulance')
-	    else
-		TriggerServerEvent('hospital:server:RemoveDoctor', 'ambulance')			
-	    end
-	end
-        TriggerServerEvent("police:server:UpdateBlips")
-    end
+RegisterNetEvent("QBCore:Client:SetDuty", function(state)
+    HandleDuty(state)
 end)
 
 RegisterNetEvent('police:SetCopCount', function(amount)
