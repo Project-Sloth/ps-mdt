@@ -26,7 +26,7 @@ exports['ps-mdt']:CreateWeaponInfo(serial, imageurl, notes, owner, weapClass, we
 ![image](https://user-images.githubusercontent.com/82112471/226144189-0cf7a87c-d9bc-4d1f-a9fb-6f14f92cb68b.png)
 
 ## Self Register Weapons
-* Your citizens can self-register weapons found on their inventory. Event to trigger is below if you're using qb-target.
+* Your citizens can self-register weapons found on their inventory. Event to trigger is below if you're using qb-target. There's also a command available named `registerweapon` but you'll need to uncomment if you want to use it.
 ```
 ps-mdt:client:selfregister
 ```
@@ -35,6 +35,22 @@ https://user-images.githubusercontent.com/82112471/226150422-0c4776f0-0927-4b07-
 
 # Automatic Mugshot Pictures
 ![image](https://user-images.githubusercontent.com/82112471/226207146-086c5508-7e6f-4345-a157-3ec2fd588138.png)
+
+## Setup for Automatic Mugshot
+* Set Config.UseCQCMugshot to true, It is true by default. (Line 5 in Config.lua)
+```lua
+Config.UseCQCMugshot = true
+```
+* Choose what photos you want by changing this: (Line 8 in Config.lua)
+```lua
+-- Front, Back Side. Use 4 for both sides, we recommend leaving at 1 for default.
+Config.MugPhotos = 1
+```
+* Create a Discord Webhook and paste it here: (Line 11 in Config.lua)
+```lua
+-- Images for mug shots will be uploaded here. Add a Discord webhook. 
+Config.Webhook = ''
+```
 
 # Clock In/Out & Leaderboard
 * Triggers when officers Toggle Duty from inside the mdt.
@@ -120,13 +136,81 @@ Plate reader automatically locks and alerts Police if:
 
 This reduces the plate reader events to player's vehicles and doesn't query the database for hundreds of NPC vehicles
 
-**Video Demonstration**
+### Video Demonstration
 https://youtu.be/w9PAVc3ER_c
 
 ![image](https://i.imgur.com/KZPMHQX.png)
 ![image](https://i.imgur.com/OIIrAcb.png)
 ![image](https://i.imgur.com/6maboG3.png)
 ![image](https://i.imgur.com/DkhQxDq.png)
+
+### Traffic Stop Radialmenu Alert
+
+* When initiating a traffic stop allows you to notify your fellow officers of your location and provide details about the current location and stopped vehicle through the radial menu.
+
+
+1. Add the following code right above `function READER:Main()` on `cl_plate_reader.lua`
+
+```
+local Vehicle = nil
+local function GetFrontPlate()
+	local data = {
+		locked = READER.vars.cams["front"].locked,
+		plate = READER.vars.cams["front"].plate,
+		veh = Vehicle,
+	}
+	return data
+end exports("GetFrontPlate", GetFrontPlate)
+``` 
+
+2. Add the following into `cl_plate_reader.lua` after `local veh = UTIL:GetVehicleInDirection( PLY.veh, start, offset )` on the function `function READER:Main()`
+```
+			if i == 1 then
+				Vehicle = veh
+			end
+```
+
+* Should look like this after completing the above steps.
+![image](https://i.imgur.com/ryefT3n.png)
+
+3. Add **ps-mdt:client:trafficStop** into the Radialmenu
+
+* Preview.
+
+![image](https://user-images.githubusercontent.com/82112471/230744641-72480046-966f-4145-a4a3-ad7fd329870c.png)
+
+# Roster and SOPs Setup
+
+* You need a Google Document / Sheet link that is viewable.
+
+Paste the link you got in the config here:
+```
+-- Google Docs Link
+Config.sopLink = {
+    ['police'] = '',
+    ['ambulance'] = '',
+    ['bcso'] = '',
+    ['doj'] = '',
+    ['sast'] = '',
+    ['sasp'] = '',
+    ['doc'] = '',
+    ['lssd'] = '',
+    ['sapr'] = '',
+}
+
+-- Google Docs Link
+Config.RosterLink = {
+    ['police'] = '',
+    ['ambulance'] = '',
+    ['bcso'] = '',
+    ['doj'] = '',
+    ['sast'] = '',
+    ['sasp'] = '',
+    ['doc'] = '',
+    ['lssd'] = '',
+    ['sapr'] = '',	
+}
+```
 
 # Preview
 ![image](https://user-images.githubusercontent.com/82112471/217596976-5147fefa-24e2-4b98-b167-4e151b8a9a8c.png)

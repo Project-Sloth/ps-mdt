@@ -23,6 +23,8 @@ var LastName = "";
 var DispatchNum = 0;
 var playerJob = "";
 let rosterLink  = "";
+let sopLink = "";
+
 //Set this to false if you don't want to show the send to community service button on the incidents page
 const canSendToCommunityService = true
 
@@ -206,11 +208,16 @@ $(document).ready(() => {
     $(".manage-profile-name-input-1").val(result["firstname"]);
     $(".manage-profile-name-input-2").val(result["lastname"]);
     $(".manage-profile-dob-input").val(result["dob"]);
-    if (convictions.length >= 1) {
+    if (AmbulanceJobs[playerJob] !== undefined) {
       $(".manage-profile-fingerprint-input").val(result["fingerprint"]);
     }
     else {
-      $(".manage-profile-fingerprint-input").val("No Fingerprints found!");
+      if (convictions.length >= 1) {
+        $(".manage-profile-fingerprint-input").val(result["fingerprint"]);
+      }
+      else {
+        $(".manage-profile-fingerprint-input").val("No Fingerprints found!");
+      }
     }
     $(".manage-profile-phonenumber-input").val(result["phone"]);
     $(".manage-profile-job-input").val(`${result.job}, ${result.grade}`);
@@ -430,10 +437,10 @@ $(document).ready(() => {
     $(".close-all").css("filter", "brightness(15%)");
   });
 
-  $(".manage-convictions-container").on("click", "", function () {
+  $(".convictions-title").on("click", "", function () {
     if ($(".manage-profile-citizenid-input").val()) {
       document.addEventListener("mouseup", onMouseDownIncidents);
-      const source = "manage-convictions-container";
+      const source = "convictions-title";
       $(".convictions-holder").attr("data-source", source);
       $(".convictions-known-container").fadeIn(250); // makes the container visible
       $(".close-all").css("filter", "brightness(15%)");
@@ -442,10 +449,10 @@ $(document).ready(() => {
     }
   });
 
-  $(".manage-profile-incidents-container").on("click", "", function () {
+  $(".profile-incidents-title").on("click", "", function () {
     if ($(".manage-profile-citizenid-input").val()) {
       document.addEventListener("mouseup", onMouseDownIncidents);
-      const source = "manage-profile-incidents-container";
+      const source = "profile-incidents-title";
       $(".profile-incidents-holder").attr("data-source", source);
       $(".incidents-known-container").fadeIn(250); // makes the container visible
       $(".close-all").css("filter", "brightness(15%)");
@@ -587,9 +594,7 @@ $(document).ready(() => {
 
         // Title, information, tags, officers involved, civs involved, evidence
         const title = $("#manage-incidents-title-input").val();
-        const information = $(
-          ".manage-incidents-reports-content"
-        ).val();
+        const information = $(".manage-incidents-reports-content").val();
         const dbid = $(".manage-incidents-editing-title").data("id");
 
         let tags = new Array();
@@ -744,12 +749,26 @@ $(document).ready(() => {
     "click",
     ".manage-incidents-create",
     function () {
-      let tempalte =
-        "📝 Summary:\n\n[Insert Report Summary Here]\n\n🧍 Hostage: [Name Here]\n\n🔪 Weapons/Items Confiscated:\n\n· [Insert List Here]\n\n-----\n💸 Fine:\n⌚ Sentence:\n-----";
+      let template = '<p><strong>📝 Summary:</strong></p><p><em>[Insert Report Summary Here]</em></p><p>&nbsp;</p><p><strong>🧍 Hostage:</strong> [Name Here]</p><p>&nbsp;</p><p><strong>🔪 Weapons/Items Confiscated:</strong></p><p><em>· [Insert List Here]</em></p><p>&nbsp;</p><p>-----</p><p><strong style="background-color: var(--color-1);">💸 Fine:</strong></p><p>&nbsp;</p><p><strong>⌚ Sentence:</strong></p><p>-----</p>';
       $("#manage-incidents-title-input").val(
         "Name - Charge - " + $(".date").html()
       );
-      $(".manage-incidents-reports-content").val(tempalte);
+      $(".manage-incidents-reports-content").trumbowyg({
+        changeActiveDropdownIcon: true,
+        imageWidthModalEdit: true,
+        btns: [
+          ['foreColor', 'backColor','fontfamily','fontsize','indent', 'outdent'],
+          ['strong', 'em',], ['insertImage'],
+          ['viewHTML'],
+          ['undo', 'redo'], 
+          ['formatting'],
+          ['superscript', 'subscript'],
+          ['link'],
+          ['justifyLeft', 'justifyCenter', 'justifyRight', 'justifyFull'],
+          ['horizontalRule']
+        ],
+    });
+    $(".manage-incidents-reports-content").trumbowyg('html', template);
 
       $(".manage-incidents-tags-holder").empty();
       $(".manage-incidents-officers-holder").empty();
@@ -1303,9 +1322,7 @@ $(document).ready(() => {
       //} else {
       var template = "";
       if ($(".badge-logo").attr("src") == "img/ems_badge.webp") {
-        template =
-          "ICU Room #: [ # ]\n\nReport ID: [ Report ID ]\n\nTime Admitted: [ Date and Time Here ]\n\nSurgery: [Yes/No]\n\nInjuries/Ailments:\n - [ Enter List Of Injuries Here ]\n\n\nAdditional Attending:\n - [ List Any Other Staff Here ]\n\n\n🧑‍🤝‍🧑 Additional Emergency Contacts:\n - [ Name And Number ]\n\n\nNotes:\n[Additional Notes Here]";
-      }
+        template = '<p><strong>📝 ICU Room #: [ # ]</strong></p><p><strong>Report ID: [ Report ID ]</strong></p><p><em><br></em></p><p><strong>🧍Time Admitted: [ Date and Time Here ]</strong>&nbsp;</p><p><strong>Surgery: [Yes/No]</strong></p><p><strong>Injuries/Ailments:</strong></p><p><em>· [Enter List Of Injuries Here]</em><br></p><p>&nbsp;</p><p>-----</p><p><strong style="background-color: var(--color-1);">Additional Attending:</strong><br></p><p><em>· [ List Any Other Staff Here ]</em></p><p><strong style="background-color: var(--color-1);">🧑‍🤝‍🧑 Additional Emergency Contacts:</strong><br></p><p><em>· [ Name And Number ]</em></p><p><strong style="background-color: var(--color-1);">Notes:</strong><br></p><p><em>· [Additional Notes Here]</em></p><p>-----</p>'}
       $(".manage-bolos-editing-title").html(
         "You are currently creating a new BOLO"
       );
@@ -1313,7 +1330,22 @@ $(document).ready(() => {
       $(".manage-bolos-input-plate").val("");
       $(".manage-bolos-input-owner").val("");
       $(".manage-bolos-input-individual").val("");
-      $(".manage-bolos-reports-content").val(template);
+      $(".manage-bolos-reports-content").trumbowyg({
+        changeActiveDropdownIcon: true,
+        imageWidthModalEdit: true,
+        btns: [
+          ['foreColor', 'backColor','fontfamily','fontsize','indent', 'outdent'],
+          ['strong', 'em',], ['insertImage'],
+          ['viewHTML'],
+          ['undo', 'redo'], 
+          ['formatting'],
+          ['superscript', 'subscript'],
+          ['link'],
+          ['justifyLeft', 'justifyCenter', 'justifyRight', 'justifyFull'],
+          ['horizontalRule']
+        ],
+      });
+      $(".manage-bolos-reports-content").trumbowyg('html', template);
       $(".manage-bolos-tags-holder").empty();
       $(".bolo-gallery-inner-container").empty();
       $(".manage-officers-tags-holder").empty();
@@ -2352,14 +2384,28 @@ $(document).ready(() => {
       let template = "";
       if ($(".badge-logo").attr("src") == "img/ems_badge.webp") {
         template =
-          "Submitted to ICU?: [Yes/No]\n\nIncident Report:\n[ Brief summary of what happened and who did what while on scene. Note anything that stood out about the scene as well as what was done to treat the patient ]\n\n\nList of Injuries:\n- [ State what injury or injuries occurred ]\n\n\n💉 Surgical Report:\n[ Full report on what was done in surgery, list any complications or anything that was found while in operation. Note who was attending and what they did during the surgery. At the end of the report be sure to note the state of the patient after ]\n\n\nAttending:\n- [ List Any Attending Here ]\n\n\nMedications Applied:\n- [ List Any Attending Here ]\n\n\nNotes:\n[ Additional Notes Here ]";
-      }
+        "<p><strong>Submitted to ICU?: [Yes/No]</strong></p><p><strong>Incident Report:</strong></p><p><em>· [ Brief summary of what happened and who did what while on scene. Note anything that stood out about the scene as well as what was done to treat the patient ]</em></p><p><strong>List of Injuries:</strong></p><p><em>· [ State what injury or injuries occurred ]</em></p> Surgical Report:<p><em>· [ Full report on what was done in surgery, list any complications or anything that was found while in operation. Note who was attending and what they did during the surgery. At the end of the report be sure to note the state of the patient after ]</em></p><p>-----</p><p><strong>Attending:</strong></p><p><em>· [ List Any Attending Here ]</em></p><p><strong>Medications Applied:</strong></p><p><em>· [ List Any Attending Here ]</em></p><p>-----</p><br></br><p><strong>Notes:</strong></p><p><em>[ Additional Notes Here ]</em></p>"}
       $(".manage-reports-editing-title").html(
         "You are currently creating a new report"
       );
       $(".manage-reports-input-title").val("");
       $(".manage-reports-input-type").val("");
-      $(".manage-reports-reports-content").val(template);
+      $(".manage-reports-reports-content").trumbowyg({
+        changeActiveDropdownIcon: true,
+        imageWidthModalEdit: true,
+        btns: [
+          ['foreColor', 'backColor','fontfamily','fontsize','indent', 'outdent'],
+          ['strong', 'em',], ['insertImage'],
+          ['viewHTML'],
+          ['undo', 'redo'], 
+          ['formatting'],
+          ['superscript', 'subscript'],
+          ['link'],
+          ['justifyLeft', 'justifyCenter', 'justifyRight', 'justifyFull'],
+          ['horizontalRule']
+        ],
+      });
+      $(".manage-reports-reports-content").trumbowyg('html', template);
       $(".manage-reports-tags-holder").empty();
       $(".reports-gallery-inner-container").empty();
       $(".reports-officers-tags-holder").empty();
@@ -3957,6 +4003,7 @@ $(document).ready(() => {
           "Officers Involved"
         );
         $(".roster-iframe").attr("src", rosterLink);
+        $(".sop-iframe").attr("src", sopLink);
 
         $(".manage-profile-save").css("display", "block");
         $(".manage-profile-editing-title").css("display", "block");
@@ -4020,6 +4067,7 @@ $(document).ready(() => {
         $(".manage-profile-name-input-1").attr("readonly", true);
         $(".manage-profile-name-input-2").attr("readonly", true);
         $(".roster-iframe").attr("src", rosterLink);
+        $(".sop-iframe").attr("src", sopLink);
 
         $(".manage-profile-save").css("display", "block");
         $(".manage-profile-editing-title").css("display", "block");
@@ -4045,6 +4093,7 @@ $(document).ready(() => {
         $(".manage-profile-name-input-2").attr("readonly", false);
         $("#home-warrants-container").css("height", "98%");
         $(".roster-iframe").attr("src", rosterLink);
+        $(".sop-iframe").attr("src", sopLink);
 
         $(".manage-profile-save").css("display", "none");
         $(".manage-profile-editing-title").css("display", "none");
@@ -4070,13 +4119,12 @@ $(document).ready(() => {
     if (eventData.type == "show") {
       if (eventData.enable == true) {
         rosterLink = eventData.rosterLink;
+        sopLink = eventData.sopLink;
         playerJob = eventData.job;
         JobColors(playerJob);
         $(".quote-span").html(randomizeQuote());
         if (PoliceJobs[playerJob] !== undefined || DojJobs[playerJob] !== undefined) {
           $(".manage-profile-licenses-container").removeClass("display_hidden");
-          $(".manage-convictions-container").removeClass("display_hidden");
-          $(".manage-profile-incidents-container").removeClass("display_hidden");
           $(".manage-profile-vehs-container").removeClass("display_hidden");
           $(".manage-profile-houses-container").removeClass("display_hidden");
         }
@@ -4695,7 +4743,22 @@ $(document).ready(() => {
 
 
       $("#manage-incidents-title-input").val(table["title"]);
-      $(".manage-incidents-reports-content").val(table["details"]);
+      $(".manage-incidents-reports-content").trumbowyg({
+        changeActiveDropdownIcon: true,
+        imageWidthModalEdit: true,
+        btns: [
+          ['foreColor', 'backColor','fontfamily','fontsize','indent', 'outdent'],
+          ['strong', 'em',], ['insertImage'],
+          ['viewHTML'],
+          ['undo', 'redo'], 
+          ['formatting'],
+          ['superscript', 'subscript'],
+          ['link'],
+          ['justifyLeft', 'justifyCenter', 'justifyRight', 'justifyFull'],
+          ['horizontalRule']
+        ],
+      });
+      $(".manage-incidents-reports-content").trumbowyg('html', table["details"]);
 
       $(".manage-incidents-tags-holder").empty();
       $.each(table["tags"], function (index, value) {
@@ -4866,7 +4929,22 @@ $(document).ready(() => {
       $(".manage-bolos-input-owner").val(table["owner"]);
       $(".manage-bolos-input-individual").val(table["individual"]);
 
-      $(".manage-bolos-reports-content").val(table["detail"]);
+      $(".manage-bolos-reports-content").trumbowyg({
+        changeActiveDropdownIcon: true,
+        imageWidthModalEdit: true,
+        btns: [
+          ['foreColor', 'backColor','fontfamily','fontsize','indent', 'outdent'],
+          ['strong', 'em',], ['insertImage'],
+          ['viewHTML'],
+          ['undo', 'redo'], 
+          ['formatting'],
+          ['superscript', 'subscript'],
+          ['link'],
+          ['justifyLeft', 'justifyCenter', 'justifyRight', 'justifyFull'],
+          ['horizontalRule']
+        ],
+      });
+      $(".manage-bolos-reports-content").trumbowyg('html', table["detail"]);
 
       $(".manage-bolos-tags-holder").empty();
       $.each(table["tags"], function (index, value) {
@@ -5006,7 +5084,22 @@ $(document).ready(() => {
 
       $(".manage-reports-input-title").val(table["title"]);
       $(".manage-reports-input-type").val(table["type"]);
-      $(".manage-reports-reports-content").val(table["details"]);
+      $(".manage-reports-reports-content").trumbowyg({
+        changeActiveDropdownIcon: true,
+        imageWidthModalEdit: true,
+        btns: [
+          ['foreColor', 'backColor','fontfamily','fontsize','indent', 'outdent'],
+          ['strong', 'em',], ['insertImage'],
+          ['viewHTML'],
+          ['undo', 'redo'], 
+          ['formatting'],
+          ['superscript', 'subscript'],
+          ['link'],
+          ['justifyLeft', 'justifyCenter', 'justifyRight', 'justifyFull'],
+          ['horizontalRule']
+        ],
+      });
+      $(".manage-reports-reports-content").trumbowyg('html', table["details"]);
 
       $(".manage-reports-tags-holder").empty();
       $.each(table["tags"], function (index, value) {
@@ -5563,8 +5656,10 @@ function updateOfficerData(officerData) {
   const leaderboardBox = document.querySelector('.leaderboard-box');
   leaderboardBox.innerHTML = '';
 
+  const positions = ['1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10th', '11th', '12th', '13th', '14th', '15th', '16th', '17th', '18th', '19th', '20th', '21th', '22th', '23th', '24th', '25th'];
+
   officerData.forEach((officer, index) => {
-      const position = ['1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10th'][index];
+      const position = positions[index];
       const officerDiv = document.createElement('div');
       officerDiv.className = 'leaderboard-box-test';
       officerDiv.style.fontSize = '1.3vh';
@@ -5575,6 +5670,7 @@ function updateOfficerData(officerData) {
       leaderboardBox.appendChild(officerDiv);
   });
 }
+
 
 window.addEventListener("load", function () {
   document

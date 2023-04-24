@@ -14,7 +14,6 @@ Config.Webhook = ''
 -- Command /mdtleaderboard, will display top players per clock-in hours.
 Config.ClockinWebhook = ''
 
-
 -- If set to true = Fine gets automatically removed from bank automatically charging the player.
 -- If set to false = The fine gets sent as an Invoice to their phone and it us to the player to pay for it, can remain unpaid and ignored.
 Config.BillVariation = true
@@ -24,8 +23,21 @@ Config.BillVariation = true
 -- However, if you're using a different inventory system, please refer to the "Inventory Edit | Automatic Add Weapons with images" section in ps-mdt's README.
 Config.InventoryForWeaponsImages = "lj-inventory"
 
--- "LegacyFuel", "lj-fuel"
-Config.Fuel = "lj-fuel"
+-- "LegacyFuel", "lj-fuel", "ps-fuel"
+Config.Fuel = "ps-fuel"
+
+-- Google Docs Link
+Config.sopLink = {
+    ['police'] = '',
+    ['ambulance'] = '',
+    ['bcso'] = '',
+    ['doj'] = '',
+    ['sast'] = '',
+    ['sasp'] = '',
+    ['doc'] = '',
+    ['lssd'] = '',
+    ['sapr'] = '',
+}
 
 -- Google Docs Link
 Config.RosterLink = {
