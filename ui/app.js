@@ -4018,6 +4018,7 @@ $(document).ready(() => {
         $(".manage-incidents-title ").css("margin-right", "0px")
         $(".manage-reports-title").css("margin-right", "0px").css("width", "66%");
       } else if (AmbulanceJobs[sentJob] !== undefined) {
+        $(".weapons-nav-item").hide()
         $("#home-warrants-container").fadeOut(0);
         $("#home-reports-container").fadeIn(0);
         if (sentJob == "ambulance") {
