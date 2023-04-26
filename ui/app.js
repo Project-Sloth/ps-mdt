@@ -171,6 +171,14 @@ $(document).ready(() => {
 
   $(".profile-items").on("click", ".profile-item", async function () {
     let id = $(this).data("id");
+    let profileFingerprint = $(this).data("fingerprint");
+  
+    if (profileFingerprint && profileFingerprint !== "") {
+      $(".manage-profile-fingerprint-input").val(profileFingerprint);
+    } else {
+      $(".manage-profile-fingerprint-input").val("");
+    }
+    
     let result = await $.post(
       `https://${GetParentResourceName()}/getProfileData`,
       JSON.stringify({
@@ -201,24 +209,13 @@ $(document).ready(() => {
         .addClass("fa-plus");
     }
 
-    const { vehicles, tags, gallery, convictions, incidents, properties } = result
+    const { vehicles, tags, gallery, convictions, incidents, properties, fingerprint } = result;
 
     $(".manage-profile-editing-title").html(`You are currently editing ${result["firstname"]} ${result["lastname"]}`);
     $(".manage-profile-citizenid-input").val(result['cid']);
     $(".manage-profile-name-input-1").val(result["firstname"]);
     $(".manage-profile-name-input-2").val(result["lastname"]);
     $(".manage-profile-dob-input").val(result["dob"]);
-    if (AmbulanceJobs[playerJob] !== undefined) {
-      $(".manage-profile-fingerprint-input").val(result["fingerprint"]);
-    }
-    else {
-      if (convictions.length >= 1) {
-        $(".manage-profile-fingerprint-input").val(result["fingerprint"]);
-      }
-      else {
-        $(".manage-profile-fingerprint-input").val("No Fingerprints found!");
-      }
-    }
     $(".manage-profile-phonenumber-input").val(result["phone"]);
     $(".manage-profile-job-input").val(`${result.job}, ${result.grade}`);
     $(".manage-profile-apartment-input").val(`${result.apartment}`);
@@ -332,7 +329,6 @@ $(document).ready(() => {
     $(".gallery-inner-container").html(galleryHTML);
     $(".houses-holder").html(propertyHTML);
   });
-  // <div class="bulletin-id">ID: ${BulletinId}</div>
 
   $(".bulletin-add-btn").click(function () {
     if (canCreateBulletin == 0) {
@@ -567,7 +563,8 @@ $(document).ready(() => {
             sName: sName,
             tags: tags,
             gallery: gallery,
-            licenses: licenses
+            licenses: licenses,
+            fingerprint: $(".manage-profile-fingerprint-input").val()
           })
         );
         $(".manage-profile-pic").attr("src", newpfp);
@@ -4113,7 +4110,7 @@ $(document).ready(() => {
     }
   }
 {/* <div class="bulletin-id">ID: ${value.id}</div> */}
-  window.addEventListener("message", function (event) {
+window.addEventListener("message", function (event) {
     let eventData = event.data;
     $(".dispatch-msg-notif").fadeIn(500);
     if (eventData.type == "show") {
@@ -4128,26 +4125,6 @@ $(document).ready(() => {
           $(".manage-profile-vehs-container").removeClass("display_hidden");
           $(".manage-profile-houses-container").removeClass("display_hidden");
         }
-
-        /* if (PoliceJobs[playerJob] !== undefined || AmbulanceJobs[playerJob] !== undefined) {
-          $(".manage-profile-save").css("display", "block");
-          $(".manage-profile-editing-title").css("display", "block");
-          $(".manage-incidents-create").css("display", "block");
-          $(".manage-incidents-save").css("display", "block");
-          $(".manage-incidents-editing-title").css("display", "block");
-          $(".manage-reports-new").css("display", "block");
-          $(".manage-reports-save").css("display", "block");
-          $(".manage-reports-editing-title").css("display", "block");
-        } else if (DojJobs[playerJob] !== undefined) {
-          $(".manage-profile-save").css("display", "none");
-          $(".manage-profile-editing-title").css("display", "none");
-          $(".manage-incidents-create").css("display", "none");
-          $(".manage-incidents-save").css("display", "none");
-          $(".manage-incidents-editing-title").css("display", "none");
-          $(".manage-reports-new").css("display", "none");
-          $(".manage-reports-save").css("display", "none");
-          $(".manage-reports-editing-title").css("display", "none");
-        } */
 
         $("body").fadeIn(0);
         $(".close-all").css("filter", "none");
@@ -4233,9 +4210,6 @@ $(document).ready(() => {
         } else if (AmbulanceJobs[unit.unitType] !== undefined) {
           activeInfoJob = `<div class="unit-job active-info-job-ambulance">Ambulance</div>`
           emsCount++;
-        /* } else if  (DojJobs[unit.unitType] !== undefined) {
-          activeInfoJob = `<div class="unit-job active-info-job-fire">FIRE</div>`
-          fireCount++; */
         } else if (DojJobs[unit.unitType] !== undefined) {
           activeInfoJob = `<div class="unit-job active-info-job-doj">DOJ</div>`
           dojCount++;
@@ -4259,22 +4233,7 @@ $(document).ready(() => {
       $("#bcso-count").html(bcsoCount);
       $("#ems-count").html(emsCount);
       $("#doj-count").html(dojCount);
-      /* $("#fire-count").html(fireCount); */
-    /* } else if (eventData.type == "bulletin") {
-      $(".bulletin-items-continer").empty();
-      $.each(eventData.data, function (index, value) {
-        $(
-          ".bulletin-items-continer"
-        ).prepend(`<div class="bulletin-item" data-id=${value.id}>
-                <div class="bulletin-item-title">${value.title}</div>
-                <div class="bulletin-item-info">${value.desc}</div>
-                <div class="bulletin-bottom-info">
-                    <div class="bulletin-id">ID: ${value.id}</div>
-                    <div class="bulletin-date">${value.author
-          } - ${timeAgo(Number(value.time))}</div>
-                </div>
-                </div>`);
-      }); */
+
     } else if (eventData.type == "newBulletin") {
       const value = eventData.data;
       $(".bulletin-items-continer")
@@ -5622,33 +5581,40 @@ function searchProfilesResults(result) {
     }
 
     profileHTML += `
-                  <div class="profile-item" data-id="${value.citizenid}">
-                      <img src="${value.pp}" class="profile-image">
-                      <div style="display: flex; flex-direction: column; margin-top: 2.5px; margin-left: 5px; width: 100%; padding: 5px;">
-                      <div style="display: flex; flex-direction: column;">
-                          <div class="profile-item-title">${name}</div>
-                              <div class="profile-tags">
-                                  ${licences}
-                              </div>
-                              <div class="profile-criminal-tags">
-                                  <span class="license-tag ${warrant}">${value.warrant ? "Active" : "No"} Warrant</span>
-                                  <span class="license-tag ${convictions}">${value.convictions} Convictions </span>
-                              </div>
-                          </div>
-                          <div class="profile-bottom-info">
-                              <div class="profile-id"><span class="fas fa-id-card"></span> Citizen ID: ${value.citizenid}</div>&nbsp;
-                          </div>
-                      </div>
-                  </div>
-              `;
+    <div class="profile-item" data-id="${value.citizenid}" data-fingerprint="${value.fingerprint}">
+        <img src="${value.pp}" class="profile-image">
+        <div style="display: flex; flex-direction: column; margin-top: 2.5px; margin-left: 5px; width: 100%; padding: 5px;">
+        <div style="display: flex; flex-direction: column;">
+            <div class="profile-item-title">${name}</div>
+            <div class="profile-tags">
+                ${licences}
+            </div>
+            <div class="profile-criminal-tags">
+                <span class="license-tag ${warrant}">${value.warrant ? "Active" : "No"} Warrant</span>
+                <span class="license-tag ${convictions}">${value.convictions} Convictions </span>
+            </div>
+        </div>
+        <div class="profile-bottom-info">
+            <div class="profile-id"><span class="fas fa-id-card"></span> Citizen ID: ${value.citizenid}</div>&nbsp;
+        </div>
+        </div>
+    </div>
+`;
   });
 
   $(".profile-items").html(profileHTML);
 }
 
-window.addEventListener('message', (event) => {
-  if (event.data.action === 'updateOfficerData') {
-      updateOfficerData(event.data.data);
+window.addEventListener("message", (event) => {
+  if (event.data.action === "updateOfficerData") {
+    updateOfficerData(event.data.data);
+  } else if (event.data.action === "updateFingerprintData") {
+    const { fingerprint } = event.data;
+    if (fingerprint && fingerprint !== "") {
+      $(".manage-profile-fingerprint-input").val(fingerprint);
+    } else {
+      $(".manage-profile-fingerprint-input").val("");
+    }
   }
 });
 

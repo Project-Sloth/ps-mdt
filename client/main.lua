@@ -288,8 +288,8 @@ RegisterNUICallback("searchProfiles", function(data, cb)
 end)
 
 
-RegisterNetEvent('mdt:client:searchProfile', function(sentData, isLimited)
-    SendNUIMessage({ type = "profiles", data = sentData, isLimited = isLimited })
+RegisterNetEvent('mdt:client:searchProfile', function(sentData, isLimited, fingerprint)
+    SendNUIMessage({ action = "updateFingerprintData", fingerprint = fingerprint })
 end)
 
 RegisterNUICallback("saveProfile", function(data, cb)
@@ -301,8 +301,8 @@ RegisterNUICallback("saveProfile", function(data, cb)
     local tags = data.tags
     local gallery = data.gallery
     local licenses = data.licenses
-    
-    TriggerServerEvent("mdt:server:saveProfile", profilepic, information, cid, fName, sName, tags, gallery, licenses)
+    local fingerprint = data.fingerprint
+    TriggerServerEvent("mdt:server:saveProfile", profilepic, information, cid, fName, sName, tags, gallery, licenses, fingerprint)
     cb(true)
 end)
 
@@ -335,6 +335,8 @@ RegisterNUICallback("getProfileData", function(data, cb)
         end
     end
     p = nil
+
+    result['fingerprint'] = result['searchFingerprint']
     return cb(result)
 end)
 

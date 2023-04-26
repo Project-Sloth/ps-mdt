@@ -206,43 +206,48 @@ RegisterNetEvent('mdt:server:openMDT', function()
 end)
 
 QBCore.Functions.CreateCallback('mdt:server:SearchProfile', function(source, cb, sentData)
-	if not sentData then  return cb({}) end
-	local src = source
-	local Player = QBCore.Functions.GetPlayer(src)
-	if Player then
-		local JobType = GetJobType(Player.PlayerData.job.name)
-		if JobType ~= nil then
-			local people = MySQL.query.await("SELECT p.citizenid, p.charinfo, md.pfp FROM players p LEFT JOIN mdt_data md on p.citizenid = md.cid WHERE LOWER(CONCAT(JSON_VALUE(p.charinfo, '$.firstname'), ' ', JSON_VALUE(p.charinfo, '$.lastname'))) LIKE :query OR LOWER(`charinfo`) LIKE :query OR LOWER(`citizenid`) LIKE :query AND jobtype = :jobtype LIMIT 20", { query = string.lower('%'..sentData..'%'), jobtype = JobType })
-			local citizenIds = {}
-			local citizenIdIndexMap = {}
-			if not next(people) then cb({}) return end
+    if not sentData then  return cb({}) end
+    local src = source
+    local Player = QBCore.Functions.GetPlayer(src)
+    if Player then
+        local JobType = GetJobType(Player.PlayerData.job.name)
+        if JobType ~= nil then
+            local people = MySQL.query.await("SELECT p.citizenid, p.charinfo, md.pfp, md.fingerprint FROM players p LEFT JOIN mdt_data md on p.citizenid = md.cid WHERE LOWER(CONCAT(JSON_VALUE(p.charinfo, '$.firstname'), ' ', JSON_VALUE(p.charinfo, '$.lastname'))) LIKE :query OR LOWER(`charinfo`) LIKE :query OR LOWER(`citizenid`) LIKE :query OR LOWER(md.fingerprint) LIKE :query AND jobtype = :jobtype LIMIT 20", { query = string.lower('%'..sentData..'%'), jobtype = JobType })
+            local citizenIds = {}
+            local citizenIdIndexMap = {}
+            if not next(people) then cb({}) return end
 
-			for index, data in pairs(people) do
-				people[index]['warrant'] = false
-				people[index]['convictions'] = 0
-				people[index]['licences'] = GetPlayerLicenses(data.citizenid)
-				people[index]['pp'] = ProfPic(data.gender, data.pfp)
-				citizenIds[#citizenIds+1] = data.citizenid
-				citizenIdIndexMap[data.citizenid] = index
-			end
+            for index, data in pairs(people) do
+                people[index]['warrant'] = false
+                people[index]['convictions'] = 0
+                people[index]['licences'] = GetPlayerLicenses(data.citizenid)
+                people[index]['pp'] = ProfPic(data.gender, data.pfp)
+				if data.fingerprint and data.fingerprint ~= "" then
+					people[index]['fingerprint'] = data.fingerprint
+				else
+					people[index]['fingerprint'] = ""
+				end				
+                citizenIds[#citizenIds+1] = data.citizenid
+                citizenIdIndexMap[data.citizenid] = index
+            end
 
-			local convictions = GetConvictions(citizenIds)
+            local convictions = GetConvictions(citizenIds)
 
-			if next(convictions) then
-				for _, conv in pairs(convictions) do
-					if conv.warrant == "1" then people[citizenIdIndexMap[conv.cid]].warrant = true end
+            if next(convictions) then
+                for _, conv in pairs(convictions) do
+                    if conv.warrant == "1" then people[citizenIdIndexMap[conv.cid]].warrant = true end
 
-					local charges = json.decode(conv.charges)
-					people[citizenIdIndexMap[conv.cid]].convictions = people[citizenIdIndexMap[conv.cid]].convictions + #charges
-				end
-			end
+                    local charges = json.decode(conv.charges)
+                    people[citizenIdIndexMap[conv.cid]].convictions = people[citizenIdIndexMap[conv.cid]].convictions + #charges
+                end
+            end
+			TriggerClientEvent('mdt:client:searchProfile', src, people, false, people[1].fingerprint)
 
+            return cb(people)
+        end
+    end
 
-			return cb(people)
-		end
-	end
-
-	return cb({})
+    return cb({})
 end)
 
 QBCore.Functions.CreateCallback("mdt:server:getWarrants", function(source, cb)
@@ -418,12 +423,14 @@ QBCore.Functions.CreateCallback('mdt:server:GetProfileData', function(source, cb
 		person.profilepic = mdtData.pfp
 		person.tags = json.decode(mdtData.tags)
 		person.gallery = json.decode(mdtData.gallery)
+		person.fingerprint = mdtData.fingerprint
+		print("Fetched fingerprint from mdt_data:", mdtData.fingerprint)
 	end
 
 	return cb(person)
 end)
 
-RegisterNetEvent("mdt:server:saveProfile", function(pfp, information, cid, fName, sName, tags, gallery, licenses)
+RegisterNetEvent("mdt:server:saveProfile", function(pfp, information, cid, fName, sName, tags, gallery, licenses, fingerprint)
     local src = source
     local Player = QBCore.Functions.GetPlayer(src)
     UpdateAllLicenses(cid, licenses)
@@ -431,13 +438,14 @@ RegisterNetEvent("mdt:server:saveProfile", function(pfp, information, cid, fName
         local JobType = GetJobType(Player.PlayerData.job.name)
         if JobType == 'doj' then JobType = 'police' end
 
-        MySQL.Async.insert('INSERT INTO mdt_data (cid, information, pfp, jobtype, tags, gallery) VALUES (:cid, :information, :pfp, :jobtype, :tags, :gallery) ON DUPLICATE KEY UPDATE cid = :cid, information = :information, pfp = :pfp, jobtype = :jobtype, tags = :tags, gallery = :gallery', {
+        MySQL.Async.insert('INSERT INTO mdt_data (cid, information, pfp, jobtype, tags, gallery, fingerprint) VALUES (:cid, :information, :pfp, :jobtype, :tags, :gallery, :fingerprint) ON DUPLICATE KEY UPDATE cid = :cid, information = :information, pfp = :pfp, jobtype = :jobtype, tags = :tags, gallery = :gallery, fingerprint = :fingerprint', {
             cid = cid,
             information = information,
             pfp = pfp,
             jobtype = JobType,
             tags = json.encode(tags),
             gallery = json.encode(gallery),
+            fingerprint = fingerprint,
         }, function()
         end)
     end
