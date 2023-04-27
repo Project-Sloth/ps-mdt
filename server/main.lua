@@ -346,7 +346,7 @@ QBCore.Functions.CreateCallback('mdt:server:GetProfileData', function(source, cb
 		pp = ProfPic(target.charinfo.gender),
 		licences = licencesdata,
 		dob = target.charinfo.birthdate,
-		fingerprint = target.metadata.fingerprint,
+		fingerprint = '',
 		phone = target.charinfo.phone,
 		mdtinfo = '',
 		tags = {},
@@ -426,7 +426,6 @@ QBCore.Functions.CreateCallback('mdt:server:GetProfileData', function(source, cb
 		person.tags = json.decode(mdtData.tags)
 		person.gallery = json.decode(mdtData.gallery)
 		person.fingerprint = mdtData.fingerprint
-		print("Fetched fingerprint from mdt_data:", mdtData.fingerprint)
 	end
 
 	return cb(person)

@@ -536,6 +536,7 @@ $(document).ready(() => {
           pfp = newpfp;
         }
         let description = $(".manage-profile-info").val();
+        let fingerprint = $(".manage-profile-fingerprint-input").val();
         let id = $(".manage-profile-citizenid-input").val();
 
         $(".licenses-holder")
@@ -564,7 +565,7 @@ $(document).ready(() => {
             tags: tags,
             gallery: gallery,
             licenses: licenses,
-            fingerprint: $(".manage-profile-fingerprint-input").val()
+            fingerprint: fingerprint
           })
         );
         $(".manage-profile-pic").attr("src", newpfp);
