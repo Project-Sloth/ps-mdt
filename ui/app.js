@@ -2408,13 +2408,28 @@ $(document).ready(() => {
     "click",
     ".manage-reports-new",
     function () {
-      //if ($(".manage-bolos-editing-title").html() == 'You are currently creating a new BOLO') {
-      //$(".manage-bolos-new").effect("shake", { times: 2, distance: 2 }, 500)
-      //} else {
       let template = "";
       if ($(".badge-logo").attr("src") == "img/ems_badge.webp") {
-        template =
-        "<p><strong>Submitted to ICU?: [Yes/No]</strong></p><p><strong>Incident Report:</strong></p><p><em>· [ Brief summary of what happened and who did what while on scene. Note anything that stood out about the scene as well as what was done to treat the patient ]</em></p><p><strong>List of Injuries:</strong></p><p><em>· [ State what injury or injuries occurred ]</em></p> Surgical Report:<p><em>· [ Full report on what was done in surgery, list any complications or anything that was found while in operation. Note who was attending and what they did during the surgery. At the end of the report be sure to note the state of the patient after ]</em></p><p>-----</p><p><strong>Attending:</strong></p><p><em>· [ List Any Attending Here ]</em></p><p><strong>Medications Applied:</strong></p><p><em>· [ List Any Attending Here ]</em></p><p>-----</p><br></br><p><strong>Notes:</strong></p><p><em>[ Additional Notes Here ]</em></p>"}
+        template = `
+    <div style="color: white;">
+        <p><strong>Submitted to ICU?: [Yes/No]</strong></p>
+        <p><strong>Incident Report:</strong></p>
+        <p><em>· [ Brief summary of what happened and who did what while on scene. Note anything that stood out about the scene as well as what was done to treat the patient ]</em></p>
+        <p><strong>List of Injuries:</strong></p>
+        <p><em>· [ State what injury or injuries occurred ]</em></p>
+        <p><strong>Surgical Report:</strong></p>
+        <p><em>· [ Full report on what was done in surgery, list any complications or anything that was found while in operation. Note who was attending and what they did during the surgery. At the end of the report be sure to note the state of the patient after ]</em></p>
+        <p>-----</p>
+        <p><strong>Attending:</strong></p>
+        <p><em>· [ List Any Attending Here ]</em></p>
+        <p><strong>Medications Applied:</strong></p>
+        <p><em>· [ List Any Attending Here ]</em></p>
+        <p>-----</p>
+        <br>
+        <p><strong>Notes:</strong></p>
+        <p><em>[ Additional Notes Here ]</em></p>
+    </div>
+`;}
       $(".manage-reports-editing-title").html(
         "You are currently creating a new report"
       );

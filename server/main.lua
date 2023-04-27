@@ -735,34 +735,41 @@ end)
 
 RegisterNetEvent('mdt:server:incidentSearchPerson', function(query)
     if query then
-		local src = source
-		local Player = QBCore.Functions.GetPlayer(src)
-		if Player then
-			local JobType = GetJobType(Player.PlayerData.job.name)
-			if JobType == 'police' or JobType == 'doj' or JobType == 'ambulance' then
-				local function ProfPic(gender, profilepic)
-					if profilepic then return profilepic end;
-					if gender == "f" then return "img/female.png" end;
-					return "img/male.png"
-				end
+        local src = source
+        local Player = QBCore.Functions.GetPlayer(src)
+        if Player then
+            local JobType = GetJobType(Player.PlayerData.job.name)
+            if JobType == 'police' or JobType == 'doj' or JobType == 'ambulance' then
+                local function ProfPic(gender, profilepic)
+                    if profilepic then return profilepic end;
+                    if gender == "f" then return "img/female.png" end;
+                    return "img/male.png"
+                end
 
-				local result = MySQL.query.await("SELECT p.citizenid, p.charinfo, p.metadata, md.pfp from players p LEFT JOIN mdt_data md on p.citizenid = md.cid WHERE LOWER(`charinfo`) LIKE :query OR LOWER(`citizenid`) LIKE :query AND `jobtype` = :jobtype LIMIT 30", {
-					query = string.lower('%'..query..'%'), -- % wildcard, needed to search for all alike results
-					jobtype = JobType
-				})
-				local data = {}
-				for i=1, #result do
-					local charinfo = json.decode(result[i].charinfo)
-					local metadata = json.decode(result[i].metadata)
-					data[i] = {
-						id = result[i].citizenid,
-						firstname = charinfo.firstname,
-						lastname = charinfo.lastname,
-						profilepic = ProfPic(charinfo.gender, result[i].pfp),
-						callsign = metadata.callsign
-					}
-				end
-				TriggerClientEvent('mdt:client:incidentSearchPerson', src, data)
+                local firstname, lastname = query:match("^(%S+)%s*(%S*)$")
+                firstname = firstname or query
+                lastname = lastname or query
+
+                local result = MySQL.query.await("SELECT p.citizenid, p.charinfo, p.metadata, md.pfp from players p LEFT JOIN mdt_data md on p.citizenid = md.cid WHERE (LOWER(JSON_UNQUOTE(JSON_EXTRACT(`charinfo`, '$.firstname'))) LIKE :firstname AND LOWER(JSON_UNQUOTE(JSON_EXTRACT(`charinfo`, '$.lastname'))) LIKE :lastname) OR LOWER(`citizenid`) LIKE :citizenid AND `jobtype` = :jobtype LIMIT 30", {
+                    firstname = string.lower('%' .. firstname .. '%'),
+                    lastname = string.lower('%' .. lastname .. '%'),
+                    citizenid = string.lower('%' .. query .. '%'),
+                    jobtype = JobType
+                })
+
+                local data = {}
+                for i=1, #result do
+                    local charinfo = json.decode(result[i].charinfo)
+                    local metadata = json.decode(result[i].metadata)
+                    data[i] = {
+                        id = result[i].citizenid,
+                        firstname = charinfo.firstname,
+                        lastname = charinfo.lastname,
+                        profilepic = ProfPic(charinfo.gender, result[i].pfp),
+                        callsign = metadata.callsign
+                    }
+                end
+                TriggerClientEvent('mdt:client:incidentSearchPerson', src, data)
             end
         end
     end
