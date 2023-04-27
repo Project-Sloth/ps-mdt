@@ -13,29 +13,6 @@ For all support questions, ask in our [Discord](https://www.discord.gg/projectsl
 * Download ZIP
 * Drag and drop resource into your server files, make sure to remove -main in the folder name
 * Run the attached SQL script (mdt.sql)
-* Add the following code to [qb-core](https://github.com/qbcore-framework/qb-core) shared > items.lua:
-```
-	['ps-mdt:citation'] 				 = {['name'] = 'ps-mdt:citation', 			  	  	['label'] = 'Citation', 			['weight'] = 1000, 		['type'] = 'item', 		['image'] = 'citation.png', 			['unique'] = true, 		['useable'] = false, 	['shouldClose'] = true,	   ['combinable'] = nil,   ['description'] = 'Citation from a Police Officer!'},
-```
-* Then add this:
-```
-        } else if (itemData.name == "ps-mdt:citation") {
-            $(".item-info-title").html("<p>" + itemData.label + "</p>");
-            $(".item-info-description").html('<p><strong>Citizen ID: </strong><span>' + itemData.info.citizenId + '</span></p><p><strong>Fine: </strong><span>' + itemData.info.fine + '</span></p><p><strong>Citation Date: </strong><span>' + itemData.info.date + '</span></p><p><strong>Incident ID: </strong><span>' + itemData.info.incidentId + '</span></p><p><strong>Involved Officer: </strong><span>' + itemData.info.officer + '</span></p>');
-```
-* to your inventory (qb/lj) script under
-```
-        } else if (itemData.name == "markedbills") {
-            $(".item-info-title").html("<p>" + itemData.label + "</p>");
-            $(".item-info-description").html(
-                "<p><strong>Worth: </strong><span>$" +
-                itemData.info.worth +
-                "</span></p>"
-            );
-```
-* Put the citation.png which is found in ui > img into inventory > html > images
-* Start resource through server.cfg
-* Restart your server.
 
 # Weapon Info Export
 
@@ -72,9 +49,32 @@ Config.MugPhotos = 1
 -- Images for mug shots will be uploaded here. Add a Discord webhook. 
 Config.Webhook = ''
 ```
+# Fine & Citation via item
+
+* Add the item to your shared.lua > items.lua 
+```
+	['mdtcitation'] 				 = {['name'] = 'mdtcitation', 			  	  	['label'] = 'Citation', 			['weight'] = 1000, 		['type'] = 'item', 		['image'] = 'citation.png', 			['unique'] = true, 		['useable'] = false, ['shouldClose'] = true,	   ['combinable'] = nil,   ['description'] = 'Citation from a police officer!'},
+```
+* Add the below code to your inventory > app.js. Should be somewhere around markedbills, see below for reference. 
+```
+        } else if (itemData.name == "mdtcitation") {
+    $(".item-info-title").html("<p>" + itemData.label + "</p>");
+    $(".item-info-description").html(
+        '<p><strong>Citizen ID: </strong><span>' + itemData.info.citizenId + '</span></p>' +
+        '<p><strong>Fine: </strong><span>' + itemData.info.fine + '</span></p>' +
+        '<p><strong>Citation Date: </strong><span>' + itemData.info.date + '</span></p>' +
+        '<p><strong>Incident ID: </strong><span>' + itemData.info.incidentId + '</span></p>' +
+        '<p><strong>Involved Officer: </strong><span>' + itemData.info.officer + '</span></p>'
+    );
+```
+!image here
 
 # Clock In/Out & Leaderboard
 * Triggers when officers Toggle Duty from inside the mdt.
+* Create a Discord Webhook and paste it on your config.lua
+```
+Config.ClockinWebhook
+```
 ![image](https://user-images.githubusercontent.com/82112471/228130546-6366ed1e-f5a8-428c-8680-0c384d2cff52.png)
 ![image](https://user-images.githubusercontent.com/82112471/228330602-1a914461-5d61-4e12-80d4-154c8da3dee1.png)
 
