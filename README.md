@@ -67,7 +67,9 @@ Config.Webhook = ''
         '<p><strong>Involved Officer: </strong><span>' + itemData.info.officer + '</span></p>'
     );
 ```
-!image here
+* Reference for proper placement. 
+
+![image](https://user-images.githubusercontent.com/82112471/234807680-c943fac6-0da7-42f4-b815-d85769fe3779.png)
 
 # Clock In/Out & Leaderboard
 * Triggers when officers Toggle Duty from inside the mdt.
