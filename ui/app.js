@@ -746,7 +746,23 @@ $(document).ready(() => {
     "click",
     ".manage-incidents-create",
     function () {
-      let template = '<p><strong>📝 Summary:</strong></p><p><em>[Insert Report Summary Here]</em></p><p>&nbsp;</p><p><strong>🧍 Hostage:</strong> [Name Here]</p><p>&nbsp;</p><p><strong>🔪 Weapons/Items Confiscated:</strong></p><p><em>· [Insert List Here]</em></p><p>&nbsp;</p><p>-----</p><p><strong style="background-color: var(--color-1);">💸 Fine:</strong></p><p>&nbsp;</p><p><strong>⌚ Sentence:</strong></p><p>-----</p>';
+      let template = `
+      <div style="color: white;">
+          <p><strong>📝 Summary:</strong></p>
+          <p><em>[Insert Report Summary Here]</em></p>
+          <p>&nbsp;</p>
+          <p><strong>🧍 Hostage:</strong> [Name Here]</p>
+          <p>&nbsp;</p>
+          <p><strong>🔪 Weapons/Items Confiscated:</strong></p>
+          <p><em>· [Insert List Here]</em></p>
+          <p>&nbsp;</p>
+          <p>-----</p>
+          <p><strong style="background-color: var(--color-1);">💸 Fine:</strong></p>
+          <p>&nbsp;</p>
+          <p><strong>⌚ Sentence:</strong></p>
+          <p>-----</p>
+      </div>
+  `;
       $("#manage-incidents-title-input").val(
         "Name - Charge - " + $(".date").html()
       );
@@ -1314,12 +1330,29 @@ $(document).ready(() => {
     "click",
     ".manage-bolos-new",
     function () {
-      //if ($(".manage-bolos-editing-title").html() == 'You are currently creating a new BOLO') {
-      //$(".manage-bolos-new").effect("shake", { times: 2, distance: 2 }, 500)
-      //} else {
       var template = "";
       if ($(".badge-logo").attr("src") == "img/ems_badge.webp") {
-        template = '<p><strong>📝 ICU Room #: [ # ]</strong></p><p><strong>Report ID: [ Report ID ]</strong></p><p><em><br></em></p><p><strong>🧍Time Admitted: [ Date and Time Here ]</strong>&nbsp;</p><p><strong>Surgery: [Yes/No]</strong></p><p><strong>Injuries/Ailments:</strong></p><p><em>· [Enter List Of Injuries Here]</em><br></p><p>&nbsp;</p><p>-----</p><p><strong style="background-color: var(--color-1);">Additional Attending:</strong><br></p><p><em>· [ List Any Other Staff Here ]</em></p><p><strong style="background-color: var(--color-1);">🧑‍🤝‍🧑 Additional Emergency Contacts:</strong><br></p><p><em>· [ Name And Number ]</em></p><p><strong style="background-color: var(--color-1);">Notes:</strong><br></p><p><em>· [Additional Notes Here]</em></p><p>-----</p>'}
+        template = `
+        <div style="color: white;">
+            <p><strong>📝 ICU Room #: [ # ]</strong></p>
+            <p><strong>Report ID: [ Report ID ]</strong></p>
+            <p><em><br></em></p>
+            <p><strong>🧍Time Admitted: [ Date and Time Here ]</strong>&nbsp;</p>
+            <p><strong>Surgery: [Yes/No]</strong></p>
+            <p><strong>Injuries/Ailments:</strong></p>
+            <p><em>· [Enter List Of Injuries Here]</em><br></p>
+            <p>&nbsp;</p>
+            <p>-----</p>
+            <p><strong style="background-color: var(--color-1);">Additional Attending:</strong><br></p>
+            <p><em>· [ List Any Other Staff Here ]</em></p>
+            <p><strong style="background-color: var(--color-1);">🧑‍🤝‍🧑 Additional Emergency Contacts:</strong><br></p>
+            <p><em>· [ Name And Number ]</em></p>
+            <p><strong style="background-color: var(--color-1);">Notes:</strong><br></p>
+            <p><em>· [Additional Notes Here]</em></p>
+            <p>-----</p>
+        </div>
+    `;
+      }
       $(".manage-bolos-editing-title").html(
         "You are currently creating a new BOLO"
       );
