@@ -1721,8 +1721,8 @@ RegisterNetEvent('mdt:server:removeMoney', function(citizenId, fine, incidentId)
 	if not antiSpam then
 		local date = os.date("%Y-%m-%d %H:%M")
 		if Player.Functions.RemoveMoney('bank', fine, 'lspd-fine') then
-			TriggerClientEvent('QBCore:Notify', src, citizenId.." got a Citation!")
-			TriggerClientEvent('QBCore:Notify', Player.PlayerData.source, fine.."$ were removed from your Bank Account.")
+			TriggerClientEvent('QBCore:Notify', src, citizenId.." received a citation!")
+			TriggerClientEvent('QBCore:Notify', Player.PlayerData.source, fine.."$ was removed from your bank!")
 			local info = {
 				citizenId = citizenId,
 				fine = "$"..fine,
@@ -1730,8 +1730,8 @@ RegisterNetEvent('mdt:server:removeMoney', function(citizenId, fine, incidentId)
 				incidentId = "#"..incidentId,
 				officer = fullname,
 			}
-			Player.Functions.AddItem('ps-mdt:citation', 1, false, info)
-			TriggerClientEvent('inventory:client:ItemBox', Player.PlayerData.source, QBCore.Shared.Items['ps-mdt:citation'], "add")
+			Player.Functions.AddItem('mdtcitation', 1, false, info)
+			TriggerClientEvent('inventory:client:ItemBox', Player.PlayerData.source, QBCore.Shared.Items['mdtcitation'], "add")
 			TriggerEvent('mdt:server:AddLog', "A Fine was writen by "..fullname.." and was sent to "..citizenId..", the Amount was $".. fine ..". (ID: "..incidentId.. ")")
 		else
 			TriggerClientEvent('QBCore:Notify', Player.PlayerData.source, "Something went wrong!")
@@ -1741,7 +1741,7 @@ RegisterNetEvent('mdt:server:removeMoney', function(citizenId, fine, incidentId)
 			antiSpam = false
 		end)
 	else
-		TriggerClientEvent('QBCore:Notify', src, "On Cooldown!")
+		TriggerClientEvent('QBCore:Notify', src, "On cooldown!")
 	end
 end)
 
