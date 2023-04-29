@@ -18,11 +18,7 @@ local MugShots = {}
 
 local function TakeMugShot()
     if Config.Webhook == '' then
-        print("-----------------------------")
-        print(" ")
-        print("ADD A WEBHOOK TO: Config.Webhook")
-        print(" ")
-        print("-----------------------------")
+        print("A webhook is missing in: Config.Webhook")
     else
         exports['screenshot-basic']:requestScreenshotUpload(Config.Webhook, 'files[]', {encoding = 'jpg'}, function(data)
             local resp = json.decode(data)
