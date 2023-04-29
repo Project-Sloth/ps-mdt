@@ -68,6 +68,16 @@ if Config.UseWolfknightRadar == true then
 	end)
 end
 
+AddEventHandler('onResourceStart', function(resourceName)
+    if GetCurrentResourceName() ~= resourceName then return end
+	if Config.Webhook == '' then
+		print("\27[31mA webhook is missing in: Config.Webhook\27[0m")
+    end
+    if Config.ClockinWebhook == '' then
+		print("\27[31mA webhook is missing in: Config.ClockinWebhook\27[0m")
+	end
+end)
+
 RegisterNetEvent("ps-mdt:server:OnPlayerUnload", function()
 	--// Delete player from the MDT on logout
 	local src = source
