@@ -70,6 +70,7 @@ end
 
 AddEventHandler('onResourceStart', function(resourceName)
     if GetCurrentResourceName() ~= resourceName then return end
+	Wait(3000)
 	if Config.Webhook == '' then
 		print("\27[31mA webhook is missing in: Config.Webhook\27[0m")
     end
