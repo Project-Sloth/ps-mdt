@@ -2726,6 +2726,18 @@ span.tag-incident-input[contenteditable]:empty::before {
     background-color: var(--color-5);
 }
 
+.modify-charges-tipp {
+    color: white;
+    font-size: 13px;
+    font-weight: bolder;
+    margin: auto;
+    margin-top: 0px;
+    margin-bottom: -8px;
+    width: 95%;
+    align-items: center;
+    user-select: none;
+}
+
 .associated-incidents-user-tag {
     text-decoration: none;
     margin-top: auto;
@@ -2744,11 +2756,13 @@ span.tag-incident-input[contenteditable]:empty::before {
 }
 
 .associated-incidents-user-holder {
+    border: 2px solid #2C537B;
+    padding: 10px;
     overflow: auto;
     margin: auto;
     margin-top: 10px;
     margin-bottom: 10px;
-    width: 95%;
+    width: 92%;
     min-height: 3.5vh;
     max-height: 37vh;
     user-select: none;
