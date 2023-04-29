@@ -1771,7 +1771,7 @@ end)
 
 function sendToDiscord(color, name, message, footer)
 	if Config.ClockinWebhook == '' then
-        print("A webhook is missing in: Config.ClockinWebhook")
+		print("\27[31mA webhook is missing in: Config.ClockinWebhook\27[0m")
 	else
 		local embed = {
 			{
