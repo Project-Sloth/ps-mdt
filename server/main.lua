@@ -1770,18 +1770,26 @@ AddEventHandler("mdt:requestOfficerData", function()
 end)
 
 function sendToDiscord(color, name, message, footer)
-	local embed = {
-		  {
-			  color = color,
-			  title = "**".. name .."**",
-			  description = message,
-			  footer = {
-				  text = footer,
-			  },
-		  }
-	  }
-  
-	PerformHttpRequest(Config.ClockinWebhook, function(err, text, headers) end, 'POST', json.encode({username = name, embeds = embed}), { ['Content-Type'] = 'application/json' })
+	if Config.ClockinWebhook == '' then
+		print("-----------------------------")
+        print(" ")
+        print("ADD A WEBHOOK TO: Config.ClockinWebhook")
+        print(" ")
+        print("-----------------------------")
+	else
+		local embed = {
+			{
+				color = color,
+				title = "**".. name .."**",
+				description = message,
+				footer = {
+					text = footer,
+				},
+			}
+		}
+	
+		PerformHttpRequest(Config.ClockinWebhook, function(err, text, headers) end, 'POST', json.encode({username = name, embeds = embed}), { ['Content-Type'] = 'application/json' })
+	end
 end
 
 function format_time(time)
