@@ -288,8 +288,8 @@ RegisterNUICallback("searchProfiles", function(data, cb)
 end)
 
 
-RegisterNetEvent('mdt:client:searchProfile', function(sentData, isLimited)
-    SendNUIMessage({ type = "profiles", data = sentData, isLimited = isLimited })
+RegisterNetEvent('mdt:client:searchProfile', function(sentData, isLimited, fingerprint)
+    SendNUIMessage({ action = "updateFingerprintData", fingerprint = fingerprint })
 end)
 
 RegisterNUICallback("saveProfile", function(data, cb)
@@ -301,8 +301,8 @@ RegisterNUICallback("saveProfile", function(data, cb)
     local tags = data.tags
     local gallery = data.gallery
     local licenses = data.licenses
-    
-    TriggerServerEvent("mdt:server:saveProfile", profilepic, information, cid, fName, sName, tags, gallery, licenses)
+    local fingerprint = data.fingerprint
+    TriggerServerEvent("mdt:server:saveProfile", profilepic, information, cid, fName, sName, tags, gallery, licenses, fingerprint)
     cb(true)
 end)
 
@@ -335,6 +335,8 @@ RegisterNUICallback("getProfileData", function(data, cb)
         end
     end
     p = nil
+
+    result['fingerprint'] = result['searchFingerprint']
     return cb(result)
 end)
 
@@ -388,7 +390,7 @@ end)
 -- Uses the QB-Core bill command to send a fine to a player
 -- If you use a different fine system, you will need to change this
 RegisterNUICallback("sendFine", function(data, cb)
-    local citizenId, fine = data.citizenId, data.fine
+    local citizenId, fine, incidentId = data.citizenId, data.fine, data.incidentId
     
     -- Gets the player id from the citizenId
     local p = promise.new()
@@ -401,7 +403,7 @@ RegisterNUICallback("sendFine", function(data, cb)
     if fine > 0 then
         if Config.BillVariation then
             -- Uses QB-Core removeMoney Functions
-            TriggerServerEvent("mdt:server:removeMoney", citizenId, fine)
+            TriggerServerEvent("mdt:server:removeMoney", citizenId, fine, incidentId)
         else
             -- Uses QB-Core /bill command
             ExecuteCommand(('bill %s %s'):format(targetSourceId, fine))
@@ -1044,10 +1046,10 @@ end)
             for _, weaponInfo in ipairs(weaponInfos) do
                 TriggerServerEvent('mdt:server:registerweapon', weaponInfo.serialnumber, weaponInfo.weaponurl, weaponInfo.notes, weaponInfo.owner, weaponInfo.weapClass, weaponInfo.weaponmodel)
                 TriggerEvent('QBCore:Notify', "Weapon " .. weaponInfo.weaponmodel .. " has been added to police database.")
-                print("Weapon added to database")
+                --print("Weapon added to database")
             end
         else
-            print("No weapons found")
+            --print("No weapons found")
         end
     end)
 end, false) ]]

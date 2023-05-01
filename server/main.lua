@@ -7,6 +7,7 @@ local activeUnits = {}
 local impound = {}
 local dispatchMessages = {}
 local isDispatchRunning = false
+local antiSpam = false
 
 local function GetActiveData(cid)
 	local player = type(cid) == "string" and cid or tostring(cid)
@@ -80,6 +81,7 @@ AddEventHandler('playerDropped', function(reason)
     local src = source
     local PlayerData = GetPlayerData(src)
     local time = os.date("%Y-%m-%d %H:%M:%S")
+    local job = PlayerData.job.name
     local firstName = PlayerData.charinfo.firstname:sub(1,1):upper()..PlayerData.charinfo.firstname:sub(2)
     local lastName = PlayerData.charinfo.lastname:sub(1,1):upper()..PlayerData.charinfo.lastname:sub(2)
 
@@ -206,43 +208,48 @@ RegisterNetEvent('mdt:server:openMDT', function()
 end)
 
 QBCore.Functions.CreateCallback('mdt:server:SearchProfile', function(source, cb, sentData)
-	if not sentData then  return cb({}) end
-	local src = source
-	local Player = QBCore.Functions.GetPlayer(src)
-	if Player then
-		local JobType = GetJobType(Player.PlayerData.job.name)
-		if JobType ~= nil then
-			local people = MySQL.query.await("SELECT p.citizenid, p.charinfo, md.pfp FROM players p LEFT JOIN mdt_data md on p.citizenid = md.cid WHERE LOWER(CONCAT(JSON_VALUE(p.charinfo, '$.firstname'), ' ', JSON_VALUE(p.charinfo, '$.lastname'))) LIKE :query OR LOWER(`charinfo`) LIKE :query OR LOWER(`citizenid`) LIKE :query AND jobtype = :jobtype LIMIT 20", { query = string.lower('%'..sentData..'%'), jobtype = JobType })
-			local citizenIds = {}
-			local citizenIdIndexMap = {}
-			if not next(people) then cb({}) return end
+    if not sentData then  return cb({}) end
+    local src = source
+    local Player = QBCore.Functions.GetPlayer(src)
+    if Player then
+        local JobType = GetJobType(Player.PlayerData.job.name)
+        if JobType ~= nil then
+            local people = MySQL.query.await("SELECT p.citizenid, p.charinfo, md.pfp, md.fingerprint FROM players p LEFT JOIN mdt_data md on p.citizenid = md.cid WHERE LOWER(CONCAT(JSON_VALUE(p.charinfo, '$.firstname'), ' ', JSON_VALUE(p.charinfo, '$.lastname'))) LIKE :query OR LOWER(`charinfo`) LIKE :query OR LOWER(`citizenid`) LIKE :query OR LOWER(md.fingerprint) LIKE :query AND jobtype = :jobtype LIMIT 20", { query = string.lower('%'..sentData..'%'), jobtype = JobType })
+            local citizenIds = {}
+            local citizenIdIndexMap = {}
+            if not next(people) then cb({}) return end
 
-			for index, data in pairs(people) do
-				people[index]['warrant'] = false
-				people[index]['convictions'] = 0
-				people[index]['licences'] = GetPlayerLicenses(data.citizenid)
-				people[index]['pp'] = ProfPic(data.gender, data.pfp)
-				citizenIds[#citizenIds+1] = data.citizenid
-				citizenIdIndexMap[data.citizenid] = index
-			end
+            for index, data in pairs(people) do
+                people[index]['warrant'] = false
+                people[index]['convictions'] = 0
+                people[index]['licences'] = GetPlayerLicenses(data.citizenid)
+                people[index]['pp'] = ProfPic(data.gender, data.pfp)
+				if data.fingerprint and data.fingerprint ~= "" then
+					people[index]['fingerprint'] = data.fingerprint
+				else
+					people[index]['fingerprint'] = ""
+				end				
+                citizenIds[#citizenIds+1] = data.citizenid
+                citizenIdIndexMap[data.citizenid] = index
+            end
 
-			local convictions = GetConvictions(citizenIds)
+            local convictions = GetConvictions(citizenIds)
 
-			if next(convictions) then
-				for _, conv in pairs(convictions) do
-					if conv.warrant == "1" then people[citizenIdIndexMap[conv.cid]].warrant = true end
+            if next(convictions) then
+                for _, conv in pairs(convictions) do
+                    if conv.warrant == "1" then people[citizenIdIndexMap[conv.cid]].warrant = true end
 
-					local charges = json.decode(conv.charges)
-					people[citizenIdIndexMap[conv.cid]].convictions = people[citizenIdIndexMap[conv.cid]].convictions + #charges
-				end
-			end
+                    local charges = json.decode(conv.charges)
+                    people[citizenIdIndexMap[conv.cid]].convictions = people[citizenIdIndexMap[conv.cid]].convictions + #charges
+                end
+            end
+			TriggerClientEvent('mdt:client:searchProfile', src, people, false, people[1].fingerprint)
 
+            return cb(people)
+        end
+    end
 
-			return cb(people)
-		end
-	end
-
-	return cb({})
+    return cb({})
 end)
 
 QBCore.Functions.CreateCallback("mdt:server:getWarrants", function(source, cb)
@@ -418,12 +425,14 @@ QBCore.Functions.CreateCallback('mdt:server:GetProfileData', function(source, cb
 		person.profilepic = mdtData.pfp
 		person.tags = json.decode(mdtData.tags)
 		person.gallery = json.decode(mdtData.gallery)
+		person.fingerprint = mdtData.fingerprint
+		print("Fetched fingerprint from mdt_data:", mdtData.fingerprint)
 	end
 
 	return cb(person)
 end)
 
-RegisterNetEvent("mdt:server:saveProfile", function(pfp, information, cid, fName, sName, tags, gallery, licenses)
+RegisterNetEvent("mdt:server:saveProfile", function(pfp, information, cid, fName, sName, tags, gallery, licenses, fingerprint)
     local src = source
     local Player = QBCore.Functions.GetPlayer(src)
     UpdateAllLicenses(cid, licenses)
@@ -431,13 +440,14 @@ RegisterNetEvent("mdt:server:saveProfile", function(pfp, information, cid, fName
         local JobType = GetJobType(Player.PlayerData.job.name)
         if JobType == 'doj' then JobType = 'police' end
 
-        MySQL.Async.insert('INSERT INTO mdt_data (cid, information, pfp, jobtype, tags, gallery) VALUES (:cid, :information, :pfp, :jobtype, :tags, :gallery) ON DUPLICATE KEY UPDATE cid = :cid, information = :information, pfp = :pfp, jobtype = :jobtype, tags = :tags, gallery = :gallery', {
+        MySQL.Async.insert('INSERT INTO mdt_data (cid, information, pfp, jobtype, tags, gallery, fingerprint) VALUES (:cid, :information, :pfp, :jobtype, :tags, :gallery, :fingerprint) ON DUPLICATE KEY UPDATE cid = :cid, information = :information, pfp = :pfp, jobtype = :jobtype, tags = :tags, gallery = :gallery, fingerprint = :fingerprint', {
             cid = cid,
             information = information,
             pfp = pfp,
             jobtype = JobType,
             tags = json.encode(tags),
             gallery = json.encode(gallery),
+            fingerprint = fingerprint,
         }, function()
         end)
     end
@@ -727,34 +737,41 @@ end)
 
 RegisterNetEvent('mdt:server:incidentSearchPerson', function(query)
     if query then
-		local src = source
-		local Player = QBCore.Functions.GetPlayer(src)
-		if Player then
-			local JobType = GetJobType(Player.PlayerData.job.name)
-			if JobType == 'police' or JobType == 'doj' or JobType == 'ambulance' then
-				local function ProfPic(gender, profilepic)
-					if profilepic then return profilepic end;
-					if gender == "f" then return "img/female.png" end;
-					return "img/male.png"
-				end
+        local src = source
+        local Player = QBCore.Functions.GetPlayer(src)
+        if Player then
+            local JobType = GetJobType(Player.PlayerData.job.name)
+            if JobType == 'police' or JobType == 'doj' or JobType == 'ambulance' then
+                local function ProfPic(gender, profilepic)
+                    if profilepic then return profilepic end;
+                    if gender == "f" then return "img/female.png" end;
+                    return "img/male.png"
+                end
 
-				local result = MySQL.query.await("SELECT p.citizenid, p.charinfo, p.metadata, md.pfp from players p LEFT JOIN mdt_data md on p.citizenid = md.cid WHERE LOWER(`charinfo`) LIKE :query OR LOWER(`citizenid`) LIKE :query AND `jobtype` = :jobtype LIMIT 30", {
-					query = string.lower('%'..query..'%'), -- % wildcard, needed to search for all alike results
-					jobtype = JobType
-				})
-				local data = {}
-				for i=1, #result do
-					local charinfo = json.decode(result[i].charinfo)
-					local metadata = json.decode(result[i].metadata)
-					data[i] = {
-						id = result[i].citizenid,
-						firstname = charinfo.firstname,
-						lastname = charinfo.lastname,
-						profilepic = ProfPic(charinfo.gender, result[i].pfp),
-						callsign = metadata.callsign
-					}
-				end
-				TriggerClientEvent('mdt:client:incidentSearchPerson', src, data)
+                local firstname, lastname = query:match("^(%S+)%s*(%S*)$")
+                firstname = firstname or query
+                lastname = lastname or query
+
+                local result = MySQL.query.await("SELECT p.citizenid, p.charinfo, p.metadata, md.pfp from players p LEFT JOIN mdt_data md on p.citizenid = md.cid WHERE (LOWER(JSON_UNQUOTE(JSON_EXTRACT(`charinfo`, '$.firstname'))) LIKE :firstname AND LOWER(JSON_UNQUOTE(JSON_EXTRACT(`charinfo`, '$.lastname'))) LIKE :lastname) OR LOWER(`citizenid`) LIKE :citizenid AND `jobtype` = :jobtype LIMIT 30", {
+                    firstname = string.lower('%' .. firstname .. '%'),
+                    lastname = string.lower('%' .. lastname .. '%'),
+                    citizenid = string.lower('%' .. query .. '%'),
+                    jobtype = JobType
+                })
+
+                local data = {}
+                for i=1, #result do
+                    local charinfo = json.decode(result[i].charinfo)
+                    local metadata = json.decode(result[i].metadata)
+                    data[i] = {
+                        id = result[i].citizenid,
+                        firstname = charinfo.firstname,
+                        lastname = charinfo.lastname,
+                        profilepic = ProfPic(charinfo.gender, result[i].pfp),
+                        callsign = metadata.callsign
+                    }
+                end
+                TriggerClientEvent('mdt:client:incidentSearchPerson', src, data)
             end
         end
     end
@@ -1696,11 +1713,36 @@ RegisterNetEvent('mdt:server:registerweapon', function(serial, imageurl, notes, 
     exports['ps-mdt']:CreateWeaponInfo(serial, imageurl, notes, owner, weapClass, weapModel)
 end)
 
-RegisterNetEvent('mdt:server:removeMoney', function(citizenId, fine)
+RegisterNetEvent('mdt:server:removeMoney', function(citizenId, fine, incidentId)
 	local src = source
 	local Player = QBCore.Functions.GetPlayerByCitizenId(citizenId)
-	TriggerClientEvent('QBCore:Notify', Player, fine.."$ were removed from your Bank Account.")
-	Player.Functions.RemoveMoney('bank', fine, 'lspd-fine')
+	local Officer = QBCore.Functions.GetPlayer(src)
+	local fullname = '(' .. Officer.PlayerData.metadata.callsign .. ') ' .. Officer.PlayerData.charinfo.firstname .. ' ' .. Officer.PlayerData.charinfo.lastname
+	if not antiSpam then
+		local date = os.date("%Y-%m-%d %H:%M")
+		if Player.Functions.RemoveMoney('bank', fine, 'lspd-fine') then
+			TriggerClientEvent('QBCore:Notify', src, citizenId.." received a citation!")
+			TriggerClientEvent('QBCore:Notify', Player.PlayerData.source, fine.."$ was removed from your bank!")
+			local info = {
+				citizenId = citizenId,
+				fine = "$"..fine,
+				date = date,
+				incidentId = "#"..incidentId,
+				officer = fullname,
+			}
+			Player.Functions.AddItem('mdtcitation', 1, false, info)
+			TriggerClientEvent('inventory:client:ItemBox', Player.PlayerData.source, QBCore.Shared.Items['mdtcitation'], "add")
+			TriggerEvent('mdt:server:AddLog', "A Fine was writen by "..fullname.." and was sent to "..citizenId..", the Amount was $".. fine ..". (ID: "..incidentId.. ")")
+		else
+			TriggerClientEvent('QBCore:Notify', Player.PlayerData.source, "Something went wrong!")
+		end
+		antiSpam = true
+		SetTimeout(60000, function()
+			antiSpam = false
+		end)
+	else
+		TriggerClientEvent('QBCore:Notify', src, "On cooldown!")
+	end
 end)
 
 function getTopOfficers(callback)
