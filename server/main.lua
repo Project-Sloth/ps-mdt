@@ -71,8 +71,8 @@ end
 AddEventHandler('onResourceStart', function(resourceName)
     if GetCurrentResourceName() ~= resourceName then return end
 	Wait(3000)
-	if Config.Webhook == '' then
-		print("\27[31mA webhook is missing in: Config.Webhook\27[0m")
+	if Config.MugShotWebhook == '' then
+		print("\27[31mA webhook is missing in: Config.MugShotWebhook\27[0m")
     end
     if Config.ClockinWebhook == '' then
 		print("\27[31mA webhook is missing in: Config.ClockinWebhook\27[0m")
@@ -254,7 +254,7 @@ QBCore.Functions.CreateCallback('mdt:server:SearchProfile', function(source, cb,
                     people[citizenIdIndexMap[conv.cid]].convictions = people[citizenIdIndexMap[conv.cid]].convictions + #charges
                 end
             end
-			TriggerClientEvent('mdt:client:searchProfile', src, people, false, people[1].fingerprint)
+			TriggerClientEvent('mdt:client:searchProfile', src, people, false)
 
             return cb(people)
         end
