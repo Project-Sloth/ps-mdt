@@ -7,6 +7,9 @@ Config.UseCQCMugshot = true
 -- Front, Back Side. Use 4 for both sides, we recommend leaving at 1 for default.
 Config.MugPhotos = 1
 
+-- false for command, itemname for opening with item
+Config.item = false
+
 -- Images for mug shots will be uploaded here. Add a Discord webhook. 
 Config.Webhook = ''
 

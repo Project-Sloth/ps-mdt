@@ -153,6 +153,15 @@ QBCore.Commands.Add("mdtleaderboard", "Show MDT leaderboard", {}, false, functio
     TriggerClientEvent('QBCore:Notify', source, "MDT leaderboard sent to Discord!", 'success')
 end)
 
+CreateThread(function()
+	if not Config.item then return end --> It's getting opened by command now.
+
+	QBCore.Functions.CreateUseableItem(Config.item, function(source, item)
+		TriggerClientEvent("mdt:client:open")
+	end)
+	
+end)
+
 RegisterNetEvent("ps-mdt:server:ClockSystem", function()
     local src = source
     local PlayerData = GetPlayerData(src)

@@ -86,9 +86,7 @@ end)
 ------------------------------------------
 --====================================================================================\
 
-RegisterKeyMapping('mdt', 'Open Police MDT', 'keyboard', 'k')
-
-RegisterCommand('mdt', function()
+RegisterNetEvent('mdt:client:open', function()
     local plyPed = PlayerPedId()
     PlayerData = QBCore.Functions.GetPlayerData()
     if not PlayerData.metadata["isdead"] and not PlayerData.metadata["inlaststand"] and not PlayerData.metadata["ishandcuffed"] and not IsPauseMenuActive() then
@@ -99,9 +97,16 @@ RegisterCommand('mdt', function()
     else
         QBCore.Functions.Notify("Can't do that!", "error")
     end
-end, false)
+end)
 
 Citizen.CreateThread(function()
+    if Config.item then return end --> It's getting opened by item now.
+    RegisterKeyMapping('mdt', 'Open Police MDT', 'keyboard', 'k')
+
+    RegisterCommand('mdt', function()
+        TriggerEvent('mdt:client:open')
+    end, false)
+
     TriggerEvent('chat:addSuggestion', '/mdt', 'Open the emergency services MDT', {})
 end)
 
