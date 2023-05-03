@@ -288,8 +288,8 @@ RegisterNUICallback("searchProfiles", function(data, cb)
 end)
 
 
-RegisterNetEvent('mdt:client:searchProfile', function(sentData, isLimited, fingerprint)
-    SendNUIMessage({ action = "updateFingerprintData", fingerprint = fingerprint })
+RegisterNetEvent('mdt:client:searchProfile', function(sentData, isLimited)
+    SendNUIMessage({ action = "updateFingerprintData" })
 end)
 
 RegisterNUICallback("saveProfile", function(data, cb)

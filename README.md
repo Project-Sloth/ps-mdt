@@ -47,7 +47,7 @@ Config.MugPhotos = 1
 * Create a Discord Webhook and paste it here: (Line 11 in Config.lua)
 ```lua
 -- Images for mug shots will be uploaded here. Add a Discord webhook. 
-Config.Webhook = ''
+Config.MugShotWebhook = ''
 ```
 # Fine & Citation via item
 
