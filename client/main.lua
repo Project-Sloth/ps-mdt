@@ -42,7 +42,10 @@ end
 RegisterNetEvent('QBCore:Client:OnPlayerLoaded', function()
     PlayerData = QBCore.Functions.GetPlayerData()
     callSign = PlayerData.metadata.callsign
-    HandleDuty(PlayerData.job.onduty)
+    
+    if PlayerData.job.onduty then
+    	HandleDuty(PlayerData.job.onduty)
+    end
 end)
 
 RegisterNetEvent('QBCore:Client:OnPlayerUnload', function()
