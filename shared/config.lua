@@ -15,7 +15,7 @@ Config.MugShotWebhook = ''
 Config.ClockinWebhook = ''
 
 -- If set to true = Fine gets automatically removed from bank automatically charging the player.
--- If set to false = The fine gets sent as an Invoice to their phone and it us to the player to pay for it, can remain unpaid and ignored.
+-- If set to false = The fine gets sent as an Invoice to their phone and it up to the player to pay for it, can remain unpaid and ignored.
 Config.BillVariation = true
 
 -- Set up your inventory to automatically retrieve images when a weapon is registered at a weapon shop or self-registered.
