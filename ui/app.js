@@ -2073,7 +2073,7 @@ $(document).ready(() => {
                     <div class="associated-incidents-user-tag red-tag" data-id="${$(this).data("cid")}">Processed</div>
                     <div class="associated-incidents-user-tag red-tag" data-id="${$(this).data("cid")}">Associated</div>
                 </div>
-                <div class="modify-charges-label"><span class="fas fa-hand-point-right"></span> Right click below to Add/Modify Charges</div>
+                <div class="modify-charges-label"><span class="fas fa-solid fa-info"></span> Right click below to add and/or modify charges.</div>
                 <div class="associated-incidents-user-holder" data-name="${$(this).data("cid")}"></div>
                 <div class="manage-incidents-title-tag" data-id="${$(this).data("cid")}">Recommended Fine</div>
                 <div class="associated-incidents-fine-input" data-id="${$(this).data("cid")}"><img src="img/h7S5f9J.webp"> <input disabled placeholder="0" class="fine-recommended-amount" id="fine-recommended-amount" data-id="${$(this).data("cid")}" type="number"></div>
@@ -4892,7 +4892,7 @@ window.addEventListener("message", function (event) {
                   <div class="associated-incidents-user-tag ${processedTag}" data-id="${cid}">Processed</div>
                   <div class="associated-incidents-user-tag ${associatedTag}" data-id="${cid}">Associated</div>
               </div>
-              <div class="modify-charges-label"><span class="fas fa-hand-point-right"></span> Right click below to Add/Modify Charges</div>
+              <div class="modify-charges-label"><span class="fas fa-solid fa-info"></span> Right click below to add and/or modify charges.</div>
               ${associatedIncidentsContainer}
           </div>`
         );
