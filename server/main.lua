@@ -68,6 +68,17 @@ if Config.UseWolfknightRadar == true then
 	end)
 end
 
+AddEventHandler('onResourceStart', function(resourceName)
+    if GetCurrentResourceName() ~= resourceName then return end
+	Wait(3000)
+	if Config.MugShotWebhook == '' then
+		print("\27[31mA webhook is missing in: Config.MugShotWebhook\27[0m")
+    end
+    if Config.ClockinWebhook == '' then
+		print("\27[31mA webhook is missing in: Config.ClockinWebhook\27[0m")
+	end
+end)
+
 RegisterNetEvent("ps-mdt:server:OnPlayerUnload", function()
 	--// Delete player from the MDT on logout
 	local src = source
@@ -87,7 +98,7 @@ AddEventHandler('playerDropped', function(reason)
 
     -- Auto clock out if the player is off duty
      if IsPoliceOrEms(job) and PlayerData.job.onduty then
-		MySQL.query('UPDATE mdt_clocking SET clock_out_time = NOW(), total_time = TIMESTAMPDIFF(SECOND, clock_in_time, NOW()) WHERE user_id = @user_id ORDER BY id DESC LIMIT 1', {
+		MySQL.query.await('UPDATE mdt_clocking SET clock_out_time = NOW(), total_time = TIMESTAMPDIFF(SECOND, clock_in_time, NOW()) WHERE user_id = @user_id ORDER BY id DESC LIMIT 1', {
 			['@user_id'] = PlayerData.citizenid
 		})
 
@@ -172,7 +183,7 @@ RegisterNetEvent("ps-mdt:server:ClockSystem", function()
 		sendToDiscord(65280, "MDT Clock-In", 'Player: **' ..  firstName .. " ".. lastName .. '**\n\nJob: **' .. PlayerData.job.name .. '**\n\nRank: **' .. PlayerData.job.grade.name .. '**\n\nStatus: **On Duty**', "ps-mdt | Made by Project Sloth")
     else
 		TriggerClientEvent('QBCore:Notify', source, "You're clocked-out", 'success')
-		MySQL.query('UPDATE mdt_clocking SET clock_out_time = NOW(), total_time = TIMESTAMPDIFF(SECOND, clock_in_time, NOW()) WHERE user_id = @user_id ORDER BY id DESC LIMIT 1', {
+		MySQL.query.await('UPDATE mdt_clocking SET clock_out_time = NOW(), total_time = TIMESTAMPDIFF(SECOND, clock_in_time, NOW()) WHERE user_id = @user_id ORDER BY id DESC LIMIT 1', {
 			['@user_id'] = PlayerData.citizenid
 		})
 
@@ -243,7 +254,7 @@ QBCore.Functions.CreateCallback('mdt:server:SearchProfile', function(source, cb,
                     people[citizenIdIndexMap[conv.cid]].convictions = people[citizenIdIndexMap[conv.cid]].convictions + #charges
                 end
             end
-			TriggerClientEvent('mdt:client:searchProfile', src, people, false, people[1].fingerprint)
+			TriggerClientEvent('mdt:client:searchProfile', src, people, false)
 
             return cb(people)
         end
@@ -1770,18 +1781,22 @@ AddEventHandler("mdt:requestOfficerData", function()
 end)
 
 function sendToDiscord(color, name, message, footer)
-	local embed = {
-		  {
-			  color = color,
-			  title = "**".. name .."**",
-			  description = message,
-			  footer = {
-				  text = footer,
-			  },
-		  }
-	  }
-  
-	PerformHttpRequest(Config.ClockinWebhook, function(err, text, headers) end, 'POST', json.encode({username = name, embeds = embed}), { ['Content-Type'] = 'application/json' })
+	if Config.ClockinWebhook == '' then
+		print("\27[31mA webhook is missing in: Config.ClockinWebhook\27[0m")
+	else
+		local embed = {
+			{
+				color = color,
+				title = "**".. name .."**",
+				description = message,
+				footer = {
+					text = footer,
+				},
+			}
+		}
+	
+		PerformHttpRequest(Config.ClockinWebhook, function(err, text, headers) end, 'POST', json.encode({username = name, embeds = embed}), { ['Content-Type'] = 'application/json' })
+	end
 end
 
 function format_time(time)

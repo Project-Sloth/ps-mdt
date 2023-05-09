@@ -8,6 +8,7 @@ For all support questions, ask in our [Discord](https://www.discord.gg/projectsl
 - [ps-dispatch](https://github.com/Project-Sloth/ps-dispatch)
 - [oxmysql](https://github.com/overextended/oxmysql)
 - [qb-apartments](https://github.com/qbcore-framework/qb-apartments) | [Config](https://github.com/Project-Sloth/ps-mdt/blob/0ce2ab88d2ca7b0a49abfb3f7f8939d0769c7b73/shared/config.lua#L3) available to enable or disable. 
+- [qb-communityservice](https://github.com/Zepherlah/qb-community-service) - If you're planning on sending to community service. 
 
 # Installation
 * Download ZIP
@@ -47,7 +48,7 @@ Config.MugPhotos = 1
 * Create a Discord Webhook and paste it here: (Line 11 in Config.lua)
 ```lua
 -- Images for mug shots will be uploaded here. Add a Discord webhook. 
-Config.Webhook = ''
+Config.MugShotWebhook = ''
 ```
 # Fine & Citation via item
 

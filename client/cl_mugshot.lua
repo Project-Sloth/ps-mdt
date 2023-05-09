@@ -17,10 +17,14 @@ local MugShots = {}
 -- Mugshot functions
 
 local function TakeMugShot()
-    exports['screenshot-basic']:requestScreenshotUpload(Config.Webhook, 'files[]', {encoding = 'jpg'}, function(data)
-        local resp = json.decode(data)
-        table.insert(MugshotArray, resp.attachments[1].url)
-    end)
+    if Config.MugShotWebhook == '' then
+        print("^1A webhook is missing in: Config.MugShotWebhook")
+    else
+        exports['screenshot-basic']:requestScreenshotUpload(Config.MugShotWebhook, 'files[]', {encoding = 'jpg'}, function(data)
+            local resp = json.decode(data)
+            table.insert(MugshotArray, resp.attachments[1].url)
+        end)
+    end
 end
 
 local function PhotoProcess(ped)
