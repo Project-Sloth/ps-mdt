@@ -1378,12 +1378,15 @@ end)
 
 RegisterNetEvent('mdt:server:callAttach', function(callid)
 	local src = source
+	local plyState = Player(source).state
+	local Radio = plyState.radioChannel or 0
 	local Player = QBCore.Functions.GetPlayer(src)
 	local playerdata = {
 		fullname = Player.PlayerData.charinfo.firstname.. " "..Player.PlayerData.charinfo.lastname,
 		job = Player.PlayerData.job,
 		cid = Player.PlayerData.citizenid,
-		callsign = Player.PlayerData.metadata.callsign
+		callsign = Player.PlayerData.metadata.callsign,
+		radio = Radio
 	}
 	local JobType = GetJobType(Player.PlayerData.job.name)
 	if JobType == 'police' or JobType == 'ambulance' then
