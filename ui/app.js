@@ -4544,12 +4544,11 @@ window.addEventListener("message", function (event) {
         $(".close-all").css("filter", "brightness(15%)");
         $(".dispatch-attached-units-holder").empty();
         $.each(table, function (index, value) {
-          $(
-            ".dispatch-attached-units-holder"
-          ).prepend(`<div class="dispatch-attached-unit-item" data-id="${value.cid}">
-                        <div class="unit-job unit-police">${value.job}</div>
+          $(".dispatch-attached-units-holder").prepend(
+            `<div class="dispatch-attached-unit-item" data-id="${value.cid}">
+                        <div class="unit-job active-info-job-${value.job}">${value.job}</div>
                         <div class="unit-name">(${value.callsign}) ${value.fullname}</div>
-                        <div class="unit-radio">1</div>
+                        <div class="unit-radio">${value.channel}</div> 
                     </div> `);
         });
         setTimeout(() => {
