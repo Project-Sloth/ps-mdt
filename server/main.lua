@@ -46,7 +46,6 @@ if Config.UseWolfknightRadar == true then
 		local bolo, title, boloId = GetBoloStatus(plate)
 		local warrant, owner, incidentId = GetWarrantStatus(plate)
 		local driversLicense = PlayerData.metadata['licences'].driver
-		local driverunlicensed = nil
 
 		if bolo == true then
 			TriggerClientEvent('QBCore:Notify', src, 'BOLO ID: '..boloId..' | Title: '..title..' | Registered Owner: '..vehicleOwner..' | Plate: '..plate, 'error', Config.WolfknightNotifyTime)
@@ -1724,26 +1723,35 @@ RegisterNetEvent('mdt:server:registerweapon', function(serial, imageurl, notes, 
     exports['ps-mdt']:CreateWeaponInfo(serial, imageurl, notes, owner, weapClass, weapModel)
 end)
 
+local function giveCitationItem(src, citizenId, fine, incidentId)
+	local Player = QBCore.Functions.GetPlayerByCitizenId(citizenId)
+	local PlayerName = Player.PlayerData.charinfo.firstname .. ' ' .. Player.PlayerData.charinfo.lastname
+	local Officer = QBCore.Functions.GetPlayer(src)
+	local OfficerFullName = '(' .. Officer.PlayerData.metadata.callsign .. ') ' .. Officer.PlayerData.charinfo.firstname .. ' ' .. Officer.PlayerData.charinfo.lastname
+
+	local date = os.date("%Y-%m-%d %H:%M")
+	local info = {
+		citizenId = citizenId,
+		fine = "$"..fine,
+		date = date,
+		incidentId = "#"..incidentId,
+		officer = OfficerFullName,
+	}
+	Player.Functions.AddItem('mdtcitation', 1, false, info)
+	TriggerClientEvent('QBCore:Notify', src, PlayerName.." received a citation!")
+	TriggerClientEvent('inventory:client:ItemBox', Player.PlayerData.source, QBCore.Shared.Items['mdtcitation'], "add")
+	TriggerEvent('mdt:server:AddLog', "A Fine was writen by "..OfficerFullName.." and was sent to "..PlayerName..", the Amount was $".. fine ..". (ID: "..incidentId.. ")")
+end
+
+-- Removes money from the players bank and gives them a citation item
 RegisterNetEvent('mdt:server:removeMoney', function(citizenId, fine, incidentId)
 	local src = source
 	local Player = QBCore.Functions.GetPlayerByCitizenId(citizenId)
-	local Officer = QBCore.Functions.GetPlayer(src)
-	local fullname = '(' .. Officer.PlayerData.metadata.callsign .. ') ' .. Officer.PlayerData.charinfo.firstname .. ' ' .. Officer.PlayerData.charinfo.lastname
+	
 	if not antiSpam then
-		local date = os.date("%Y-%m-%d %H:%M")
 		if Player.Functions.RemoveMoney('bank', fine, 'lspd-fine') then
-			TriggerClientEvent('QBCore:Notify', src, citizenId.." received a citation!")
 			TriggerClientEvent('QBCore:Notify', Player.PlayerData.source, fine.."$ was removed from your bank!")
-			local info = {
-				citizenId = citizenId,
-				fine = "$"..fine,
-				date = date,
-				incidentId = "#"..incidentId,
-				officer = fullname,
-			}
-			Player.Functions.AddItem('mdtcitation', 1, false, info)
-			TriggerClientEvent('inventory:client:ItemBox', Player.PlayerData.source, QBCore.Shared.Items['mdtcitation'], "add")
-			TriggerEvent('mdt:server:AddLog', "A Fine was writen by "..fullname.." and was sent to "..citizenId..", the Amount was $".. fine ..". (ID: "..incidentId.. ")")
+			giveCitationItem(src, citizenId, fine, incidentId)
 		else
 			TriggerClientEvent('QBCore:Notify', Player.PlayerData.source, "Something went wrong!")
 		end
@@ -1754,6 +1762,12 @@ RegisterNetEvent('mdt:server:removeMoney', function(citizenId, fine, incidentId)
 	else
 		TriggerClientEvent('QBCore:Notify', src, "On cooldown!")
 	end
+end)
+
+-- Gives the player a citation item
+RegisterNetEvent('mdt:server:giveCitationItem', function(citizenId, fine, incidentId)
+	local src = source
+	giveCitationItem(src, citizenId, fine, incidentId)
 end)
 
 function getTopOfficers(callback)
