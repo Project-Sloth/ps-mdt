@@ -54,16 +54,15 @@ if Config.UseWolfknightRadar == true then
 			TriggerClientEvent('QBCore:Notify', src, 'WANTED - INCIDENT ID: '..incidentId..' | Registered Owner: '..owner..' | Plate: '..plate, 'error', Config.WolfknightNotifyTime)
 		end
 
-		if driversLicense == false and vehicleOwner then
-			TriggerClientEvent('QBCore:Notify', src, 'NO DRIVERS LICENCE | Registered Owner: '..vehicleOwner..' | Plate: '..plate, 'error', Config.WolfknightNotifyTime)
+		if Config.PlateScanForDriversLicense then
+			if driversLicense == false and vehicleOwner then
+				TriggerClientEvent('QBCore:Notify', src, 'NO DRIVERS LICENCE | Registered Owner: '..vehicleOwner..' | Plate: '..plate, 'error', Config.WolfknightNotifyTime)
+			end
 		end
 
-
-		if bolo or warrant or not driversLicense then
-
-		TriggerClientEvent("wk:togglePlateLock", src, cam, true, 1)
+		if bolo or warrant or (Config.PlateScanForDriversLicense and not driversLicense) then
+			TriggerClientEvent("wk:togglePlateLock", src, cam, true, 1)
 		end
-
 	end)
 end
 
