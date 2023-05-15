@@ -407,6 +407,7 @@ RegisterNUICallback("sendFine", function(data, cb)
         else
             -- Uses QB-Core /bill command
             ExecuteCommand(('bill %s %s'):format(targetSourceId, fine))
+            TriggerServerEvent("mdt:server:giveCitationItem", citizenId, fine, incidentId)
         end
     end
 end)
