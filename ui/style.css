@@ -45,7 +45,9 @@ input::-webkit-inner-spin-button {
 }
 
 .badge-logo {
-    margin-left: 1vh
+    margin-left: 1vh;
+    width: 12vh;
+    height: 12vh;
 }
 
 .profile-page-container {
@@ -103,6 +105,17 @@ input::-webkit-inner-spin-button {
     display: none;
 }
 
+.sop-page-container {
+    background-color: var(--color-9);
+    border-radius: 15px;
+    position: absolute; 
+    width: 96.5%;
+    height: 96.5%;
+    left: 2.0%;
+    top: 1.5%;
+    display: none;
+}
+
 .dmv-page-container {
     background-color: var(--color-9);
     border-radius: 15px;
@@ -149,14 +162,14 @@ input::-webkit-inner-spin-button {
 }
 
 .header {
-    height: 7vh;
+    height: 4vh;
     background-color: var(--color-1);
     border: 5px solid #393B39;
     border-top-right-radius: 50px;
     border-bottom-right-radius: 50px;
     width: 96.5%;
     position: absolute;
-    top: 5.5vh;
+    top: 4vh;
     display: flex;
     align-items: center;
     user-select: none;
@@ -173,17 +186,20 @@ input::-webkit-inner-spin-button {
 .header-middle {
     background-color: var(--color-2);
     border-radius: 15px;
+    border: 5px solid #393B39;
     width: fit-content;
-    height: fit-content;
-    padding: 10px;
+    height: 3.5vh;
+    padding: 8px;
     padding-left: 20px;
     padding-right: 20px;
     display: flex;
     flex-direction: column;
     text-align: center;
+    align-items: normal;
     color: white;
     margin: auto;
-    font-size: 20px;
+    margin-top: -10px;
+    font-size: 15px;
 }
 
 .header-right {
@@ -198,7 +214,7 @@ input::-webkit-inner-spin-button {
 .main-container {
     border-top: 5px solid var(--color-3);
     width: 100%;
-    height: 79.5%;
+    height: 86%;
     position: absolute;
     display: flex;
     bottom: 0;
@@ -237,7 +253,7 @@ input::-webkit-inner-spin-button {
     border: 2px solid var(--color-3);
     display: flex;
     flex-direction: column;
-    height: 74.7vh;
+    height: 80.7vh;
     width: 50vh;
     margin-top: 10px;
     margin-left: 10px;
@@ -379,7 +395,7 @@ input::-webkit-inner-spin-button {
     height: 100%;
     width: 50vh;
     margin-top: 10px;
-    margin-bottom: 8px;
+    margin-bottom: 10px;
     margin-left: 10px;
     user-select: none;
     overflow: hidden;
@@ -488,7 +504,7 @@ span.bulletin-item-info[contenteditable]:empty::before {
     border: 2px solid var(--color-3);
     display: flex;
     flex-direction: column;
-    height: 74.7vh;
+    height: 81.1vh;
     width: 50vh;
     margin-top: 10px;
     margin-left: 10px;
@@ -868,7 +884,7 @@ a {
     border: 2px solid var(--color-3);
     display: flex;
     flex-direction: column;
-    height: 74.7vh;
+    height: 80.7vh;
     width: 50vh;
     margin-top: 10px;
     margin-left: 10px;
@@ -939,7 +955,7 @@ a {
 .profile-item {
     background-color: var(--color-5);
     width: 100%;
-    height: 9vh;
+    height: 12vh;
     margin: auto;
     margin-bottom: 10px;
     margin-top: 0px;
@@ -953,8 +969,8 @@ a {
 }
 
 .profile-image {
-    width: 7vh;
-    height: 7vh;
+    width: 10vh;
+    height: 10vh;
     margin-left: 10px;
     margin-top: auto;
     margin-bottom: auto;
@@ -1014,7 +1030,7 @@ a {
     border: 2px solid var(--color-3);
     display: flex;
     flex-direction: column;
-    height: 74.7vh;
+    height: 80.7vh;
     width: 50vh;
     margin-top: 10px;
     margin-left: 10px;
@@ -1159,6 +1175,40 @@ a {
     background-color: rgba(0, 0, 0, 0);
 }
 
+.manage-profile-fingerprint {
+    color: white;
+    margin-left: 10px;
+    font-size: 15px;
+    user-select: none;
+}
+
+.manage-profile-fingerprint-input {
+    border: none;
+    outline: none;
+    margin-left: 2.5px;
+    font-size: 16px;
+    margin-top: 2px;
+    color: white;
+    background-color: rgba(0, 0, 0, 0);
+}
+
+.manage-profile-phonenumber {
+    color: white;
+    margin-left: 10px;
+    font-size: 15px;
+    user-select: none;
+}
+
+.manage-profile-phonenumber-input {
+    border: none;
+    outline: none;
+    margin-left: 2.5px;
+    font-size: 16px;
+    margin-top: 2px;
+    color: white;
+    background-color: rgba(0, 0, 0, 0);
+}
+
 .manage-profile-job {
     color: white;
     margin-left: 10px;
@@ -1218,26 +1268,10 @@ a {
     font-size: 20px;
 }
 
-.manage-profile-fingerprint {
-    width: 92.5%;
-    margin: auto;
-    margin-top: 10px;
-    margin-bottom: 15px;
-    border: none;
-    outline: none;
-    height: 8%;
-    resize: none;
-    background-color: var(--color-5);
-    color: white;
-    font-size: 16px;
-    padding: 10px;
-    line-height: 1
-}
-
 .manage-profile-right-container {
     display: flex;
     flex-direction: column;
-    height: 95.7%;
+    height: 97.9%;
     width: 50vh;
     margin-top: 10px;
     margin-left: 10px;
@@ -1248,7 +1282,7 @@ a {
     background-color: var(--color-1);
     width: 100%;
     border: 2px solid var(--color-3);
-    height: 15%;
+    height: 20%;
 }
 
 .license-title {
@@ -1260,7 +1294,7 @@ a {
     padding-bottom: 5px;
     text-align: center;
     margin: auto;
-    margin-top: 10px;
+    margin-top: 5px;
     margin-bottom: 0px;
     width: 95%;
     align-items: center;
@@ -1270,7 +1304,7 @@ a {
 .licenses-holder {
     overflow: auto;
     margin: auto;
-    margin-top: 10px;
+    margin-top: 5px;
     width: 95%;
     user-select: none;
 }
@@ -1297,8 +1331,9 @@ a {
     flex-direction: column;
     background-color: var(--color-1);
     width: 100%;
+    height: 20%;
     border: 2px solid var(--color-3);
-    margin-top: 10px;
+    margin-top: 5px;
     min-height: 100px;
     max-height: 200px;
     overflow: scroll;
@@ -1313,7 +1348,7 @@ a {
     padding-bottom: 5px;
     text-align: center;
     margin: auto;
-    margin-top: 10px;
+    margin-top: 5px;
     margin-right: 0px;
     margin-bottom: 0px;
     width: 84%;
@@ -1329,7 +1364,7 @@ a {
     padding-top: 7px;
     padding-bottom: 7px;
     margin: auto;
-    margin-top: 10px;
+    margin-top: 5px;
     margin-left: 5px;
     margin-bottom: 0px;
     width: 10%;
@@ -1352,9 +1387,9 @@ a {
     display: inline-block;
     text-decoration: none;
     margin: auto;
+    margin-bottom: 5px;
     margin-left: 0px;
     margin-right: 10px;
-    margin-top: 10px;
     padding: 4px;
     padding-left: 8px;
     padding-right: 8px;
@@ -1377,7 +1412,7 @@ span.tag-input[contenteditable]:empty::before {
     margin: auto;
     margin-left: 0px;
     margin-right: 10px;
-    margin-top: 10px;
+    margin-top: 5px;
     padding: 4px;
     padding-left: 8px;
     padding-right: 8px;
@@ -1397,8 +1432,9 @@ span.tag-input[contenteditable]:empty::before {
     flex-direction: column;
     background-color: var(--color-1);
     width: 100%;
+    height: 20%;
     border: 2px solid var(--color-3);
-    margin-top: 10px;
+    margin-top: 5px;
     max-height: 150px;
     overflow: scroll;
 }
@@ -1412,7 +1448,7 @@ span.tag-input[contenteditable]:empty::before {
     padding-bottom: 5px;
     text-align: center;
     margin: auto;
-    margin-top: 10px;
+    margin-top: 5px;
     margin-bottom: 0px;
     width: 95%;
     align-items: center;
@@ -1422,7 +1458,7 @@ span.tag-input[contenteditable]:empty::before {
 .vehs-holder {
     overflow: auto;
     margin: auto;
-    margin-top: 10px;
+    margin-top: 5px;
     width: 95%;
     user-select: none;
 }
@@ -1433,7 +1469,7 @@ span.tag-input[contenteditable]:empty::before {
     margin: auto;
     margin-left: 0px;
     margin-right: 10px;
-    margin-top: 10px;
+    margin-top: 5px;
     padding: 4px;
     padding-left: 8px;
     padding-right: 8px;
@@ -1450,8 +1486,9 @@ span.tag-input[contenteditable]:empty::before {
     flex-direction: column;
     background-color: var(--color-1);
     width: 100%;
+    height: 20%;
     border: 2px solid var(--color-3);
-    margin-top: 10px;
+    margin-top: 5px;
     max-height: 150px;
     overflow: scroll;
 }
@@ -1465,7 +1502,7 @@ span.tag-input[contenteditable]:empty::before {
     padding-bottom: 5px;
     text-align: center;
     margin: auto;
-    margin-top: 10px;
+    margin-top: 5px;
     margin-bottom: 0px;
     width: 95%;
     align-items: center;
@@ -1475,7 +1512,7 @@ span.tag-input[contenteditable]:empty::before {
 .houses-holder {
     overflow: auto;
     margin: auto;
-    margin-top: 10px;
+    margin-top: 5px;
     width: 95%;
     user-select: none;
 }
@@ -1486,7 +1523,7 @@ span.tag-input[contenteditable]:empty::before {
     margin: auto;
     margin-left: 0px;
     margin-right: 10px;
-    margin-top: 10px;
+    margin-top: 5px;
     padding: 4px;
     padding-left: 8px;
     padding-right: 8px;
@@ -1504,8 +1541,8 @@ span.tag-input[contenteditable]:empty::before {
     background-color: var(--color-1);
     width: 100%;
     border: 2px solid var(--color-3);
-    margin-top: 10px;
-    height: 18vh;
+    margin-top: 5px;
+    height: 20%;
     overflow: scroll;
 }
 
@@ -1518,7 +1555,7 @@ span.tag-input[contenteditable]:empty::before {
     padding-bottom: 5px;
     text-align: center;
     margin: auto;
-    margin-top: 10px;
+    margin-top: 5px;
     margin-right: 0px;
     margin-bottom: 0px;
     width: 84%;
@@ -1534,7 +1571,7 @@ span.tag-input[contenteditable]:empty::before {
     padding-top: 7px;
     padding-bottom: 7px;
     margin: auto;
-    margin-top: 10px;
+    margin-top: 5px;
     margin-left: 5px;
     margin-bottom: 0px;
     width: 10%;
@@ -1549,7 +1586,7 @@ span.tag-input[contenteditable]:empty::before {
     overflow: auto;
     white-space: nowrap;
     margin: auto;
-    margin-top: 10px;
+    margin-top: 5px;
     width: 95%;
     user-select: none;
 }
@@ -1560,19 +1597,43 @@ span.tag-input[contenteditable]:empty::before {
     object-fit: cover;
 }
 
-.manage-convictions-container {
+.convictions-known, .incidents-known {
     display: flex;
     flex-direction: column;
-    background-color: var(--color-1);
     width: 100%;
-    border: 2px solid var(--color-3);
+    height: 100%;
+}
+
+.convictions-known-container, .incidents-known-container {
+    background-color: var(--color-5);
+    width: 95vh;
+    height: 45vh;
+    margin: auto;
     margin-top: 10px;
-    max-height: 200px;
-    overflow: scroll;
+    display: flex;
+    flex-direction: column;
+    z-index: 9998;
+    display: none;
+}
+
+.convictions-known-title, .incidents-known-title {
+    background-color: var(--color-4);
+    color: white;
+    font-size: 20px;
+    font-weight: bolder;
+    text-align: center;
+    padding-top: 15px;
+    padding-bottom: 15px;
+    width: 95%;
+    margin: auto;
+    margin-top: 15px;
+    margin-bottom: 0px;
+    user-select: none;
 }
 
 .convictions-title {
-    background-color: var(--color-4);
+    background-color: var(--color-1);
+    border: 2px solid var(--color-3);
     color: white;
     font-size: 18px;
     font-weight: bolder;
@@ -1580,35 +1641,29 @@ span.tag-input[contenteditable]:empty::before {
     padding-bottom: 5px;
     text-align: center;
     margin: auto;
-    margin-top: 10px;
+    margin-top: 5px;
     margin-bottom: 0px;
-    width: 95%;
+    width: 100%;
     align-items: center;
     user-select: none;
-    
+}
+
+.convictions-title:hover {
+    background-color: var(--color-3);
 }
 
 .convictions-holder {
-    overflow: auto;
+    overflow: scroll;
+    max-height: 87%;
     margin: auto;
-    margin-top: 10px;
+    margin-top: 5px;
     width: 95%;
     user-select: none;
 }
 
-.manage-profile-incidents-container {
-    display: flex;
-    flex-direction: column;
-    background-color: var(--color-1);
-    width: 100%;
-    border: 2px solid var(--color-3);
-    margin-top: 10px;
-    max-height: 200px;
-    overflow: scroll;
-}
-
 .profile-incidents-title {
-    background-color: var(--color-4);
+    background-color: var(--color-1);
+    border: 2px solid var(--color-3);
     color: white;
     font-size: 18px;
     font-weight: bolder;
@@ -1616,17 +1671,22 @@ span.tag-input[contenteditable]:empty::before {
     padding-bottom: 5px;
     text-align: center;
     margin: auto;
-    margin-top: 10px;
+    margin-top: 5px;
     margin-bottom: 0px;
-    width: 95%;
+    width: 100%;
     align-items: center;
     user-select: none;
 }
 
+.profile-incidents-title:hover {
+    background-color: var(--color-3);
+}
+
 .profile-incidents-holder {
-    overflow: auto;
+    overflow: scroll;
+    max-height: 87%;
     margin: auto;
-    margin-top: 10px;
+    margin-top: 5px;
     width: 95%;
     user-select: none;
 }
@@ -1697,7 +1757,7 @@ span.tag-input[contenteditable]:empty::before {
     margin: 0;
     border: 1px solid var(--color-3);
     background: var(--color-5);
-    z-index: 100;
+    z-index: 9999;
     border-radius: 3px;
     box-shadow: 1px 1px 4px rgba(0,0,0,.2);
     opacity: 0;
@@ -1795,6 +1855,22 @@ span.tag-input[contenteditable]:empty::before {
     background-color: #099517;
 }
 
+.view-incident:hover {
+    background-color: var(--color-3);
+}
+
+.view-incident2:hover {
+    background-color: var(--color-3);
+}
+
+.make-waypoint:hover {
+    background-color: var(--color-3);
+}
+
+.view-profile:hover {
+    background-color: var(--color-3);
+}
+
 .gallery-upload-input {
     background-color: var(--color-3);
     color: white;
@@ -1843,12 +1919,31 @@ span.tag-input[contenteditable]:empty::before {
     outline: none;
 }
 
+.sop-embed {
+    background-color: var(--color-1);
+    border: 2px solid var(--color-3);
+    display: flex;
+    flex-direction: column;
+    height: 96.5%;
+    width: 85%;
+    margin: auto;
+    overflow: hidden;
+}
+
+.sop-embed iframe {
+    height: 96.5%;
+    width: 98%;
+    margin: auto;
+    border: none;
+    outline: none;
+}
+
 .incidents-container {
     background-color: var(--color-1);
     border: 2px solid var(--color-3);
     display: flex;
     flex-direction: column;
-    height: 74.7vh;
+    height: 80.7vh;
     width: 50vh;
     margin-top: 10px;
     margin-left: 10px;
@@ -1990,8 +2085,8 @@ span.tag-input[contenteditable]:empty::before {
     border: 2px solid var(--color-3);
     display: flex;
     flex-direction: column;
-    height: 74.7vh;
-    max-height: 74.7vh;
+    height: 80.7vh;
+    max-height: 80.7vh;
     width: 50vh;
     margin-top: 10px;
     margin-left: 10px;
@@ -2172,7 +2267,7 @@ span.tag-input[contenteditable]:empty::before {
     overflow: auto;
     margin: auto;
     margin-top: 10px;
-    margin-bottom: 5px;
+    margin-bottom: 10px;
     width: 95%;
     max-height: 14vh;
     user-select: none;
@@ -2255,29 +2350,10 @@ span.tag-input[contenteditable]:empty::before {
     overflow: auto;
     margin: auto;
     margin-top: 10px;
-    margin-bottom: 5px;
+    margin-bottom: 10px;
     width: 95%;
     max-height: 14vh;
     user-select: none;
-}
-
-.manage-incidents-officers {
-    display: inline-block;
-    text-decoration: none;
-    margin: auto;
-    margin-left: 0px;
-    margin-right: 10px;
-    margin-bottom: 10px;
-    padding: 4px;
-    padding-left: 8px;
-    padding-right: 8px;
-    border-radius: 10px;
-    color: black;
-    font-size: 12px;
-    font-weight: 600;
-    background-color: white;
-    user-select: none;
-    width: fit-content;
 }
 
 .manage-incidents-civilians-container {
@@ -2338,29 +2414,10 @@ span.tag-input[contenteditable]:empty::before {
     overflow: auto;
     margin: auto;
     margin-top: 10px;
-    margin-bottom: 5px;
+    margin-bottom: 10px;
     width: 95%;
     max-height: 14vh;
     user-select: none;
-}
-
-.manage-incidents-civilians {
-    display: inline-block;
-    text-decoration: none;
-    margin: auto;
-    margin-left: 0px;
-    margin-right: 10px;
-    margin-bottom: 10px;
-    padding: 4px;
-    padding-left: 8px;
-    padding-right: 8px;
-    border-radius: 10px;
-    color: black;
-    font-size: 12px;
-    font-weight: 600;
-    background-color: white;
-    user-select: none;
-    width: fit-content;
 }
 
 .manage-incidents-evidence-container {
@@ -2442,57 +2499,6 @@ span.tag-incident-input[contenteditable]:empty::before {
     margin: auto;
     margin-left: 0px;
     margin-right: 10px;
-    margin-top: 10px;
-    padding: 4px;
-    padding-left: 8px;
-    padding-right: 8px;
-    border-radius: 10px;
-    color: black;
-    font-size: 12px;
-    font-weight: 600;
-    background-color: white;
-    user-select: none;
-    width: fit-content;
-    outline: none;
-    border: none;
-}
-
-span.officers-incident-input[contenteditable]:empty::before {
-    content: '(XXX) Officer Name';
-}
-
-.officers-incident-input {
-    display: inline-block;
-    text-decoration: none;
-    margin: auto;
-    margin-left: 0px;
-    margin-right: 10px;
-    margin-top: 10px;
-    padding: 4px;
-    padding-left: 8px;
-    padding-right: 8px;
-    border-radius: 10px;
-    color: black;
-    font-size: 12px;
-    font-weight: 600;
-    background-color: white;
-    user-select: none;
-    width: fit-content;
-    outline: none;
-    border: none;
-}
-
-span.civilians-incident-input[contenteditable]:empty::before {
-    content: 'Civilian Name';
-}
-
-.civilians-incident-input {
-    display: inline-block;
-    text-decoration: none;
-    margin: auto;
-    margin-left: 0px;
-    margin-right: 10px;
-    margin-top: 10px;
     padding: 4px;
     padding-left: 8px;
     padding-right: 8px;
@@ -2512,7 +2518,7 @@ span.civilians-incident-input[contenteditable]:empty::before {
     border: 2px solid var(--color-3);
     display: flex;
     flex-direction: column;
-    height: 74.7vh;
+    height: 80.7vh;
     width: 50vh;
     margin-top: 10px;
     margin-left: 10px;
@@ -2609,7 +2615,6 @@ span.civilians-incident-input[contenteditable]:empty::before {
     margin: auto;
     margin-left: 0px;
     margin-right: 10px;
-    margin-bottom: 10px;
     padding: 4px;
     padding-left: 8px;
     padding-right: 8px;
@@ -2721,6 +2726,20 @@ span.civilians-incident-input[contenteditable]:empty::before {
     background-color: var(--color-5);
 }
 
+.modify-charges-label {
+    color: white;
+    font-size: 13px;
+    font-weight: bolder;
+    border-bottom: 2px solid #2C537B;
+    padding: 2px;
+    margin: auto;
+    margin-top: 4px;
+    margin-bottom: -3px;
+    width: 95%;
+    align-items: center;
+    user-select: none;
+}
+
 .associated-incidents-user-tag {
     text-decoration: none;
     margin-top: auto;
@@ -2739,11 +2758,12 @@ span.civilians-incident-input[contenteditable]:empty::before {
 }
 
 .associated-incidents-user-holder {
+    padding: 10px;
     overflow: auto;
     margin: auto;
     margin-top: 10px;
     margin-bottom: 10px;
-    width: 95%;
+    width: 92%;
     min-height: 3.5vh;
     max-height: 37vh;
     user-select: none;
@@ -2815,8 +2835,7 @@ span.civilians-incident-input[contenteditable]:empty::before {
 }
 
 .associated-incidents-controls {
-    display: flex;
-    justify-content: space-evenly;
+    justify-content: inherit;
     width: 90%;
     margin-top: 5px;
     margin-bottom: 15px;
@@ -2825,6 +2844,8 @@ span.civilians-incident-input[contenteditable]:empty::before {
 .control-button {
     text-align: center;
     background-color: var(--color-4);
+    border: 2px solid var(--color-3);
+    margin-bottom: 10px;
     padding: 10px;
 }
 
@@ -2986,7 +3007,7 @@ span.civilians-incident-input[contenteditable]:empty::before {
     border: 2px solid var(--color-3);
     display: flex;
     flex-direction: column;
-    height: 74.7vh;
+    height: 80.7vh;
     width: 50vh;
     margin-top: 10px;
     margin-left: 10px;
@@ -3069,8 +3090,8 @@ span.civilians-incident-input[contenteditable]:empty::before {
     border: 2px solid var(--color-3);
     display: flex;
     flex-direction: column;
-    height: 74.7vh;
-    max-height: 74.7vh;
+    height: 80.7vh;
+    max-height: 80.7vh;
     width: 50vh;
     margin-top: 10px;
     margin-left: 10px;
@@ -3345,6 +3366,7 @@ span.civilians-incident-input[contenteditable]:empty::before {
     width: 95%;
     max-height: 14vh;
     user-select: none;
+    margin-top: 10px;
 }
 
 .officers-add-btn {
@@ -3641,7 +3663,7 @@ span.officer-tag-bolo-input[contenteditable]:empty::before {
     border: 2px solid var(--color-3);
     display: flex;
     flex-direction: column;
-    height: 74.7vh;
+    height: 80.7vh;
     width: 50vh;
     margin-top: 10px;
     margin-left: 10px;
@@ -3660,7 +3682,7 @@ span.officer-tag-bolo-input[contenteditable]:empty::before {
     border: 2px solid var(--color-3);
     display: flex;
     flex-direction: column;
-    height: 45.5%;
+    height: 46.5%;
     width: 50vh;
     margin-top: 1vh;
     margin-left: 10px;
@@ -3946,8 +3968,8 @@ span.officer-tag-bolo-input[contenteditable]:empty::before {
     border: 2px solid var(--color-3);
     display: flex;
     flex-direction: column;
-    height: 74.7vh;
-    max-height: 74.7vh;
+    height: 80.7vh;
+    max-height: 80.7vh;
     width: 50vh;
     margin-top: 10px;
     margin-left: 10px;
@@ -4180,6 +4202,10 @@ span.officer-tag-bolo-input[contenteditable]:empty::before {
     background-color: #aa1c1c;
 }
 
+.remove-tag:hover {
+    background-color: #aa1c1c;
+}
+
 .manage-reports-editing-title {
     background-color: var(--color-3);
     color: white;
@@ -4259,6 +4285,7 @@ span.officer-tag-bolo-input[contenteditable]:empty::before {
     width: 95%;
     max-height: 14vh;
     user-select: none;
+    margin-top: 10px;
 }
 
 .reports-officers-add-btn {
@@ -4410,6 +4437,7 @@ span.officer-tag-bolo-input[contenteditable]:empty::before {
     width: 95%;
     max-height: 14vh;
     user-select: none;
+    margin-top: 10px;
 }
 
 .reports-item {
@@ -4507,62 +4535,13 @@ span.tag-reports-input[contenteditable]:empty::before {
     border: none;
 }
 
-span.officer-tag-reports-input[contenteditable]:empty::before {
-    content: 'Input Tag';
-}
-
-.officer-tag-reports-input {
-    display: inline-block;
-    text-decoration: none;
-    margin: auto;
-    margin-left: 0px;
-    margin-right: 10px;
-    margin-top: 10px;
-    padding: 4px;
-    padding-left: 8px;
-    padding-right: 8px;
-    border-radius: 10px;
-    color: black;
-    font-size: 12px;
-    font-weight: 600;
-    background-color: white;
-    user-select: none;
-    width: fit-content;
-    outline: none;
-    border: none;
-}
-
-span.civilian-tag-reports-input[contenteditable]:empty::before {
-    content: 'Input Tag';
-}
-
-.civilian-tag-reports-input {
-    display: inline-block;
-    text-decoration: none;
-    margin: auto;
-    margin-left: 0px;
-    margin-right: 10px;
-    margin-top: 10px;
-    padding: 4px;
-    padding-left: 8px;
-    padding-right: 8px;
-    border-radius: 10px;
-    color: black;
-    font-size: 12px;
-    font-weight: 600;
-    background-color: white;
-    user-select: none;
-    width: fit-content;
-    outline: none;
-    border: none;
-}
 
 .dmv-container {
     background-color: var(--color-1);
     border: 2px solid var(--color-3);
     display: flex;
     flex-direction: column;
-    height: 74.7vh;
+    height: 80.7vh;
     width: 50%;
     margin-top: 10px;
     margin-left: 10px;
@@ -4653,7 +4632,7 @@ span.civilian-tag-reports-input[contenteditable]:empty::before {
     border: 2px solid var(--color-3);
     display: flex;
     flex-direction: column;
-    height: 74.7vh;
+    height: 80.7vh;
     width: 50%;
     margin-top: 10px;
     margin-left: 10px;
@@ -5021,18 +5000,101 @@ span.civilian-tag-reports-input[contenteditable]:empty::before {
     border: 2px solid var(--color-3);
     display: flex;
     flex-direction: column;
-    height: 74.7vh;
-    width: 100%;
+    height: 80.7vh;
+    width: 66%;
     margin-top: 10px;
     margin-left: 10px;
     margin-right: 10px;
     overflow: auto;
 }
 
-.stafflogs-container > p {
+.stafflogs-box {
+    display: flex;
+    flex-direction: column;
+    height: 80.7vh;
+    width: 100%;
+    margin-top: 2px;
+    margin-left: 1px;
+    margin-right: 1px;
+    overflow: auto;
+}
+
+.stafflogs-box > p {
     color: white;
     font-size: 1.3vh;
     padding-left: 1vh;
+}
+
+.stafflogs-box-title {
+    align-self: center;
+    background-color: var(--color-4);
+    color: white;
+    font-size: 18px;
+    font-weight: bolder;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    text-align: center;
+    margin: auto;
+    margin-top: 10px;
+    margin-bottom: 0px;
+    margin-left: 10px;
+    margin-right: 10px;
+    width: 97.5%;
+    height: 25px;
+    align-items: center;
+    user-select: none;
+}
+
+.leaderboard-container {
+    background-color: var(--color-1);
+    border: 2px solid var(--color-3);
+    display: flex;
+    flex-direction: column;
+    height: 80.7vh;
+    width: 33%;
+    margin-top: 10px;
+    margin-left: 4px;
+    margin-right: 10px;
+    overflow: auto;
+}
+
+.leaderboard-box {
+    display: flex;
+    flex-direction: column;
+    height: 80.7vh;
+    width: 100%;
+    margin-top: 2px;
+    margin-left: 1px;
+    margin-right: 1px;
+    overflow: auto;
+}
+
+.leaderboard-box-test {
+    margin: 0; 
+    padding-top:0.8vh;
+    color: white;
+    font-size: 1.3vh;
+    padding-left: 1vh;
+}
+
+.leaderboard-title {
+    align-self: center;
+    background-color: var(--color-4);
+    color: white;
+    font-size: 18px;
+    font-weight: bolder;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    text-align: center;
+    margin: auto;
+    margin-top: 10px;
+    margin-bottom: 0px;
+    margin-left: 10px;
+    margin-right: 10px;
+    width: 95.5%;
+    height: 25px;
+    align-items: center;
+    user-select: none;
 }
 
 /* Vehicle Colors :( so long lol */
@@ -5134,7 +5196,19 @@ span.civilian-tag-reports-input[contenteditable]:empty::before {
     background-color: #950909;
 }
 
+.incidents-delete:hover {
+    background-color: #950909;
+}
+
 .bolo-delete:hover {
+    background-color: #950909;
+}
+
+.weapons-delete:hover {
+    background-color: #950909;
+}
+
+.reports-delete:hover {
     background-color: #950909;
 }
 
@@ -5985,7 +6059,7 @@ span.civilian-tag-reports-input[contenteditable]:empty::before {
     border: 2px solid var(--color-3);
     display: flex;
     flex-direction: column;
-    height: 74.7vh;
+    height: 80.7vh;
     width: 100%;
     margin-top: 10px;
     margin-left: 10px;
@@ -6033,7 +6107,7 @@ span.civilian-tag-reports-input[contenteditable]:empty::before {
     border: 2px solid var(--color-3);
     display: flex;
     flex-direction: column;
-    height: 74.7vh;
+    height: 80.7vh;
     width: 50%;
     margin-top: 10px;
     margin-left: 10px;
@@ -6104,7 +6178,7 @@ span.civilian-tag-reports-input[contenteditable]:empty::before {
     border: 2px solid var(--color-3);
     display: flex;
     flex-direction: column;
-    height: 74.7vh;
+    height: 80.7vh;
     width: 50%;
     margin-top: 10px;
     margin-left: 10px;
@@ -6546,7 +6620,7 @@ input[type="range"].vehicle-info-points-input::-moz-range-track {
     border: 2px solid var(--color-3);
     display: flex;
     flex-direction: column;
-    height: 74.7vh;
+    height: 80.7vh;
     width: 30%;
     margin-top: 10px;
     margin-left: 10px;
@@ -6606,7 +6680,7 @@ input[type="range"].vehicle-info-points-input::-moz-range-track {
     border: 2px solid var(--color-3);
     display: flex;
     flex-direction: column;
-    height: 74.7vh;
+    height: 80.7vh;
     width: 70%;
     margin-top: 10px;
     margin-left: 10px;
@@ -6657,9 +6731,9 @@ input[type="range"].vehicle-info-points-input::-moz-range-track {
     border: 2px solid var(--color-3);
     position: absolute;
     width: 58%;
-    height: 86%;
+    height: 88.5%;
     left: 40.6%;
-    top: 10.5%;
+    top: 8%;
     margin-bottom: 15px;
 }
 
