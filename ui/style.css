@@ -5882,7 +5882,7 @@ span.tag-reports-input[contenteditable]:empty::before {
     width: 92.5%;
     margin-top: 10px;
     margin-bottom: 10px;
-    outline: solid 3px #1B3047;
+    outline: solid 3px var(--color-4);
     margin-left: 27px;
     min-height: 21.5vh;
     max-height: 21.5vh;
@@ -5895,7 +5895,7 @@ span.tag-reports-input[contenteditable]:empty::before {
 }
 
 .respond-calls-input:focus {
-    outline: solid 3px #1B3047;
+    outline: solid 3px var(--color-4);
 }
 
 .respond-calls-responses {
