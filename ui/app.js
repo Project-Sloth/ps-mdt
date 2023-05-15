@@ -774,6 +774,8 @@ $(document).ready(() => {
           <p>&nbsp;</p>
           <p><strong>🧍 Hostage:</strong> [Name Here]</p>
           <p>&nbsp;</p>
+          <p><strong>🗄️ Evidence Location:</strong> Stash # | Drawer #</p>
+          <p>&nbsp;</p>
           <p><strong>🔪 Weapons/Items Confiscated:</strong></p>
           <p><em>· [Insert List Here]</em></p>
           <p>&nbsp;</p>
