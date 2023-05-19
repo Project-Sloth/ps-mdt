@@ -430,6 +430,12 @@ RegisterNUICallback("sendToCommunityService", function(data, cb)
     end
 end)
 
+-- Handle PS Camera
+RegisterNUICallback("OpenCam", function(sentData)
+    TriggerEvent("mdt:client:exitMDT")
+    TriggerEvent("ps-camera:useCamera")
+end)
+
 -- Handle Evidence lockers
 RegisterNUICallback("OpenEvidenceLocker", function(data, cb)
     TriggerEvent("mdt:client:exitMDT")
