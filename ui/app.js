@@ -5261,6 +5261,8 @@ $(document).ready(() => {
         .find(".impound-tag")
         .removeClass("green-tag")
         .addClass("red-tag");
+    } else if (event.data.action === "PSMDTnotify") {
+       notify(event.data.type, event.data.title, event.data.text)
     }
   });
 });
