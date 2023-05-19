@@ -1309,6 +1309,10 @@ $(document).ready(() => {
     $(".incidents-evidence-container-box").fadeIn(250); // makes the container visible
     $(".close-all").css("filter", "brightness(15%)");
   });
+  
+  $("#PSCam").click(function () {
+    OpenCam()
+  })
 
   $("#incidents-upload-input").keydown(function (e) {
     if (e.keyCode === 13) {
@@ -5583,6 +5587,14 @@ function OpenEvidenceLocker(id) {
   $.post(`https://${GetParentResourceName()}/OpenEvidenceLocker`, JSON.stringify({
     id,
   }));
+}
+
+// handle Cam
+function OpenCam() {
+  $.post(
+    `https://${GetParentResourceName()}/OpenCam`,
+  );
+ 
 }
 
 function onMouseDownIncidents(e) {
