@@ -1115,3 +1115,15 @@ if Config.UseWolfknightRadar == true then
         end
     end)
 end
+
+-- Notify handler
+function PSMDTnotify(msgtype, title, message)
+    local texttype = msgtype or "info"
+    print(texttype, title, message)
+    SendNUIMessage({
+        action = "PSMDTnotify",
+        type = texttype,
+        title = title,
+        text = message,
+    })
+end
