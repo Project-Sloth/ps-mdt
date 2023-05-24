@@ -1697,24 +1697,7 @@ end)
 QBCore.Functions.CreateCallback('getWeaponInfo', function(source, cb)
     local Player = QBCore.Functions.GetPlayer(source)
     local weaponInfos = {}
-	if not Config.InventoryForWeaponsImages == "ox_inventory" then
-		for _, item in pairs(Player.PlayerData.items) do
-			if item.type == "weapon" then
-				local invImage = ("https://cfx-nui-%s/html/images/%s"):format(Config.InventoryForWeaponsImages, item.image)
-				if invImage then
-					local weaponInfo = {
-						serialnumber = item.info.serie,
-						owner = Player.PlayerData.charinfo.firstname .. " " .. Player.PlayerData.charinfo.lastname,
-						weaponmodel = QBCore.Shared.Items[item.name].label,
-						weaponurl = invImage,
-						notes = "Self Registered",
-						weapClass = "Class 1",
-					}
-					table.insert(weaponInfos, weaponInfo)
-				end
-			end
-		end
-	else -- ox inventory support
+	if Config.InventoryForWeaponsImages == "ox_inventory" then
 		local inv = exports.ox_inventory:GetInventoryItems(source)
 		for _, item in pairs(inv) do
 			if string.find(item.name, "WEAPON_") then
@@ -1732,6 +1715,23 @@ QBCore.Functions.CreateCallback('getWeaponInfo', function(source, cb)
 				end
 			end
 		end
+	else -- qb/lj
+		for _, item in pairs(Player.PlayerData.items) do
+			if item.type == "weapon" then
+				local invImage = ("https://cfx-nui-%s/html/images/%s"):format(Config.InventoryForWeaponsImages, item.image)
+				if invImage then
+					local weaponInfo = {
+						serialnumber = item.info.serie,
+						owner = Player.PlayerData.charinfo.firstname .. " " .. Player.PlayerData.charinfo.lastname,
+						weaponmodel = QBCore.Shared.Items[item.name].label,
+						weaponurl = invImage,
+						notes = "Self Registered",
+						weapClass = "Class 1",
+					}
+					table.insert(weaponInfos, weaponInfo)
+				end
+			end
+		end	
 	end
     cb(weaponInfos)
 end)
