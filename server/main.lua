@@ -1760,7 +1760,8 @@ local function giveCitationItem(src, citizenId, fine, incidentId)
 		officer = OfficerFullName,
 	}
 	Player.Functions.AddItem('mdtcitation', 1, false, info)
-	TriggerClientEvent('QBCore:Notify', src, PlayerName.." received a citation!")
+	TriggerClientEvent('QBCore:Notify', src, PlayerName.." (" ..citizenId.. ") received a citation!")
+	if Config.QBManagementUse then exports['qb-management']:AddMoney(Officer.PlayerData.job.name, fine) end
 	TriggerClientEvent('inventory:client:ItemBox', Player.PlayerData.source, QBCore.Shared.Items['mdtcitation'], "add")
 	TriggerEvent('mdt:server:AddLog', "A Fine was writen by "..OfficerFullName.." and was sent to "..PlayerName..", the Amount was $".. fine ..". (ID: "..incidentId.. ")")
 end
