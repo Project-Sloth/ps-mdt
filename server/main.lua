@@ -1825,8 +1825,11 @@ function sendToDiscord(color, name, message, footer)
 				},
 			}
 		}
-	
-		PerformHttpRequest(Config.ClockinWebhook, function(err, text, headers) end, 'POST', json.encode({username = name, embeds = embed}), { ['Content-Type'] = 'application/json' })
+		for k, v in pairs(Config.ClockinWebhook) do
+			if v ~= '' then
+				PerformHttpRequest(v, function(err, text, headers) end, 'POST', json.encode({username = k, embeds = embed}), { ['Content-Type'] = 'application/json' })
+			end
+		end
 	end
 end
 
