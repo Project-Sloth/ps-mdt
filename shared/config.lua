@@ -12,7 +12,17 @@ Config.MugShotWebhook = ''
 
 -- Clock-in notifications for duty. Add a Discord webhook.
 -- Command /mdtleaderboard, will display top players per clock-in hours.
-Config.ClockinWebhook = ''
+Config.ClockinWebhook = {
+    ['police'] = '',
+    ['ambulance'] = '',
+    ['bcso'] = '',
+    ['doj'] = '',
+    ['sast'] = '',
+    ['sasp'] = '',
+    ['doc'] = '',
+    ['lssd'] = '',
+    ['sapr'] = '',
+}
 
 -- If set to true = Fine gets automatically removed from bank automatically charging the player.
 -- If set to false = The fine gets sent as an Invoice to their phone and it us to the player to pay for it, can remain unpaid and ignored.
