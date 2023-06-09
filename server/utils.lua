@@ -2,7 +2,7 @@ local QBCore = exports['qb-core']:GetCoreObject()
 
 function GetPlayerData(source)
 	local Player = QBCore.Functions.GetPlayer(source)
-	if Player == nil then return end -- player not loaded in correctly
+	if Player == nil then return end -- Player not loaded in correctly
 	return Player.PlayerData
 end
 
