@@ -87,7 +87,7 @@ end)
 AddEventHandler('playerDropped', function(reason)
     local src = source
     local PlayerData = GetPlayerData(src)
-	if PlayerData == nil then return end -- player not loaded in correctly and dropped early
+	if PlayerData == nil then return end -- Player not loaded in correctly and dropped early
 
     local time = os.date("%Y-%m-%d %H:%M:%S")
     local job = PlayerData.job.name
