@@ -342,7 +342,15 @@ QBCore.Functions.CreateCallback('mdt:server:GetProfileData', function(source, cb
 	local apartmentData = GetPlayerApartment(target.citizenid)
 
 	if Config.UsingDefaultQBApartments and apartmentData then
-		apartmentData = apartmentData[1].label .. ' (' ..apartmentData[1].name..')'
+		if apartmentData[1] then
+			apartmentData = apartmentData[1].label .. ' (' ..apartmentData[1].name..')'
+		else
+			TriggerClientEvent("QBCore:Notify", src, 'The citizen does not have an apartment.', 'error')
+			print('The citizen does not have an apartment. Set Config.UsingDefaultQBApartments to false.')
+		end
+	else
+		TriggerClientEvent("QBCore:Notify", src, 'The citizen does not have an apartment.', 'error')
+		print('The citizen does not have an apartment. Set Config.UsingDefaultQBApartments to false.')
 	end
 
 	local person = {
