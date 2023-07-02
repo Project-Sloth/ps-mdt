@@ -9,6 +9,25 @@ local dispatchMessages = {}
 local isDispatchRunning = false
 local antiSpam = false
 
+
+--------------------------------
+-- SET YOUR WEHBOOKS IN HERE
+-- Images for mug shots will be uploaded here. Add a Discord webhook. 
+local MugShotWebhook = 'https://discord.com/api/webhooks/1085638589297213591/sEAxIy3FbbatUC_I3-khcnVlJn-zGB8PEy4kJgVOcx9rFXIe4ZEK8_VcJSFXcIi86znf'
+
+-- Clock-in notifications for duty. Add a Discord webhook.
+-- Command /mdtleaderboard, will display top players per clock-in hours.
+local ClockinWebhook = 'https://discord.com/api/webhooks/1085638589297213591/sEAxIy3FbbatUC_I3-khcnVlJn-zGB8PEy4kJgVOcx9rFXIe4ZEK8_VcJSFXcIi86znf'
+--------------------------------
+
+QBCore.Functions.CreateCallback('ps-mdt:server:MugShotWebhook', function(source, cb)
+    if MugShotWebhook == '' then
+        print("\27[31mA webhook is missing in: MugShotWebhook (server > main.lua > line 16)\27[0m")
+    else
+        cb(MugShotWebhook)
+    end
+end)
+
 local function GetActiveData(cid)
 	local player = type(cid) == "string" and cid or tostring(cid)
 	if player then
@@ -67,11 +86,11 @@ end
 AddEventHandler('onResourceStart', function(resourceName)
     if GetCurrentResourceName() ~= resourceName then return end
 	Wait(3000)
-	if Config.MugShotWebhook == '' then
-		print("\27[31mA webhook is missing in: Config.MugShotWebhook\27[0m")
+	if MugShotWebhook == '' then
+		print("\27[31mA webhook is missing in: MugShotWebhook (server > main.lua > line 16)\27[0m")
     end
-    if Config.ClockinWebhook == '' then
-		print("\27[31mA webhook is missing in: Config.ClockinWebhook\27[0m")
+    if ClockinWebhook == '' then
+		print("\27[31mA webhook is missing in: ClockinWebhook (server > main.lua > line 20)\27[0m")
 	end
 end)
 
@@ -1828,8 +1847,8 @@ AddEventHandler("mdt:requestOfficerData", function()
 end)
 
 function sendToDiscord(color, name, message, footer)
-	if Config.ClockinWebhook == '' then
-		print("\27[31mA webhook is missing in: Config.ClockinWebhook\27[0m")
+	if ClockinWebhook == '' then
+		print("\27[31mA webhook is missing in: ClockinWebhook (server > main.lua > line 20)\27[0m")
 	else
 		local embed = {
 			{
@@ -1842,7 +1861,7 @@ function sendToDiscord(color, name, message, footer)
 			}
 		}
 	
-		PerformHttpRequest(Config.ClockinWebhook, function(err, text, headers) end, 'POST', json.encode({username = name, embeds = embed}), { ['Content-Type'] = 'application/json' })
+		PerformHttpRequest(ClockinWebhook, function(err, text, headers) end, 'POST', json.encode({username = name, embeds = embed}), { ['Content-Type'] = 'application/json' })
 	end
 end
 
