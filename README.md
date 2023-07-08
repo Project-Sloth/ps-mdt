@@ -45,10 +45,10 @@ Config.UseCQCMugshot = true
 -- Front, Back Side. Use 4 for both sides, we recommend leaving at 1 for default.
 Config.MugPhotos = 1
 ```
-* Create a Discord Webhook and paste it here: (Line 11 in Config.lua)
+* Create a Discord Webhook and add it [here](https://github.com/Project-Sloth/ps-mdt/blob/c10ea056705dd7b04894716266cd387b00109aff/server/main.lua#L16C26-L16C26)
 ```lua
 -- Images for mug shots will be uploaded here. Add a Discord webhook. 
-Config.MugShotWebhook = ''
+local MugShotWebhook = ''
 ```
 # Fine & Citation via item
 
@@ -74,9 +74,9 @@ Config.MugShotWebhook = ''
 
 # Clock In/Out & Leaderboard
 * Triggers when officers Toggle Duty from inside the mdt.
-* Create a Discord Webhook and paste it on your config.lua
+* Create a Discord Webhook and add it here [here](https://github.com/Project-Sloth/ps-mdt/blob/c10ea056705dd7b04894716266cd387b00109aff/server/main.lua#L20)
 ```
-Config.ClockinWebhook
+local ClockinWebhook = ''
 ```
 ![image](https://user-images.githubusercontent.com/82112471/228130546-6366ed1e-f5a8-428c-8680-0c384d2cff52.png)
 ![image](https://user-images.githubusercontent.com/82112471/228330602-1a914461-5d61-4e12-80d4-154c8da3dee1.png)
