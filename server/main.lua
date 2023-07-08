@@ -341,17 +341,34 @@ QBCore.Functions.CreateCallback('mdt:server:GetProfileData', function(source, cb
 
 	local apartmentData = GetPlayerApartment(target.citizenid)
 
-	if Config.UsingDefaultQBApartments and apartmentData then
-		if apartmentData[1] then
-			apartmentData = apartmentData[1].label .. ' (' ..apartmentData[1].name..')'
-		else
-			TriggerClientEvent("QBCore:Notify", src, 'The citizen does not have an apartment.', 'error')
-			print('The citizen does not have an apartment. Set Config.UsingDefaultQBApartments to false.')
-		end
-	else
-		TriggerClientEvent("QBCore:Notify", src, 'The citizen does not have an apartment.', 'error')
-		print('The citizen does not have an apartment. Set Config.UsingDefaultQBApartments to false.')
-	end
+    if Config.UsingPsHousing and not Config.UsingDefaultQBApartments then
+        local propertyData = GetPlayerPropertiesByCitizenId(target.citizenid)
+
+        if propertyData and next(propertyData) then
+            if propertyData[1] then
+                apartmentData = propertyData[1].apartment .. ' Apt # (' .. propertyData[1].property_id .. ')'
+            else
+                TriggerClientEvent("QBCore:Notify", src, 'The citizen does not have a property.', 'error')
+                print('The citizen does not have a property. Set Config.UsingPsHousing to false.')
+            end
+        else
+            TriggerClientEvent("QBCore:Notify", src, 'The citizen does not have a property.', 'error')
+            print('The citizen does not have a property. Set Config.UsingPsHousing to false.')
+        end
+    elseif Config.UsingDefaultQBApartments then
+        apartmentData = GetPlayerApartment(target.citizenid)
+        if apartmentData then
+            if apartmentData[1] then
+                apartmentData = apartmentData[1].label .. ' (' ..apartmentData[1].name..')'
+            else
+                TriggerClientEvent("QBCore:Notify", src, 'The citizen does not have an apartment.', 'error')
+                print('The citizen does not have an apartment. Set Config.UsingDefaultQBApartments to false.')
+            end
+        else
+            TriggerClientEvent("QBCore:Notify", src, 'The citizen does not have an apartment.', 'error')
+            print('The citizen does not have an apartment. Set Config.UsingDefaultQBApartments to false.')
+        end
+    end
 
 	local person = {
 		cid = target.citizenid,
@@ -1868,4 +1885,20 @@ function format_time(time)
         formattedTime = formattedTime .. string.format("%d second%s", seconds, seconds == 1 and "" or "s")
     end
     return formattedTime
+end
+
+function GetPlayerPropertiesByCitizenId(citizenid)
+    local properties = {}
+
+    local result = MySQL.Sync.fetchAll("SELECT * FROM properties WHERE owner_citizenid = @citizenid", {
+        ['@citizenid'] = citizenid
+    })
+
+    if result and #result > 0 then
+        for i = 1, #result do
+            table.insert(properties, result[i])
+        end
+    end
+
+    return properties
 end
