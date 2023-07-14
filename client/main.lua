@@ -63,6 +63,9 @@ end)
 
 RegisterNetEvent('QBCore:Player:SetPlayerData', function(val)
     PlayerData = val
+    if GetJobType(PlayerData.job.name) ~= nil then
+        TriggerServerEvent("mdt:server:doRefresh")
+    end
 end)
 
 AddEventHandler('onResourceStart', function(resourceName)
@@ -265,9 +268,30 @@ RegisterNetEvent('mdt:client:open', function(bulletin, activeUnits, calls, cid)
     TriggerEvent("mdt:client:dashboardWarrants")
 end)
 
+RegisterNetEvent('mdt:client:doRefresh', function(bulletin, activeUnits, calls, cid)
+    local x, y, z = table.unpack(GetEntityCoords(PlayerPedId()))
+
+    local currentStreetHash, intersectStreetHash = GetStreetNameAtCoord(x, y, z)
+    local currentStreetName = GetStreetNameFromHashKey(currentStreetHash)
+    local intersectStreetName = GetStreetNameFromHashKey(intersectStreetHash)
+    local zone = tostring(GetNameOfZone(x, y, z))
+    local area = GetLabelText(zone)
+    local playerStreetsLocation = area
+
+    if not zone then zone = "UNKNOWN" end;
+
+    if intersectStreetName ~= nil and intersectStreetName ~= "" then playerStreetsLocation = currentStreetName .. ", " .. intersectStreetName .. ", " .. area
+    elseif currentStreetName ~= nil and currentStreetName ~= "" then playerStreetsLocation = currentStreetName .. ", " .. area
+    else playerStreetsLocation = area end
+
+
+    SendNUIMessage({ type = "data", activeUnits = activeUnits, citizenid = cid, ondutyonly = Config.OnlyShowOnDuty, name = "Welcome, " ..PlayerData.job.grade.name..' '..PlayerData.charinfo.lastname:sub(1,1):upper()..PlayerData.charinfo.lastname:sub(2), location = playerStreetsLocation, fullname = PlayerData.charinfo.firstname..' '..PlayerData.charinfo.lastname, bulletin = bulletin })
+end)
+
 RegisterNetEvent('mdt:client:exitMDT', function()
     EnableGUI(false)
 end)
+
 
 --====================================================================================
 ------------------------------------------
