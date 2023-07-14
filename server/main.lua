@@ -213,6 +213,28 @@ RegisterNetEvent("ps-mdt:server:ClockSystem", function()
     end
 end)
 
+RegisterNetEvent('mdt:server:doRefresh', function()
+	local src = source
+	local PlayerData = GetPlayerData(src)
+	if not PermCheck(src, PlayerData) then return end
+	local Radio = Player(src).state.radioChannel or 0
+
+	activeUnits[PlayerData.citizenid] = {
+		cid = PlayerData.citizenid,
+		callSign = PlayerData.metadata['callsign'],
+		firstName = PlayerData.charinfo.firstname:sub(1,1):upper()..PlayerData.charinfo.firstname:sub(2),
+		lastName = PlayerData.charinfo.lastname:sub(1,1):upper()..PlayerData.charinfo.lastname:sub(2),
+		radio = Radio,
+		unitType = PlayerData.job.name,
+		duty = PlayerData.job.onduty
+	}
+
+	local JobType = GetJobType(PlayerData.job.name)
+	local bulletin = GetBulletins(JobType)
+	local calls = exports['ps-dispatch']:GetDispatchCalls()
+	TriggerClientEvent('mdt:client:doRefresh', src, bulletin, activeUnits, calls, PlayerData.citizenid)
+end)
+
 RegisterNetEvent('mdt:server:openMDT', function()
 	local src = source
 	local PlayerData = GetPlayerData(src)
