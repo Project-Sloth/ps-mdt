@@ -5622,7 +5622,7 @@ function searchProfilesResults(result) {
     let convictions = "red-tag";
   
     let licences = "";
-    let licArr = Object.entries(metadata.licences);
+    let licArr = Object.entries(value.licences);
 
     if (licArr.length == 0 || licArr.length == undefined) {
       var licenseTypes = ['business', 'pilot', 'weapon', 'driver'];
