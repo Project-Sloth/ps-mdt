@@ -360,20 +360,26 @@ QBCore.Functions.CreateCallback('mdt:server:GetProfileData', function(source, cb
 
 	local apartmentData = GetPlayerApartment(target.citizenid)
 
-    if Config.UsingPsHousing and not Config.UsingDefaultQBApartments then
-        local propertyData = GetPlayerPropertiesByCitizenId(target.citizenid)
-
-        if propertyData and next(propertyData) then
-            if propertyData[1] then
-                apartmentData = propertyData[1].apartment .. ' Apt # (' .. propertyData[1].property_id .. ')'
-            else
-                TriggerClientEvent("QBCore:Notify", src, 'The citizen does not have a property.', 'error')
-                print('The citizen does not have a property. Set Config.UsingPsHousing to false.')
-            end
-        else
-            TriggerClientEvent("QBCore:Notify", src, 'The citizen does not have a property.', 'error')
-            print('The citizen does not have a property. Set Config.UsingPsHousing to false.')
-        end
+	if Config.UsingPsHousing and not Config.UsingDefaultQBApartments then
+		local propertyData = GetPlayerPropertiesByCitizenId(target.citizenid)
+	
+		if propertyData and next(propertyData) then
+			local apartmentList = {}
+			for i, property in ipairs(propertyData) do
+				if property.apartment then
+					table.insert(apartmentList, property.apartment .. ' Apt # (' .. property.property_id .. ')')
+				end
+			end
+			if #apartmentList > 0 then
+				apartmentData = table.concat(apartmentList, ', ')
+			else
+				TriggerClientEvent("QBCore:Notify", src, 'The citizen does not have an apartment.', 'error')
+				print('The citizen does not have an apartment. Set Config.UsingPsHousing to false.')
+			end
+		else
+			TriggerClientEvent("QBCore:Notify", src, 'The citizen does not have a property.', 'error')
+			print('The citizen does not have a property. Set Config.UsingPsHousing to false.')
+		end	
     elseif Config.UsingDefaultQBApartments then
         apartmentData = GetPlayerApartment(target.citizenid)
         if apartmentData then
