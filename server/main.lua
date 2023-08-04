@@ -464,24 +464,20 @@ QBCore.Functions.CreateCallback('mdt:server:GetProfileData', function(source, cb
     		local Coords = {}
     		local Houses = {}
     		for k, v in pairs(propertyData) do
-    		    Coords[#Coords + 1] = {
-    		        coords = json.decode(v["door_data"]),
-    		        street = v["street"],
-    		        propertyid = v["property_id"],
-    		        apartmentLocation = v["apartment"]
-    		    }
+				if not v.apartment then
+    		    	Coords[#Coords + 1] = {
+    		    	    coords = json.decode(v["door_data"]),
+    		    	    street = v["street"],
+    		    	    propertyid = v["property_id"],
+    		    	}
+				end
     		end
     		for index = 1, #Coords do
     		    local coordsLocation, label
+    		    local coords = Coords[index]["coords"]
 
-    		    if Coords[index].apartmentLocation then
-    		        coordsLocation = tostring(Coords[index].apartmentLocation)
-    		        label = tostring(Coords[index].propertyid .. " " .. Coords[index].apartmentLocation)
-    		    else
-    		        local coords = Coords[index]["coords"]
-    		        coordsLocation = tostring(coords.x .. "," .. coords.y .. "," .. coords.z)
-    		        label = tostring(Coords[index].propertyid .. " " .. Coords[index].street)
-    		    end
+    		    coordsLocation = tostring(coords.x .. "," .. coords.y .. "," .. coords.z)
+    		    label = tostring(Coords[index].propertyid .. " " .. Coords[index].street)
 			
     		    Houses[#Houses + 1] = {
     		        label = label,
