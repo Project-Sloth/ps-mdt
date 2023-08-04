@@ -343,6 +343,7 @@ QBCore.Functions.CreateCallback('mdt:server:GetProfileData', function(source, cb
 	local target = GetPlayerDataById(sentId)
 	local JobName = PlayerData.job.name
 	local propertyData = GetPlayerPropertiesByCitizenId(target.citizenid)
+	local apartmentData
 
 	if not target or not next(target) then return cb({}) end
 
