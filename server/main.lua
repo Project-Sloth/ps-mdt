@@ -342,6 +342,7 @@ QBCore.Functions.CreateCallback('mdt:server:GetProfileData', function(source, cb
 	local JobType = GetJobType(PlayerData.job.name)
 	local target = GetPlayerDataById(sentId)
 	local JobName = PlayerData.job.name
+	local propertyData = GetPlayerPropertiesByCitizenId(target.citizenid)
 
 	if not target or not next(target) then return cb({}) end
 
@@ -358,11 +359,7 @@ QBCore.Functions.CreateCallback('mdt:server:GetProfileData', function(source, cb
 
 	local job, grade = UnpackJob(target.job)
 
-	local apartmentData = GetPlayerApartment(target.citizenid)
-
 	if Config.UsingPsHousing and not Config.UsingDefaultQBApartments then
-		local propertyData = GetPlayerPropertiesByCitizenId(target.citizenid)
-	
 		if propertyData and next(propertyData) then
 			local apartmentList = {}
 			for i, property in ipairs(propertyData) do
@@ -461,23 +458,54 @@ QBCore.Functions.CreateCallback('mdt:server:GetProfileData', function(source, cb
 		if vehicles then
 			person.vehicles = vehicles
 		end
-		local Coords = {}
-		local Houses = {}
-		local properties= GetPlayerProperties(person.cid)
-		for k, v in pairs(properties) do
-			Coords[#Coords+1] = {
-                coords = json.decode(v["coords"]),
-            }
-		end
-		for index = 1, #Coords, 1 do
-			Houses[#Houses+1] = {
-                label = properties[index]["label"],
-                coords = tostring(Coords[index]["coords"]["enter"]["x"]..",".. Coords[index]["coords"]["enter"]["y"].. ",".. Coords[index]["coords"]["enter"]["z"]),
-            }
-        end
-			person.properties = Houses
-	end
 
+		if Config.UsingPsHousing and not Config.UsingDefaultQBApartments then
+    		local Coords = {}
+    		local Houses = {}
+    		for k, v in pairs(propertyData) do
+    		    Coords[#Coords + 1] = {
+    		        coords = json.decode(v["door_data"]),
+    		        street = v["street"],
+    		        propertyid = v["property_id"],
+    		        apartmentLocation = v["apartment"]
+    		    }
+    		end
+    		for index = 1, #Coords do
+    		    local coordsLocation, label
+
+    		    if Coords[index].apartmentLocation then
+    		        coordsLocation = tostring(Coords[index].apartmentLocation)
+    		        label = tostring(Coords[index].propertyid .. " " .. Coords[index].apartmentLocation)
+    		    else
+    		        local coords = Coords[index]["coords"]
+    		        coordsLocation = tostring(coords.x .. "," .. coords.y .. "," .. coords.z)
+    		        label = tostring(Coords[index].propertyid .. " " .. Coords[index].street)
+    		    end
+			
+    		    Houses[#Houses + 1] = {
+    		        label = label,
+    		        coords = coordsLocation,
+    		    }
+    		end
+			person.properties = Houses
+		else
+			local Coords = {}
+			local Houses = {}
+			local properties= GetPlayerProperties(person.cid)
+			for k, v in pairs(properties) do
+				Coords[#Coords+1] = {
+					coords = json.decode(v["coords"]),
+				}
+			end
+			for index = 1, #Coords, 1 do
+				Houses[#Houses+1] = {
+					label = properties[index]["label"],
+					coords = tostring(Coords[index]["coords"]["enter"]["x"]..",".. Coords[index]["coords"]["enter"]["y"].. ",".. Coords[index]["coords"]["enter"]["z"]),
+				}
+			end
+			person.properties = Houses
+		end
+	end
 	local mdtData = GetPersonInformation(sentId, JobType)
 	if mdtData then
 		person.mdtinfo = mdtData.information
