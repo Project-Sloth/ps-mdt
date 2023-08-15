@@ -18,6 +18,10 @@ local MugShotWebhook = ''
 -- Clock-in notifications for duty. Add a Discord webhook.
 -- Command /mdtleaderboard, will display top players per clock-in hours.
 local ClockinWebhook = ''
+
+-- Incident and Incident editting. Add a Discord webhook.
+-- Incident Author, Title, and Report will display in webhook post.
+local IncidentWebhook = ''
 --------------------------------
 
 QBCore.Functions.CreateCallback('ps-mdt:server:MugShotWebhook', function(source, cb)
@@ -1339,6 +1343,27 @@ RegisterNetEvent('mdt:server:saveIncident', function(id, title, information, tag
 					jobtype = 'police',
 				}, function(infoResult)
 					if infoResult then
+						MySQL.Async.fetchAll('SELECT `author`, `title`, `details` FROM `mdt_incidents` WHERE `id` = @id', { ['@id'] = infoResult }, function(result)
+							-- Check if the query returned any result
+							if result and #result > 0 then
+							  -- Fetch the author, title, and details from the result
+							  local author = result[1].author
+							  local title = result[1].title
+							  local details = result[1].details
+							
+							  details = details:gsub("<[^>]+>", ""):gsub("&nbsp;", "")
+
+							  -- Construct the webhook message
+							  local message = "Author: " .. author .. "\n"
+							  message = message .. "Title: " .. title .. "\n"
+							  message = message .. "Details: " .. details
+			
+							  -- Send the webhook using the sendToDiscord function
+							  sendIncidentToDiscord(3989503, "MDT Incident Report", message, "ps-mdt | Made by Project Sloth")
+							else
+							  print('No incident found in the mdt_incidents table with id: ' .. infoResult)
+							end
+						end)
 						for i=1, #associated do
 							MySQL.insert('INSERT INTO `mdt_convictions` (`cid`, `linkedincident`, `warrant`, `guilty`, `processed`, `associated`, `charges`, `fine`, `sentence`, `recfine`, `recsentence`, `time`) VALUES (:cid, :linkedincident, :warrant, :guilty, :processed, :associated, :charges, :fine, :sentence, :recfine, :recsentence, :time)', {
 								cid = associated[i]['Cid'],
@@ -1361,17 +1386,41 @@ RegisterNetEvent('mdt:server:saveIncident', function(id, title, information, tag
 				end)
 			elseif id > 0 then
 				MySQL.update("UPDATE mdt_incidents SET title=:title, details=:details, civsinvolved=:civsinvolved, tags=:tags, officersinvolved=:officersinvolved, evidence=:evidence WHERE id=:id", {
-					title = title,
-					details = information,
-					tags = json.encode(tags),
-					officersinvolved = json.encode(officers),
-					civsinvolved = json.encode(civilians),
-					evidence = json.encode(evidence),
-					id = id
-				})
-				for i=1, #associated do
-					TriggerEvent('mdt:server:handleExistingConvictions', associated[i], id, time)
-				end
+				  title = title,
+				  details = information,
+				  tags = json.encode(tags),
+				  officersinvolved = json.encode(officers),
+				  civsinvolved = json.encode(civilians),
+				  evidence = json.encode(evidence),
+				  id = id
+				}, function(rowsChanged)
+				  if rowsChanged > 0 then
+					MySQL.Async.fetchAll('SELECT `author`, `title`, `details` FROM `mdt_incidents` WHERE `id` = @id', { ['@id'] = id }, function(result)
+					  -- Check if the query returned any result
+					  if result and #result > 0 then
+						-- Fetch the author, title, and details from the result
+						local author = result[1].author
+						local title = result[1].title
+						local details = result[1].details
+
+						details = details:gsub("<[^>]+>", ""):gsub("&nbsp;", "")
+		
+						-- Construct the webhook message
+						local message = "Author: " .. author .. "\n"
+						message = message .. "Title: " .. title .. "\n"
+						message = message .. "Details: " .. details
+		
+						-- Send the webhook using the sendToDiscord function
+						sendIncidentToDiscord(16711680, "MDT Incident Report has been Updated", message, "ps-mdt | Made by Project Sloth")
+					  else
+						print('No incident found in the mdt_incidents table with id: ' .. id)
+					  end
+					end)
+					for i=1, #associated do
+					  TriggerEvent('mdt:server:handleExistingConvictions', associated[i], id, time)
+					end
+				  end
+				end)
 			end
 		end
 	end
@@ -1929,6 +1978,25 @@ function sendToDiscord(color, name, message, footer)
 		}
 	
 		PerformHttpRequest(ClockinWebhook, function(err, text, headers) end, 'POST', json.encode({username = name, embeds = embed}), { ['Content-Type'] = 'application/json' })
+	end
+end
+
+function sendIncidentToDiscord(color, name, message, footer)
+	if ClockinWebhook == '' then
+		print("\27[31mA webhook is missing in: ClockinWebhook (server > main.lua > line 20)\27[0m")
+	else
+		local embed = {
+			{
+				color = color,
+				title = "**".. name .."**",
+				description = message,
+				footer = {
+					text = footer,
+				},
+			}
+		}
+	
+		PerformHttpRequest(IncidentWebhook, function(err, text, headers) end, 'POST', json.encode({username = name, embeds = embed}), { ['Content-Type'] = 'application/json' })
 	end
 end
 
