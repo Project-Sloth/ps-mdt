@@ -4600,7 +4600,6 @@ window.addEventListener("message", function (event) {
       const table = eventData.data;
       $(".active-calls-list").empty();
       $.each(table, function (index, value) {
-        console.log(JSON.stringify(value))
         if (value && value?.job?.includes(playerJob) || value?.jobs.includes(PlayerJobType)) {
 
           const prio = value["priority"];
