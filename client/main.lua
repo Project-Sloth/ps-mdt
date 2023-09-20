@@ -866,42 +866,42 @@ RegisterNetEvent('dispatch:clNotify', function(sNotificationData, sNotificationI
 end)
 
 RegisterNUICallback("setWaypoint", function(data, cb)
-    TriggerServerEvent('mdt:server:setWaypoint', data.callid)
+    TriggerServerEvent('mdt:server:setWaypoint', data.callid or data.id)
     cb(true)
 end)
 
 RegisterNUICallback("callDetach", function(data, cb)
-    TriggerServerEvent('mdt:server:callDetach', data.callid)
+    TriggerServerEvent('mdt:server:callDetach', data.callid or data.id)
     cb(true)
 end)
 
 RegisterNUICallback("removeCallBlip", function(data, cb)
-    TriggerEvent('ps-dispatch:client:removeCallBlip', data.callid)
+    TriggerEvent('ps-dispatch:client:removeCallBlip', data.callid or data.id)
     cb(true)
 end)
 
 RegisterNUICallback("callAttach", function(data, cb)
-    TriggerServerEvent('mdt:server:callAttach', data.callid)
+    TriggerServerEvent('mdt:server:callAttach', data.callid or data.id)
     cb(true)
 end)
 
 RegisterNUICallback("attachedUnits", function(data, cb)
-    TriggerServerEvent('mdt:server:attachedUnits', data.callid)
+    TriggerServerEvent('mdt:server:attachedUnits', data.callid or data.id)
     cb(true)
 end)
 
 RegisterNUICallback("callDispatchDetach", function(data, cb)
-    TriggerServerEvent('mdt:server:callDispatchDetach', data.callid, data.cid)
+    TriggerServerEvent('mdt:server:callDispatchDetach', data.callid or data.id, data.cid)
     cb(true)
 end)
 
 RegisterNUICallback("setDispatchWaypoint", function(data, cb)
-    TriggerServerEvent('mdt:server:setDispatchWaypoint', data.callid, data.cid)
+    TriggerServerEvent('mdt:server:setDispatchWaypoint', data.callid or data.id, data.cid)
     cb(true)
 end)
 
 RegisterNUICallback("callDragAttach", function(data, cb)
-    TriggerServerEvent('mdt:server:callDragAttach', data.callid, data.cid)
+    TriggerServerEvent('mdt:server:callDragAttach', data.callid or data.id, data.cid)
     cb(true)
 end)
 
@@ -938,7 +938,7 @@ RegisterNUICallback("dispatchNotif", function(data, cb)
 end)
 
 RegisterNUICallback("getCallResponses", function(data, cb)
-    TriggerServerEvent('mdt:server:getCallResponses', data.callid)
+    TriggerServerEvent('mdt:server:getCallResponses', data.callid or data.id)
     cb(true)
 end)
 
