@@ -8,7 +8,7 @@ local impound = {}
 local dispatchMessages = {}
 local isDispatchRunning = false
 local antiSpam = false
-
+local calls = {}
 
 --------------------------------
 -- SET YOUR WEHBOOKS IN HERE
@@ -91,6 +91,12 @@ AddEventHandler('onResourceStart', function(resourceName)
     end
     if ClockinWebhook == '' then
 		print("\27[31mA webhook is missing in: ClockinWebhook (server > main.lua > line 20)\27[0m")
+	end
+	if GetResourceState('ps-dispatch') == 'started' then
+		return calls = exports['ps-dispatch']:GetDispatchCalls()
+	end
+	if GetResourceState('ps-dispatch-v2') == 'started' then
+		return calls = exports['ps-dispatch-v2']:GetDispatchCalls()
 	end
 end)
 
@@ -218,7 +224,7 @@ RegisterNetEvent('mdt:server:openMDT', function()
 	local PlayerData = GetPlayerData(src)
 	if not PermCheck(src, PlayerData) then return end
 	local Radio = Player(src).state.radioChannel or 0
-
+	calls = exports['ps-dispatch-v2']:GetDispatchCalls()
 	activeUnits[PlayerData.citizenid] = {
 		cid = PlayerData.citizenid,
 		callSign = PlayerData.metadata['callsign'],
@@ -231,7 +237,6 @@ RegisterNetEvent('mdt:server:openMDT', function()
 
 	local JobType = GetJobType(PlayerData.job.name)
 	local bulletin = GetBulletins(JobType)
-	local calls = exports['ps-dispatch']:GetDispatchCalls()
 	TriggerClientEvent('mdt:client:open', src, bulletin, activeUnits, calls, PlayerData.citizenid)
 end)
 
@@ -1160,7 +1165,6 @@ RegisterNetEvent('mdt:server:searchCalls', function(calls)
 	local Player = QBCore.Functions.GetPlayer(src)
 	local JobType = GetJobType(Player.PlayerData.job.name)
 	if JobType == 'police' then
-		local calls = exports['ps-dispatch']:GetDispatchCalls()
 		TriggerClientEvent('mdt:client:getCalls', src, calls)
 
 	end
@@ -1425,7 +1429,6 @@ RegisterNetEvent('mdt:server:setWaypoint', function(callid)
 	if JobType == 'police' or JobType == 'ambulance' then
 		if callid then
 			if isDispatchRunning then
-				local calls = exports['ps-dispatch']:GetDispatchCalls()
 				TriggerClientEvent('mdt:client:setWaypoint', src, calls[callid])
 			end
 		end
@@ -1481,7 +1484,7 @@ RegisterNetEvent('mdt:server:attachedUnits', function(callid)
 	if JobType == 'police' or JobType == 'ambulance' then
 		if callid then
 			if isDispatchRunning then
-				local calls = exports['ps-dispatch']:GetDispatchCalls()
+				
 				TriggerClientEvent('mdt:client:attachedUnits', src, calls[callid]['units'], callid)
 			end
 		end
@@ -1516,7 +1519,7 @@ RegisterNetEvent('mdt:server:setDispatchWaypoint', function(callid, cid)
 	if JobType == 'police' or JobType == 'ambulance' then
 		if callid then
 			if isDispatchRunning then
-				local calls = exports['ps-dispatch']:GetDispatchCalls()
+				
 				TriggerClientEvent('mdt:client:setWaypoint', src, calls[callid])
 			end
 		end
@@ -1593,7 +1596,7 @@ RegisterNetEvent('mdt:server:getCallResponses', function(callid)
 	local Player = QBCore.Functions.GetPlayer(src)
 	if IsPoliceOrEms(Player.PlayerData.job.name) then
 		if isDispatchRunning then
-			local calls = exports['ps-dispatch']:GetDispatchCalls()
+			
 			TriggerClientEvent('mdt:client:getCallResponses', src, calls[callid]['responses'], callid)
 		end
 	end
