@@ -93,10 +93,13 @@ AddEventHandler('onResourceStart', function(resourceName)
 		print("\27[31mA webhook is missing in: ClockinWebhook (server > main.lua > line 20)\27[0m")
 	end
 	if GetResourceState('ps-dispatch') == 'started' then
-		return calls = exports['ps-dispatch']:GetDispatchCalls()
+		local calls = exports['ps-dispatch']:GetDispatchCalls()
+		return calls
 	end
+
 	if GetResourceState('ps-dispatch-v2') == 'started' then
-		return calls = exports['ps-dispatch-v2']:GetDispatchCalls()
+		local calls = exports['ps-dispatch-v2']:GetDispatchCalls()
+		return calls
 	end
 end)
 
@@ -224,7 +227,14 @@ RegisterNetEvent('mdt:server:openMDT', function()
 	local PlayerData = GetPlayerData(src)
 	if not PermCheck(src, PlayerData) then return end
 	local Radio = Player(src).state.radioChannel or 0
-	calls = exports['ps-dispatch-v2']:GetDispatchCalls()
+		
+	if GetResourceState('ps-dispatch') == 'started' then
+		calls = exports['ps-dispatch']:GetDispatchCalls()
+	end
+	if GetResourceState('ps-dispatch-v2') == 'started' then
+		calls = exports['ps-dispatch-v2']:GetDispatchCalls()
+	end
+		
 	activeUnits[PlayerData.citizenid] = {
 		cid = PlayerData.citizenid,
 		callSign = PlayerData.metadata['callsign'],
