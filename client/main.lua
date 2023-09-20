@@ -15,7 +15,7 @@ local lastVeh = nil
 local lastPlate = nil
 
 CreateThread(function()
-    if GetResourceState('ps-dispatch') == 'started' then
+    if GetResourceState('ps-dispatch') == 'started' or GetResourceState('ps-dispatch-v2') == 'started' then
         TriggerServerEvent("ps-mdt:dispatchStatus", true)
     end
 end)
