@@ -4546,9 +4546,9 @@ window.addEventListener("message", function (event) {
         $.each(table, function (index, value) {
           $(".dispatch-attached-units-holder").prepend(
             `<div class="dispatch-attached-unit-item" data-id="${value.cid}">
-                        <div class="unit-job active-info-job-${value.job}">${value.job}</div>
-                        <div class="unit-name">(${value.callsign}) ${value.fullname}</div>
-                        <div class="unit-radio">${value.channel}</div> 
+                        <div class="unit-job active-info-job-${value.job.name}">${value.job.name.toUpperCase()}</div>
+                        <div class="unit-name">(${value.callsign || value.metadata.callsign}) ${value.fullname || value.charinfo.firstname} ${value.fullname || value.charinfo.lastname}</div>
+                        <div class="unit-radio">${value.channel || '0'}</div>
                     </div> `);
         });
         setTimeout(() => {
