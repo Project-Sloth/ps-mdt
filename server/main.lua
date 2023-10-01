@@ -1825,15 +1825,27 @@ local function giveCitationItem(src, citizenId, fine, incidentId)
 	local PlayerName = Player.PlayerData.charinfo.firstname .. ' ' .. Player.PlayerData.charinfo.lastname
 	local Officer = QBCore.Functions.GetPlayer(src)
 	local OfficerFullName = '(' .. Officer.PlayerData.metadata.callsign .. ') ' .. Officer.PlayerData.charinfo.firstname .. ' ' .. Officer.PlayerData.charinfo.lastname
-
+	local info = {}
 	local date = os.date("%Y-%m-%d %H:%M")
-	local info = {
-		citizenId = citizenId,
-		fine = "$"..fine,
-		date = date,
-		incidentId = "#"..incidentId,
-		officer = OfficerFullName,
-	}
+	if Config.InventoryForWeaponsImages == "ox_inventory" then
+		info = {
+			description = {
+				'Citizen ID: ' .. citizenId '  \n',
+				'Fine: $ ' .. fine '  \n',
+				'Date: ' .. date '  \n',
+				'Incitent ID: # ' .. incidentId '  \n',
+				'Officer: ' .. OfficerFullName
+			}
+		}
+	else
+		info = {
+			citizenId = citizenId,
+			fine = "$"..fine,
+			date = date,
+			incidentId = "#"..incidentId,
+			officer = OfficerFullName,
+		}
+	end
 	Player.Functions.AddItem('mdtcitation', 1, false, info)
 	TriggerClientEvent('QBCore:Notify', src, PlayerName.." (" ..citizenId.. ") received a citation!")
 	if Config.QBManagementUse then 
