@@ -342,7 +342,7 @@ QBCore.Functions.CreateCallback('mdt:server:GetProfileData', function(source, cb
 	local JobType = GetJobType(PlayerData.job.name)
 	local target = GetPlayerDataById(sentId)
 	local JobName = PlayerData.job.name
-	local propertyData = GetPlayerPropertiesByCitizenId(target.citizenid)
+	
 	local apartmentData
 
 	if not target or not next(target) then return cb({}) end
@@ -361,6 +361,7 @@ QBCore.Functions.CreateCallback('mdt:server:GetProfileData', function(source, cb
 	local job, grade = UnpackJob(target.job)
 
 	if Config.UsingPsHousing and not Config.UsingDefaultQBApartments then
+		local propertyData = GetPlayerPropertiesByCitizenId(target.citizenid)
 		if propertyData and next(propertyData) then
 			local apartmentList = {}
 			for i, property in ipairs(propertyData) do
@@ -463,6 +464,7 @@ QBCore.Functions.CreateCallback('mdt:server:GetProfileData', function(source, cb
 		if Config.UsingPsHousing and not Config.UsingDefaultQBApartments then
     		local Coords = {}
     		local Houses = {}
+		local propertyData = GetPlayerPropertiesByCitizenId(target.citizenid)
     		for k, v in pairs(propertyData) do
 				if not v.apartment then
     		    	Coords[#Coords + 1] = {
