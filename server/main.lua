@@ -96,11 +96,6 @@ AddEventHandler('onResourceStart', function(resourceName)
 		local calls = exports['ps-dispatch']:GetDispatchCalls()
 		return calls
 	end
-
-	if GetResourceState('ps-dispatch-v2') == 'started' then
-		local calls = exports['ps-dispatch-v2']:GetDispatchCalls()
-		return calls
-	end
 end)
 
 RegisterNetEvent("ps-mdt:server:OnPlayerUnload", function()
@@ -230,9 +225,6 @@ RegisterNetEvent('mdt:server:openMDT', function()
 		
 	if GetResourceState('ps-dispatch') == 'started' then
 		calls = exports['ps-dispatch']:GetDispatchCalls()
-	end
-	if GetResourceState('ps-dispatch-v2') == 'started' then
-		calls = exports['ps-dispatch-v2']:GetDispatchCalls()
 	end
 		
 	activeUnits[PlayerData.citizenid] = {
