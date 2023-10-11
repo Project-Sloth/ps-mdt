@@ -1938,7 +1938,7 @@ function sendToDiscord(color, name, message, footer)
 end
 
 function sendIncidentToDiscord(color, name, message, footer)
-	if ClockinWebhook == '' then
+	if IncidentWebhook == '' then
 		print("\27[31mA webhook is missing in: IncidentWebhook (server > main.lua > line 24)\27[0m")
 	else
 		local embed = {
