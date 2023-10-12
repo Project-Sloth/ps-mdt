@@ -974,8 +974,11 @@ RegisterNetEvent('mdt:client:attachedUnits', function(sentData, callid)
 end)
 
 RegisterNetEvent('mdt:client:setWaypoint', function(callInformation)
-    SetNewWaypoint(callInformation['origin']['x'], callInformation['origin']['y'])
+    if callInformation['coords'] and callInformation['coords']['x'] and callInformation['coords']['y'] then
+        SetNewWaypoint(callInformation['coords']['x'], callInformation['coords']['y'])
+    end
 end)
+
 
 RegisterNetEvent('mdt:client:callDetach', function(callid, sentData)
     local job = PlayerData.job.name
