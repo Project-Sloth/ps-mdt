@@ -3,10 +3,27 @@ Config = Config or {}
 Config.UsingPsHousing = false
 Config.UsingDefaultQBApartments = true
 Config.OnlyShowOnDuty = true
-Config.UseCQCMugshot = true
 
--- Front, Back Side. Use 4 for both sides, we recommend leaving at 1 for default.
-Config.MugPhotos = 1
+-----------------------------------------------------------------------------
+--                                DISCORD WEBHOOKS
+
+-- Support for CQC Mugshot (https://github.com/CQC-Scripting/cqc-mugshot)
+Config.UseCQCMugshot = false
+Config.MugPhotos = 1 -- Front, Back Side. Use 4 for both sides, we recommend leaving at 1 for default.
+Config.MugShotWebhook = '' -- Add a Discord webhook - Images for mug shots will be uploaded here.
+
+--Support for Clockin Webhooks
+--If set to true = Clockin notifications for duty will be posted to discord. Command /mdtleaderboard, will display top players per clock-in hours.
+Config.UseClockinWebhook = false
+Config.ClockinWebhook = '' --Add a Discord webhook for clockin notifications
+
+--Support for Incident Webhooks
+--If set to true = Incident Author, Title, and Report, ane edits will display in webhook post.
+Config.UseIncidentWebhook = false
+Config.IncidentWebhook = '' --Add a Discord webhook for incident notifications
+
+-------------------------------------------------------------------------------
+
 
 -- If set to true = Fine gets automatically removed from bank automatically charging the player.
 -- If set to false = The fine gets sent as an Invoice to their phone and it us to the player to pay for it, can remain unpaid and ignored.
@@ -17,7 +34,7 @@ Config.BillVariation = true
 Config.QBManagementUse = false
 
 -- Set up your inventory to automatically retrieve images when a weapon is registered at a weapon shop or self-registered.
--- If you're utilizing lj-inventory's latest version from GitHub, no further modifications are necessary. 
+-- If you're utilizing lj-inventory's latest version from GitHub, no further modifications are necessary.
 -- However, if you're using a different inventory system, please refer to the "Inventory Edit | Automatic Add Weapons with images" section in ps-mdt's README.
 Config.InventoryForWeaponsImages = "lj-inventory"
 
@@ -47,7 +64,7 @@ Config.RosterLink = {
     ['sasp'] = '',
     ['doc'] = '',
     ['lssd'] = '',
-    ['sapr'] = '',	
+    ['sapr'] = '',
 }
 
 Config.PoliceJobs = {
@@ -72,7 +89,7 @@ Config.DojJobs = {
     ['judge'] = true
 }
 
--- This is a workaround solution because the qb-menu present in qb-policejob fills in an impound location and sends it to the event. 
+-- This is a workaround solution because the qb-menu present in qb-policejob fills in an impound location and sends it to the event.
 -- If the impound locations are modified in qb-policejob, the changes must also be implemented here to ensure consistency.
 
 Config.ImpoundLocations = {
@@ -80,13 +97,13 @@ Config.ImpoundLocations = {
     [2] = vector4(-436.14, 5982.63, 31.34, 136.0),
 }
 
--- Support for Wraith ARS 2X. 
+-- Support for Wraith ARS 2X.
 
 Config.UseWolfknightRadar = false
 Config.WolfknightNotifyTime = 5000 -- How long the notification displays for in milliseconds (30000 = 30 seconds)
 Config.PlateScanForDriversLicense = false -- If true, plate scanner will check if the owner of the scanned vehicle has a drivers license
 
--- IMPORTANT: To avoid making excessive database queries, modify this config to true 'CONFIG.use_sonorancad = true' setting in the configuration file located at 'wk_wars2x/config.lua'. 
+-- IMPORTANT: To avoid making excessive database queries, modify this config to true 'CONFIG.use_sonorancad = true' setting in the configuration file located at 'wk_wars2x/config.lua'.
 -- Enabling this setting will limit plate checks to only those vehicles that have been used by a player.
 
 Config.LogPerms = {
