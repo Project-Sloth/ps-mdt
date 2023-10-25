@@ -21,7 +21,7 @@ local ClockinWebhook = ''
 
 -- Incident and Incident editting. Add a Discord webhook.
 -- Incident Author, Title, and Report will display in webhook post.
-local IncidentWebhook = 'https://discord.com/api/webhooks/1166590615782440971/8Fb-8Qd87hYhYcMZniNEkDMqhhem2Ddt-RxTLljFGpxCOoUr2_DpGXkiRybYZxb6-FzD'
+local IncidentWebhook = ''
 --------------------------------
 
 QBCore.Functions.CreateCallback('ps-mdt:server:MugShotWebhook', function(source, cb)
