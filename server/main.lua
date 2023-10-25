@@ -1412,7 +1412,9 @@ RegisterNetEvent('mdt:server:saveIncident', function(id, title, information, tag
                                 sentence = tonumber(associated[i]['Sentence']),
                                 recfine = tonumber(associated[i]['recfine']),
                                 recsentence = tonumber(associated[i]['recsentence']),
-                                time = associated[i]['Time']
+                                time = associated[i]['Time'],
+				officersinvolved = officers,
+				civsinvolved = civilians
                             }
                             sendIncidentToDiscord(16711680, "MDT Incident Report has been Updated", message, "ps-mdt | Made by Project Sloth", associatedData)
                         end
