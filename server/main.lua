@@ -1997,20 +1997,6 @@ function sendIncidentToDiscord(color, name, message, footer, associatedData)
             else
                 message = message .. "\nGuilty: " .. tostring(associatedData.guilty or "Not Found")
             end
-
-            if associatedData.officersinvolved and #associatedData.officersinvolved > 0 then
-                local officersList = table.concat(associatedData.officersinvolved, ", ")
-                message = message .. "\nOfficers Involved: " .. officersList
-            else
-                message = message .. "\nOfficers Involved: None"
-            end
-
-            if associatedData.civsinvolved and #associatedData.civsinvolved > 0 then
-                local civsList = table.concat(associatedData.civsinvolved, ", ")
-                message = message .. "\nCivilians Involved: " .. civsList
-            else
-                message = message .. "\nCivilians Involved: None"
-            end
 			
             message = message .. "\nWarrant: " .. tostring(associatedData.warrant or "No Warrants")
             message = message .. "\nReceived Fine: $" .. tostring(associatedData.fine or "Not Found")
