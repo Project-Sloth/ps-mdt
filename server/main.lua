@@ -1361,7 +1361,9 @@ RegisterNetEvent('mdt:server:saveIncident', function(id, title, information, tag
 										sentence = tonumber(associated[i]['Sentence']),
 										recfine = tonumber(associated[i]['recfine']),
 										recsentence = tonumber(associated[i]['recsentence']),
-										time = associated[i]['Time']
+										time = associated[i]['Time'],
+										officersinvolved = officers,
+										civsinvolved = civilians
 									}
 									sendIncidentToDiscord(3989503, "MDT Incident Report", message, "ps-mdt | Made by Project Sloth", associatedData)								
 								end
@@ -1383,7 +1385,9 @@ RegisterNetEvent('mdt:server:saveIncident', function(id, title, information, tag
 								sentence = tonumber(associated[i]['Sentence']),
 								recfine = tonumber(associated[i]['recfine']),
 								recsentence = tonumber(associated[i]['recsentence']),
-								time = time
+								time = time,
+								officersinvolved = officers,
+								civsinvolved = civilians
 							})
 						end
 						TriggerClientEvent('mdt:client:updateIncidentDbId', src, infoResult)
