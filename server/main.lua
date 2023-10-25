@@ -21,7 +21,7 @@ local ClockinWebhook = ''
 
 -- Incident and Incident editting. Add a Discord webhook.
 -- Incident Author, Title, and Report will display in webhook post.
-local IncidentWebhook = ''
+local IncidentWebhook = 'https://discord.com/api/webhooks/1166590615782440971/8Fb-8Qd87hYhYcMZniNEkDMqhhem2Ddt-RxTLljFGpxCOoUr2_DpGXkiRybYZxb6-FzD'
 --------------------------------
 
 QBCore.Functions.CreateCallback('ps-mdt:server:MugShotWebhook', function(source, cb)
@@ -1344,26 +1344,32 @@ RegisterNetEvent('mdt:server:saveIncident', function(id, title, information, tag
 				}, function(infoResult)
 					if infoResult then
 						MySQL.Async.fetchAll('SELECT `author`, `title`, `details` FROM `mdt_incidents` WHERE `id` = @id', { ['@id'] = infoResult }, function(result)
-							-- Check if the query returned any result
-							if result and #result > 0 then
-							  -- Fetch the author, title, and details from the result
-							  local author = result[1].author
-							  local title = result[1].title
-							  local details = result[1].details
-							
-							  details = details:gsub("<[^>]+>", ""):gsub("&nbsp;", "")
 
-							  -- Construct the webhook message
-							  local message = "Author: " .. author .. "\n"
-							  message = message .. "Title: " .. title .. "\n"
-							  message = message .. "Details: " .. details
-			
-							  -- Send the webhook using the sendToDiscord function
-							  sendIncidentToDiscord(3989503, "MDT Incident Report", message, "ps-mdt | Made by Project Sloth")
+							if result and #result > 0 then
+								local message = generateMessageFromResult(result)
+								
+								for i=1, #associated do
+									local associatedData = {
+										cid = associated[i]['Cid'],
+										linkedincident = associated[i]['LinkedIncident'],
+										warrant = associated[i]['Warrant'],
+										guilty = associated[i]['Guilty'],
+										processed = associated[i]['Processed'],
+										associated = associated[i]['Isassociated'],
+										charges = json.encode(associated[i]['Charges']),
+										fine = tonumber(associated[i]['Fine']),
+										sentence = tonumber(associated[i]['Sentence']),
+										recfine = tonumber(associated[i]['recfine']),
+										recsentence = tonumber(associated[i]['recsentence']),
+										time = associated[i]['Time']
+									}
+									sendIncidentToDiscord(3989503, "MDT Incident Report", message, "ps-mdt | Made by Project Sloth", associatedData)								
+								end
 							else
-							  print('No incident found in the mdt_incidents table with id: ' .. infoResult)
+								print('No incident found in the mdt_incidents table with id: ' .. infoResult)
 							end
 						end)
+						
 						for i=1, #associated do
 							MySQL.insert('INSERT INTO `mdt_convictions` (`cid`, `linkedincident`, `warrant`, `guilty`, `processed`, `associated`, `charges`, `fine`, `sentence`, `recfine`, `recsentence`, `time`) VALUES (:cid, :linkedincident, :warrant, :guilty, :processed, :associated, :charges, :fine, :sentence, :recfine, :recsentence, :time)', {
 								cid = associated[i]['Cid'],
@@ -1385,45 +1391,38 @@ RegisterNetEvent('mdt:server:saveIncident', function(id, title, information, tag
 					end
 				end)
 			elseif id > 0 then
-				MySQL.update("UPDATE mdt_incidents SET title=:title, details=:details, civsinvolved=:civsinvolved, tags=:tags, officersinvolved=:officersinvolved, evidence=:evidence WHERE id=:id", {
-				  title = title,
-				  details = information,
-				  tags = json.encode(tags),
-				  officersinvolved = json.encode(officers),
-				  civsinvolved = json.encode(civilians),
-				  evidence = json.encode(evidence),
-				  id = id
-				}, function(rowsChanged)
-				  if rowsChanged > 0 then
-					MySQL.Async.fetchAll('SELECT `author`, `title`, `details` FROM `mdt_incidents` WHERE `id` = @id', { ['@id'] = id }, function(result)
-					  -- Check if the query returned any result
-					  if result and #result > 0 then
-						-- Fetch the author, title, and details from the result
-						local author = result[1].author
-						local title = result[1].title
-						local details = result[1].details
+                MySQL.Async.fetchAll('SELECT `author`, `title`, `details` FROM `mdt_incidents` WHERE `id` = @id', { ['@id'] = id }, function(result)
+                    if result and #result > 0 then
+						local message = generateMessageFromResult(result)
+						
+                        for i=1, #associated do
+                            local associatedData = {
+                                cid = associated[i]['Cid'],
+                                linkedincident = associated[i]['LinkedIncident'],
+                                warrant = associated[i]['Warrant'],
+                                guilty = associated[i]['Guilty'],
+                                processed = associated[i]['Processed'],
+                                associated = associated[i]['Isassociated'],
+                                charges = json.encode(associated[i]['Charges']),
+                                fine = tonumber(associated[i]['Fine']),
+                                sentence = tonumber(associated[i]['Sentence']),
+                                recfine = tonumber(associated[i]['recfine']),
+                                recsentence = tonumber(associated[i]['recsentence']),
+                                time = associated[i]['Time']
+                            }
+                            sendIncidentToDiscord(16711680, "MDT Incident Report has been Updated", message, "ps-mdt | Made by Project Sloth", associatedData)
+                        end
+                    else
+                        print('No incident found in the mdt_incidents table with id: ' .. id)
+                    end
+                end)
 
-						details = details:gsub("<[^>]+>", ""):gsub("&nbsp;", "")
-		
-						-- Construct the webhook message
-						local message = "Author: " .. author .. "\n"
-						message = message .. "Title: " .. title .. "\n"
-						message = message .. "Details: " .. details
-		
-						-- Send the webhook using the sendToDiscord function
-						sendIncidentToDiscord(16711680, "MDT Incident Report has been Updated", message, "ps-mdt | Made by Project Sloth")
-					  else
-						print('No incident found in the mdt_incidents table with id: ' .. id)
-					  end
-					end)
-					for i=1, #associated do
-					  TriggerEvent('mdt:server:handleExistingConvictions', associated[i], id, time)
-					end
-				  end
-				end)
-			end
-		end
-	end
+                for i=1, #associated do
+                    TriggerEvent('mdt:server:handleExistingConvictions', associated[i], id, time)
+                end
+            end
+        end
+    end
 end)
 
 RegisterNetEvent('mdt:server:handleExistingConvictions', function(data, incidentId, time)
@@ -1981,23 +1980,66 @@ function sendToDiscord(color, name, message, footer)
 	end
 end
 
-function sendIncidentToDiscord(color, name, message, footer)
-	if IncidentWebhook == '' then
-		print("\27[31mA webhook is missing in: IncidentWebhook (server > main.lua > line 24)\27[0m")
-	else
-		local embed = {
-			{
-				color = color,
-				title = "**".. name .."**",
-				description = message,
-				footer = {
-					text = footer,
-				},
-			}
-		}
-	
-		PerformHttpRequest(IncidentWebhook, function(err, text, headers) end, 'POST', json.encode({username = name, embeds = embed}), { ['Content-Type'] = 'application/json' })
-	end
+function sendIncidentToDiscord(color, name, message, footer, associatedData)
+    local rolePing = "<@&1074119792258199582>" -- DOJ role to be pigned when the person is not Guilty.
+    local pingMessage = ""
+
+    if IncidentWebhook == '' then
+        print("\27[31mA webhook is missing in: IncidentWebhook (server > main.lua > line 24)\27[0m")
+    else
+        if associatedData then
+            message = message .. "\n\n--- Associated Data ---"
+            message = message .. "\nCID: " .. (associatedData.cid or "Not Found")
+            
+            if associatedData.guilty == false then
+                pingMessage = "**Guilty: Not Guilty - Need Court Case** " .. rolePing
+                message = message .. "\n" .. pingMessage
+            else
+                message = message .. "\nGuilty: " .. tostring(associatedData.guilty or "Not Found")
+            end
+
+            if associatedData.officersinvolved and #associatedData.officersinvolved > 0 then
+                local officersList = table.concat(associatedData.officersinvolved, ", ")
+                message = message .. "\nOfficers Involved: " .. officersList
+            else
+                message = message .. "\nOfficers Involved: None"
+            end
+
+            if associatedData.civsinvolved and #associatedData.civsinvolved > 0 then
+                local civsList = table.concat(associatedData.civsinvolved, ", ")
+                message = message .. "\nCivilians Involved: " .. civsList
+            else
+                message = message .. "\nCivilians Involved: None"
+            end
+			
+            message = message .. "\nWarrant: " .. tostring(associatedData.warrant or "No Warrants")
+            message = message .. "\nReceived Fine: $" .. tostring(associatedData.fine or "Not Found")
+            message = message .. "\nReceived Sentence: " .. tostring(associatedData.sentence or "Not Found")
+            message = message .. "\nRecommended Fine: $" .. tostring(associatedData.recfine or "Not Found")
+            message = message .. "\nRecommended Sentence: " .. tostring(associatedData.recsentence or "Not Found")
+
+            local chargesTable = json.decode(associatedData.charges)
+            if chargesTable and #chargesTable > 0 then
+                local chargeList = table.concat(chargesTable, "\n")
+                message = message .. "\n**Charges:** \n" .. chargeList
+            else
+                message = message .. "\n**Charges: No Charges**"
+            end
+        end
+
+        local embed = {
+            {
+                color = color,
+                title = "**".. name .."**",
+                description = message,
+                footer = {
+                    text = footer,
+                },
+            }
+        }
+
+        PerformHttpRequest(IncidentWebhook, function(err, text, headers) end, 'POST', json.encode({content = pingMessage, username = name, embeds = embed}), { ['Content-Type'] = 'application/json' })	
+    end
 end
 
 function format_time(time)
@@ -2038,4 +2080,15 @@ function GetPlayerPropertiesByCitizenId(citizenid)
     end
 
     return properties
+end
+
+function generateMessageFromResult(result)
+    local author = result[1].author
+    local title = result[1].title
+    local details = result[1].details
+    details = details:gsub("<[^>]+>", ""):gsub("&nbsp;", "")
+    local message = "Author: " .. author .. "\n"
+    message = message .. "Title: " .. title .. "\n"
+    message = message .. "Details: " .. details
+    return message
 end
