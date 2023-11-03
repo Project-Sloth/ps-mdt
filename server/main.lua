@@ -1324,81 +1324,79 @@ RegisterNetEvent('mdt:server:setCallsign', function(cid, newcallsign)
 end)
 
 RegisterNetEvent('mdt:server:saveIncident', function(id, title, information, tags, officers, civilians, evidence, associated, time)
-	local src = source
-	local Player = QBCore.Functions.GetPlayer(src)
-	if Player then
-		if GetJobType(Player.PlayerData.job.name) == 'police' then
-			if id == 0 then
-				local fullname = Player.PlayerData.charinfo.firstname .. ' ' .. Player.PlayerData.charinfo.lastname
-				MySQL.insert('INSERT INTO `mdt_incidents` (`author`, `title`, `details`, `tags`, `officersinvolved`, `civsinvolved`, `evidence`, `time`, `jobtype`) VALUES (:author, :title, :details, :tags, :officersinvolved, :civsinvolved, :evidence, :time, :jobtype)',
-				{
-					author = fullname,
-					title = title,
-					details = information,
-					tags = json.encode(tags),
-					officersinvolved = json.encode(officers),
-					civsinvolved = json.encode(civilians),
-					evidence = json.encode(evidence),
-					time = time,
-					jobtype = 'police',
-				}, function(infoResult)
-					if infoResult then
-						MySQL.Async.fetchAll('SELECT `author`, `title`, `details` FROM `mdt_incidents` WHERE `id` = @id', { ['@id'] = infoResult }, function(result)
-
-							if result and #result > 0 then
-								local message = generateMessageFromResult(result)
-								
-								for i=1, #associated do
-									local associatedData = {
-										cid = associated[i]['Cid'],
-										linkedincident = associated[i]['LinkedIncident'],
-										warrant = associated[i]['Warrant'],
-										guilty = associated[i]['Guilty'],
-										processed = associated[i]['Processed'],
-										associated = associated[i]['Isassociated'],
-										charges = json.encode(associated[i]['Charges']),
-										fine = tonumber(associated[i]['Fine']),
-										sentence = tonumber(associated[i]['Sentence']),
-										recfine = tonumber(associated[i]['recfine']),
-										recsentence = tonumber(associated[i]['recsentence']),
-										time = associated[i]['Time'],
-										officersinvolved = officers,
-										civsinvolved = civilians
-									}
-									sendIncidentToDiscord(3989503, "MDT Incident Report", message, "ps-mdt | Made by Project Sloth", associatedData)								
-								end
-							else
-								print('No incident found in the mdt_incidents table with id: ' .. infoResult)
-							end
-						end)
-						
-						for i=1, #associated do
-							MySQL.insert('INSERT INTO `mdt_convictions` (`cid`, `linkedincident`, `warrant`, `guilty`, `processed`, `associated`, `charges`, `fine`, `sentence`, `recfine`, `recsentence`, `time`) VALUES (:cid, :linkedincident, :warrant, :guilty, :processed, :associated, :charges, :fine, :sentence, :recfine, :recsentence, :time)', {
-								cid = associated[i]['Cid'],
-								linkedincident = infoResult,
-								warrant = associated[i]['Warrant'],
-								guilty = associated[i]['Guilty'],
-								processed = associated[i]['Processed'],
-								associated = associated[i]['Isassociated'],
-								charges = json.encode(associated[i]['Charges']),
-								fine = tonumber(associated[i]['Fine']),
-								sentence = tonumber(associated[i]['Sentence']),
-								recfine = tonumber(associated[i]['recfine']),
-								recsentence = tonumber(associated[i]['recsentence']),
-								time = time,
-								officersinvolved = officers,
-								civsinvolved = civilians
-							})
-						end
-						TriggerClientEvent('mdt:client:updateIncidentDbId', src, infoResult)
-						--TriggerEvent('mdt:server:AddLog', "A vehicle with the plate ("..plate..") was added to the vehicle information database by "..player['fullname'])
-					end
-				end)
-			elseif id > 0 then
+    local src = source
+    local Player = QBCore.Functions.GetPlayer(src)
+    if Player then
+        if GetJobType(Player.PlayerData.job.name) == 'police' then
+            if id == 0 then
+                local fullname = Player.PlayerData.charinfo.firstname .. ' ' .. Player.PlayerData.charinfo.lastname
+                MySQL.insert('INSERT INTO `mdt_incidents` (`author`, `title`, `details`, `tags`, `officersinvolved`, `civsinvolved`, `evidence`, `time`, `jobtype`) VALUES (:author, :title, :details, :tags, :officersinvolved, :civsinvolved, :evidence, :time, :jobtype)',
+                {
+                    author = fullname,
+                    title = title,
+                    details = information,
+                    tags = json.encode(tags),
+                    officersinvolved = json.encode(officers),
+                    civsinvolved = json.encode(civilians),
+                    evidence = json.encode(evidence),
+                    time = time,
+                    jobtype = 'police',
+                }, function(infoResult)
+                    if infoResult then
+                        MySQL.Async.fetchAll('SELECT `author`, `title`, `details` FROM `mdt_incidents` WHERE `id` = @id', { ['@id'] = infoResult }, function(result)
+                            if result and #result > 0 then
+                                local message = generateMessageFromResult(result)
+                                
+                                for i=1, #associated do
+                                    local associatedData = {
+                                        cid = associated[i]['Cid'],
+                                        linkedincident = associated[i]['LinkedIncident'],
+                                        warrant = associated[i]['Warrant'],
+                                        guilty = associated[i]['Guilty'],
+                                        processed = associated[i]['Processed'],
+                                        associated = associated[i]['Isassociated'],
+                                        charges = json.encode(associated[i]['Charges']),
+                                        fine = tonumber(associated[i]['Fine']),
+                                        sentence = tonumber(associated[i]['Sentence']),
+                                        recfine = tonumber(associated[i]['recfine']),
+                                        recsentence = tonumber(associated[i]['recsentence']),
+                                        time = associated[i]['Time'],
+                                        officersinvolved = officers,
+                                        civsinvolved = civilians
+                                    }
+                                    sendIncidentToDiscord(3989503, "MDT Incident Report", message, "ps-mdt | Made by Project Sloth", associatedData)                                
+                                end
+                            else
+                                print('No incident found in the mdt_incidents table with id: ' .. infoResult)
+                            end
+                        end)
+                        
+                        for i=1, #associated do
+                            MySQL.insert('INSERT INTO `mdt_convictions` (`cid`, `linkedincident`, `warrant`, `guilty`, `processed`, `associated`, `charges`, `fine`, `sentence`, `recfine`, `recsentence`, `time`) VALUES (:cid, :linkedincident, :warrant, :guilty, :processed, :associated, :charges, :fine, :sentence, :recfine, :recsentence, :time)', {
+                                cid = associated[i]['Cid'],
+                                linkedincident = infoResult,
+                                warrant = associated[i]['Warrant'],
+                                guilty = associated[i]['Guilty'],
+                                processed = associated[i]['Processed'],
+                                associated = associated[i]['Isassociated'],
+                                charges = json.encode(associated[i]['Charges']),
+                                fine = tonumber(associated[i]['Fine']),
+                                sentence = tonumber(associated[i]['Sentence']),
+                                recfine = tonumber(associated[i]['recfine']),
+                                recsentence = tonumber(associated[i]['recsentence']),
+                                time = time,
+                                officersinvolved = officers,
+                                civsinvolved = civilians
+                            })
+                        end
+                        TriggerClientEvent('mdt:client:updateIncidentDbId', src, infoResult)
+                    end
+                end)
+            elseif id > 0 then
                 MySQL.Async.fetchAll('SELECT `author`, `title`, `details` FROM `mdt_incidents` WHERE `id` = @id', { ['@id'] = id }, function(result)
                     if result and #result > 0 then
-						local message = generateMessageFromResult(result)
-						
+                        local message = generateMessageFromResult(result)
+                        
                         for i=1, #associated do
                             local associatedData = {
                                 cid = associated[i]['Cid'],
@@ -1413,13 +1411,31 @@ RegisterNetEvent('mdt:server:saveIncident', function(id, title, information, tag
                                 recfine = tonumber(associated[i]['recfine']),
                                 recsentence = tonumber(associated[i]['recsentence']),
                                 time = associated[i]['Time'],
-								officersinvolved = officers,
-								civsinvolved = civilians
+                                officersinvolved = officers,
+                                civsinvolved = civilians
                             }
                             sendIncidentToDiscord(16711680, "MDT Incident Report has been Updated", message, "ps-mdt | Made by Project Sloth", associatedData)
                         end
                     else
                         print('No incident found in the mdt_incidents table with id: ' .. id)
+                    end
+                end)
+
+                MySQL.Async.execute('UPDATE `mdt_incidents` SET `title` = @title, `details` = @details, `tags` = @tags, `officersinvolved` = @officersinvolved, `civsinvolved` = @civsinvolved, `evidence` = @evidence, `time` = @time WHERE `id` = @id',
+                {
+                    ['@id'] = id,
+                    ['@title'] = title,
+                    ['@details'] = information,
+                    ['@tags'] = json.encode(tags),
+                    ['@officersinvolved'] = json.encode(officers),
+                    ['@civsinvolved'] = json.encode(civilians),
+                    ['@evidence'] = json.encode(evidence),
+                    ['@time'] = time,
+                }, function(rowsChanged)
+                    if rowsChanged > 0 then
+                        --print('Updated incident' .. id)
+                    else
+                        print('Failed to update incident with id: ' .. id)
                     end
                 end)
 
