@@ -24,6 +24,15 @@ Config.InventoryForWeaponsImages = "lj-inventory"
 -- "LegacyFuel", "lj-fuel", "ps-fuel"
 Config.Fuel = "ps-fuel"
 
+-- ['License Name'] = true/false -- Default to having it?
+Config.Licenses = {
+    ['driver'] = false,
+    ['business'] = false,
+    ['weapon'] = false,
+    ['pilot'] = false,
+    ['weed'] = false
+}
+
 -- Google Docs Link
 Config.sopLink = {
     ['police'] = '',
