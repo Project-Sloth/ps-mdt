@@ -5705,22 +5705,67 @@ window.addEventListener("message", (event) => {
 });
 
 function updateOfficerData(officerData) {
+  officerData.forEach(officer => {
+    officer.totalSeconds = timeStringToSeconds(officer.totalTime);
+  });
+
+  officerData.sort((a, b) => b.totalSeconds - a.totalSeconds);
+
   const leaderboardBox = document.querySelector('.leaderboard-box');
   leaderboardBox.innerHTML = '';
 
-  const positions = ['1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10th', '11th', '12th', '13th', '14th', '15th', '16th', '17th', '18th', '19th', '20th', '21th', '22th', '23th', '24th', '25th'];
+  const positions = ['1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10th', '11th', '12th', '13th', '14th', '15th', '16th', '17th', '18th', '19th', '20th', '21st', '22nd', '23rd', '24th', '25th'];
 
   officerData.forEach((officer, index) => {
-      const position = positions[index];
-      const officerDiv = document.createElement('div');
-      officerDiv.className = 'leaderboard-box-test';
-      officerDiv.style.fontSize = '1.3vh';
-      officerDiv.style.fontWeight = 'lighter';
-      officerDiv.style.color = index < 3 ? 'white' : 'grey';
+    const position = positions[index];
+    const officerDiv = document.createElement('div');
+    officerDiv.className = 'leaderboard-box-test';
+    officerDiv.style.fontSize = '1.3vh';
+    officerDiv.style.fontWeight = 'lighter';
+    officerDiv.style.color = index < 3 ? 'white' : 'grey';
 
-      officerDiv.innerHTML = `► ${position}: ${officer.name} (${officer.callsign})<span style="float: right; padding-right: 1vh;">${officer.totalTime}</span>`;
-      leaderboardBox.appendChild(officerDiv);
+    officerDiv.innerHTML = `► ${position}: ${officer.name} (${officer.callsign})<span style="float: right; padding-right: 1vh;">${officer.totalTime}</span>`;
+    leaderboardBox.appendChild(officerDiv);
   });
+}
+
+function timeStringToSeconds(t) {
+  if (!t) return 0;
+
+  let days = 0, hours = 0, minutes = 0, seconds = 0;
+  let daysPart = '0';
+  let timePart = t;
+
+  // days vs day check
+  if (t.includes(' days ')) {
+    [daysPart, timePart] = t.split(' days ');
+  }
+
+  const timeParts = timePart.split(' ');
+
+  for (let i = 0; i < timeParts.length; i += 2) {
+    const val = parseInt(timeParts[i]);
+    switch (timeParts[i + 1]) {
+      case 'hours':
+        hours = val;
+        break;
+      case 'minutes':
+        minutes = val;
+        break;
+      case 'seconds':
+        seconds = val;
+        break;
+    }
+  }
+
+  days = parseInt(daysPart);
+
+  return (
+    days * 86400 +
+    hours * 3600 +
+    minutes * 60 +
+    seconds
+  );
 }
 
 
