@@ -30,7 +30,7 @@ Config.Licenses = {
     ['business'] = false,
     ['weapon'] = false,
     ['pilot'] = false,
-    ['weed_license'] = false
+    ['weed'] = false
 }
 
 -- Google Docs Link
