@@ -24,7 +24,7 @@ var DispatchNum = 0;
 var playerJob = "";
 let rosterLink  = "";
 let sopLink = "";
-const licenseTypesGlobal = ['business', 'pilot', 'weapon', 'driver', 'weed'];
+const licenseTypesGlobal = ['business', 'pilot', 'weapon', 'driver', 'weed_license'];
 
 //Set this to false if you don't want to show the send to community service button on the incidents page
 const canSendToCommunityService = false
