@@ -17,14 +17,12 @@ local MugShots = {}
 -- Mugshot functions
 
 local function TakeMugShot()
-    if Config.MugShotWebhook == '' then
-        print("^1A webhook is missing in: Config.MugShotWebhook")
-    else
-        exports['screenshot-basic']:requestScreenshotUpload(Config.MugShotWebhook, 'files[]', {encoding = 'jpg'}, function(data)
+    QBCore.Functions.TriggerCallback('ps-mdt:server:MugShotWebhook', function(MugShotWebhook)
+        exports['screenshot-basic']:requestScreenshotUpload(MugShotWebhook, 'files[]', {encoding = 'jpg'}, function(data)
             local resp = json.decode(data)
             table.insert(MugshotArray, resp.attachments[1].url)
         end)
-    end
+    end)
 end
 
 local function PhotoProcess(ped)
@@ -192,22 +190,26 @@ RegisterNetEvent('cqc-mugshot:client:trigger', function()
 end)
 
 RegisterNUICallback("sendToJail", function(data, cb)
-    local citizenId, sentence = data.citizenId, data.sentence
+    QBCore.Functions.TriggerCallback('ps-mdt:server:MugShotWebhook', function(MugShotWebhook)
+        if MugShotWebhook ~= '' then
+            local citizenId, sentence = data.citizenId, data.sentence
 
-    -- Gets the player id from the citizenId
-    local p = promise.new()
-    QBCore.Functions.TriggerCallback('mdt:server:GetPlayerSourceId', function(result)
-        p:resolve(result)
-    end, citizenId)
-
-    local targetSourceId = Citizen.Await(p)
-
-    if sentence > 0 then
-        if Config.UseCQCMugshot    then
-            TriggerServerEvent('cqc-mugshot:server:triggerSuspect', targetSourceId)
+            -- Gets the player id from the citizenId
+            local p = promise.new()
+            QBCore.Functions.TriggerCallback('mdt:server:GetPlayerSourceId', function(result)
+                p:resolve(result)
+            end, citizenId)
+        
+            local targetSourceId = Citizen.Await(p)
+        
+            if sentence > 0 then
+                if Config.UseCQCMugshot    then
+                    TriggerServerEvent('cqc-mugshot:server:triggerSuspect', targetSourceId)
+                end
+                Citizen.Wait(5000)
+                -- Uses qb-policejob JailPlayer event
+                TriggerServerEvent("police:server:JailPlayer", targetSourceId, sentence)
+            end
         end
-        Citizen.Wait(5000)
-        -- Uses qb-policejob JailPlayer event
-        TriggerServerEvent("police:server:JailPlayer", targetSourceId, sentence)
-    end
+    end)
 end)

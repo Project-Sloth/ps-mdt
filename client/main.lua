@@ -147,14 +147,14 @@ end
 
 local function EnableGUI(enable)
     SetNuiFocus(enable, enable)
-    SendNUIMessage({ type = "show", enable = enable, job = PlayerData.job.name, rosterLink = Config.RosterLink[PlayerData.job.name], sopLink = Config.sopLink[PlayerData.job.name] })
+    SendNUIMessage({ type = "show", enable = enable, job = PlayerData.job.name, jobType = PlayerData.job.type, rosterLink = Config.RosterLink[PlayerData.job.name], sopLink = Config.sopLink[PlayerData.job.name] })
     isOpen = enable
     doAnimation()
 end
 
 local function RefreshGUI()
     SetNuiFocus(false, false)
-    SendNUIMessage({ type = "show", enable = false, job = PlayerData.job.name, rosterLink = Config.RosterLink[PlayerData.job.name], sopLink = Config.sopLink[PlayerData.job.name] })
+    SendNUIMessage({ type = "show", enable = false, job = PlayerData.job.name, jobType = PlayerData.job.type, rosterLink = Config.RosterLink[PlayerData.job.name], sopLink = Config.sopLink[PlayerData.job.name] })
     isOpen = false
 end
 
@@ -407,6 +407,7 @@ RegisterNUICallback("sendFine", function(data, cb)
         else
             -- Uses QB-Core /bill command
             ExecuteCommand(('bill %s %s'):format(targetSourceId, fine))
+            TriggerServerEvent("mdt:server:giveCitationItem", citizenId, fine, incidentId)
         end
     end
 end)
@@ -865,42 +866,42 @@ RegisterNetEvent('dispatch:clNotify', function(sNotificationData, sNotificationI
 end)
 
 RegisterNUICallback("setWaypoint", function(data, cb)
-    TriggerServerEvent('mdt:server:setWaypoint', data.callid)
+    TriggerServerEvent('mdt:server:setWaypoint', data.callid or data.id)
     cb(true)
 end)
 
 RegisterNUICallback("callDetach", function(data, cb)
-    TriggerServerEvent('mdt:server:callDetach', data.callid)
+    TriggerServerEvent('mdt:server:callDetach', data.callid or data.id)
     cb(true)
 end)
 
 RegisterNUICallback("removeCallBlip", function(data, cb)
-    TriggerEvent('ps-dispatch:client:removeCallBlip', data.callid)
+    TriggerEvent('ps-dispatch:client:removeCallBlip', data.callid or data.id)
     cb(true)
 end)
 
 RegisterNUICallback("callAttach", function(data, cb)
-    TriggerServerEvent('mdt:server:callAttach', data.callid)
+    TriggerServerEvent('mdt:server:callAttach', data.callid or data.id)
     cb(true)
 end)
 
 RegisterNUICallback("attachedUnits", function(data, cb)
-    TriggerServerEvent('mdt:server:attachedUnits', data.callid)
+    TriggerServerEvent('mdt:server:attachedUnits', data.callid or data.id)
     cb(true)
 end)
 
 RegisterNUICallback("callDispatchDetach", function(data, cb)
-    TriggerServerEvent('mdt:server:callDispatchDetach', data.callid, data.cid)
+    TriggerServerEvent('mdt:server:callDispatchDetach', data.callid or data.id, data.cid)
     cb(true)
 end)
 
 RegisterNUICallback("setDispatchWaypoint", function(data, cb)
-    TriggerServerEvent('mdt:server:setDispatchWaypoint', data.callid, data.cid)
+    TriggerServerEvent('mdt:server:setDispatchWaypoint', data.callid or data.id, data.cid)
     cb(true)
 end)
 
 RegisterNUICallback("callDragAttach", function(data, cb)
-    TriggerServerEvent('mdt:server:callDragAttach', data.callid, data.cid)
+    TriggerServerEvent('mdt:server:callDragAttach', data.callid or data.id, data.cid)
     cb(true)
 end)
 
@@ -937,7 +938,7 @@ RegisterNUICallback("dispatchNotif", function(data, cb)
 end)
 
 RegisterNUICallback("getCallResponses", function(data, cb)
-    TriggerServerEvent('mdt:server:getCallResponses', data.callid)
+    TriggerServerEvent('mdt:server:getCallResponses', data.callid or data.id)
     cb(true)
 end)
 
@@ -973,8 +974,11 @@ RegisterNetEvent('mdt:client:attachedUnits', function(sentData, callid)
 end)
 
 RegisterNetEvent('mdt:client:setWaypoint', function(callInformation)
-    SetNewWaypoint(callInformation['origin']['x'], callInformation['origin']['y'])
+    if callInformation['coords'] and callInformation['coords']['x'] and callInformation['coords']['y'] then
+        SetNewWaypoint(callInformation['coords']['x'], callInformation['coords']['y'])
+    end
 end)
+
 
 RegisterNetEvent('mdt:client:callDetach', function(callid, sentData)
     local job = PlayerData.job.name

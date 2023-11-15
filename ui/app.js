@@ -26,7 +26,7 @@ let rosterLink  = "";
 let sopLink = "";
 
 //Set this to false if you don't want to show the send to community service button on the incidents page
-const canSendToCommunityService = true
+const canSendToCommunityService = false
 
 let impoundChanged = false;
 
@@ -36,7 +36,7 @@ const PoliceJobs = {
   ['lspd']: true,
   ['bcso']: true,
   ['sast']: true,
-  ['sasp']: true, 
+  ['sasp']: true,
   ['sapr']: true,
   ['doc']: true,
   ['lssd']: true,
@@ -193,13 +193,13 @@ $(document).ready(() => {
   $(".profile-items").on("click", ".profile-item", async function () {
     let id = $(this).data("id");
     let profileFingerprint = $(this).data("fingerprint");
-  
+
     if (profileFingerprint && profileFingerprint !== "") {
       $(".manage-profile-fingerprint-input").val(profileFingerprint);
     } else {
       $(".manage-profile-fingerprint-input").val("");
     }
-    
+
     let result = await $.post(
       `https://${GetParentResourceName()}/getProfileData`,
       JSON.stringify({
@@ -774,6 +774,8 @@ $(document).ready(() => {
           <p>&nbsp;</p>
           <p><strong>🧍 Hostage:</strong> [Name Here]</p>
           <p>&nbsp;</p>
+          <p><strong>🗄️ Evidence Location:</strong> Stash # | Drawer #</p>
+          <p>&nbsp;</p>
           <p><strong>🔪 Weapons/Items Confiscated:</strong></p>
           <p><em>· [Insert List Here]</em></p>
           <p>&nbsp;</p>
@@ -794,7 +796,7 @@ $(document).ready(() => {
           ['foreColor', 'backColor','fontfamily','fontsize','indent', 'outdent'],
           ['strong', 'em',], ['insertImage'],
           ['viewHTML'],
-          ['undo', 'redo'], 
+          ['undo', 'redo'],
           ['formatting'],
           ['superscript', 'subscript'],
           ['link'],
@@ -1241,16 +1243,25 @@ $(document).ready(() => {
     }
   };
   $(".manage-incidents-tags-add-btn").click(function () {
-    if ($(".tag-incident-input")[0]) {
-      $(this).removeClass("fa-minus").addClass("fa-plus");
-      $(".tag-incident-input").remove();
-    } else {
-      $(this).removeClass("fa-plus").addClass("fa-minus");
-      $(".manage-incidents-tags-holder").prepend(
-        `<span contenteditable="true" class="tag-incident-input"></span>`
-      );
-    }
+    // if ($(".tag-incident-input")[0]) {
+    //   $(this).removeClass("fa-minus").addClass("fa-plus");
+    //   $(".tag-incident-input").remove();
+    // } else {
+    //   $(this).removeClass("fa-plus").addClass("fa-minus");
+    //   $(".manage-incidents-tags-holder").prepend(
+    //     `<span contenteditable="true" class="tag-incident-input"></span>`
+    //   );
+    // }
+    $(".close-all").css("filter", "none");
+    let id = $(".manage-incidents-editing-title").data("id");
+    OpenEvidenceLocker(id)
   });
+
+  function OpenEvidenceLocker(id) {
+    $.post(`https://${GetParentResourceName()}/OpenEvidenceLocker`, JSON.stringify({
+      id,
+    }));
+  }
 
   $(".incidents-person-search-name-input").on("keydown", "", function (e) {
     if (e.keyCode === 13) {
@@ -1388,7 +1399,7 @@ $(document).ready(() => {
           ['foreColor', 'backColor','fontfamily','fontsize','indent', 'outdent'],
           ['strong', 'em',], ['insertImage'],
           ['viewHTML'],
-          ['undo', 'redo'], 
+          ['undo', 'redo'],
           ['formatting'],
           ['superscript', 'subscript'],
           ['link'],
@@ -2031,17 +2042,17 @@ $(document).ready(() => {
     function () {
       $(".incidents-person-search-container").fadeOut(250);
       $(".close-all").css("filter", "none");
-      
+
       // This is the source element where we triggered the search component to open from
       // It is the area where we want the results to populate when we click on a search result
-      const sourceElement = $(".incidents-person-search-holder").data("source");      
+      const sourceElement = $(".incidents-person-search-holder").data("source");
 
       // Populate the tags for the given section that corresponds to the sourceElement
       if (sourceElement === "incidents-civilians") {
         $(".manage-incidents-civilians-holder").append(
           `<div class="tag">${$(this).data("name")}</div>`
         );
-      } else if (sourceElement === "incidents-officers") { 
+      } else if (sourceElement === "incidents-officers") {
         $(".manage-incidents-officers-holder").append(
           `<div class="tag">(${$(this).data("callsign")}) ${$(this).data("name")}</div>`
         );
@@ -2061,7 +2072,7 @@ $(document).ready(() => {
         $(".associated-incidents-tags-holder").prepend(
           `<div class="associated-incidents-tag" data-id="${$(this).data("id")}">${$(this).data("name")}</div>`
         );
-  
+
         // This section handles populating the fields when you add a new associated user to the incident
         $(".incidents-ghost-holder").prepend(
           `
@@ -2092,7 +2103,7 @@ $(document).ready(() => {
           `
         );
       }
-        
+
       // Clear the search results and source
       $(".incidents-person-search-holder").removeData("source"); // Without using this line, we end up reading stale data from the data-source attribute rather than the data-source from the field we clicked on
       $(".incidents-person-search-holder").empty(); // Clear the search results
@@ -2116,7 +2127,7 @@ $(document).ready(() => {
     ];
     openContextMenu(e, args);
   });
-  
+
   $(".contextmenu").on("click", ".remove-tag", function () {
     $(
       `.tag:contains(${$(this).data("info")})`
@@ -2465,7 +2476,7 @@ $(document).ready(() => {
           ['foreColor', 'backColor','fontfamily','fontsize','indent', 'outdent'],
           ['strong', 'em',], ['insertImage'],
           ['viewHTML'],
-          ['undo', 'redo'], 
+          ['undo', 'redo'],
           ['formatting'],
           ['superscript', 'subscript'],
           ['link'],
@@ -3146,7 +3157,7 @@ $(document).ready(() => {
     $(".weapon-info-class-input").val("");
     $(".weapon-info-model-input").val("");
     $(".weapon-info-imageurl-input").val("img/not-found.webp");
-    
+
     canSaveWeapon = true;
   }
 );
@@ -3985,7 +3996,7 @@ $(document).ready(() => {
     document.documentElement.style.setProperty(
         "--color-5",
         theme.color5
-        );  
+        );
     document.documentElement.style.setProperty(
         "--color-6",
         theme.color6
@@ -4190,6 +4201,8 @@ window.addEventListener("message", function (event) {
         rosterLink = eventData.rosterLink;
         sopLink = eventData.sopLink;
         playerJob = eventData.job;
+        PlayerJobType = eventData.jobType;
+
         JobColors(playerJob);
         $(".quote-span").html(randomizeQuote());
         if (PoliceJobs[playerJob] !== undefined || DojJobs[playerJob] !== undefined) {
@@ -4448,15 +4461,15 @@ window.addEventListener("message", function (event) {
     } else if (eventData.type == "call") {
       const value = eventData.data;
       DispatchMAP(value);
-      if (value && value.job.includes(playerJob)) {
+      if (value && value?.job?.includes(playerJob) || value?.jobs.includes(PlayerJobType)) {
         const prio = value["priority"];
-        let DispatchItem = `<div class="active-calls-item" data-id="${value.callId}" data-canrespond="false"><div class="active-call-inner-container"><div class="call-item-top"><div class="call-number">#${value.callId}</div><div class="call-code priority-${value.priority}">${value.dispatchCode}</div><div class="call-title">${value.dispatchMessage}</div><div class="call-radio">${value.units.length}</div></div><div class="call-item-bottom">`;
+        let DispatchItem = `<div class="active-calls-item" data-id="${value.callId || value.id}" data-canrespond="false"><div class="active-call-inner-container"><div class="call-item-top"><div class="call-number">#${value.callId || value.id}</div><div class="call-code priority-${value.priority}">${value.dispatchCode || value.code}</div><div class="call-title">${value.dispatchMessage || value.message}</div><div class="call-radio">${value.units.length}</div></div><div class="call-item-bottom">`;
 
         if (
           value.dispatchCode == "911" ||
           value.dispatchCode == "311"
         ) {
-          DispatchItem = `<div class="active-calls-item" data-id="${value.callId}" data-canrespond="true"><div class="active-call-inner-container"><div class="call-item-top"><div class="call-number">#${value.callId}</div><div class="call-code priority-${value.priority}">${value.dispatchCode}</div><div class="call-title">${value.dispatchMessage}</div><div class="call-radio">${value.units.length}</div></div><div class="call-item-bottom">`;
+          DispatchItem = `<div class="active-calls-item" data-id="${value.callId || value.id}" data-canrespond="true"><div class="active-call-inner-container"><div class="call-item-top"><div class="call-number">#${value.callId || value.id}</div><div class="call-code priority-${value.priority}">${value.dispatchCode || value.code}</div><div class="call-title">${value.dispatchMessage || value.message}</div><div class="call-radio">${value.units.length}</div></div><div class="call-item-bottom">`;
         }
 
         if (value["time"]) {
@@ -4465,8 +4478,8 @@ window.addEventListener("message", function (event) {
           )}</div>`;
         }
 
-        if (value["firstStreet"]) {
-          DispatchItem += `<div class="call-bottom-info"><span class="fas fa-map-pin"></span>${value.firstStreet}</div>`;
+        if (value["firstStreet"] || value['street']) {
+          DispatchItem += `<div class="call-bottom-info"><span class="fas fa-map-pin"></span>${value.firstStreet || value.street}</div>`;
         }
 
         if (value['camId']) {
@@ -4509,8 +4522,8 @@ window.addEventListener("message", function (event) {
           DispatchItem += `<div class="call-bottom-info"><span class="fas fa-car"></span>${value["model"]}</div>`;
         }
 
-        if (value["firstColor"]) {
-          DispatchItem += `<div class="call-bottom-info"><span class="fas fa-spray-can"></span>${value["firstColor"]}</div>`;
+        if (value["firstColor"] || value['color']) {
+          DispatchItem += `<div class="call-bottom-info"><span class="fas fa-spray-can"></span>${value["firstColor"] || value['color']}</div>`;
         }
 
         if (value["automaticGunfire"] == true) {
@@ -4542,12 +4555,11 @@ window.addEventListener("message", function (event) {
         $(".close-all").css("filter", "brightness(15%)");
         $(".dispatch-attached-units-holder").empty();
         $.each(table, function (index, value) {
-          $(
-            ".dispatch-attached-units-holder"
-          ).prepend(`<div class="dispatch-attached-unit-item" data-id="${value.cid}">
-                        <div class="unit-job unit-police">${value.job}</div>
+          $(".dispatch-attached-units-holder").prepend(
+            `<div class="dispatch-attached-unit-item" data-id="${value.cid}">
+                        <div class="unit-job active-info-job-${value.job}">${value.job}</div>
                         <div class="unit-name">(${value.callsign}) ${value.fullname}</div>
-                        <div class="unit-radio">1</div>
+                        <div class="unit-radio">${value.channel}</div>
                     </div> `);
         });
         setTimeout(() => {
@@ -4588,15 +4600,16 @@ window.addEventListener("message", function (event) {
       const table = eventData.data;
       $(".active-calls-list").empty();
       $.each(table, function (index, value) {
-        if (value && value.job.includes(playerJob)) {
+        if (value && value?.job?.includes(playerJob) || value?.jobs.includes(PlayerJobType)) {
+
           const prio = value["priority"];
-          let DispatchItem = `<div class="active-calls-item" data-id="${value.callId}" data-canrespond="false"><div class="active-call-inner-container"><div class="call-item-top"><div class="call-number">#${value.callId}</div><div class="call-code priority-${value.priority}">${value.dispatchCode}</div><div class="call-title">${value.dispatchMessage}</div><div class="call-radio">${value.units.length}</div></div><div class="call-item-bottom">`;
+          let DispatchItem = `<div class="active-calls-item" data-id="${value.callId || value.id}" data-canrespond="false"><div class="active-call-inner-container"><div class="call-item-top"><div class="call-number">#${value.callId || value.id}</div><div class="call-code priority-${value.priority}">${value.dispatchCode || value.code}</div><div class="call-title">${value.dispatchMessage || value.message}</div><div class="call-radio">${value.units.length}</div></div><div class="call-item-bottom">`;
 
           if (
             value.dispatchCode == "911" ||
             value.dispatchCode == "311"
           ) {
-            DispatchItem = `<div class="active-calls-item" data-id="${value.callId}" data-canrespond="true"><div class="active-call-inner-container"><div class="call-item-top"><div class="call-number">#${value.callId}</div><div class="call-code priority-${value.priority}">${value.dispatchCode}</div><div class="call-title">${value.dispatchMessage}</div><div class="call-radio">${value.units.length}</div></div><div class="call-item-bottom">`;
+            DispatchItem = `<div class="active-calls-item" data-id="${value.callId || value.id}" data-canrespond="true"><div class="active-call-inner-container"><div class="call-item-top"><div class="call-number">#${value.callId || value.id}</div><div class="call-code priority-${value.priority}">${value.dispatchCode || value.code}</div><div class="call-title">${value.dispatchMessage || value.message}</div><div class="call-radio">${value.units.length}</div></div><div class="call-item-bottom">`;
           }
 
           if (value["time"]) {
@@ -4605,8 +4618,8 @@ window.addEventListener("message", function (event) {
             )}</div>`;
           }
 
-          if (value["firstStreet"]) {
-            DispatchItem += `<div class="call-bottom-info"><span class="fas fa-map-pin"></span>${value.firstStreet}</div>`;
+          if (value["firstStreet"] || value['street']) {
+            DispatchItem += `<div class="call-bottom-info"><span class="fas fa-map-pin"></span>${value.firstStreet || value.street}</div>`;
           }
 
           if (value['camId']) {
@@ -4620,7 +4633,7 @@ window.addEventListener("message", function (event) {
           if (value["weapon"]) {
             DispatchItem += `<div class="call-bottom-info"><span class="fas fa-gun"></span>${value.weapon}</div>`;
           }
-          
+
           if (value["gender"]) {
             let gender = "Male";
             if (value["gender"] == 0 || value["gender"] == 2) {
@@ -4637,8 +4650,8 @@ window.addEventListener("message", function (event) {
             DispatchItem += `<div class="call-bottom-info"><span class="fas fa-car"></span>${value["model"]}</div>`;
           }
 
-          if (value["firstColor"]) {
-            DispatchItem += `<div class="call-bottom-info"><span class="fas fa-spray-can"></span>${value["firstColor"]}</div>`;
+          if (value["firstColor"] || value["color"]) {
+            DispatchItem += `<div class="call-bottom-info"><span class="fas fa-spray-can"></span>${value["firstColor"] || value["color"]}</div>`;
           }
 
           if (value["automaticGunfire"] == true) {
@@ -4693,7 +4706,7 @@ window.addEventListener("message", function (event) {
           })
         );
       });
-    
+
       $(".incidents-items").on("contextmenu", ".incidents-item", function (e) {
         var args = "";
         args = [
@@ -4781,7 +4794,7 @@ window.addEventListener("message", function (event) {
           ['foreColor', 'backColor','fontfamily','fontsize','indent', 'outdent'],
           ['strong', 'em',], ['insertImage'],
           ['viewHTML'],
-          ['undo', 'redo'], 
+          ['undo', 'redo'],
           ['formatting'],
           ['superscript', 'subscript'],
           ['link'],
@@ -4968,7 +4981,7 @@ window.addEventListener("message", function (event) {
           ['foreColor', 'backColor','fontfamily','fontsize','indent', 'outdent'],
           ['strong', 'em',], ['insertImage'],
           ['viewHTML'],
-          ['undo', 'redo'], 
+          ['undo', 'redo'],
           ['formatting'],
           ['superscript', 'subscript'],
           ['link'],
@@ -5091,7 +5104,7 @@ window.addEventListener("message", function (event) {
           })
         );
       });
-    
+
       $(".reports-items").on("contextmenu", ".reports-item", function (e) {
         var args = "";
         args = [
@@ -5123,7 +5136,7 @@ window.addEventListener("message", function (event) {
           ['foreColor', 'backColor','fontfamily','fontsize','indent', 'outdent'],
           ['strong', 'em',], ['insertImage'],
           ['viewHTML'],
-          ['undo', 'redo'], 
+          ['undo', 'redo'],
           ['formatting'],
           ['superscript', 'subscript'],
           ['link'],
@@ -5244,7 +5257,7 @@ window.addEventListener("message", function (event) {
           })
         );
       });
-    
+
       $(".weapons-items").on("contextmenu", ".weapons-item", function (e) {
         var args = "";
         args = [
@@ -5526,7 +5539,7 @@ function copyImageSource(url) {
   document.body.appendChild(el);
   el.select();
   document.execCommand('copy');
-  document.body.removeChild(el); 
+  document.body.removeChild(el);
 }
 
 function removeImage(url) {
@@ -5599,29 +5612,29 @@ function searchProfilesResults(result) {
   result.forEach((value) => {
     let charinfo = value.charinfo;
     let metadata = value.metadata;
-  
+
     if (typeof value.charinfo == "string") {
       charinfo = JSON.parse(charinfo);
     }
-  
+
     if (typeof value.metadata == "string") {
       metadata = JSON.parse(metadata);
     }
-  
+
     if (!metadata) {
       metadata = {};
     }
-  
+
     if (!metadata.licences) {
       metadata.licences = {};
     }
-  
+
     let name = charinfo.firstname + " " + charinfo.lastname;
     let warrant = "red-tag";
     let convictions = "red-tag";
-  
+
     let licences = "";
-    let licArr = Object.entries(metadata.licences);
+    let licArr = Object.entries(value.licences);
 
     if (licArr.length == 0 || licArr.length == undefined) {
       var licenseTypes = ['business', 'pilot', 'weapon', 'driver'];
@@ -5692,22 +5705,67 @@ window.addEventListener("message", (event) => {
 });
 
 function updateOfficerData(officerData) {
+  officerData.forEach(officer => {
+    officer.totalSeconds = timeStringToSeconds(officer.totalTime);
+  });
+
+  officerData.sort((a, b) => b.totalSeconds - a.totalSeconds);
+
   const leaderboardBox = document.querySelector('.leaderboard-box');
   leaderboardBox.innerHTML = '';
 
-  const positions = ['1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10th', '11th', '12th', '13th', '14th', '15th', '16th', '17th', '18th', '19th', '20th', '21th', '22th', '23th', '24th', '25th'];
+  const positions = ['1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10th', '11th', '12th', '13th', '14th', '15th', '16th', '17th', '18th', '19th', '20th', '21st', '22nd', '23rd', '24th', '25th'];
 
   officerData.forEach((officer, index) => {
-      const position = positions[index];
-      const officerDiv = document.createElement('div');
-      officerDiv.className = 'leaderboard-box-test';
-      officerDiv.style.fontSize = '1.3vh';
-      officerDiv.style.fontWeight = 'lighter';
-      officerDiv.style.color = index < 3 ? 'white' : 'grey';
+    const position = positions[index];
+    const officerDiv = document.createElement('div');
+    officerDiv.className = 'leaderboard-box-test';
+    officerDiv.style.fontSize = '1.3vh';
+    officerDiv.style.fontWeight = 'lighter';
+    officerDiv.style.color = index < 3 ? 'white' : 'grey';
 
-      officerDiv.innerHTML = `► ${position}: ${officer.name} (${officer.callsign})<span style="float: right; padding-right: 1vh;">${officer.totalTime}</span>`;
-      leaderboardBox.appendChild(officerDiv);
+    officerDiv.innerHTML = `► ${position}: ${officer.name} (${officer.callsign})<span style="float: right; padding-right: 1vh;">${officer.totalTime}</span>`;
+    leaderboardBox.appendChild(officerDiv);
   });
+}
+
+function timeStringToSeconds(t) {
+  if (!t) return 0;
+
+  let days = 0, hours = 0, minutes = 0, seconds = 0;
+  let daysPart = '0';
+  let timePart = t;
+
+  // days vs day check
+  if (t.includes(' days ')) {
+    [daysPart, timePart] = t.split(' days ');
+  }
+
+  const timeParts = timePart.split(' ');
+
+  for (let i = 0; i < timeParts.length; i += 2) {
+    const val = parseInt(timeParts[i]);
+    switch (timeParts[i + 1]) {
+      case 'hours':
+        hours = val;
+        break;
+      case 'minutes':
+        minutes = val;
+        break;
+      case 'seconds':
+        seconds = val;
+        break;
+    }
+  }
+
+  days = parseInt(daysPart);
+
+  return (
+    days * 86400 +
+    hours * 3600 +
+    minutes * 60 +
+    seconds
+  );
 }
 
 
@@ -5743,7 +5801,7 @@ window.addEventListener("load", function () {
 });
 
 
-          // Dispatch Map //  
+          // Dispatch Map //
 customcrs = L.extend({}, L.CRS.Simple, {
   projection: L.Projection.LonLat,
   scale: function(zoom) {
@@ -5777,7 +5835,7 @@ center: [0, -1024],
 maxBoundsViscosity: 1.0
 });
 
-var customImageUrl = 'https://i1.lensdump.com/i/gj7atT.png';
+var customImageUrl = 'https://i.imgur.com/EdOZjzF.jpg';
 
 var sw = map.unproject([0, 1024], 3 - 1);
 var ne = map.unproject([1024, 0], 3 - 1);
@@ -5820,7 +5878,7 @@ function DispatchMAP(DISPATCH) {
   setTimeout(function() {
     map.removeLayer(Dispatches[CODE]);
   }, 1200000);
-  
+
   Dispatches[CODE].bindTooltip(`<div class="map-tooltip-info">${DISPATCH.dispatchMessage}</div></div><div class="map-tooltip-id">#${DISPATCH.callId}</div>`,
       {
           direction: 'top',
