@@ -3443,26 +3443,6 @@ $(document).ready(() => {
     );
   });
 
-  $(".contextmenu").on("click", ".call-attach", function () {
-    const callId = $(this).data("info");
-    $.post(
-      `https://${GetParentResourceName()}/callAttach`,
-      JSON.stringify({
-        callid: callId,
-      })
-    );
-  });
-
-  $(".contextmenu").on("click", ".call-detach", function () {
-    const callId = $(this).data("info");
-    $.post(
-      `https://${GetParentResourceName()}/callDetach`,
-      JSON.stringify({
-        callid: callId,
-      })
-    );
-  });
-
   $(".contextmenu").on("click", ".remove-blip", function () {
     const callId = $(this).data("info");
     $.post(
@@ -3527,34 +3507,14 @@ $(document).ready(() => {
     function (e) {
       const callId = $(this).data("id");
       const canRespond = $(this).data("canrespond");
+
       if (callId) {
         if (canRespond == true) {
           args = [
             {
-              className: "respond-call",
-              icon: "fas fa-reply",
-              text: "Respond to Call",
-              info: callId,
-              status: "",
-            },
-            {
               className: "attached-units",
               icon: "fas fa-link",
               text: "Attached Units",
-              info: callId,
-              status: "",
-            },
-            {
-              className: "call-detach",
-              icon: "fas fa-sign-out-alt",
-              text: "Detach",
-              info: callId,
-              status: "",
-            },
-            {
-              className: "call-attach",
-              icon: "fas fa-sign-in-alt",
-              text: "Respond",
               info: callId,
               status: "",
             },
@@ -3583,20 +3543,6 @@ $(document).ready(() => {
               status: "",
             },
             {
-              className: "call-detach",
-              icon: "fas fa-sign-out-alt",
-              text: "Detach",
-              info: callId,
-              status: "",
-            },
-            {
-              className: "call-attach",
-              icon: "fas fa-sign-in-alt",
-              text: "Respond",
-              info: callId,
-              status: "",
-            },
-            {
               className: "Set-Waypoint",
               icon: "fas fa-map-marker-alt",
               text: "Set Waypoint",
@@ -3612,7 +3558,6 @@ $(document).ready(() => {
             },
           ];
         }
-
         openContextMenu(e, args);
       }
     }
@@ -4555,18 +4500,19 @@ window.addEventListener("message", function (event) {
         $(".close-all").css("filter", "brightness(15%)");
         $(".dispatch-attached-units-holder").empty();
         $.each(table, function (index, value) {
+        const fullname = value.charinfo.firstname + ' ' + value.charinfo.lastname;
+        const callsign = value.metadata.callsign;
+        const jobLabel = value.job.label;
+      
           $(".dispatch-attached-units-holder").prepend(
-            `<div class="dispatch-attached-unit-item" data-id="${value.cid}">
-                        <div class="unit-job active-info-job-${value.job}">${value.job}</div>
-                        <div class="unit-name">(${value.callsign}) ${value.fullname}</div>
-                        <div class="unit-radio">${value.channel}</div>
-                    </div> `);
+            `<div class="dispatch-attached-unit-item" data-id="${value.citizenid}">
+              <div class="unit-job active-info-job-${value.job.name}">${jobLabel}</div>
+              <div class="unit-name">(${callsign}) ${fullname}</div>
+              <div class="unit-radio"><!-- Handle channel if available --></div>
+            </div> `);
         });
         setTimeout(() => {
-          $(".dispatch-attached-units-container").attr(
-            "id",
-            eventData.callid
-          );
+          $(".dispatch-attached-units-container").attr("id", eventData.callid);
         }, 1000);
       }
     } else if (eventData.type == "sendCallResponse") {
