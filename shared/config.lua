@@ -24,7 +24,7 @@ Config.InventoryForWeaponsImages = "lj-inventory"
 -- "LegacyFuel", "lj-fuel", "ps-fuel"
 Config.Fuel = "ps-fuel"
 
--- ['License Name'] = true/false -- Default to having it?
+-- ['License Name'] = true/false. If false, license are set to false by default.
 Config.Licenses = {
     ['driver'] = false,
     ['business'] = false,
