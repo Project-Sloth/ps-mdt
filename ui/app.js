@@ -5652,28 +5652,35 @@ window.addEventListener("message", (event) => {
 });
 
 function updateOfficerData(officerData) {
+  // Convert totalTime to totalSeconds for sorting
   officerData.forEach(officer => {
     officer.totalSeconds = timeStringToSeconds(officer.totalTime);
   });
 
+  // Sort based on totalSeconds
   officerData.sort((a, b) => b.totalSeconds - a.totalSeconds);
 
+  // Efficiently create officer elements
+  const officerElements = officerData.map((officer, index) => {
+    const position = getPosition(index + 1);
+    const color = index < 3 ? 'white' : 'grey';
+
+    return `<div class="leaderboard-box-test" style="font-size: 1.3vh; font-weight: lighter; color: ${color};">
+      ► ${position}: ${officer.name} (${officer.callsign})<span style="float: right; padding-right: 1vh;">${officer.totalTime}</span>
+    </div>`;
+  }).join('');
+
+  // Update the DOM once
   const leaderboardBox = document.querySelector('.leaderboard-box');
-  leaderboardBox.innerHTML = '';
+  leaderboardBox.innerHTML = officerElements;
+}
 
-  const positions = ['1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10th', '11th', '12th', '13th', '14th', '15th', '16th', '17th', '18th', '19th', '20th', '21st', '22nd', '23rd', '24th', '25th'];
-
-  officerData.forEach((officer, index) => {
-    const position = positions[index];
-    const officerDiv = document.createElement('div');
-    officerDiv.className = 'leaderboard-box-test';
-    officerDiv.style.fontSize = '1.3vh';
-    officerDiv.style.fontWeight = 'lighter';
-    officerDiv.style.color = index < 3 ? 'white' : 'grey';
-
-    officerDiv.innerHTML = `► ${position}: ${officer.name} (${officer.callsign})<span style="float: right; padding-right: 1vh;">${officer.totalTime}</span>`;
-    leaderboardBox.appendChild(officerDiv);
-  });
+function getPosition(rank) {
+  const ordinal = rank % 10;
+  if (rank === 11 || rank === 12 || rank === 13) {
+    return rank + 'th';
+  }
+  return rank + (ordinal === 1 ? 'st' : ordinal === 2 ? 'nd' : ordinal === 3 ? 'rd' : 'th');
 }
 
 function timeStringToSeconds(t) {
