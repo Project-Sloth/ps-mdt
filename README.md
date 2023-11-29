@@ -19,7 +19,7 @@ For all support questions, ask in our [Discord](https://www.discord.gg/projectsl
 
 Adds server export for inserting weaponinfo records, that can be used elsewhere in your server, such as weapon purchase, to add information to the mdt. Below is the syntax for this, all arguments are strings.
 
-```
+```lua
 exports['ps-mdt']:CreateWeaponInfo(serial, imageurl, notes, owner, weapClass, weapModel)
 ```
 ![image](https://user-images.githubusercontent.com/82112471/226144189-0cf7a87c-d9bc-4d1f-a9fb-6f14f92cb68b.png)
@@ -28,7 +28,7 @@ exports['ps-mdt']:CreateWeaponInfo(serial, imageurl, notes, owner, weapClass, we
 
 * Find `ox_inventory:buyItem` on modules > shops> server.lua
 * Add the following code block
-```
+```lua
 \\Existing code below for reference, put it right under it. \\
 local message = locale('purchased_for', count, fromItem.label, (currency == 'money' and locale('$') or math.groupdigits(price)), (currency == 'money' and math.groupdigits(price) or ' '..Items(currency).label))
 \\Existing code above for reference, put it right under it. \\
@@ -45,7 +45,7 @@ if string.find(fromData.name, "WEAPON_") then
 				end
 ```
 * Add the follow function towards the end of the script.
-```
+```lua
 \\Existing code below for reference, put it right under it. \\
 server.shops = Shops
 \\Existing code above for reference, put it right under it. \\
@@ -67,7 +67,7 @@ end
 
 ## Self Register Weapons
 * Your citizens can self-register weapons found on their inventory. Event to trigger is below if you're using qb-target. There's also a command available named `registerweapon` but you'll need to uncomment if you want to use it.
-```
+```lua
 ps-mdt:client:selfregister
 ```
 
@@ -94,11 +94,11 @@ local MugShotWebhook = ''
 # Fine & Citation via item
 
 * Add the item to your shared.lua > items.lua 
-```
+```lua
 	['mdtcitation'] 				 = {['name'] = 'mdtcitation', 			  	  	['label'] = 'Citation', 			['weight'] = 1000, 		['type'] = 'item', 		['image'] = 'citation.png', 			['unique'] = true, 		['useable'] = false, ['shouldClose'] = true,	   ['combinable'] = nil,   ['description'] = 'Citation from a police officer!'},
 ```
 * Add the below code to your inventory > app.js. Should be somewhere around markedbills, see below for reference. 
-```
+```lua
         } else if (itemData.name == "mdtcitation") {
     $(".item-info-title").html("<p>" + itemData.label + "</p>");
     $(".item-info-description").html(
@@ -116,7 +116,7 @@ local MugShotWebhook = ''
 # Clock In/Out & Leaderboard
 * Triggers when officers Toggle Duty from inside the mdt.
 * Create a Discord Webhook and add it here [here](https://github.com/Project-Sloth/ps-mdt/blob/c10ea056705dd7b04894716266cd387b00109aff/server/main.lua#L20)
-```
+```lua
 local ClockinWebhook = ''
 ```
 ![image](https://user-images.githubusercontent.com/82112471/228130546-6366ed1e-f5a8-428c-8680-0c384d2cff52.png)
@@ -141,10 +141,10 @@ police:server:JailPlayer
 * [qb-inventory](https://github.com/qbcore-framework/qb-inventory) follow instructions below. 
 
 1. Edit the following event
-```
+```lua
 RegisterNetEvent('inventory:server:SetInventoryData', function(fromInventory, toInventory, fromSlot, toSlot, fromAmount, toAmount)
 ```
-```
+```lua
         elseif QBCore.Shared.SplitStr(shopType, "_")[1] == "Itemshop" then
             if Player.Functions.RemoveMoney("cash", price, "itemshop-bought-item") then
                 if QBCore.Shared.SplitStr(itemData.name, "_")[1] == "weapon" then
@@ -216,7 +216,7 @@ https://youtu.be/w9PAVc3ER_c
 
 1. Add the following code right above `function READER:Main()` on `cl_plate_reader.lua`
 
-```
+```lua
 local Vehicle = nil
 local function GetFrontPlate()
 	local data = {
@@ -229,7 +229,7 @@ end exports("GetFrontPlate", GetFrontPlate)
 ``` 
 
 2. Add the following into `cl_plate_reader.lua` after `local veh = UTIL:GetVehicleInDirection( PLY.veh, start, offset )` on the function `function READER:Main()`
-```
+```lua
 			if i == 1 then
 				Vehicle = veh
 			end
@@ -249,7 +249,7 @@ end exports("GetFrontPlate", GetFrontPlate)
 * You need a Google Document / Sheet link that is viewable.
 
 Paste the link you got in the config here:
-```
+```lua
 -- Google Docs Link
 Config.sopLink = {
     ['police'] = '',
