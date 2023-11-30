@@ -307,11 +307,6 @@ QBCore.Functions.CreateCallback('mdt:server:SearchProfile', function(source, cb,
     return cb({})
 end)
 
-QBCore.Functions.CreateCallback('ps-mdt:getDispatchCalls', function(source, cb)
-    local calls = exports['ps-dispatch']:GetDispatchCalls()
-    cb(calls)
-end)
-
 QBCore.Functions.CreateCallback("mdt:server:getWarrants", function(source, cb)
     local WarrantData = {}
     local data = MySQL.query.await("SELECT * FROM mdt_convictions", {})
