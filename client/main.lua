@@ -241,7 +241,7 @@ RegisterNetEvent('mdt:client:deleteBulletin', function(ignoreId, sentData, job)
     end
 end)
 
-RegisterNetEvent('mdt:client:open', function(bulletin, activeUnits, calls, cid)
+RegisterNetEvent('mdt:client:open', function(bulletin, activeUnits, cid)
     EnableGUI(true)
     local x, y, z = table.unpack(GetEntityCoords(PlayerPedId()))
 
@@ -259,10 +259,13 @@ RegisterNetEvent('mdt:client:open', function(bulletin, activeUnits, calls, cid)
     else playerStreetsLocation = area end
 
     -- local grade = PlayerData.job.grade.name
-
     SendNUIMessage({ type = "data", activeUnits = activeUnits, citizenid = cid, ondutyonly = Config.OnlyShowOnDuty, name = "Welcome, " ..PlayerData.job.grade.name..' '..PlayerData.charinfo.lastname:sub(1,1):upper()..PlayerData.charinfo.lastname:sub(2), location = playerStreetsLocation, fullname = PlayerData.charinfo.firstname..' '..PlayerData.charinfo.lastname, bulletin = bulletin })
-    SendNUIMessage({ type = "calls", data = calls })
     TriggerEvent("mdt:client:dashboardWarrants")
+
+    QBCore.Functions.TriggerCallback('ps-mdt:getDispatchCalls', function(calls)
+        SendNUIMessage({ type = "calls", data = calls })
+    end)
+
 end)
 
 RegisterNetEvent('mdt:client:exitMDT', function()
