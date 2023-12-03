@@ -311,6 +311,7 @@ Config.RosterLink = {
 - **My dispatch calls are not being populated?** - You have not started the dispatch resource before the mdt or renamed the dispatch resource name and not made the necessary changes in mdt to reflect that.
 
 - **Getting a error about utf8mb4_unicode illegal collation?** - QBCore has decided to change their collations on the new txAdmin recipe, change your collation on your players table to utf8mb4_general_ci.
+![image](https://i.imgur.com/XDNlDzk.png )
 
 
 # Reskins
