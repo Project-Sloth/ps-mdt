@@ -221,31 +221,15 @@ RegisterNetEvent("ps-mdt:server:ClockSystem", function()
     end
 end)
 
-QBCore.Functions.CreateCallback('ps-mdt:getDispatchCalls', function(source, cb)
-    if GetResourceState('ps-dispatch') ~= 'started' then
-        cb({})
-        return
-    end
-
-    local calls = exports['ps-dispatch']:GetDispatchCalls()
-
-    if next(calls) == nil then
-        cb({})
-        return
-    end
-
-    cb(calls)
-end)
-
 RegisterNetEvent('mdt:server:openMDT', function()
 	local src = source
 	local PlayerData = GetPlayerData(src)
 	if not PermCheck(src, PlayerData) then return end
 	local Radio = Player(src).state.radioChannel or 0
 		
-	-- if GetResourceState('ps-dispatch') == 'started' then
-	-- 	calls = exports['ps-dispatch']:GetDispatchCalls()
-	-- end
+	if GetResourceState('ps-dispatch') == 'started' then
+		calls = exports['ps-dispatch']:GetDispatchCalls()
+	end
 		
 	activeUnits[PlayerData.citizenid] = {
 		cid = PlayerData.citizenid,
@@ -259,7 +243,7 @@ RegisterNetEvent('mdt:server:openMDT', function()
 
 	local JobType = GetJobType(PlayerData.job.name)
 	local bulletin = GetBulletins(JobType)
-	TriggerClientEvent('mdt:client:open', src, bulletin, activeUnits, PlayerData.citizenid)
+	TriggerClientEvent('mdt:client:open', src, bulletin, activeUnits, calls, PlayerData.citizenid)
 end)
 
 QBCore.Functions.CreateCallback('mdt:server:SearchProfile', function(source, cb, sentData)
@@ -305,11 +289,6 @@ QBCore.Functions.CreateCallback('mdt:server:SearchProfile', function(source, cb,
     end
 
     return cb({})
-end)
-
-QBCore.Functions.CreateCallback('ps-mdt:getDispatchCalls', function(source, cb)
-    local calls = exports['ps-dispatch']:GetDispatchCalls()
-    cb(calls)
 end)
 
 QBCore.Functions.CreateCallback("mdt:server:getWarrants", function(source, cb)
