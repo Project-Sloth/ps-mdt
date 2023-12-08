@@ -1498,6 +1498,7 @@ RegisterNetEvent('mdt:server:setWaypoint', function(callid)
 	local Player = QBCore.Functions.GetPlayer(src)
 	local callid = tonumber(callid)
 	local JobType = GetJobType(Player.PlayerData.job.name)
+	if not callid then return end
 	if JobType == 'police' or JobType == 'ambulance' then
 		if isDispatchRunning then
 			for i = 1, #calls do
@@ -1514,6 +1515,7 @@ RegisterNetEvent('mdt:server:attachedUnits', function(callid)
     local src = source
     local Player = QBCore.Functions.GetPlayer(src)
     local JobType = GetJobType(Player.PlayerData.job.name)
+	if not callid then return end
     if JobType == 'police' or JobType == 'ambulance' then
         if isDispatchRunning then
             for i = 1, #calls do
@@ -1531,6 +1533,7 @@ RegisterNetEvent('mdt:server:setDispatchWaypoint', function(callid, cid)
 	local Player = QBCore.Functions.GetPlayer(src)
 	local callid = tonumber(callid)
 	local JobType = GetJobType(Player.PlayerData.job.name)
+	if not callid then return end
 	if JobType == 'police' or JobType == 'ambulance' then
 		if isDispatchRunning then
 			for i = 1, #calls do
