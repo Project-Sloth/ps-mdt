@@ -1493,29 +1493,34 @@ RegisterNetEvent('mdt:server:removeIncidentCriminal', function(cid, incident)
 end)
 
 -- Dispatch
-
 RegisterNetEvent('mdt:server:setWaypoint', function(callid)
 	local src = source
-	local Player = QBCore.Functions.GetPlayer(source)
+	local Player = QBCore.Functions.GetPlayer(src)
+	local callid = tonumber(callid)
 	local JobType = GetJobType(Player.PlayerData.job.name)
 	if JobType == 'police' or JobType == 'ambulance' then
-		if callid then
-			if isDispatchRunning then
-				TriggerClientEvent('mdt:client:setWaypoint', src, calls[callid])
+		if isDispatchRunning then
+			for i = 1, #calls do
+				if calls[i]['id'] == callid then
+					TriggerClientEvent('mdt:client:setWaypoint', src, calls[i])
+					return
+				end
 			end
 		end
 	end
 end)
-
 
 RegisterNetEvent('mdt:server:attachedUnits', function(callid)
     local src = source
     local Player = QBCore.Functions.GetPlayer(src)
     local JobType = GetJobType(Player.PlayerData.job.name)
     if JobType == 'police' or JobType == 'ambulance' then
-        if callid then
-            if isDispatchRunning then
-                TriggerClientEvent('mdt:client:attachedUnits', src, calls[callid]['units'], callid)
+        if isDispatchRunning then
+            for i = 1, #calls do
+                if calls[i]['id'] == callid then
+                    TriggerClientEvent('mdt:client:attachedUnits', src, calls[i]['units'], callid)
+                    return
+                end
             end
         end
     end
@@ -1527,14 +1532,15 @@ RegisterNetEvent('mdt:server:setDispatchWaypoint', function(callid, cid)
 	local callid = tonumber(callid)
 	local JobType = GetJobType(Player.PlayerData.job.name)
 	if JobType == 'police' or JobType == 'ambulance' then
-		if callid then
-			if isDispatchRunning then
-				
-				TriggerClientEvent('mdt:client:setWaypoint', src, calls[callid])
+		if isDispatchRunning then
+			for i = 1, #calls do
+				if calls[i]['id'] == callid then
+					TriggerClientEvent('mdt:client:setWaypoint', src, calls[i])
+					return
+				end
 			end
 		end
 	end
-
 end)
 
 RegisterNetEvent('mdt:server:callDragAttach', function(callid, cid)
