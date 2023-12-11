@@ -648,8 +648,17 @@ RegisterNUICallback("searchVehicles", function(data, cb)
         result[i]['plate'] = string.upper(result[i]['plate'])
         result[i]['color'] = Config.ColorInformation[mods['color1']]
         result[i]['colorName'] = Config.ColorNames[mods['color1']]
+
+        -- If a server forgets to define a vehicle in their vehicles table, we log a console error
+        -- and set it to unknown. This is to prevent the MDT from getting stuck.
         local vehData = QBCore.Shared.Vehicles[vehicle['vehicle']]
-        result[i]['model'] = vehData["brand"] .. ' ' .. vehData["name"]
+        if vehData == nil then
+            print("Vehicle not found for profile:", vehicle['vehicle']) -- Do not remove print, is a guide for a nil error. 
+            print("Make sure the profile you're trying to load has all cars added to the core under vehicles.lua.") -- Do not remove print, is a guide for a nil error. 
+            result[i]['model'] = "UNKNOWN"
+        else
+            result[i]['model'] = vehData["brand"] .. ' ' .. vehData["name"]
+        end
     end
     cb(result)
 
