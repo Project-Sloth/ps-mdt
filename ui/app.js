@@ -24,6 +24,7 @@ var DispatchNum = 0;
 var playerJob = "";
 let rosterLink  = "";
 let sopLink = "";
+const licenseTypesGlobal = ['business', 'pilot', 'weapon', 'driver', 'weed'];
 
 //Set this to false if you don't want to show the send to community service button on the incidents page
 const canSendToCommunityService = false
@@ -268,7 +269,7 @@ $(document).ready(() => {
     let licenses = Object.entries(result.licences);
 
     if (licenses.length == 0 || licenses.length == undefined) {
-      var licenseTypes = ['business', 'pilot', 'weapon', 'driver'];
+      var licenseTypes = licenseTypesGlobal;
       licenses = Object.entries(licenseTypes.reduce((licenseType, licenseValue) => (licenseType[licenseValue] = false, licenseType), {}));
     }
 
@@ -1005,7 +1006,7 @@ $(document).ready(() => {
     } else if (type == "Weapon") {
       info = "weapon";
     } else {
-      info = type;
+      info = type.toLowerCase();
     }
 
     if ($(this).hasClass("green-tag")) {
@@ -3443,26 +3444,6 @@ $(document).ready(() => {
     );
   });
 
-  $(".contextmenu").on("click", ".call-attach", function () {
-    const callId = $(this).data("info");
-    $.post(
-      `https://${GetParentResourceName()}/callAttach`,
-      JSON.stringify({
-        callid: callId,
-      })
-    );
-  });
-
-  $(".contextmenu").on("click", ".call-detach", function () {
-    const callId = $(this).data("info");
-    $.post(
-      `https://${GetParentResourceName()}/callDetach`,
-      JSON.stringify({
-        callid: callId,
-      })
-    );
-  });
-
   $(".contextmenu").on("click", ".remove-blip", function () {
     const callId = $(this).data("info");
     $.post(
@@ -3527,34 +3508,14 @@ $(document).ready(() => {
     function (e) {
       const callId = $(this).data("id");
       const canRespond = $(this).data("canrespond");
+
       if (callId) {
         if (canRespond == true) {
           args = [
             {
-              className: "respond-call",
-              icon: "fas fa-reply",
-              text: "Respond to Call",
-              info: callId,
-              status: "",
-            },
-            {
               className: "attached-units",
               icon: "fas fa-link",
               text: "Attached Units",
-              info: callId,
-              status: "",
-            },
-            {
-              className: "call-detach",
-              icon: "fas fa-sign-out-alt",
-              text: "Detach",
-              info: callId,
-              status: "",
-            },
-            {
-              className: "call-attach",
-              icon: "fas fa-sign-in-alt",
-              text: "Respond",
               info: callId,
               status: "",
             },
@@ -3583,20 +3544,6 @@ $(document).ready(() => {
               status: "",
             },
             {
-              className: "call-detach",
-              icon: "fas fa-sign-out-alt",
-              text: "Detach",
-              info: callId,
-              status: "",
-            },
-            {
-              className: "call-attach",
-              icon: "fas fa-sign-in-alt",
-              text: "Respond",
-              info: callId,
-              status: "",
-            },
-            {
               className: "Set-Waypoint",
               icon: "fas fa-map-marker-alt",
               text: "Set Waypoint",
@@ -3612,7 +3559,6 @@ $(document).ready(() => {
             },
           ];
         }
-
         openContextMenu(e, args);
       }
     }
@@ -4555,18 +4501,19 @@ window.addEventListener("message", function (event) {
         $(".close-all").css("filter", "brightness(15%)");
         $(".dispatch-attached-units-holder").empty();
         $.each(table, function (index, value) {
+        const fullname = value.charinfo.firstname + ' ' + value.charinfo.lastname;
+        const callsign = value.metadata.callsign;
+        const jobLabel = value.job.label;
+      
           $(".dispatch-attached-units-holder").prepend(
-            `<div class="dispatch-attached-unit-item" data-id="${value.cid}">
-                        <div class="unit-job active-info-job-${value.job}">${value.job}</div>
-                        <div class="unit-name">(${value.callsign}) ${value.fullname}</div>
-                        <div class="unit-radio">${value.channel}</div>
-                    </div> `);
+            `<div class="dispatch-attached-unit-item" data-id="${value.citizenid}">
+              <div class="unit-job active-info-job-${value.job.name}">${jobLabel}</div>
+              <div class="unit-name">(${callsign}) ${fullname}</div>
+              <div class="unit-radio"><!-- Handle channel if available --></div>
+            </div> `);
         });
         setTimeout(() => {
-          $(".dispatch-attached-units-container").attr(
-            "id",
-            eventData.callid
-          );
+          $(".dispatch-attached-units-container").attr("id", eventData.callid);
         }, 1000);
       }
     } else if (eventData.type == "sendCallResponse") {
@@ -5637,7 +5584,7 @@ function searchProfilesResults(result) {
     let licArr = Object.entries(value.licences);
 
     if (licArr.length == 0 || licArr.length == undefined) {
-      var licenseTypes = ['business', 'pilot', 'weapon', 'driver'];
+      var licenseTypes = licenseTypesGlobal;
       licArr = Object.entries(licenseTypes.reduce((licenseType, licenseValue) => (licenseType[licenseValue] = false, licenseType), {}));
     }
 
@@ -5705,28 +5652,35 @@ window.addEventListener("message", (event) => {
 });
 
 function updateOfficerData(officerData) {
+  // Convert totalTime to totalSeconds for sorting
   officerData.forEach(officer => {
     officer.totalSeconds = timeStringToSeconds(officer.totalTime);
   });
 
+  // Sort based on totalSeconds
   officerData.sort((a, b) => b.totalSeconds - a.totalSeconds);
 
+  // Efficiently create officer elements
+  const officerElements = officerData.map((officer, index) => {
+    const position = getPosition(index + 1);
+    const color = index < 3 ? 'white' : 'grey';
+
+    return `<div class="leaderboard-box-test" style="font-size: 1.3vh; font-weight: lighter; color: ${color};">
+      ► ${position}: ${officer.name} (${officer.callsign})<span style="float: right; padding-right: 1vh;">${officer.totalTime}</span>
+    </div>`;
+  }).join('');
+
+  // Update the DOM once
   const leaderboardBox = document.querySelector('.leaderboard-box');
-  leaderboardBox.innerHTML = '';
+  leaderboardBox.innerHTML = officerElements;
+}
 
-  const positions = ['1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10th', '11th', '12th', '13th', '14th', '15th', '16th', '17th', '18th', '19th', '20th', '21st', '22nd', '23rd', '24th', '25th'];
-
-  officerData.forEach((officer, index) => {
-    const position = positions[index];
-    const officerDiv = document.createElement('div');
-    officerDiv.className = 'leaderboard-box-test';
-    officerDiv.style.fontSize = '1.3vh';
-    officerDiv.style.fontWeight = 'lighter';
-    officerDiv.style.color = index < 3 ? 'white' : 'grey';
-
-    officerDiv.innerHTML = `► ${position}: ${officer.name} (${officer.callsign})<span style="float: right; padding-right: 1vh;">${officer.totalTime}</span>`;
-    leaderboardBox.appendChild(officerDiv);
-  });
+function getPosition(rank) {
+  const ordinal = rank % 10;
+  if (rank === 11 || rank === 12 || rank === 13) {
+    return rank + 'th';
+  }
+  return rank + (ordinal === 1 ? 'st' : ordinal === 2 ? 'nd' : ordinal === 3 ? 'rd' : 'th');
 }
 
 function timeStringToSeconds(t) {

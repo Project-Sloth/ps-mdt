@@ -291,6 +291,11 @@ QBCore.Functions.CreateCallback('mdt:server:SearchProfile', function(source, cb,
     return cb({})
 end)
 
+QBCore.Functions.CreateCallback('ps-mdt:getDispatchCalls', function(source, cb)
+    local calls = exports['ps-dispatch']:GetDispatchCalls()
+    cb(calls)
+end)
+
 QBCore.Functions.CreateCallback("mdt:server:getWarrants", function(source, cb)
     local WarrantData = {}
     local data = MySQL.query.await("SELECT * FROM mdt_convictions", {})
@@ -362,12 +367,7 @@ QBCore.Functions.CreateCallback('mdt:server:GetProfileData', function(source, cb
 	if type(target.charinfo) == 'string' then target.charinfo = json.decode(target.charinfo) end
 	if type(target.metadata) == 'string' then target.metadata = json.decode(target.metadata) end
 
-	local licencesdata = target.metadata['licences'] or {
-        ['driver'] = false,
-        ['business'] = false,
-        ['weapon'] = false,
-		['pilot'] = false
-	}
+	local licencesdata = target.metadata['licences'] or Config.Licenses
 
 	local job, grade = UnpackJob(target.job)
 
@@ -1493,94 +1493,39 @@ RegisterNetEvent('mdt:server:removeIncidentCriminal', function(cid, incident)
 end)
 
 -- Dispatch
-
 RegisterNetEvent('mdt:server:setWaypoint', function(callid)
 	local src = source
-	local Player = QBCore.Functions.GetPlayer(source)
+	local Player = QBCore.Functions.GetPlayer(src)
+	local callid = tonumber(callid)
 	local JobType = GetJobType(Player.PlayerData.job.name)
+	if not callid then return end
 	if JobType == 'police' or JobType == 'ambulance' then
-		if callid then
-			if isDispatchRunning then
-				TriggerClientEvent('mdt:client:setWaypoint', src, calls[callid])
+		if isDispatchRunning then
+			for i = 1, #calls do
+				if calls[i]['id'] == callid then
+					TriggerClientEvent('mdt:client:setWaypoint', src, calls[i])
+					return
+				end
 			end
 		end
 	end
-end)
-
-RegisterNetEvent('mdt:server:callDetach', function(callid)
-	local src = source
-	local Player = QBCore.Functions.GetPlayer(src)
-	local playerdata = {
-		fullname = Player.PlayerData.charinfo.firstname.. " "..Player.PlayerData.charinfo.lastname,
-		job = Player.PlayerData.job,
-		cid = Player.PlayerData.citizenid,
-		callsign = Player.PlayerData.metadata.callsign
-	}
-	local JobType = GetJobType(Player.PlayerData.job.name)
-	if JobType == 'police' or JobType == 'ambulance' then
-		if callid then
-			TriggerEvent('dispatch:removeUnit', callid, playerdata, function(newNum)
-				TriggerClientEvent('mdt:client:callDetach', -1, callid, newNum)
-			end)
-		end
-	end
-end)
-
-RegisterNetEvent('mdt:server:callAttach', function(callid)
-	local src = source
-	local plyState = Player(source).state
-	local Radio = plyState.radioChannel or 0
-	local Player = QBCore.Functions.GetPlayer(src)
-	local playerdata = {
-		fullname = Player.PlayerData.charinfo.firstname.. " "..Player.PlayerData.charinfo.lastname,
-		job = Player.PlayerData.job,
-		cid = Player.PlayerData.citizenid,
-		callsign = Player.PlayerData.metadata.callsign,
-		radio = Radio
-	}
-	local JobType = GetJobType(Player.PlayerData.job.name)
-	if JobType == 'police' or JobType == 'ambulance' then
-		if callid then
-			TriggerEvent('dispatch:addUnit', callid, playerdata, function(newNum)
-				TriggerClientEvent('mdt:client:callAttach', -1, callid, newNum)
-			end)
-		end
-	end
-
 end)
 
 RegisterNetEvent('mdt:server:attachedUnits', function(callid)
-	local src = source
-	local Player = QBCore.Functions.GetPlayer(src)
-	local JobType = GetJobType(Player.PlayerData.job.name)
-	if JobType == 'police' or JobType == 'ambulance' then
-		if callid then
-			if isDispatchRunning then
-				
-				TriggerClientEvent('mdt:client:attachedUnits', src, calls[callid]['units'], callid)
-			end
-		end
-	end
-end)
-
-RegisterNetEvent('mdt:server:callDispatchDetach', function(callid, cid)
-	local src = source
-	local Player = QBCore.Functions.GetPlayer(src)
-	local playerdata = {
-		fullname = Player.PlayerData.charinfo.firstname.. " "..Player.PlayerData.charinfo.lastname,
-		job = Player.PlayerData.job,
-		cid = Player.PlayerData.citizenid,
-		callsign = Player.PlayerData.metadata.callsign
-	}
-	local callid = tonumber(callid)
-	local JobType = GetJobType(Player.PlayerData.job.name)
-	if JobType == 'police' or JobType == 'ambulance' then
-		if callid then
-			TriggerEvent('dispatch:removeUnit', callid, playerdata, function(newNum)
-				TriggerClientEvent('mdt:client:callDetach', -1, callid, newNum)
-			end)
-		end
-	end
+    local src = source
+    local Player = QBCore.Functions.GetPlayer(src)
+    local JobType = GetJobType(Player.PlayerData.job.name)
+	if not callid then return end
+    if JobType == 'police' or JobType == 'ambulance' then
+        if isDispatchRunning then
+            for i = 1, #calls do
+                if calls[i]['id'] == callid then
+                    TriggerClientEvent('mdt:client:attachedUnits', src, calls[i]['units'], callid)
+                    return
+                end
+            end
+        end
+    end
 end)
 
 RegisterNetEvent('mdt:server:setDispatchWaypoint', function(callid, cid)
@@ -1588,15 +1533,17 @@ RegisterNetEvent('mdt:server:setDispatchWaypoint', function(callid, cid)
 	local Player = QBCore.Functions.GetPlayer(src)
 	local callid = tonumber(callid)
 	local JobType = GetJobType(Player.PlayerData.job.name)
+	if not callid then return end
 	if JobType == 'police' or JobType == 'ambulance' then
-		if callid then
-			if isDispatchRunning then
-				
-				TriggerClientEvent('mdt:client:setWaypoint', src, calls[callid])
+		if isDispatchRunning then
+			for i = 1, #calls do
+				if calls[i]['id'] == callid then
+					TriggerClientEvent('mdt:client:setWaypoint', src, calls[i])
+					return
+				end
 			end
 		end
 	end
-
 end)
 
 RegisterNetEvent('mdt:server:callDragAttach', function(callid, cid)
