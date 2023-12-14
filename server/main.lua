@@ -367,7 +367,12 @@ QBCore.Functions.CreateCallback('mdt:server:GetProfileData', function(source, cb
 	if type(target.charinfo) == 'string' then target.charinfo = json.decode(target.charinfo) end
 	if type(target.metadata) == 'string' then target.metadata = json.decode(target.metadata) end
 
-	local licencesdata = target.metadata['licences'] or Config.Licenses
+	local licencesdata = target.metadata['licences'] or {
+        ['driver'] = false,
+        ['business'] = false,
+        ['weapon'] = false,
+		['pilot'] = false
+	}
 
 	local job, grade = UnpackJob(target.job)
 
