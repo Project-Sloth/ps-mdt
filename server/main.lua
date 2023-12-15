@@ -850,14 +850,8 @@ RegisterNetEvent('mdt:server:incidentSearchPerson', function(query)
                     return "img/male.png"
                 end
 
-                local firstname, lastname = query:match("^(%S+)%s*(%S*)$")
-                firstname = firstname or query
-                lastname = lastname or query
-
-                local result = MySQL.query.await("SELECT p.citizenid, p.charinfo, p.metadata, md.pfp from players p LEFT JOIN mdt_data md on p.citizenid = md.cid WHERE (LOWER(JSON_UNQUOTE(JSON_EXTRACT(`charinfo`, '$.firstname'))) LIKE :firstname AND LOWER(JSON_UNQUOTE(JSON_EXTRACT(`charinfo`, '$.lastname'))) LIKE :lastname) OR LOWER(`citizenid`) LIKE :citizenid AND `jobtype` = :jobtype LIMIT 30", {
-                    firstname = string.lower('%' .. firstname .. '%'),
-                    lastname = string.lower('%' .. lastname .. '%'),
-                    citizenid = string.lower('%' .. query .. '%'),
+                local result = MySQL.query.await("SELECT p.citizenid, p.charinfo, p.metadata, md.pfp from players p LEFT JOIN mdt_data md on p.citizenid = md.cid WHERE LOWER(CONCAT(JSON_VALUE(p.charinfo, '$.firstname'), ' ', JSON_VALUE(p.charinfo, '$.lastname'))) LIKE :query OR LOWER(`charinfo`) LIKE :query OR LOWER(`citizenid`) LIKE :query OR LOWER(md.fingerprint) LIKE :query AND jobtype = :jobtype LIMIT 30", {
+					query = string.lower('%'..query..'%'),
                     jobtype = JobType
                 })
 
