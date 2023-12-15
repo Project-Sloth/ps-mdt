@@ -107,7 +107,12 @@ function GetPlayerLicenses(identifier)
             if metadata["licences"] ~= nil and metadata["licences"] then
                 return metadata["licences"]
             else
-                return Config.Licenses
+                return {
+                    ['driver'] = false,
+                    ['business'] = false,
+                    ['weapon'] = false,
+                    ['pilot'] = false
+                }
             end
         end
     end
@@ -143,8 +148,12 @@ function UpdateAllLicenses(identifier, incomingLicenses)
         local result = MySQL.scalar.await('SELECT metadata FROM players WHERE citizenid = @identifier', {['@identifier'] = identifier})
         result = json.decode(result)
 
-        result.licences = result.licences or Config.Licenses
-        result.licences['driver'] = true
+        result.licences = result.licences or {
+            ['driver'] = true,
+            ['business'] = false,
+            ['weapon'] = false,
+            ['pilot'] = false
+        }
 
         for k, _ in pairs(incomingLicenses) do
             result.licences[k] = incomingLicenses[k]
