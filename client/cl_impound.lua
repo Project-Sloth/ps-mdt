@@ -57,17 +57,12 @@ local function GetPropByPlate( plate )
 	return Citizen.Await(Prop)
 end
 
-RegisterCommand("getprop",function ()
-	local Prop = GetPropByPlate('47ADS390')
-	print(table.concat(Prop))
-end, false)
-
 local function TakeOutImpound(vehicle)
     local coords = Config.ImpoundLocations[currentGarage]
     if coords then
         QBCore.Functions.SpawnVehicle(vehicle.vehicle, function(veh)
 			local properties = GetPropByPlate(vehicle.plate)
-			
+
 			if type(properties) == "table" then
 				QBCore.Functions.SetVehicleProperties(veh, properties)
 			end
