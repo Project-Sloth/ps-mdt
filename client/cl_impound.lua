@@ -43,20 +43,42 @@ local function doCarDamage(currentVehicle, veh)
 	end
 end
 
+local function GetPropByPlate( plate )
+	if GetResourceState('rhd_garage') == 'started' then
+		local vehData = exports.rhd_garage:getvehdataByPlate(plate)
+		return vehData.props
+	end
+
+	local Prop = promise.new()
+	QBCore.Functions.TriggerCallback('qb-garage:server:GetVehicleProperties', function(properties)
+		Prop:resolve(properties)
+	end, plate)
+	
+	return Citizen.Await(Prop)
+end
+
+RegisterCommand("getprop",function ()
+	local Prop = GetPropByPlate('47ADS390')
+	print(table.concat(Prop))
+end, false)
+
 local function TakeOutImpound(vehicle)
     local coords = Config.ImpoundLocations[currentGarage]
     if coords then
         QBCore.Functions.SpawnVehicle(vehicle.vehicle, function(veh)
-            QBCore.Functions.TriggerCallback('qb-garage:server:GetVehicleProperties', function(properties)
-                QBCore.Functions.SetVehicleProperties(veh, properties)
-                SetVehicleNumberPlateText(veh, vehicle.plate)
-                SetEntityHeading(veh, coords.w)
-                exports[Config.Fuel]:SetFuel(veh, vehicle.fuel)
-                doCarDamage(veh, vehicle)
-                TriggerServerEvent('police:server:TakeOutImpound',vehicle.plate)
-                TriggerEvent("vehiclekeys:client:SetOwner", QBCore.Functions.GetPlate(veh))
-                SetVehicleEngineOn(veh, true, true)
-            end, vehicle.plate)
+			local properties = GetPropByPlate(vehicle.plate)
+			
+			if type(properties) == "table" then
+				QBCore.Functions.SetVehicleProperties(veh, properties)
+			end
+			
+			SetVehicleNumberPlateText(veh, vehicle.plate)
+			SetEntityHeading(veh, coords.w)
+			exports[Config.Fuel]:SetFuel(veh, vehicle.fuel)
+			doCarDamage(veh, vehicle)
+			TriggerServerEvent('police:server:TakeOutImpound',vehicle.plate)
+			TriggerEvent("vehiclekeys:client:SetOwner", QBCore.Functions.GetPlate(veh))
+			SetVehicleEngineOn(veh, true, true)
         end, coords, true)
     end
 end
