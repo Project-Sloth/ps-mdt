@@ -314,7 +314,7 @@ Config.RosterLink = {
 ```sql
 ALTER TABLE players CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci
 ```
-
+- **I'm unable to save incidents and getting no errors?** - This is most likely due to a new police job being made and "type" is not leo. Simply change this in qb-core/shared/jobs.lua.
 
 # Reskins
 The below repos are direct forks of ps-mdt and have been edited to fit certain countries/look.
