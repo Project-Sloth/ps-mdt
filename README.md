@@ -93,9 +93,14 @@ local MugShotWebhook = ''
 ```
 # Fine & Citation via item
 
-* Add the item to your shared.lua > items.lua 
+* Add the item to your shared.lua > items.lua
+* # older qb-core
 ```lua
 	['mdtcitation'] 				 = {['name'] = 'mdtcitation', 			  	  	['label'] = 'Citation', 			['weight'] = 1000, 		['type'] = 'item', 		['image'] = 'citation.png', 			['unique'] = true, 		['useable'] = false, ['shouldClose'] = true,	   ['combinable'] = nil,   ['description'] = 'Citation from a police officer!'},
+```
+* # new qb-core
+```lua
+	mdtcitation 				 = {name = 'mdtcitation', 			  	  	label = 'Citation', 			weight = 1000, 		type = 'item', 		image = 'citation.png', 			unique = true, 		useable = false, shouldClose = true,	   combinable = nil,   description = 'Citation from a police officer!'},
 ```
 * Add the below code to your inventory > app.js. Should be somewhere around markedbills, see below for reference. 
 ```lua
