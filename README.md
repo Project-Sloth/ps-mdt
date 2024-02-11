@@ -124,7 +124,7 @@ local ClockinWebhook = ''
 
 
 # Jailing & Community Service
-* If you're getting kicked for attempted exploit abuse when jailing. Located the follow event below on qb-policejob > server > main.lua
+* If you're getting kicked for attempted exploit abuse while jailing. Locate the following event below in qb-policejob > server > main.lua
 
 ```lua
 police:server:JailPlayer
