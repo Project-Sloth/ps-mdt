@@ -46,6 +46,10 @@ const AmbulanceJobs = {
   ['ambulance']: true,
 }
 
+const FirefighterJobs = {
+  ['firefighter']: true,
+}
+
 const DojJobs = {
   ['lawyer']: true,
   ['judge']: true
@@ -2464,6 +2468,30 @@ $(document).ready(() => {
         <p><em>[ Additional Notes Here ]</em></p>
     </div>
 `;}
+//FIRE INFO
+            if ($(".badge-logo").attr("src") == "img/fire_badge.webp") {
+        template = `
+      <div style="color: white;">
+      <p><strong>Was This Arson?: [Yes/No/Investigate]</strong></p>
+      <p><strong>Fire Report:</strong></p>
+      <p><em>· [ Please explain what happen on scene and what took place on scene ]</em></p>
+      <p><strong>Time Of Call:</strong></p>
+      <p><em>· [ Date:   Time: am/pm]</em></p>
+      <p><strong>Cause of Fire:</strong></p>
+      <p><em>· [Please describe what caused the fire? ]</em></p>
+      <p>-----</p>
+      <p><strong>Witness's:</strong></p>
+      <p><em>· [ List Any Witness's Here ]</em></p>
+      <p><strong>Equipment Used:</strong></p>
+      <p><em>· [ List all equipment used Here ]</em></p>
+      <p>-----</p>
+      <br>
+      <p><strong>Notes:</strong></p>
+      <p><em>[ Additional Notes Here ]</em></p>
+      </div>
+`;
+      }
+      
       $(".manage-reports-editing-title").html(
         "You are currently creating a new report"
       );
@@ -3906,6 +3934,20 @@ $(document).ready(() => {
       image: "img/ems_badge.webp",
       name: "PILLBOX HILL MEDICAL CENTER",
     },
+   firefighter: {
+      color1: "#c00c0c",
+      color2: "#7B2C2C",
+      color3: "#4A1C1C",
+      color4: "#5E2323",
+      color5: "#381515",
+      color6: "#2C1212",
+      color7: "#521C1C",
+      color8: "#CC2525",
+      color9: "#8A8D91",
+      color10: "#444444",
+      image: "img/fire_badge.webp",
+      name: "WARRIOR FIRE DEPT.",
+    },
     doj: {
       color1: "#553a1e",
       color2: "#5f4321",
@@ -4041,12 +4083,14 @@ $(document).ready(() => {
         $(".vehicle-information-title").css("margin-right", "0px").css("width", "81%");
         $(".manage-incidents-title ").css("margin-right", "0px")
         $(".manage-reports-title").css("margin-right", "0px").css("width", "66%");
-      } else if (AmbulanceJobs[sentJob] !== undefined) {
+      } else if (AmbulanceJobs[sentJob] !== undefined|| FirefighterJobs[sentJob] !== undefined)) {
         $(".weapons-nav-item").hide()
         $("#home-warrants-container").fadeOut(0);
         $("#home-reports-container").fadeIn(0);
         if (sentJob == "ambulance") {
-          applyCustomTheme(customThemes.ambulance)
+          applyCustomTheme(customThemes.ambulance);
+        } else if (sentJob == "firefighter") {
+          applyCustomTheme(customThemes.firefighter)
         }
         //$(".quote-span").html("The simplest explanation is almost always somebody screwed up.");
         $(".bolo-nav-item").html("ICU");
@@ -4082,7 +4126,7 @@ $(document).ready(() => {
         $(".dmv-nav-item").hide();
         $(".cams-nav-item").hide();
         $("#reports-officers-involved-tag-title").html(
-          "EMS Involved"
+          "EMS / Firefigthers Involved"
         );
         $("#bolos-officers-involved-tag-title").html(
           "EMS Involved"
@@ -4239,6 +4283,9 @@ window.addEventListener("message", function (event) {
           }
         } else if (AmbulanceJobs[unit.unitType] !== undefined) {
           activeInfoJob = `<div class="unit-job active-info-job-ambulance">Ambulance</div>`
+          emsCount++;
+        } else if (FirefighterJobs[unit.unitType] !== undefined) {
+          activeInfoJob = `<div class="unit-job active-info-job-firefighter">Firefighter</div>`
           emsCount++;
         } else if (DojJobs[unit.unitType] !== undefined) {
           activeInfoJob = `<div class="unit-job active-info-job-doj">DOJ</div>`
@@ -4779,7 +4826,7 @@ window.addEventListener("message", function (event) {
       });
 
       $(".manage-incidents-title-holder").empty();
-      if (PoliceJobs[playerJob] !== undefined || AmbulanceJobs[playerJob] !== undefined) {
+      if (PoliceJobs[playerJob] !== undefined || AmbulanceJobs[playerJob] !== undefined || FirefighterJobs[playerJob] !== undefined) {
         $(".manage-incidents-title-holder").prepend(
           `
             <div class="manage-incidents-title">Manage Incident</div>
