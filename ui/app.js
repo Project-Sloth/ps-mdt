@@ -5787,8 +5787,8 @@ preferCanvas: true,
 center: [0, -1024],
 maxBoundsViscosity: 1.0
 });
-
-var customImageUrl = 'https://cdn.discordapp.com/attachments/1057280333399199764/1227266280436793444/EdOZjzF_-_Imgur.jpg?ex=6627c7ca&is=661552ca&hm=f5228e6355aa23d97fee9286020a72434d913d23c522f4f4c9191db2756549e2&';
+ // https://upload.versescripts.net/ 
+var customImageUrl = 'https://users-cdn.versescripts.net/aeb7987615ac1a17a73e6acdd11c00fa.jpg';
 
 var sw = map.unproject([0, 1024], 3 - 1);
 var ne = map.unproject([1024, 0], 3 - 1);
