@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS `mdt_data` (
   `fingerprint` VARCHAR(50) DEFAULT NULL,
   PRIMARY KEY (`cid`),
   KEY `id` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS `mdt_bulletin` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS `mdt_bulletin` (
   `time` varchar(20)  NOT NULL,
   `jobtype` VARCHAR(25) DEFAULT 'police',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS `mdt_reports` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -34,7 +34,7 @@ CREATE TABLE IF NOT EXISTS `mdt_reports` (
   `time` varchar(20) DEFAULT NULL,
   `jobtype` varchar(25) DEFAULT 'police',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS `mdt_bolos` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -50,7 +50,7 @@ CREATE TABLE IF NOT EXISTS `mdt_bolos` (
   `time` varchar(20) DEFAULT NULL,
   `jobtype` varchar(25) NOT NULL DEFAULT 'police',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS `mdt_convictions` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -67,7 +67,7 @@ CREATE TABLE IF NOT EXISTS `mdt_convictions` (
   `recsentence` int(11) DEFAULT 0,
   `time` varchar(20) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS `mdt_incidents` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -81,7 +81,7 @@ CREATE TABLE IF NOT EXISTS `mdt_incidents` (
   `time` varchar(20) DEFAULT NULL,
   `jobtype` varchar(25) NOT NULL DEFAULT 'police',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS `mdt_logs` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -89,7 +89,7 @@ CREATE TABLE IF NOT EXISTS `mdt_logs` (
   `time` varchar(20) DEFAULT NULL,
   `jobtype` varchar(25) DEFAULT 'police',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS `mdt_vehicleinfo` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -100,7 +100,7 @@ CREATE TABLE IF NOT EXISTS `mdt_vehicleinfo` (
   `image` text NOT NULL DEFAULT '',
   `points` int(11) DEFAULT 0,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS `mdt_weaponinfo` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -112,7 +112,7 @@ CREATE TABLE IF NOT EXISTS `mdt_weaponinfo` (
   `image` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `serial` (`serial`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS `mdt_impound` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -121,7 +121,7 @@ CREATE TABLE IF NOT EXISTS `mdt_impound` (
   `fee` int(11) DEFAULT NULL,
   `time` varchar(255) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS `mdt_clocking` (
   `id` int(10) NOT NULL AUTO_INCREMENT,
@@ -133,4 +133,4 @@ CREATE TABLE IF NOT EXISTS `mdt_clocking` (
   `total_time` int(10) NOT NULL DEFAULT '0',
   PRIMARY KEY (`user_id`) USING BTREE,
   KEY `id` (`id`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
