@@ -13,6 +13,7 @@ For all support questions, ask in our [Discord](https://www.discord.gg/projectsl
 # Installation
 * Download ZIP
 * Drag and drop resource into your server files, make sure to remove -main in the folder name
+* Open the sql folder and run the SQL script which corresponds to your framework
 
 # Weapon Info Export
 
@@ -335,4 +336,3 @@ The below repos are direct forks of ps-mdt and have been edited to fit certain c
 * [ImXirvin](https://github.com/ImXirvin)
 * [lenzh](https://github.com/lenzh)
 * Everyone else that we may have missed, thank you! 
-* Open the sql folder and run the SQL script which corresponds to your framework
