@@ -5788,7 +5788,7 @@ center: [0, -1024],
 maxBoundsViscosity: 1.0
 });
  // https://upload.versescripts.net/ 
-var customImageUrl = 'https://users-cdn.versescripts.net/aeb7987615ac1a17a73e6acdd11c00fa.jpg';
+var customImageUrl = 'https://i.ibb.co/7bqjXKj/gta5-map.jpg';
 
 var sw = map.unproject([0, 1024], 3 - 1);
 var ne = map.unproject([1024, 0], 3 - 1);
