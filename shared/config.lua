@@ -3,6 +3,14 @@ Config = Config or {}
 Config.UsingPsHousing = false
 Config.UsingDefaultQBApartments = true
 Config.OnlyShowOnDuty = true
+
+-- RECOMMENDED Fivemerr Images. DOES NOT EXPIRE. 
+-- YOU NEED TO SET THIS UP FOLLOW INSTRUCTIONS BELOW.
+-- Documents: https://docs.fivemerr.com/integrations/mdt-scripts/ps-mdt
+Config.FivemerrMugShot = true
+
+-- Discord webhook for images. NOT RECOMMENDED, IMAGES EXPIRE.
+Config.MugShotWebhook = false
 Config.UseCQCMugshot = true
 
 -- Front, Back Side. Use 4 for both sides, we recommend leaving at 1 for default.

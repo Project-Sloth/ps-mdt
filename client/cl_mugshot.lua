@@ -17,11 +17,24 @@ local MugShots = {}
 -- Mugshot functions
 
 local function TakeMugShot()
-    QBCore.Functions.TriggerCallback('ps-mdt:server:MugShotWebhook', function(MugShotWebhook)
-        exports['screenshot-basic']:requestScreenshotUpload(MugShotWebhook, 'files[]', {encoding = 'jpg'}, function(data)
-            local resp = json.decode(data)
-            table.insert(MugshotArray, resp.attachments[1].url)
-        end)
+    QBCore.Functions.TriggerCallback('ps-mdt:server:MugShotWebhook', function(webhookUrl, apiKey)
+        if Config.MugShotWebhook then
+            exports['screenshot-basic']:requestScreenshotUpload(webhookUrl, 'files[]', {encoding = 'jpg'}, function(data)
+                local resp = json.decode(data)
+                table.insert(MugshotArray, resp.attachments[1].url)
+            end)
+        elseif Config.FivemerrMugShot then
+            exports['screenshot-basic']:requestScreenshotUpload('https://api.fivemerr.com/v1/media/images', 'file', {
+                headers = {
+                    Authorization = apiKey
+                },
+                encoding = 'png'
+            }, function(data)
+                local resp = json.decode(data)
+                local link = (resp and resp.url) or 'invalid_url'
+                print(link)
+            end)
+        end
     end)
 end
 
@@ -190,8 +203,9 @@ RegisterNetEvent('cqc-mugshot:client:trigger', function()
 end)
 
 RegisterNUICallback("sendToJail", function(data, cb)
-    QBCore.Functions.TriggerCallback('ps-mdt:server:MugShotWebhook', function(MugShotWebhook)
-        if MugShotWebhook ~= '' then
+    QBCore.Functions.TriggerCallback('ps-mdt:server:MugShotWebhook', function(webhookUrl, apiKey)
+        local webhookUrl = Config.MugShotWebhook and webhookUrl or 'https://api.fivemerr.com/v1/media/images'
+        if webhookUrl ~= '' then
             local citizenId, sentence = data.citizenId, data.sentence
 
             -- Gets the player id from the citizenId
@@ -203,7 +217,7 @@ RegisterNUICallback("sendToJail", function(data, cb)
             local targetSourceId = Citizen.Await(p)
         
             if sentence > 0 then
-                if Config.UseCQCMugshot    then
+                if Config.UseCQCMugshot then
                     TriggerServerEvent('cqc-mugshot:server:triggerSuspect', targetSourceId)
                 end
                 Citizen.Wait(5000)
