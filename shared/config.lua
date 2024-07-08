@@ -29,6 +29,9 @@ Config.QBBankingUse = false
 -- However, if you're using a different inventory system, please refer to the "Inventory Edit | Automatic Add Weapons with images" section in ps-mdt's README.
 Config.InventoryForWeaponsImages = "lj-inventory"
 
+-- Set to true to register all weapons that are added via AddItem in ox_inventory
+Config.RegisterCreatedWeapons = true
+
 -- "LegacyFuel", "lj-fuel", "ps-fuel"
 Config.Fuel = "ps-fuel"
 
