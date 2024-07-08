@@ -86,6 +86,10 @@ Config.UseCQCMugshot = true
 -- Front, Back Side. Use 4 for both sides, we recommend leaving at 1 for default.
 Config.MugPhotos = 1
 ```
+* Use Fivemerr to upload your mugshot pictures. Do not use Discord, images will expire. Documents for setup are [here.](https://docs.fivemerr.com/integrations/mdt-scripts/ps-mdt)
+```
+Config.FivemerrMugShot = true
+```
 * Create a Discord Webhook and add it [here](https://github.com/Project-Sloth/ps-mdt/blob/c10ea056705dd7b04894716266cd387b00109aff/server/main.lua#L16C26-L16C26)
 ```lua
 -- Images for mug shots will be uploaded here. Add a Discord webhook. 
