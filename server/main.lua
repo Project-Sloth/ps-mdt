@@ -2097,7 +2097,7 @@ if Config.InventoryForWeaponsImages == "ox_inventory" then
 			if not owner or not payload.metadata.serial then return end
 			local imageurl = ("https://cfx-nui-ox_inventory/web/images/%s.png"):format(payload.itemName)
 			local notes = "Purchased from shop"
-			local weapClass = "Class"
+			local weapClass = "Class" --@TODO retrieve class better
 
 			local success, result = pcall(function()
 				return CreateWeaponInfo(payload.metadata.serial, imageurl, notes, owner, weapClass, payload.itemName)
@@ -2111,7 +2111,12 @@ if Config.InventoryForWeaponsImages == "ox_inventory" then
 	end, {
 		typeFilter = { ['player'] = true }
 	})
-	if Config.RegisterCreatedWeapons then -- This is for other shop resources that use the AddItem method. Will also capture items created at benches.
+	-- This is for other shop resources that use the AddItem method. 
+	-- Only registers weapons with serial numbers, must specify a slot in ox_inventory:AddItem with metadata
+	-- metadata = {
+	--   registered = true
+	-- }
+	if Config.RegisterCreatedWeapons then
 		exports.ox_inventory:registerHook('createItem', function(payload)
 			if not string.find(payload.item.name, "WEAPON_") then return true end
 			CreateThread(function()
@@ -2119,7 +2124,7 @@ if Config.InventoryForWeaponsImages == "ox_inventory" then
 				if not owner or not payload.metadata.serial then return end
 				local imageurl = ("https://cfx-nui-ox_inventory/web/images/%s.png"):format(payload.item.name)
 				local notes = "Purchased from shop"
-				local weapClass = "Class"
+				local weapClass = "Class" --@TODO retrieve class better
 
 				local success, result = pcall(function()
 					return CreateWeaponInfo(payload.metadata.serial, imageurl, notes, owner, weapClass, payload.item.name)
