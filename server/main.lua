@@ -2086,3 +2086,55 @@ function generateMessageFromResult(result)
     message = message .. "Details: " .. details
     return message
 end
+
+if Config.InventoryForWeaponsImages == "ox_inventory" and Config.RegisterWeaponsAutomatically then
+	exports.ox_inventory:registerHook('buyItem', function(payload)
+		if not string.find(payload.itemName, "WEAPON_") then return true end
+		CreateThread(function()
+			local owner = QBCore.Functions.GetPlayer(payload.source).PlayerData.citizenid
+			if not owner or not payload.metadata.serial then return end
+			local imageurl = ("https://cfx-nui-ox_inventory/web/images/%s.png"):format(payload.itemName)
+			local notes = "Purchased from shop"
+			local weapClass = "Class" --@TODO retrieve class better
+
+			local success, result = pcall(function()
+				return CreateWeaponInfo(payload.metadata.serial, imageurl, notes, owner, weapClass, payload.itemName)
+			end)
+
+			if not success then
+				print("Error in creating weapon info in MDT: " .. result)
+			end
+		end)
+		return true
+	end, {
+		typeFilter = { ['player'] = true }
+	})
+	-- This is for other shop resources that use the AddItem method. 
+	-- Only registers weapons with serial numbers, must specify a slot in ox_inventory:AddItem with metadata
+	-- metadata = {
+	--   registered = true
+	-- }
+	if Config.RegisterCreatedWeapons then
+		exports.ox_inventory:registerHook('createItem', function(payload)
+			if not string.find(payload.item.name, "WEAPON_") then return true end
+			CreateThread(function()
+				local owner = QBCore.Functions.GetPlayer(payload.inventoryId).PlayerData.citizenid
+				if not owner or not payload.metadata.serial then return end
+				local imageurl = ("https://cfx-nui-ox_inventory/web/images/%s.png"):format(payload.item.name)
+				local notes = "Purchased from shop"
+				local weapClass = "Class" --@TODO retrieve class better
+
+				local success, result = pcall(function()
+					return CreateWeaponInfo(payload.metadata.serial, imageurl, notes, owner, weapClass, payload.item.name)
+				end)
+
+				if not success then
+					print("Error in creating weapon info in MDT: " .. result)
+				end
+			end)
+			return true
+		end, {
+			typeFilter = { ['player'] = true }
+		})
+	end
+end
