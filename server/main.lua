@@ -2089,7 +2089,7 @@ function generateMessageFromResult(result)
     return message
 end
 
-if Config.InventoryForWeaponsImages == "ox_inventory" then
+if Config.InventoryForWeaponsImages == "ox_inventory" and Config.RegisterWeaponsAutomatically then
 	exports.ox_inventory:registerHook('buyItem', function(payload)
 		if not string.find(payload.itemName, "WEAPON_") then return true end
 		CreateThread(function()
