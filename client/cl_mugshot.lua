@@ -32,7 +32,7 @@ local function TakeMugShot()
             }, function(data)
                 local resp = json.decode(data)
                 local link = (resp and resp.url) or 'invalid_url'
-                print(link)
+                table.insert(MugshotArray, link)
             end)
         end
     end)
