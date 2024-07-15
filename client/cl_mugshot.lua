@@ -41,6 +41,7 @@ end
 local function PhotoProcess(ped)
     local rotation = suspectheading
     for photo = 1, Config.MugPhotos, 1 do
+        Wait(1500)
         TakeMugShot()
         -- Transient error can occur if we don't wait long enough for the array to be pushed with the new mugshot
         -- URL. So we wait until this has happened.
