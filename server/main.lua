@@ -588,11 +588,11 @@ end)
 RegisterNetEvent('psmdt-mugshot:server:MDTupload', function(citizenid, MugShotURLs)
     MugShots[citizenid] = MugShotURLs
     local cid = citizenid
-    MySQL.Async.insert('INSERT INTO mdt_data (cid, pfp, gallery, tags) VALUES (:cid, :pfp, :gallery, :tags) ON DUPLICATE KEY UPDATE cid = :cid,  pfp = :pfp, tags = :tags, gallery = :gallery', {
+    MySQL.Async.insert('INSERT INTO mdt_data (cid, pfp, gallery, tags) VALUES (:cid, :pfp, :gallery, :tags) ON DUPLICATE KEY UPDATE cid = :cid,  pfp = :pfp, gallery = :gallery, tags = :tags', {
 		cid = cid,
-		pfp = MugShotURLs[1],
+		pfp = MugShots[citizenid][1],
+		gallery = json.encode(MugShots[citizenid]),
 		tags = json.encode(tags),
-		gallery = json.encode(MugShotURLs),
 	})
 end)
 
