@@ -43,8 +43,12 @@ local function PhotoProcess(ped)
     for photo = 1, Config.MugPhotos, 1 do
         Wait(1500)
         TakeMugShot()
+        -- Transient error can occur if we don't wait long enough for the array to be pushed with the new mugshot
+        -- URL. So we wait until this has happened.
+        while #MugshotArray == 0 do
+            Wait(1000)
+        end
         PlaySoundFromCoord(-1, "SHUTTER_FLASH", x, y, z, "CAMERA_FLASH_SOUNDSET", true, 5, 0)
-        Wait(1500)
         rotation = rotation - 90.0
         SetEntityHeading(ped, rotation)
     end
@@ -197,7 +201,7 @@ RegisterNetEvent('cqc-mugshot:client:trigger', function()
             SetEntityHeading(ped, suspectheading)
             ClearPedSecondaryTask(GetPlayerPed(ped))
         end
-           TriggerServerEvent('psmdt-mugshot:server:MDTupload', playerData.citizenid, MugshotArray)
+        TriggerServerEvent('psmdt-mugshot:server:MDTupload', playerData.citizenid, MugshotArray)
         mugshotInProgress = false
     end)
 end)
