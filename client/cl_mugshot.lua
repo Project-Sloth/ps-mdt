@@ -19,7 +19,7 @@ local MugShots = {}
 local function TakeMugShot()
     QBCore.Functions.TriggerCallback('ps-mdt:server:MugShotWebhook', function(webhookUrl, apiKey)
         if Config.MugShotWebhook then
-            exports['screenshot-basic']:requestScreenshotUpload(webhookUrl, 'files[]', {encoding = 'jpg'}, function(data)
+            exports['screenshot-basic']:requestScreenshotUpload(webhookUrl, 'files[]', {encoding = Config.MugshotEncoding}, function(data)
                 local resp = json.decode(data)
                 table.insert(MugshotArray, resp.attachments[1].url)
             end)
@@ -28,7 +28,7 @@ local function TakeMugShot()
                 headers = {
                     Authorization = apiKey
                 },
-                encoding = 'png'
+                encoding = Config.MugshotEncoding
             }, function(data)
                 local resp = json.decode(data)
                 local link = (resp and resp.url) or 'invalid_url'

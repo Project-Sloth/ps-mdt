@@ -8,6 +8,7 @@ Config.OnlyShowOnDuty = true
 -- YOU NEED TO SET THIS UP FOLLOW INSTRUCTIONS BELOW.
 -- Documents: https://docs.fivemerr.com/integrations/mdt-scripts/ps-mdt
 Config.FivemerrMugShot = true
+Config.MugshotEncoding = "png"  -- Default encoding is png, can be set to jpg for better performance.
 
 -- Discord webhook for images. NOT RECOMMENDED, IMAGES EXPIRE.
 Config.MugShotWebhook = false
