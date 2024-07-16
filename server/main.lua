@@ -11,6 +11,15 @@ local antiSpam = false
 local calls = {}
 
 --------------------------------
+-- SET YOUR FIVEMERR API HERE. 
+-- Look at their docs below for more info. 
+-- https://docs.fivemerr.com/integrations/mdt-scripts/ps-mdt
+-- Images for mug shots will be uploaded here and will not expire.
+local FivemerrMugShot = 'https://api.fivemerr.com/v1/media/images'
+local FivemerrApiKey = 'YOUR API KEY HERE'
+
+--------------------------------
+-- NOT RECOMMENDED. WE RECOMMEND USING Fivemerr.
 -- SET YOUR WEHBOOKS IN HERE
 -- Images for mug shots will be uploaded here. Add a Discord webhook. 
 local MugShotWebhook = ''
@@ -25,12 +34,26 @@ local IncidentWebhook = ''
 --------------------------------
 
 QBCore.Functions.CreateCallback('ps-mdt:server:MugShotWebhook', function(source, cb)
-    if MugShotWebhook == '' then
-        print("\27[31mA webhook is missing in: MugShotWebhook (server > main.lua > line 16)\27[0m")
+    if Config.MugShotWebhook then
+        if MugShotWebhook == '' then
+            print("\27[31mA webhook is missing in: MugShotWebhook (server > main.lua > line 18)\27[0m")
+            cb('', '')
+        else
+            cb(MugShotWebhook, '')
+        end
+    elseif Config.FivemerrMugShot then
+        if FivemerrMugShot == '' then
+            print("\27[31mFivemerr setup is missing in: FivemerrMugShot (server > main.lua > line 19)\27[0m")
+            cb('', '')
+        else
+            cb(FivemerrMugShot, FivemerrApiKey)
+        end
     else
-        cb(MugShotWebhook)
+        print("\27[31mNo valid webhook configuration found.\27[0m")
+        cb('', '')
     end
 end)
+
 
 local function GetActiveData(cid)
 	local player = type(cid) == "string" and cid or tostring(cid)
@@ -89,17 +112,20 @@ end
 
 AddEventHandler('onResourceStart', function(resourceName)
     if GetCurrentResourceName() ~= resourceName then return end
-	Wait(3000)
-	if MugShotWebhook == '' then
-		print("\27[31mA webhook is missing in: MugShotWebhook (server > main.lua > line 16)\27[0m")
+    Wait(3000)
+    if Config.MugShotWebhook and MugShotWebhook == '' then
+        print("\27[31mA webhook is missing in: MugShotWebhook (server > main.lua > line 16)\27[0m")
+    end
+    if Config.FivemerrMugShot and FivemerrMugShot == '' then
+        print("\27[31mFivemerr setup is missing in: FivemerrMugShot (server > main.lua > line 19)\27[0m")
     end
     if ClockinWebhook == '' then
-		print("\27[31mA webhook is missing in: ClockinWebhook (server > main.lua > line 20)\27[0m")
-	end
-	if GetResourceState('ps-dispatch') == 'started' then
-		local calls = exports['ps-dispatch']:GetDispatchCalls()
-		return calls
-	end
+        print("\27[31mA webhook is missing in: ClockinWebhook (server > main.lua > line 24)\27[0m")
+    end
+    if GetResourceState('ps-dispatch') == 'started' then
+        local calls = exports['ps-dispatch']:GetDispatchCalls()
+        return calls
+    end
 end)
 
 RegisterNetEvent("ps-mdt:server:OnPlayerUnload", function()
@@ -298,16 +324,14 @@ end)
 
 QBCore.Functions.CreateCallback("mdt:server:getWarrants", function(source, cb)
     local WarrantData = {}
-    local data = MySQL.query.await("SELECT * FROM mdt_convictions", {})
+    local data = MySQL.query.await("SELECT * FROM mdt_convictions WHERE warrant = 1", {})
     for _, value in pairs(data) do
-        if value.warrant == "1" then
-			WarrantData[#WarrantData+1] = {
-                cid = value.cid,
-                linkedincident = value.linkedincident,
-                name = GetNameFromId(value.cid),
-                time = value.time
-            }
-        end
+	WarrantData[#WarrantData+1] = {
+        	cid = value.cid,
+        	linkedincident = value.linkedincident,
+        	name = GetNameFromId(value.cid),
+        	time = value.time
+        }
     end
     cb(WarrantData)
 end)
@@ -564,11 +588,11 @@ end)
 RegisterNetEvent('psmdt-mugshot:server:MDTupload', function(citizenid, MugShotURLs)
     MugShots[citizenid] = MugShotURLs
     local cid = citizenid
-    MySQL.Async.insert('INSERT INTO mdt_data (cid, pfp, gallery, tags) VALUES (:cid, :pfp, :gallery, :tags) ON DUPLICATE KEY UPDATE cid = :cid,  pfp = :pfp, tags = :tags, gallery = :gallery', {
+    MySQL.Async.insert('INSERT INTO mdt_data (cid, pfp, gallery, tags) VALUES (:cid, :pfp, :gallery, :tags) ON DUPLICATE KEY UPDATE cid = :cid,  pfp = :pfp, gallery = :gallery, tags = :tags', {
 		cid = cid,
-		pfp = MugShotURLs[1],
+		pfp = MugShots[citizenid][1],
+		gallery = json.encode(MugShots[citizenid]),
 		tags = json.encode(tags),
-		gallery = json.encode(MugShotURLs),
 	})
 end)
 
@@ -2061,4 +2085,56 @@ function generateMessageFromResult(result)
     message = message .. "Title: " .. title .. "\n"
     message = message .. "Details: " .. details
     return message
+end
+
+if Config.InventoryForWeaponsImages == "ox_inventory" and Config.RegisterWeaponsAutomatically then
+	exports.ox_inventory:registerHook('buyItem', function(payload)
+		if not string.find(payload.itemName, "WEAPON_") then return true end
+		CreateThread(function()
+			local owner = QBCore.Functions.GetPlayer(payload.source).PlayerData.citizenid
+			if not owner or not payload.metadata.serial then return end
+			local imageurl = ("https://cfx-nui-ox_inventory/web/images/%s.png"):format(payload.itemName)
+			local notes = "Purchased from shop"
+			local weapClass = "Class" --@TODO retrieve class better
+
+			local success, result = pcall(function()
+				return CreateWeaponInfo(payload.metadata.serial, imageurl, notes, owner, weapClass, payload.itemName)
+			end)
+
+			if not success then
+				print("Error in creating weapon info in MDT: " .. result)
+			end
+		end)
+		return true
+	end, {
+		typeFilter = { ['player'] = true }
+	})
+	-- This is for other shop resources that use the AddItem method. 
+	-- Only registers weapons with serial numbers, must specify a slot in ox_inventory:AddItem with metadata
+	-- metadata = {
+	--   registered = true
+	-- }
+	if Config.RegisterCreatedWeapons then
+		exports.ox_inventory:registerHook('createItem', function(payload)
+			if not string.find(payload.item.name, "WEAPON_") then return true end
+			CreateThread(function()
+				local owner = QBCore.Functions.GetPlayer(payload.inventoryId).PlayerData.citizenid
+				if not owner or not payload.metadata.serial then return end
+				local imageurl = ("https://cfx-nui-ox_inventory/web/images/%s.png"):format(payload.item.name)
+				local notes = "Purchased from shop"
+				local weapClass = "Class" --@TODO retrieve class better
+
+				local success, result = pcall(function()
+					return CreateWeaponInfo(payload.metadata.serial, imageurl, notes, owner, weapClass, payload.item.name)
+				end)
+
+				if not success then
+					print("Error in creating weapon info in MDT: " .. result)
+				end
+			end)
+			return true
+		end, {
+			typeFilter = { ['player'] = true }
+		})
+	end
 end

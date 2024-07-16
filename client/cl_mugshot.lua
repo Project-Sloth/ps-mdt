@@ -17,11 +17,24 @@ local MugShots = {}
 -- Mugshot functions
 
 local function TakeMugShot()
-    QBCore.Functions.TriggerCallback('ps-mdt:server:MugShotWebhook', function(MugShotWebhook)
-        exports['screenshot-basic']:requestScreenshotUpload(MugShotWebhook, 'files[]', {encoding = 'jpg'}, function(data)
-            local resp = json.decode(data)
-            table.insert(MugshotArray, resp.attachments[1].url)
-        end)
+    QBCore.Functions.TriggerCallback('ps-mdt:server:MugShotWebhook', function(webhookUrl, apiKey)
+        if Config.MugShotWebhook then
+            exports['screenshot-basic']:requestScreenshotUpload(webhookUrl, 'files[]', {encoding = 'jpg'}, function(data)
+                local resp = json.decode(data)
+                table.insert(MugshotArray, resp.attachments[1].url)
+            end)
+        elseif Config.FivemerrMugShot then
+            exports['screenshot-basic']:requestScreenshotUpload('https://api.fivemerr.com/v1/media/images', 'file', {
+                headers = {
+                    Authorization = apiKey
+                },
+                encoding = 'png'
+            }, function(data)
+                local resp = json.decode(data)
+                local link = (resp and resp.url) or 'invalid_url'
+                table.insert(MugshotArray, link)
+            end)
+        end
     end)
 end
 
@@ -30,8 +43,12 @@ local function PhotoProcess(ped)
     for photo = 1, Config.MugPhotos, 1 do
         Wait(1500)
         TakeMugShot()
+        -- Transient error can occur if we don't wait long enough for the array to be pushed with the new mugshot
+        -- URL. So we wait until this has happened.
+        while #MugshotArray == 0 do
+            Wait(1000)
+        end
         PlaySoundFromCoord(-1, "SHUTTER_FLASH", x, y, z, "CAMERA_FLASH_SOUNDSET", true, 5, 0)
-        Wait(1500)
         rotation = rotation - 90.0
         SetEntityHeading(ped, rotation)
     end
@@ -184,14 +201,15 @@ RegisterNetEvent('cqc-mugshot:client:trigger', function()
             SetEntityHeading(ped, suspectheading)
             ClearPedSecondaryTask(GetPlayerPed(ped))
         end
-           TriggerServerEvent('psmdt-mugshot:server:MDTupload', playerData.citizenid, MugshotArray)
+        TriggerServerEvent('psmdt-mugshot:server:MDTupload', playerData.citizenid, MugshotArray)
         mugshotInProgress = false
     end)
 end)
 
 RegisterNUICallback("sendToJail", function(data, cb)
-    QBCore.Functions.TriggerCallback('ps-mdt:server:MugShotWebhook', function(MugShotWebhook)
-        if MugShotWebhook ~= '' then
+    QBCore.Functions.TriggerCallback('ps-mdt:server:MugShotWebhook', function(webhookUrl, apiKey)
+        local webhookUrl = Config.MugShotWebhook and webhookUrl or 'https://api.fivemerr.com/v1/media/images'
+        if webhookUrl ~= '' then
             local citizenId, sentence = data.citizenId, data.sentence
 
             -- Gets the player id from the citizenId
@@ -203,7 +221,7 @@ RegisterNUICallback("sendToJail", function(data, cb)
             local targetSourceId = Citizen.Await(p)
         
             if sentence > 0 then
-                if Config.UseCQCMugshot    then
+                if Config.UseCQCMugshot then
                     TriggerServerEvent('cqc-mugshot:server:triggerSuspect', targetSourceId)
                 end
                 Citizen.Wait(5000)
