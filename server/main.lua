@@ -33,8 +33,6 @@ local ClockinWebhook = ''
 local IncidentWebhook = ''
 --------------------------------
 
-
-
 QBCore.Functions.CreateCallback('ps-mdt:server:MugShotWebhook', function(source, cb)
     if Config.MugShotWebhook then
         if MugShotWebhook == '' then
