@@ -33,9 +33,7 @@ local ClockinWebhook = ''
 local IncidentWebhook = ''
 --------------------------------
 
-local function remove_closing_tags(str)
-	return string.gsub(str, "/", "")
-end
+
 
 QBCore.Functions.CreateCallback('ps-mdt:server:MugShotWebhook', function(source, cb)
     if Config.MugShotWebhook then
@@ -1618,7 +1616,7 @@ RegisterNetEvent('mdt:server:sendMessage', function(message, time)
 					callsign = Player.PlayerData.metadata.callsign,
 					cid = Player.PlayerData.citizenid,
 					name = '('..callsign..') '..Player.PlayerData.charinfo.firstname.. " "..Player.PlayerData.charinfo.lastname,
-					message = remove_closing_tags(message),
+					message = message,
 					time = time,
 					job = Player.PlayerData.job.name
 				}

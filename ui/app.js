@@ -1138,15 +1138,30 @@ $(document).ready(() => {
     }
   });
 
+  function sanitizeInput(input) {
+    const map = {
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#x27;',
+      '/': '&#x2F;',
+    };
+    const reg = /[&<>"'/]/ig;
+    return input.replace(reg, (match) => (map[match]));
+  }
+
   $("#dispatchmsg").keydown(function (e) {
     const keyCode = e.which || e.keyCode;
     if (keyCode === 13 && !e.shiftKey) {
       e.preventDefault();
       const time = new Date();
+     
+      const message = sanitizeInput($(this).val());
       $.post(
         `https://${GetParentResourceName()}/dispatchMessage`,
         JSON.stringify({
-          message: $(this).val(),
+          message: message,
           time: time.getTime(),
         })
       );
