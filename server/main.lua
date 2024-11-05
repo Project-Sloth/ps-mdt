@@ -64,18 +64,16 @@ local function GetActiveData(cid)
 end
 
 local function IsPoliceOrEms(job)
-	for k, v in pairs(Config.PoliceJobs) do
-           if job == k then
-              return true
-            end
-         end
-         
-         for k, v in pairs(Config.AmbulanceJobs) do
-           if job == k then
-              return true
-            end
-         end
-    return false
+    local s,r = pcall(function()
+        local _job = type(job) == "string" and job or tostring(job)
+        if _job and Config.PoliceJobs[_job] or _job and Config.AmbulanceJobs[_job] then 
+			return true
+        else
+            return false
+        end
+    end)
+    if not s then return false end
+    return r
 end
 
 RegisterServerEvent("ps-mdt:dispatchStatus", function(bool)
