@@ -523,7 +523,7 @@ QBCore.Functions.CreateCallback('mdt:server:GetProfileData', function(source, cb
 		if Config.UsingPsHousing and not Config.UsingDefaultQBApartments then
     		local Coords = {}
     		local Houses = {}
-		local propertyData = GetPlayerPropertiesByCitizenId(target.citizenid)
+			local propertyData = GetPlayerPropertiesByCitizenId(target.citizenid)
     		for k, v in pairs(propertyData) do
 				if not v.apartment then
     		    	Coords[#Coords + 1] = {
@@ -545,6 +545,22 @@ QBCore.Functions.CreateCallback('mdt:server:GetProfileData', function(source, cb
     		        coords = coordsLocation,
     		    }
     		end
+			person.properties = Houses
+		elseif Config.UsingQBXProperties then
+			local Coords = {}
+			local Houses = {}
+			local properties= GetPlayerPropertiesByOwner(person.cid)
+			for k, v in pairs(properties) do
+				Coords[#Coords+1] = {
+					coords = json.decode(v["coords"]),
+				}
+			end
+			for index = 1, #Coords, 1 do
+				Houses[#Houses+1] = {
+					label = properties[index]["property_name"],
+					coords = tostring(Coords[index]["coords"]["x"]..",".. Coords[index]["coords"]["y"].. ",".. Coords[index]["coords"]["z"]),
+				}
+			end
 			person.properties = Houses
 		else
 			local Coords = {}
