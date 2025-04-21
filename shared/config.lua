@@ -1,8 +1,6 @@
 Config = Config or {}
 
-Config.UsingPsHousing = false
-Config.UsingDefaultQBApartments = true
-Config.UsingQBXProperties = false
+Config.HousingSystem = "qbx_properties" -- options: "ps-housing", "qb-apartments", "qbx_properties"
 Config.OnlyShowOnDuty = true
 
 -- RECOMMENDED Fivemerr Images. DOES NOT EXPIRE. 
