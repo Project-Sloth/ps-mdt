@@ -400,7 +400,7 @@ QBCore.Functions.CreateCallback('mdt:server:GetProfileData', function(source, cb
 
 	local job, grade = UnpackJob(target.job)
 
-	if Config.UsingPsHousing and not Config.UsingDefaultQBApartments and not Config.UsingQBXProperties then
+	if Config.HousingSystem == "ps_housing" then
 		local propertyData = GetPlayerPropertiesByCitizenId(target.citizenid)
 		if propertyData and next(propertyData) then
 			local apartmentList = {}
@@ -419,20 +419,7 @@ QBCore.Functions.CreateCallback('mdt:server:GetProfileData', function(source, cb
 			TriggerClientEvent("QBCore:Notify", src, 'The citizen does not have a property.', 'error')
 			print('The citizen does not have a property. Set Config.UsingPsHousing to false.')
 		end
-    elseif Config.UsingDefaultQBApartments and not Config.UsingQBXProperties then
-        apartmentData = GetPlayerApartment(target.citizenid)
-        if apartmentData then
-            if apartmentData[1] then
-                apartmentData = apartmentData[1].label .. ' (' ..apartmentData[1].name..')'
-            else
-                TriggerClientEvent("QBCore:Notify", src, 'The citizen does not have an apartment.', 'error')
-                print('The citizen does not have an apartment. Set Config.UsingDefaultQBApartments to false.')
-            end
-        else
-            TriggerClientEvent("QBCore:Notify", src, 'The citizen does not have an apartment.', 'error')
-            print('The citizen does not have an apartment. Set Config.UsingDefaultQBApartments to false.')
-        end
-	elseif Config.UsingQBXProperties then
+	elseif Config.HousingSystem == "qbx_properties" then
 		local propertyData = GetPlayerPropertiesByOwner(target.citizenid)
 		if propertyData and next(propertyData) then
 			local apartmentList = {}
@@ -451,6 +438,21 @@ QBCore.Functions.CreateCallback('mdt:server:GetProfileData', function(source, cb
 			TriggerClientEvent("QBCore:Notify", src, 'The citizen does not have a property.', 'error')
 			print('The citizen does not have a property. Set Config.UsingQBXProperties to false.')
 		end
+	elseif Config.HousingSystem == "qb-apartments" then
+        apartmentData = GetPlayerApartment(target.citizenid)
+        if apartmentData then
+            if apartmentData[1] then
+                apartmentData = apartmentData[1].label .. ' (' ..apartmentData[1].name..')'
+            else
+                TriggerClientEvent("QBCore:Notify", src, 'The citizen does not have an apartment.', 'error')
+                print('The citizen does not have an apartment. Set Config.UsingDefaultQBApartments to false.')
+            end
+        else
+            TriggerClientEvent("QBCore:Notify", src, 'The citizen does not have an apartment.', 'error')
+            print('The citizen does not have an apartment. Set Config.UsingDefaultQBApartments to false.')
+		end
+	else
+		error("^1[CONFIG ERROR]^0 Invalid Config.HousingSystem: " .. tostring(Config.HousingSystem))
     end
 
 	local person = {
@@ -520,7 +522,7 @@ QBCore.Functions.CreateCallback('mdt:server:GetProfileData', function(source, cb
 			person.vehicles = vehicles
 		end
 
-		if Config.UsingPsHousing and not Config.UsingDefaultQBApartments then
+		if Config.HousingSystem == "ps-housing" then
     		local Coords = {}
     		local Houses = {}
 			local propertyData = GetPlayerPropertiesByCitizenId(target.citizenid)
@@ -546,7 +548,7 @@ QBCore.Functions.CreateCallback('mdt:server:GetProfileData', function(source, cb
     		    }
     		end
 			person.properties = Houses
-		elseif Config.UsingQBXProperties then
+		elseif Config.HousingSystem == "qbx_properties" then
 			local Coords = {}
 			local Houses = {}
 			local properties= GetPlayerPropertiesByOwner(person.cid)
@@ -562,7 +564,7 @@ QBCore.Functions.CreateCallback('mdt:server:GetProfileData', function(source, cb
 				}
 			end
 			person.properties = Houses
-		else
+		elseif Config.HousingSystem == "qb-apartments" then
 			local Coords = {}
 			local Houses = {}
 			local properties= GetPlayerProperties(person.cid)
@@ -578,6 +580,8 @@ QBCore.Functions.CreateCallback('mdt:server:GetProfileData', function(source, cb
 				}
 			end
 			person.properties = Houses
+		else
+			error("^1[CONFIG ERROR]^0 Invalid Config.HousingSystem: " .. tostring(Config.HousingSystem))
 		end
 	end
 	local mdtData = GetPersonInformation(sentId, JobType)
