@@ -1,6 +1,5 @@
 Config = Config or {}
 
-Config.HousingSystem = "qbx_properties" -- options: "ps-housing", "qb-apartments", "qbx_properties"
 Config.OnlyShowOnDuty = true
 
 -- RECOMMENDED Fivemerr Images. DOES NOT EXPIRE. 
