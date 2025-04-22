@@ -375,7 +375,6 @@ end)
 
 QBCore.Functions.CreateCallback('mdt:server:GetProfileData', function(source, cb, sentId)
 	if not sentId then return cb({}) end
-
 	local src = source
 	local PlayerData = GetPlayerData(src)
 	if not PermCheck(src, PlayerData) then return cb({}) end
@@ -398,9 +397,21 @@ QBCore.Functions.CreateCallback('mdt:server:GetProfileData', function(source, cb
 		['pilot'] = false
 	}
 
+	local housingSystem
+
+	if GetResourceState("ps-housing") == "started" then
+        housingSystem = "ps-housing"
+    elseif GetResourceState("qbx_properties") == "started" then
+        housingSystem = "qbx_properties"
+    elseif GetResourceState("qb-apartments") == "started" then
+        housingSystem = "qb-apartments"
+    else
+        return print("^1[CONFIG ERROR]^0 No known housing resource is started.")
+    end
+
 	local job, grade = UnpackJob(target.job)
 
-	if Config.HousingSystem == "ps_housing" then
+	if housingSystem == "ps_housing" then
 		local propertyData = GetPlayerPropertiesByCitizenId(target.citizenid)
 		if propertyData and next(propertyData) then
 			local apartmentList = {}
@@ -413,13 +424,11 @@ QBCore.Functions.CreateCallback('mdt:server:GetProfileData', function(source, cb
 				apartmentData = table.concat(apartmentList, ', ')
 			else
 				TriggerClientEvent("QBCore:Notify", src, 'The citizen does not have an apartment.', 'error')
-				print('The citizen does not have an apartment. Set Config.UsingPsHousing to false.')
 			end
 		else
 			TriggerClientEvent("QBCore:Notify", src, 'The citizen does not have a property.', 'error')
-			print('The citizen does not have a property. Set Config.UsingPsHousing to false.')
 		end
-	elseif Config.HousingSystem == "qbx_properties" then
+	elseif housingSystem == "qbx_properties" then
 		local propertyData = GetPlayerPropertiesByOwner(target.citizenid)
 		if propertyData and next(propertyData) then
 			local apartmentList = {}
@@ -432,27 +441,23 @@ QBCore.Functions.CreateCallback('mdt:server:GetProfileData', function(source, cb
 				apartmentData = table.concat(apartmentList, ', ')
 			else
 				TriggerClientEvent("QBCore:Notify", src, 'The citizen does not have an apartment.', 'error')
-				print('The citizen does not have an apartment. Set Config.UsingQBXProperties to false.')
 			end
 		else
 			TriggerClientEvent("QBCore:Notify", src, 'The citizen does not have a property.', 'error')
-			print('The citizen does not have a property. Set Config.UsingQBXProperties to false.')
 		end
-	elseif Config.HousingSystem == "qb-apartments" then
+	elseif housingSystem == "qb-apartments" then
         apartmentData = GetPlayerApartment(target.citizenid)
         if apartmentData then
             if apartmentData[1] then
                 apartmentData = apartmentData[1].label .. ' (' ..apartmentData[1].name..')'
             else
                 TriggerClientEvent("QBCore:Notify", src, 'The citizen does not have an apartment.', 'error')
-                print('The citizen does not have an apartment. Set Config.UsingDefaultQBApartments to false.')
             end
         else
             TriggerClientEvent("QBCore:Notify", src, 'The citizen does not have an apartment.', 'error')
-            print('The citizen does not have an apartment. Set Config.UsingDefaultQBApartments to false.')
 		end
 	else
-		error("^1[CONFIG ERROR]^0 Invalid Config.HousingSystem: " .. tostring(Config.HousingSystem))
+		print("^1[CONFIG ERROR]^0 No known housing resource is started")
     end
 
 	local person = {
@@ -522,7 +527,7 @@ QBCore.Functions.CreateCallback('mdt:server:GetProfileData', function(source, cb
 			person.vehicles = vehicles
 		end
 
-		if Config.HousingSystem == "ps-housing" then
+		if housingSystem == "ps-housing" then
     		local Coords = {}
     		local Houses = {}
 			local propertyData = GetPlayerPropertiesByCitizenId(target.citizenid)
@@ -548,7 +553,7 @@ QBCore.Functions.CreateCallback('mdt:server:GetProfileData', function(source, cb
     		    }
     		end
 			person.properties = Houses
-		elseif Config.HousingSystem == "qbx_properties" then
+		elseif housingSystem == "qbx_properties" then
 			local Coords = {}
 			local Houses = {}
 			local properties= GetPlayerPropertiesByOwner(person.cid)
@@ -564,7 +569,7 @@ QBCore.Functions.CreateCallback('mdt:server:GetProfileData', function(source, cb
 				}
 			end
 			person.properties = Houses
-		elseif Config.HousingSystem == "qb-apartments" then
+		elseif housingSystem == "qb-apartments" then
 			local Coords = {}
 			local Houses = {}
 			local properties= GetPlayerProperties(person.cid)
@@ -581,7 +586,7 @@ QBCore.Functions.CreateCallback('mdt:server:GetProfileData', function(source, cb
 			end
 			person.properties = Houses
 		else
-			error("^1[CONFIG ERROR]^0 Invalid Config.HousingSystem: " .. tostring(Config.HousingSystem))
+			print("^1[CONFIG ERROR]^0 No known housing resource is started")
 		end
 	end
 	local mdtData = GetPersonInformation(sentId, JobType)
