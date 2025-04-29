@@ -1,7 +1,5 @@
 Config = Config or {}
 
-Config.UsingPsHousing = false
-Config.UsingDefaultQBApartments = true
 Config.OnlyShowOnDuty = true
 
 -- RECOMMENDED Fivemerr Images. DOES NOT EXPIRE. 
