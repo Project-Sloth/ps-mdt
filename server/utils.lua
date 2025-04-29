@@ -18,15 +18,17 @@ function UnpackJob(data)
 	return job, grade
 end
 
+-- Ensure the user has permission to access the MDT
+-- Checks if the user is in the allowed jobs list and if they have the required grade (if applicable)
 function PermCheck(src, PlayerData)
-	local result = true
+    local allowedJob = Config.AllowedJobs[PlayerData.job.name]
 
-	if not Config.AllowedJobs[PlayerData.job.name] then
-		print(("UserId: %s(%d) tried to access the mdt even though they are not authorised (server direct)"):format(GetPlayerName(src), src))
-		result = false
-	end
-
-	return result
+    if not allowedJob or (allowedJob.minGradeRequired and PlayerData.job.grade.level < allowedJob.minGradeRequired) then
+	print(("UserId: %s(%d) tried to access the MDT without authorization (server direct)"):format(GetPlayerName(src), src))
+	return false
+    end
+    
+    return true
 end
 
 function ProfPic(gender, profilepic)
