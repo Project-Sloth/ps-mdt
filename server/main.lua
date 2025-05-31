@@ -411,7 +411,7 @@ QBCore.Functions.CreateCallback('mdt:server:GetProfileData', function(source, cb
 
 	local job, grade = UnpackJob(target.job)
 
-	if housingSystem == "ps_housing" then
+	if housingSystem == "ps-housing" then
 		local propertyData = GetPlayerPropertiesByCitizenId(target.citizenid)
 		if propertyData and next(propertyData) then
 			local apartmentList = {}
