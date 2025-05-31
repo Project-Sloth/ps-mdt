@@ -62,26 +62,29 @@ Config.RosterLink = {
     ['sapr'] = '',	
 }
 
+-- Set the min grade level required to access the MDT
+-- Set to 0 to allow all grades
 Config.PoliceJobs = {
-    ['police'] = true,
-    ['lspd'] = true,
-    ['bcso'] = true,
-    ['sast'] = true,
-    ['sasp'] = true,
-    ['doc'] = true,
-    ['lssd'] = true,
-    ['sapr'] = true,
-    ['pa'] = true
+    ['police'] = { minGradeRequired = 0 },
+    ['lspd'] = {  minGradeRequired = 0 },
+    ['bcso'] = {  minGradeRequired = 0 },
+    ['sast'] = {  minGradeRequired = 0 },
+    ['sasp'] = {  minGradeRequired = 0 },
+    ['doc'] = {  minGradeRequired = 0 },
+    ['lssd'] = {  minGradeRequired = 0 },
+    ['sapr'] = {  minGradeRequired = 0 },
+    ['pa'] = {  minGradeRequired = 0 }
 }
 
 Config.AmbulanceJobs = {
-    ['ambulance'] = true,
-    ['doctor'] = true
+    ['ambulance'] = {  minGradeRequired = 0 },
+    ['doctor'] = {  minGradeRequired = 0 }
 }
 
+-- Add ranks
 Config.DojJobs = {
-    ['lawyer'] = true,
-    ['judge'] = true
+    ['lawyer'] = {  minGradeRequired = 0 },
+    ['judge'] = {  minGradeRequired = 0 }
 }
 
 -- This is a workaround solution because the qb-menu present in qb-policejob fills in an impound location and sends it to the event. 
