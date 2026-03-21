@@ -1,32 +1,49 @@
 fx_version 'cerulean'
+lua54 'yes'
+use_experimental_fxv2_oal 'yes'
 game 'gta5'
 
-author 'Flawws, Flakey, Idris and the Project Sloth team'
-description 'EchoRP MDT Rewrite for QBCore'
-version '2.7.3'
+name 'ps-mdt'
+author "Project Sloth Development Team"
+description 'Project Sloth MDT'
+version '3.0.0'
 
-lua54 'yes'
+ui_page 'web/dist/index.html'
 
-shared_script 'shared/config.lua'
+dependencies {
+  'ps_lib',
+  'oxmysql',
+  'ox_lib'
+}
+
+shared_scripts {
+  'config.lua',
+  '@ox_lib/init.lua'
+}
+
+client_script {
+  'client/**.lua'
+}
 
 server_scripts {
-    '@oxmysql/lib/MySQL.lua',
-    'server/utils.lua',
-    'server/dbm.lua',
-    'server/main.lua'
+  '@oxmysql/lib/MySQL.lua',
+  'server/**.lua'
 }
-client_scripts{
-    'client/main.lua',
-    'client/cl_impound.lua',
-    'client/cl_mugshot.lua'
-} 
-
-ui_page 'ui/dashboard.html'
 
 files {
-    'ui/img/*.png',
-    'ui/img/*.webp',
-    'ui/dashboard.html',
-    'ui/app.js',
-    'ui/style.css',
+  'web/dist/index.html',
+  'web/dist/**/*'
+}
+
+data_file 'DLC_ITYP_REQUEST' 'stream/ps-mdt.ytyp'
+
+-- Server convars (set in server.cfg):
+-- set ps_mdt_fivemanage_key_images "YOUR_FIVEMANAGE_IMAGES_API_KEY"
+-- set ps_mdt_fivemanage_key_logs   "YOUR_FIVEMANAGE_LOGS_API_KEY"
+convar_category 'PS-MDT' {
+  'Settings for ps-mdt resource',
+  {
+    { 'FiveManage Images API Key', 'ps_mdt_fivemanage_key_images', 'CV_STRING', '' },
+    { 'FiveManage Logs API Key',   'ps_mdt_fivemanage_key_logs',   'CV_STRING', '' },
+  }
 }

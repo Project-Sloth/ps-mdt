@@ -1,0 +1,113 @@
+local resourceName = tostring(GetCurrentResourceName())
+
+RegisterNUICallback('getPermissionRoles', function(_, cb)
+    if not MDTOpen then
+        cb({ success = false, message = 'MDT is not open' })
+        return
+    end
+
+    local result = ps.callback(resourceName .. ':server:getPermissionRoles')
+    ps.debug('[getPermissionRoles] Result:', result)
+    cb(result or { success = false, message = 'Failed to fetch roles' })
+end)
+
+RegisterNUICallback('updatePermissionRole', function(data, cb)
+    if not MDTOpen then
+        cb({ success = false, message = 'MDT is not open' })
+        return
+    end
+
+    local result = ps.callback(resourceName .. ':server:updatePermissionRole', data or {})
+    cb(result or { success = false, message = 'Failed to update role' })
+end)
+
+-- SETTINGS: Activity Tracking -------------------------------------------
+
+RegisterNUICallback('getAuditTrackingConfig', function(_, cb)
+    if not MDTOpen then
+        cb({})
+        return
+    end
+
+    local result = ps.callback(resourceName .. ':server:getAuditTrackingConfig')
+    -- Server returns JSON string to preserve boolean false values through msgpack
+    if type(result) == 'string' then
+        local ok, decoded = pcall(json.decode, result)
+        if ok then
+            cb(decoded)
+            return
+        end
+    end
+    cb(result or {})
+end)
+
+RegisterNUICallback('saveAuditTrackingConfig', function(data, cb)
+    if not MDTOpen then
+        cb({ success = false, message = 'MDT is not open' })
+        return
+    end
+
+    -- Encode as JSON string to preserve boolean false values through msgpack serialization
+    local result = ps.callback(resourceName .. ':server:saveAuditTrackingConfig', json.encode(data or {}))
+    cb(result or { success = false, message = 'Failed to save settings' })
+end)
+
+-- SETTINGS: Jail / Fines -------------------------------------------
+
+RegisterNUICallback('getJailFinesConfig', function(_, cb)
+    if not MDTOpen then
+        cb({})
+        return
+    end
+
+    local result = ps.callback(resourceName .. ':server:getJailFinesConfig')
+    cb(result or {})
+end)
+
+RegisterNUICallback('saveJailFinesConfig', function(data, cb)
+    if not MDTOpen then
+        cb({ success = false, message = 'MDT is not open' })
+        return
+    end
+
+    local result = ps.callback(resourceName .. ':server:saveJailFinesConfig', data or {})
+    cb(result or { success = false, message = 'Failed to save settings' })
+end)
+
+-- TAG MANAGEMENT -------------------------------------------
+
+RegisterNUICallback('getTags', function(_, cb)
+    if not MDTOpen then
+        cb({})
+        return
+    end
+    local result = ps.callback(resourceName .. ':server:getTags')
+    cb(result or {})
+end)
+
+RegisterNUICallback('createTag', function(data, cb)
+    if not MDTOpen then
+        cb({ success = false, message = 'MDT is not open' })
+        return
+    end
+    local result = ps.callback(resourceName .. ':server:createTag', data or {})
+    cb(result or { success = false, message = 'Failed to create tag' })
+end)
+
+RegisterNUICallback('updateTag', function(data, cb)
+    if not MDTOpen then
+        cb({ success = false, message = 'MDT is not open' })
+        return
+    end
+    local result = ps.callback(resourceName .. ':server:updateTag', data or {})
+    cb(result or { success = false, message = 'Failed to update tag' })
+end)
+
+RegisterNUICallback('deleteTag', function(data, cb)
+    if not MDTOpen then
+        cb({ success = false, message = 'MDT is not open' })
+        return
+    end
+    local result = ps.callback(resourceName .. ':server:deleteTag', data or {})
+    cb(result or { success = false, message = 'Failed to delete tag' })
+end)
