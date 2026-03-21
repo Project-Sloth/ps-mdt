@@ -232,7 +232,7 @@ updateCameraControls = function()
     )
 end
 
--- Camera control thread — spawned on demand, exits when camera view stops
+-- Camera control thread - spawned on demand, exits when camera view stops
 local cameraControlThreadActive = false
 
 startCameraControlThread = function()

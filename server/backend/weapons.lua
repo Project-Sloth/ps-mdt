@@ -394,7 +394,7 @@ do
         for serial, itemName in pairs(currentSerials) do
             if not knownSerials[citizenid][serial] then
                 knownSerials[citizenid][serial] = true
-                -- New weapon appeared — register it asynchronously
+                -- New weapon appeared - register it asynchronously
                 local _cid = citizenid
                 local _serial = serial
                 local _model = string.upper(itemName)
