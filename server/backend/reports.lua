@@ -393,10 +393,10 @@ ps.registerCallback(resourceName .. ':server:searchPlayers', function(source, qu
             p.citizenid,
             JSON_UNQUOTE(JSON_EXTRACT(p.charinfo, '$.firstname')) as firstname,
             JSON_UNQUOTE(JSON_EXTRACT(p.charinfo, '$.lastname')) as lastname,
-            p.metadata,
+            JSON_UNQUOTE(JSON_EXTRACT(p.metadata, '$.fingerprint')) as fingerprint,
             mp.profilepicture
         FROM players p
-        LEFT JOIN mdt_profiles mp ON mp.citizenid = p.citizenid
+        LEFT JOIN mdt_profiles mp ON mp.citizenid COLLATE utf8mb4_general_ci = p.citizenid COLLATE utf8mb4_general_ci
         WHERE (
             p.citizenid LIKE ?
             OR JSON_UNQUOTE(JSON_EXTRACT(p.charinfo, '$.firstname')) LIKE ?
@@ -413,13 +413,7 @@ ps.registerCallback(resourceName .. ':server:searchPlayers', function(source, qu
     local results = {}
     for _, row in ipairs(rows or {}) do
         local fullName = buildFullName(row.firstname, row.lastname, row.citizenid)
-        local fingerprint = nil
-        if row.metadata then
-            local ok, decoded = pcall(json.decode, row.metadata)
-            if ok and decoded and decoded.fingerprint then
-                fingerprint = decoded.fingerprint
-            end
-        end
+        local fingerprint = (row.fingerprint and row.fingerprint ~= 'null') and row.fingerprint or nil
         table.insert(results, {
             id = row.citizenid,
             citizenid = row.citizenid,

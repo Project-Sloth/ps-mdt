@@ -6,6 +6,10 @@ local isViewingCamera = false
 local hiddenCameraEntity = nil
 local currentCameraData = nil
 
+-- Forward declarations
+local startCameraControlThread
+local updateCameraControls
+
 -- Camera control settings (from Config with fallbacks)
 local camCfg = Config.CameraViewer or {}
 local cameraOptions = {
@@ -182,7 +186,7 @@ local function ShowCameraHelpNotification(text)
 end
 
 -- Camera controls
-local function updateCameraControls()
+updateCameraControls = function()
     if not isViewingCamera or not currentCamera then
         return
     end
@@ -231,7 +235,7 @@ end
 -- Camera control thread — spawned on demand, exits when camera view stops
 local cameraControlThreadActive = false
 
-local function startCameraControlThread()
+startCameraControlThread = function()
     if cameraControlThreadActive then return end
     cameraControlThreadActive = true
 
