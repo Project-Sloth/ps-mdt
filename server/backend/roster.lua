@@ -33,9 +33,8 @@ local function buildRosterFromQbx()
         end
     end
 
-    for _, playerId in ipairs(qbx:GetPlayers() or {}) do
-        local player = qbx:GetPlayer(playerId)
-        local data = player and player.PlayerData or nil
+    for _, player in ipairs(qbx:GetQBPlayers() or {}) do
+        local data = player.PlayerData or nil
         if data and data.job then
             local job = data.job
             if IsPoliceJob(job.name, job.type) then
@@ -95,16 +94,16 @@ local function buildRosterFromQbx()
 end
 
 local function checkDuty(citizenid)
-   local player = ps.getPlayerByIdentifier(citizenid)
-   if not player then return 'Off Duty' end
+    local player = ps.getPlayerByIdentifier(citizenid)
+    if not player then return 'Off Duty' end
 
-   local src = player.source or (player.PlayerData and player.PlayerData.source)
-   if not src then return 'Off Duty' end
+    local src = player.source or (player.PlayerData and player.PlayerData.source)
+    if not src then return 'Off Duty' end
 
-   if IsPoliceJob(ps.getJobName(src), ps.getJobType(src)) and ps.getJobDuty(src) then
-      return 'On Duty'
-   end
-   return 'Off Duty'
+    if IsPoliceJob(ps.getJobName(src), ps.getJobType(src)) and ps.getJobDuty(src) then
+        return 'On Duty'
+    end
+    return 'Off Duty'
 end
 
 ps.registerCallback('ps-mdt:server:getRosterList', function(source)
