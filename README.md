@@ -50,7 +50,7 @@ Both are optional. Without the images key you won't be able to upload any images
 
 ### 3. Build the frontend
 
-If you grabbed a release with `web/dist` already in it, skip this step.
+If you grabbed a release with `web/dist` already in it, skip this step. During beta, source code will not be released.
 
 Otherwise:
 
@@ -70,6 +70,11 @@ ensure ps-mdt
 ```
 
 ps-mdt has to start after its dependencies.
+
+## Preview
+<img width="2441" height="1152" alt="image" src="https://github.com/user-attachments/assets/bdfeefe5-6fa0-4629-85f5-73b49dbe6db1" />
+<img width="2446" height="1151" alt="image" src="https://github.com/user-attachments/assets/8a77935e-dc8c-419a-b50c-0f00ac4c628b" />
+<img width="2434" height="1153" alt="image" src="https://github.com/user-attachments/assets/285747e8-ba1c-4af4-b28a-6755f5743994" />
 
 ## Configuration
 
