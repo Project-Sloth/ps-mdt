@@ -579,7 +579,7 @@ ps.registerCallback(resourceName..':server:saveReport', function(source, reportD
 
     for citizenid, _ in pairs(citizenids) do
         if not EnsureProfileExists(citizenid) then
-            -- Profile creation failed but don't block the save — the citizen
+            -- Profile creation failed but don't block the save - the citizen
             -- may be offline or from a different framework. The report can still
             -- reference them by citizenid and the profile will be created when
             -- they are next looked up.

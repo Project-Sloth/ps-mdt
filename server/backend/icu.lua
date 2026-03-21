@@ -11,7 +11,7 @@ ps.registerCallback(resourceName .. ':server:deleteICU', function(source, payloa
         return { success = false, message = 'Missing ICU record ID' }
     end
 
-    -- ICU records are stored as BOLOs with type context — ensure we only delete the correct record
+    -- ICU records are stored as BOLOs with type context - ensure we only delete the correct record
     local rows = MySQL.query.await('SELECT id FROM mdt_bolos WHERE id = ?', { id })
     if not rows or #rows == 0 then
         return { success = false, message = 'ICU record not found' }

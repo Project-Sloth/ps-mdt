@@ -165,7 +165,7 @@ function CloseMDT()
         SendNUI('setVisible', { visible = false })
         SetNuiFocus(false, false)
 
-        -- Prevent ESC pause menu conflict — only spawn one delayed thread at a time
+        -- Prevent ESC pause menu conflict - only spawn one delayed thread at a time
         if not closeControlsPending then
             closeControlsPending = true
             CreateThread(function()

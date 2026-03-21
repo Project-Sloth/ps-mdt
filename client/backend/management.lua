@@ -74,6 +74,38 @@ RegisterNUICallback('saveJailFinesConfig', function(data, cb)
     cb(result or { success = false, message = 'Failed to save settings' })
 end)
 
+-- SETTINGS: Report Templates -------------------------------------------
+
+RegisterNUICallback('getReportTemplates', function(_, cb)
+    if not MDTOpen then
+        cb({})
+        return
+    end
+
+    local result = ps.callback(resourceName .. ':server:getReportTemplates')
+    cb(result or {})
+end)
+
+RegisterNUICallback('saveReportTemplate', function(data, cb)
+    if not MDTOpen then
+        cb({ success = false, message = 'MDT is not open' })
+        return
+    end
+
+    local result = ps.callback(resourceName .. ':server:saveReportTemplate', data or {})
+    cb(result or { success = false, message = 'Failed to save template' })
+end)
+
+RegisterNUICallback('deleteReportTemplate', function(data, cb)
+    if not MDTOpen then
+        cb({ success = false, message = 'MDT is not open' })
+        return
+    end
+
+    local result = ps.callback(resourceName .. ':server:deleteReportTemplate', data or {})
+    cb(result or { success = false, message = 'Failed to delete template' })
+end)
+
 -- TAG MANAGEMENT -------------------------------------------
 
 RegisterNUICallback('getTags', function(_, cb)

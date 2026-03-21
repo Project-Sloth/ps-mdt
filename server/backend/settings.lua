@@ -250,3 +250,78 @@ ps.registerCallback(resourceName .. ':server:saveJailFinesConfig', function(sour
 
     return { success = true }
 end)
+
+-- Report Templates Configuration
+
+ps.registerCallback(resourceName .. ':server:getReportTemplates', function(source)
+    local src = source
+    if not CheckAuth(src) then return {} end
+
+    local rows = MySQL.query.await('SELECT `id`, `name`, `type`, `content` FROM mdt_report_templates ORDER BY `type`, `name`')
+    return rows or {}
+end)
+
+ps.registerCallback(resourceName .. ':server:saveReportTemplate', function(source, payload)
+    local src = source
+    if not CheckAuth(src) then return { success = false, message = 'Unauthorized' } end
+    if not CheckPermission(src, 'management_settings') then
+        return { success = false, message = 'You do not have permission to change templates' }
+    end
+
+    if type(payload) ~= 'table' then
+        return { success = false, message = 'Invalid payload' }
+    end
+
+    local name = tostring(payload.name or ''):sub(1, 100)
+    local tmplType = tostring(payload.type or ''):sub(1, 50)
+    local content = tostring(payload.content or '')
+
+    if name == '' or tmplType == '' or content == '' then
+        return { success = false, message = 'Name, type, and content are required' }
+    end
+
+    local templateId = payload.id and tonumber(payload.id) or nil
+
+    if templateId then
+        -- Update existing
+        MySQL.update.await('UPDATE mdt_report_templates SET `name` = ?, `type` = ?, `content` = ? WHERE `id` = ?', {
+            name, tmplType, content, templateId
+        })
+    else
+        -- Insert new
+        templateId = MySQL.insert.await('INSERT INTO mdt_report_templates (`name`, `type`, `content`) VALUES (?, ?, ?)', {
+            name, tmplType, content
+        })
+    end
+
+    if ps.auditLog then
+        ps.auditLog(src, 'settings_updated', 'settings', 'report_template_' .. tostring(templateId), { name = name, type = tmplType })
+    end
+
+    return { success = true, template = { id = templateId, name = name, type = tmplType, content = content } }
+end)
+
+ps.registerCallback(resourceName .. ':server:deleteReportTemplate', function(source, payload)
+    local src = source
+    if not CheckAuth(src) then return { success = false, message = 'Unauthorized' } end
+    if not CheckPermission(src, 'management_settings') then
+        return { success = false, message = 'You do not have permission to delete templates' }
+    end
+
+    if type(payload) ~= 'table' or not payload.id then
+        return { success = false, message = 'Invalid payload' }
+    end
+
+    local id = tonumber(payload.id)
+    if not id then
+        return { success = false, message = 'Invalid template ID' }
+    end
+
+    MySQL.update.await('DELETE FROM mdt_report_templates WHERE `id` = ?', { id })
+
+    if ps.auditLog then
+        ps.auditLog(src, 'settings_updated', 'settings', 'report_template_' .. tostring(id), { action = 'deleted' })
+    end
+
+    return { success = true }
+end)
