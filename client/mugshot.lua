@@ -123,7 +123,7 @@ function CaptureMugshot(citizenid)
     local imageUrl = Citizen.Await(mugshotPromise)
     mugshotPromise = nil
 
-    -- Cleanup — always restore focus and destroy camera
+    -- Cleanup - always restore focus and destroy camera
     SetNuiFocusKeepInput(false)
     destroyCamera()
     Wait(300)

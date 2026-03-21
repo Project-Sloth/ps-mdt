@@ -1,5 +1,5 @@
 
--- Command to set the Message of the Day (MOTD) — stores as a bulletin
+-- Command to set the Message of the Day (MOTD) - stores as a bulletin
 local motdCommandName = (Config and Config.Commands and Config.Commands.MessageOfTheDay and Config.Commands.MessageOfTheDay.command) or 'motd'
 local motdEnabled = Config and Config.Commands and Config.Commands.MessageOfTheDay and Config.Commands.MessageOfTheDay.enabled ~= false
 

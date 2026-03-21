@@ -255,9 +255,9 @@ function FiveManageFlushLogs()
 
     PerformHttpRequest(FiveManageLogsUrl, function(statusCode, responseText)
         if statusCode and statusCode >= 200 and statusCode < 300 then
-            -- Success — nothing to do
+            -- Success - nothing to do
         else
-            ps.warn('FiveManage logs: failed to send batch (' .. #batch .. ' entries) — HTTP ' .. tostring(statusCode))
+            ps.warn('FiveManage logs: failed to send batch (' .. #batch .. ' entries) - HTTP ' .. tostring(statusCode))
         end
     end, 'POST', payload, {
         ['Content-Type']  = 'application/json',
