@@ -808,6 +808,29 @@ INSERT IGNORE INTO `mdt_report_templates` (`name`, `type`, `content`) VALUES
 ('Standard Arrest', 'Arrest Report', '<h2>Arrest Summary</h2>\n<p>On [DATE] at approximately [TIME] hours, [OFFICER NAME/BADGE] placed [SUSPECT NAME] under arrest at [LOCATION].</p>\n\n<h2>Suspect Information</h2>\n<p><strong>Name:</strong> [FULL NAME]</p>\n<p><strong>Citizen ID:</strong> [ID]</p>\n<p><strong>Description:</strong> [HEIGHT, BUILD, CLOTHING, DISTINGUISHING MARKS]</p>\n\n<h2>Probable Cause</h2>\n<p>[DESCRIBE THE CIRCUMSTANCES AND EVIDENCE THAT ESTABLISHED PROBABLE CAUSE FOR THE ARREST]</p>\n\n<h2>Charges</h2>\n<ul>\n<li>[CHARGE CODE] - [CHARGE DESCRIPTION] - [FELONY/MISDEMEANOR]</li>\n<li>[CHARGE CODE] - [CHARGE DESCRIPTION] - [FELONY/MISDEMEANOR]</li>\n</ul>\n\n<h2>Narrative</h2>\n<p>[DETAILED CHRONOLOGICAL ACCOUNT OF EVENTS LEADING TO THE ARREST]</p>\n\n<h2>Evidence Seized</h2>\n<ul>\n<li>[ITEM] - [DESCRIPTION]</li>\n</ul>\n\n<h2>Miranda Rights</h2>\n<p>Suspect was read Miranda rights at [TIME]. Suspect [DID/DID NOT] invoke right to counsel. Suspect [DID/DID NOT] provide a statement.</p>\n\n<h2>Processing</h2>\n<p>Suspect was booked at [FACILITY] at [TIME]. [BAIL/HOLD INFORMATION].</p>'),
 ('Evidence Collection', 'Evidence Report', '<h2>Evidence Report Summary</h2>\n<p><strong>Related Case:</strong> [CASE #]</p>\n<p><strong>Collecting Officer:</strong> [NAME/BADGE]</p>\n<p><strong>Date Collected:</strong> [DATE]</p>\n<p><strong>Location:</strong> [COLLECTION SITE]</p>\n\n<h2>Evidence Items</h2>\n<h3>Item 1</h3>\n<p><strong>Description:</strong> [DETAILED DESCRIPTION]</p>\n<p><strong>Serial/ID:</strong> [IF APPLICABLE]</p>\n<p><strong>Location Found:</strong> [EXACT LOCATION AT SCENE]</p>\n<p><strong>Condition:</strong> [CONDITION WHEN FOUND]</p>\n<p><strong>Storage:</strong> [LOCKER/STASH ID]</p>\n\n<h3>Item 2</h3>\n<p><strong>Description:</strong> [DETAILED DESCRIPTION]</p>\n<p><strong>Location Found:</strong> [EXACT LOCATION AT SCENE]</p>\n<p><strong>Storage:</strong> [LOCKER/STASH ID]</p>\n\n<h2>Chain of Custody</h2>\n<ul>\n<li><strong>[DATE/TIME]:</strong> Collected by [NAME] at [LOCATION]</li>\n<li><strong>[DATE/TIME]:</strong> Transferred to [NAME/FACILITY]</li>\n</ul>\n\n<h2>Analysis Requested</h2>\n<p>[DESCRIBE ANY LAB ANALYSIS OR FORENSIC TESTING REQUESTED]</p>\n\n<h2>Notes</h2>\n<p>[ANY ADDITIONAL OBSERVATIONS OR CONTEXT]</p>');
 
+CREATE TABLE IF NOT EXISTS `mdt_awards` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `name` varchar(100) NOT NULL,
+  `description` varchar(255) DEFAULT NULL,
+  `icon` varchar(50) NOT NULL DEFAULT 'emoji_events',
+  `category` varchar(50) NOT NULL DEFAULT 'general',
+  `goal_type` varchar(50) NOT NULL,
+  `goal_amount` int(10) unsigned NOT NULL DEFAULT 1,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+INSERT IGNORE INTO `mdt_awards` (`name`, `description`, `icon`, `category`, `goal_type`, `goal_amount`) VALUES
+('First Report', 'File your first report in the MDT system', 'description', 'reports', 'reports', 1),
+('50 Reports Filed', 'File 50 reports demonstrating consistent documentation', 'description', 'reports', 'reports', 50),
+('100 Reports Filed', 'File 100 reports showing dedication to thorough record-keeping', 'description', 'reports', 'reports', 100),
+('First Arrest', 'Make your first arrest and file the arrest report', 'local_police', 'arrests', 'arrests', 1),
+('50 Arrests', 'Process 50 arrests as a seasoned officer', 'local_police', 'arrests', 'arrests', 50),
+('Case Worker', 'Work on 25 cases as an investigator', 'work', 'cases', 'cases', 25),
+('$100K Fined', 'Issue a total of $100,000 in fines', 'payments', 'financial', 'totalFined', 100000),
+('10 Warrants Issued', 'Issue 10 warrants for suspects', 'gavel', 'warrants', 'warrants', 10);
+
 /*!40103 SET TIME_ZONE=IFNULL(@OLD_TIME_ZONE, 'system') */;
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;
 /*!40014 SET FOREIGN_KEY_CHECKS=IFNULL(@OLD_FOREIGN_KEY_CHECKS, 1) */;

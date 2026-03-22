@@ -790,6 +790,29 @@ CREATE TABLE IF NOT EXISTS `mdt_report_vehicles` (
   CONSTRAINT `FK_mdt_report_vehicles_mdt_reports` FOREIGN KEY (`reportid`) REFERENCES `mdt_reports` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE IF NOT EXISTS `mdt_awards` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `name` varchar(100) NOT NULL,
+  `description` varchar(255) DEFAULT NULL,
+  `icon` varchar(50) NOT NULL DEFAULT 'emoji_events',
+  `category` varchar(50) NOT NULL DEFAULT 'general',
+  `goal_type` varchar(50) NOT NULL,
+  `goal_amount` int(10) unsigned NOT NULL DEFAULT 1,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+INSERT IGNORE INTO `mdt_awards` (`name`, `description`, `icon`, `category`, `goal_type`, `goal_amount`) VALUES
+('First Report', 'File your first report in the MDT system', 'description', 'reports', 'reports', 1),
+('50 Reports Filed', 'File 50 reports demonstrating consistent documentation', 'description', 'reports', 'reports', 50),
+('100 Reports Filed', 'File 100 reports showing dedication to thorough record-keeping', 'description', 'reports', 'reports', 100),
+('First Arrest', 'Make your first arrest and file the arrest report', 'local_police', 'arrests', 'arrests', 1),
+('50 Arrests', 'Process 50 arrests as a seasoned officer', 'local_police', 'arrests', 'arrests', 50),
+('Case Worker', 'Work on 25 cases as an investigator', 'work', 'cases', 'cases', 25),
+('$100K Fined', 'Issue a total of $100,000 in fines', 'payments', 'financial', 'totalFined', 100000),
+('10 Warrants Issued', 'Issue 10 warrants for suspects', 'gavel', 'warrants', 'warrants', 10);
+
 /*!40103 SET TIME_ZONE=IFNULL(@OLD_TIME_ZONE, 'system') */;
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;
 /*!40014 SET FOREIGN_KEY_CHECKS=IFNULL(@OLD_FOREIGN_KEY_CHECKS, 1) */;

@@ -145,3 +145,43 @@ RegisterNUICallback('deleteTag', function(data, cb)
     local result = ps.callback(resourceName .. ':server:deleteTag', data or {})
     cb(result or { success = false, message = 'Failed to delete tag' })
 end)
+
+-- SETTINGS: Awards -------------------------------------------
+
+RegisterNUICallback('getAwardConfigs', function(_, cb)
+    if not MDTOpen then
+        cb({})
+        return
+    end
+    local result = ps.callback(resourceName .. ':server:getAwardConfigs')
+    cb(result or {})
+end)
+
+RegisterNUICallback('saveAward', function(data, cb)
+    if not MDTOpen then
+        cb({ success = false, message = 'MDT is not open' })
+        return
+    end
+    local result = ps.callback(resourceName .. ':server:saveAward', data or {})
+    cb(result or { success = false, message = 'Failed to save award' })
+end)
+
+RegisterNUICallback('deleteAward', function(data, cb)
+    if not MDTOpen then
+        cb({ success = false, message = 'MDT is not open' })
+        return
+    end
+    local result = ps.callback(resourceName .. ':server:deleteAward', data or {})
+    cb(result or { success = false, message = 'Failed to delete award' })
+end)
+
+-- AWARDS PAGE: Get awards data (stats + progress + leaderboard) ---
+
+RegisterNUICallback('getAwardsData', function(data, cb)
+    if not MDTOpen then
+        cb(nil)
+        return
+    end
+    local result = ps.callback(resourceName .. ':server:getAwardsData', data or {})
+    cb(result)
+end)
