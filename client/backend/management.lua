@@ -185,3 +185,32 @@ RegisterNUICallback('getAwardsData', function(data, cb)
     local result = ps.callback(resourceName .. ':server:getAwardsData', data or {})
     cb(result)
 end)
+
+-- SETTINGS: Custom Licenses -------------------------------------------
+
+RegisterNUICallback('getCustomLicenses', function(_, cb)
+    if not MDTOpen then
+        cb({})
+        return
+    end
+    local result = ps.callback(resourceName .. ':server:getCustomLicenses')
+    cb(result or {})
+end)
+
+RegisterNUICallback('saveCustomLicense', function(data, cb)
+    if not MDTOpen then
+        cb({ success = false, message = 'MDT is not open' })
+        return
+    end
+    local result = ps.callback(resourceName .. ':server:saveCustomLicense', data or {})
+    cb(result or { success = false, message = 'Failed to save license' })
+end)
+
+RegisterNUICallback('deleteCustomLicense', function(data, cb)
+    if not MDTOpen then
+        cb({ success = false, message = 'MDT is not open' })
+        return
+    end
+    local result = ps.callback(resourceName .. ':server:deleteCustomLicense', data or {})
+    cb(result or { success = false, message = 'Failed to delete license' })
+end)

@@ -68,7 +68,6 @@ local function getAllPermissions()
         'charges_view', 'charges_edit',
         'dispatch_attach', 'dispatch_route',
         'cameras_view', 'bodycams_view',
-        'notes_edit_department',
         'roster_manage_certifications',
         'management_permissions', 'management_bulletins', 'management_activity',
         'management_tags', 'management_tracking',
@@ -693,6 +692,78 @@ ps.registerCallback(resourceName .. ':server:getAwardsData', function(source, pa
         awards = awards,
         leaderboard = leaderboard,
     }
+end)
+
+-- CUSTOM LICENSES MANAGEMENT -------------------------------------------
+
+ps.registerCallback(resourceName .. ':server:getCustomLicenses', function(source)
+    local src = source
+    if not CheckAuth(src) then return {} end
+
+    local rows = MySQL.query.await([[
+        SELECT id, name, description FROM mdt_custom_licenses ORDER BY id ASC
+    ]])
+
+    local result = {}
+    for _, row in ipairs(rows or {}) do
+        result[#result + 1] = {
+            id = row.id,
+            name = row.name,
+            description = row.description or '',
+        }
+    end
+    return result
+end)
+
+ps.registerCallback(resourceName .. ':server:saveCustomLicense', function(source, payload)
+    local src = source
+    if not CheckAuth(src) then return { success = false, message = 'Unauthorized' } end
+
+    payload = payload or {}
+    local name = payload.name
+    local description = payload.description or ''
+
+    if not name or name == '' then
+        return { success = false, message = 'License name is required' }
+    end
+
+    local id = payload.id and tonumber(payload.id)
+
+    if id then
+        -- Check duplicate (excluding self)
+        local dup = MySQL.scalar.await('SELECT id FROM mdt_custom_licenses WHERE name = ? AND id != ?', { name, id })
+        if dup then
+            return { success = false, message = 'A license with that name already exists' }
+        end
+        MySQL.update.await('UPDATE mdt_custom_licenses SET name = ?, description = ? WHERE id = ?', { name, description, id })
+    else
+        -- Check duplicate
+        local existing = MySQL.scalar.await('SELECT id FROM mdt_custom_licenses WHERE name = ?', { name })
+        if existing then
+            return { success = false, message = 'A license with that name already exists' }
+        end
+        id = MySQL.insert.await('INSERT INTO mdt_custom_licenses (name, description) VALUES (?, ?)', { name, description })
+    end
+
+    if not id then
+        return { success = false, message = 'Failed to save license' }
+    end
+
+    return { success = true, id = id }
+end)
+
+ps.registerCallback(resourceName .. ':server:deleteCustomLicense', function(source, payload)
+    local src = source
+    if not CheckAuth(src) then return { success = false, message = 'Unauthorized' } end
+
+    payload = payload or {}
+    local id = tonumber(payload.id)
+    if not id then
+        return { success = false, message = 'Invalid license ID' }
+    end
+
+    MySQL.query.await('DELETE FROM mdt_custom_licenses WHERE id = ?', { id })
+    return { success = true }
 end)
 
 ps.registerCallback(resourceName .. ':server:deleteTag', function(source, payload)

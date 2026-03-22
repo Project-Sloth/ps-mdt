@@ -264,23 +264,6 @@ ON DUPLICATE KEY UPDATE
   `color` = VALUES(`color`),
   `description` = VALUES(`description`);
 
-CREATE TABLE IF NOT EXISTS `mdt_notes` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `owner` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `content` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_notes_owner` (`owner`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-CREATE TABLE IF NOT EXISTS `mdt_department_notes` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `department` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `content` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `department` (`department`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
 CREATE TABLE IF NOT EXISTS `mdt_profiles_clocking` (
   `profileId` int(10) unsigned NOT NULL,
   `clockindate` timestamp NOT NULL DEFAULT current_timestamp(),
@@ -812,6 +795,35 @@ INSERT IGNORE INTO `mdt_awards` (`name`, `description`, `icon`, `category`, `goa
 ('Case Worker', 'Work on 25 cases as an investigator', 'work', 'cases', 'cases', 25),
 ('$100K Fined', 'Issue a total of $100,000 in fines', 'payments', 'financial', 'totalFined', 100000),
 ('10 Warrants Issued', 'Issue 10 warrants for suspects', 'gavel', 'warrants', 'warrants', 10);
+
+CREATE TABLE IF NOT EXISTS `mdt_custom_licenses` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `name` varchar(50) NOT NULL,
+  `description` varchar(150) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `unique_license_name` (`name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `mdt_citizen_licenses` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `citizenid` varchar(50) NOT NULL,
+  `license_id` int(10) unsigned NOT NULL,
+  `active` tinyint(1) NOT NULL DEFAULT 1,
+  `granted_by` varchar(50) DEFAULT NULL,
+  `granted_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `unique_citizen_license` (`citizenid`, `license_id`),
+  KEY `citizenid` (`citizenid`),
+  KEY `license_id` (`license_id`),
+  CONSTRAINT `FK_mdt_citizen_licenses_custom` FOREIGN KEY (`license_id`) REFERENCES `mdt_custom_licenses` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+INSERT IGNORE INTO `mdt_custom_licenses` (`name`, `description`) VALUES
+('Hunting License', 'Permits hunting of wildlife in designated areas'),
+('Boating License', 'Required for operating watercraft'),
+('Pilot License', 'Required for operating aircraft');
 
 /*!40103 SET TIME_ZONE=IFNULL(@OLD_TIME_ZONE, 'system') */;
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;

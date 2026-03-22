@@ -211,3 +211,162 @@ ps.registerCallback('ps-mdt:server:updateOfficerCertifications', function(source
 
     return { success = true }
 end)
+
+-- Get job grades for a specific department
+ps.registerCallback('ps-mdt:server:getJobGrades', function(source, payload)
+    local src = source
+    if not CheckAuth(src) then return {} end
+    if not CheckPermission(src, 'roster_manage_officers') then return {} end
+
+    payload = payload or {}
+    local jobName = payload.job or 'police'
+
+    local jobData = ps.getSharedJob(jobName)
+    if not jobData or not jobData.grades then return {} end
+
+    local grades = {}
+    for gradeKey, gradeValue in pairs(jobData.grades) do
+        grades[#grades + 1] = {
+            grade = tonumber(gradeKey) or 0,
+            name = gradeValue.name or ('Grade ' .. gradeKey),
+            isBoss = gradeValue.isboss == true or gradeValue.isBoss == true or gradeValue.boss == true,
+        }
+    end
+
+    table.sort(grades, function(a, b) return a.grade < b.grade end)
+    return grades
+end)
+
+-- Promote/demote an officer (change their job grade)
+ps.registerCallback('ps-mdt:server:promoteOfficer', function(source, payload)
+    local src = source
+    if not CheckAuth(src) then return { success = false, message = 'Unauthorized' } end
+    if not CheckPermission(src, 'roster_manage_officers') then
+        return { success = false, message = 'No permission to manage officers' }
+    end
+
+    payload = payload or {}
+    local citizenid = payload.citizenid
+    local jobName = payload.job
+    local newGrade = tonumber(payload.grade)
+
+    if not citizenid or not jobName or not newGrade then
+        return { success = false, message = 'Missing required fields' }
+    end
+
+    -- Validate the grade exists
+    local gradeData = ps.getSharedJobGrade(jobName, newGrade)
+    if not gradeData then
+        return { success = false, message = 'Invalid grade for this job' }
+    end
+
+    -- Find the target player (must be online for QBCore SetJob)
+    local targetPlayer = ps.getPlayerByIdentifier(citizenid)
+    if not targetPlayer then
+        return { success = false, message = 'Officer must be online to change rank' }
+    end
+
+    local targetSrc = targetPlayer.source or (targetPlayer.PlayerData and targetPlayer.PlayerData.source)
+    if not targetSrc then
+        return { success = false, message = 'Could not resolve officer source' }
+    end
+
+    -- Don't allow changing your own rank
+    if targetSrc == src then
+        return { success = false, message = 'You cannot change your own rank' }
+    end
+
+    ps.setJob(targetSrc, jobName, newGrade)
+
+    local gradeName = gradeData.name or ('Grade ' .. newGrade)
+
+    if ps.auditLog then
+        ps.auditLog(src, 'officer_promoted', 'officers', citizenid, {
+            job = jobName,
+            grade = newGrade,
+            gradeName = gradeName,
+        })
+    end
+
+    return { success = true, message = 'Officer rank updated to ' .. gradeName }
+end)
+
+-- Fire an officer (set their job to unemployed)
+ps.registerCallback('ps-mdt:server:fireOfficer', function(source, payload)
+    local src = source
+    if not CheckAuth(src) then return { success = false, message = 'Unauthorized' } end
+    if not CheckPermission(src, 'roster_manage_officers') then
+        return { success = false, message = 'No permission to manage officers' }
+    end
+
+    payload = payload or {}
+    local citizenid = payload.citizenid
+
+    if not citizenid then
+        return { success = false, message = 'Missing citizen ID' }
+    end
+
+    local targetPlayer = ps.getPlayerByIdentifier(citizenid)
+    if not targetPlayer then
+        return { success = false, message = 'Officer must be online to be terminated' }
+    end
+
+    local targetSrc = targetPlayer.source or (targetPlayer.PlayerData and targetPlayer.PlayerData.source)
+    if not targetSrc then
+        return { success = false, message = 'Could not resolve officer source' }
+    end
+
+    -- Don't allow firing yourself
+    if targetSrc == src then
+        return { success = false, message = 'You cannot fire yourself' }
+    end
+
+    ps.setJob(targetSrc, 'unemployed', 0)
+
+    if ps.auditLog then
+        ps.auditLog(src, 'officer_fired', 'officers', citizenid, {})
+    end
+
+    return { success = true, message = 'Officer has been terminated' }
+end)
+
+-- Update officer callsign (wrapper around existing setCallsign for NUI)
+ps.registerCallback('ps-mdt:server:updateOfficerCallsign', function(source, payload)
+    local src = source
+    if not CheckAuth(src) then return { success = false, message = 'Unauthorized' } end
+    if not CheckPermission(src, 'roster_manage_officers') then
+        return { success = false, message = 'No permission to manage officers' }
+    end
+
+    payload = payload or {}
+    local citizenid = payload.citizenid
+    local newCallsign = payload.callsign
+
+    if not citizenid or not newCallsign or newCallsign == '' then
+        return { success = false, message = 'Missing citizen ID or callsign' }
+    end
+
+    -- Use the existing setCallsign callback logic
+    local ok, QBCore = pcall(function() return exports['qb-core']:GetCoreObject() end)
+    if not ok or not QBCore then
+        return { success = false, message = 'Core framework not available' }
+    end
+
+    local Player = QBCore.Functions.GetPlayerByCitizenId(citizenid)
+    if not Player then
+        return { success = false, message = 'Officer must be online to update callsign' }
+    end
+
+    Player.Functions.SetMetaData('callsign', newCallsign)
+
+    local resourceName = GetCurrentResourceName()
+    TriggerClientEvent(resourceName .. ':client:updateCallsign', Player.PlayerData.source, newCallsign)
+
+    MySQL.update.await('UPDATE mdt_profiles SET callsign = ? WHERE citizenid = ?', { newCallsign, citizenid })
+
+    if ps.auditLog then
+        ps.auditLog(src, 'callsign_changed', 'officers', citizenid, { callsign = newCallsign })
+    end
+
+    return { success = true, message = 'Callsign updated to ' .. newCallsign }
+end)

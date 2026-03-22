@@ -556,6 +556,25 @@ ps.registerCallback(resourceName .. ':server:getCitizenProfile', function(source
                 driver = licences.driver or false,
                 weapon = licences.weapon or false,
             },
+            customLicenses = (function()
+                local customRows = MySQL.query.await([[
+                    SELECT cl.id, cl.name, cl.description,
+                           COALESCE(cil.active, 0) as active
+                    FROM mdt_custom_licenses cl
+                    LEFT JOIN mdt_citizen_licenses cil ON cil.license_id = cl.id AND cil.citizenid = ?
+                    ORDER BY cl.id ASC
+                ]], { citizenid })
+                local result = {}
+                for _, r in ipairs(customRows or {}) do
+                    result[#result + 1] = {
+                        id = r.id,
+                        name = r.name,
+                        description = r.description or '',
+                        active = (tonumber(r.active) or 0) == 1,
+                    }
+                end
+                return result
+            end)(),
         }
     }
 end)
@@ -582,6 +601,36 @@ ps.registerCallback(resourceName .. ':server:updateCitizenLicense', function(sou
     metadata.licences[licenseType] = enabled
 
     MySQL.update.await('UPDATE players SET metadata = ? WHERE citizenid = ?', { json.encode(metadata), citizenId })
+    return { success = true }
+end)
+
+ps.registerCallback(resourceName .. ':server:updateCitizenCustomLicense', function(source, payload)
+    local src = source
+    if not CheckAuth(src) then return { success = false, message = 'Unauthorized' } end
+
+    payload = payload or {}
+    local citizenId = payload.citizenid
+    local licenseId = tonumber(payload.licenseId)
+    local enabled = payload.enabled == true
+
+    if not citizenId or not licenseId then
+        return { success = false, message = 'Missing citizen id or license id' }
+    end
+
+    -- Verify the license exists
+    local licenseExists = MySQL.scalar.await('SELECT id FROM mdt_custom_licenses WHERE id = ?', { licenseId })
+    if not licenseExists then
+        return { success = false, message = 'License not found' }
+    end
+
+    local grantedBy = ps.getIdentifier(src)
+
+    MySQL.query.await([[
+        INSERT INTO mdt_citizen_licenses (citizenid, license_id, active, granted_by)
+        VALUES (?, ?, ?, ?)
+        ON DUPLICATE KEY UPDATE active = VALUES(active), granted_by = VALUES(granted_by)
+    ]], { citizenId, licenseId, enabled and 1 or 0, grantedBy })
+
     return { success = true }
 end)
 
