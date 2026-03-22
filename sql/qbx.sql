@@ -729,6 +729,7 @@ CREATE TABLE IF NOT EXISTS `mdt_tags` (
   `name` VARCHAR(25) NOT NULL,
   `type` ENUM('officer','report','both') NOT NULL DEFAULT 'officer',
   `color` VARCHAR(7) NOT NULL DEFAULT '#6b7280',
+  `job_type` VARCHAR(50) NOT NULL DEFAULT 'all',
   `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `unique_tag_name` (`name`)
@@ -778,6 +779,7 @@ CREATE TABLE IF NOT EXISTS `mdt_report_templates` (
   `name` varchar(100) NOT NULL,
   `type` varchar(50) NOT NULL,
   `content` longtext NOT NULL,
+  `job_type` VARCHAR(50) NULL DEFAULT 'all',
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   PRIMARY KEY (`id`),
