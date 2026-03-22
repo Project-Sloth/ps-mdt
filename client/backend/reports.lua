@@ -253,7 +253,9 @@ RegisterNUICallback('getAvailableTags', function(data, cb)
         return
     end
 
-    local tags = ps.callback(resourceName .. ':server:getAvailableTags')
+    local jobType = ps.getJobType()
+    local mdtJobType = jobType == Config.MedicalJobType and 'ems' or 'leo'
+    local tags = ps.callback(resourceName .. ':server:getAvailableTags', mdtJobType)
     if tags then
         cb({ success = true, data = tags })
     else

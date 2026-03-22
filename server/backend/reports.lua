@@ -177,7 +177,7 @@ end
 local function buildReportAccessClause()
     return [[
         (
-            mrr.reportid IS NULL
+            (mrr.reportid IS NULL AND ? = 'leo')
             OR (mrr.type = 'citizenid' AND mrr.identifier = ?)
             OR (mrr.type = 'job' AND mrr.identifier = ?)
             OR (mrr.type = 'jobtype' AND mrr.identifier = ?)
@@ -230,7 +230,7 @@ ps.registerCallback(resourceName .. ':server:getReports', function(source, page,
 		LIMIT %d
 		OFFSET %d
 	]]):format(buildReportAccessClause(), filterClause, limit, offset)
-	local params = { identifier, job, jobType }
+	local params = { jobType, identifier, job, jobType }
 	for _, value in ipairs(filterValues or {}) do
 		params[#params + 1] = value
 	end
@@ -701,6 +701,15 @@ ps.registerCallback(resourceName..':server:saveReport', function(source, reportD
         end
     end
 
+    -- Auto-add jobtype restriction so reports are only visible to the same job type
+    local creatorJobType = ps.getJobType(src)
+    if creatorJobType then
+        table.insert(attachmentQueries, {
+            query = "INSERT INTO mdt_reports_restrictions (reportid, type, identifier) VALUES (?, ?, ?)",
+            values = { reportId, 'jobtype', creatorJobType }
+        })
+    end
+
     if reportData.tags and #reportData.tags > 0 then
         for _, tag in ipairs(reportData.tags) do
             table.insert(attachmentQueries, {
@@ -919,18 +928,21 @@ ps.registerCallback(resourceName..':server:deleteReport', function(source, repor
     end
 end)
 
-ps.registerCallback(resourceName..':server:getAvailableTags', function(source)
+ps.registerCallback(resourceName..':server:getAvailableTags', function(source, playerJobType)
     local src = source
     if not CheckAuth(src) then return end
 
-    -- Pull from master mdt_tags table (report + both types) with color
+    local jt = playerJobType or 'leo'
+
+    -- Pull from master mdt_tags table (report + both types) filtered by job_type
     local tags = MySQL.query.await([[
         SELECT t.name, t.color,
                (SELECT COUNT(*) FROM mdt_reports_tags rt WHERE rt.tag = t.name) AS usage_count
         FROM mdt_tags t
         WHERE t.type IN ('report', 'both')
+          AND (t.job_type = ? OR t.job_type = 'all')
         ORDER BY t.name ASC
-    ]])
+    ]], { jt })
 
     return tags or {}
 end)
@@ -979,7 +991,7 @@ ps.registerCallback(resourceName..':server:getReportAnalytics', function(source,
         WHERE %s%s
           AND mr.type = 'Incident Report'
 	]]):format(accessClause, filterClause)
-	local incidentParams = { identifier, job, jobType }
+	local incidentParams = { jobType, identifier, job, jobType }
 	for _, value in ipairs(filterValues or {}) do
 		incidentParams[#incidentParams + 1] = value
 	end
@@ -992,7 +1004,7 @@ ps.registerCallback(resourceName..':server:getReportAnalytics', function(source,
         LEFT JOIN mdt_reports_restrictions AS mrr ON mr.id = mrr.reportid
         WHERE %s%s
 	]]):format(accessClause, filterClause)
-	local arrestParams = { identifier, job, jobType }
+	local arrestParams = { jobType, identifier, job, jobType }
 	for _, value in ipairs(filterValues or {}) do
 		arrestParams[#arrestParams + 1] = value
 	end
@@ -1006,7 +1018,7 @@ ps.registerCallback(resourceName..':server:getReportAnalytics', function(source,
         WHERE %s%s
           AND mw.expirydate >= NOW()
 	]]):format(accessClause, filterClause)
-	local warrantParams = { identifier, job, jobType }
+	local warrantParams = { jobType, identifier, job, jobType }
 	for _, value in ipairs(filterValues or {}) do
 		warrantParams[#warrantParams + 1] = value
 	end

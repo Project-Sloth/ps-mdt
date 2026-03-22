@@ -150,6 +150,7 @@ function OpenMDT()
     TriggerServerEvent('ps-mdt:server:trackLogin')
 
     SetNuiFocus(true, true)
+    SetNuiFocusKeepInput(false)
     toggleControls(true) -- Disable controls
 end
 
@@ -182,16 +183,9 @@ end
 
 -- Nui ------------------------------------------------------
 
--- Handle top bar hover state for input focus
-RegisterNUICallback('setTopBarHover', function(data, cb)
-    if MDTOpen then
-        local isHovering = data.isHovering or false
-        SetNuiFocusKeepInput(isHovering)
-        toggleControls(true) -- Disable controls
-    end
+RegisterNUICallback('setTopBarHover', function(_, cb)
     cb({})
 end)
-
 
 -- Copy text to clipboard (FiveM NUI blocks the browser Clipboard API)
 RegisterNUICallback('copyToClipboard', function(data, cb)

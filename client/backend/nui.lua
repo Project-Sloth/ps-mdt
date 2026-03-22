@@ -22,6 +22,7 @@ local function sanitizeNuiData(action, data)
             authorized = data.authorized == true,
             isLEO = data.isLEO == true,
             onDuty = data.onDuty == true,
+            jobType = data.jobType or 'leo',
             playerData = type(playerData) == 'table' and {
                 citizenid = playerData.citizenid,
                 job = playerData.job,

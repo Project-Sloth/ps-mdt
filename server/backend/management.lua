@@ -324,17 +324,36 @@ CreateThread(function()
     end
 end)
 
-ps.registerCallback(resourceName .. ':server:getTags', function(source)
+ps.registerCallback(resourceName .. ':server:getTags', function(source, data)
     local src = source
     if not CheckAuth(src) then return {} end
 
-    local rows = MySQL.query.await([[
-        SELECT t.id, t.name, t.type, t.color, t.created_at,
-               (SELECT COUNT(*) FROM mdt_profiles_tags pt WHERE pt.tag = t.name) +
-               (SELECT COUNT(*) FROM mdt_reports_tags rt WHERE rt.tag = t.name) AS usage_count
-        FROM mdt_tags t
-        ORDER BY t.name ASC
-    ]])
+    data = data or {}
+    local jobType = data.jobType
+
+    local query, params
+    if jobType and (jobType == 'leo' or jobType == 'ems') then
+        query = [[
+            SELECT t.id, t.name, t.type, t.color, t.job_type, t.created_at,
+                   (SELECT COUNT(*) FROM mdt_profiles_tags pt WHERE pt.tag = t.name) +
+                   (SELECT COUNT(*) FROM mdt_reports_tags rt WHERE rt.tag = t.name) AS usage_count
+            FROM mdt_tags t
+            WHERE t.job_type = ? OR t.job_type = 'all'
+            ORDER BY t.name ASC
+        ]]
+        params = { jobType }
+    else
+        query = [[
+            SELECT t.id, t.name, t.type, t.color, t.job_type, t.created_at,
+                   (SELECT COUNT(*) FROM mdt_profiles_tags pt WHERE pt.tag = t.name) +
+                   (SELECT COUNT(*) FROM mdt_reports_tags rt WHERE rt.tag = t.name) AS usage_count
+            FROM mdt_tags t
+            ORDER BY t.name ASC
+        ]]
+        params = {}
+    end
+
+    local rows = MySQL.query.await(query, params)
     return rows or {}
 end)
 
@@ -344,8 +363,9 @@ ps.registerCallback(resourceName .. ':server:createTag', function(source, payloa
 
     payload = payload or {}
     local name = payload.name
-    local tagType = payload.type or 'citizen'
+    local tagType = payload.type or 'officer'
     local color = payload.color or '#6b7280'
+    local jobType = payload.job_type or 'all'
 
     if not name or name == '' then
         return { success = false, message = 'Tag name is required' }
@@ -360,7 +380,7 @@ ps.registerCallback(resourceName .. ':server:createTag', function(source, payloa
         return { success = false, message = 'Tag already exists' }
     end
 
-    local id = MySQL.insert.await('INSERT INTO mdt_tags (name, type, color) VALUES (?, ?, ?)', { name, tagType, color })
+    local id = MySQL.insert.await('INSERT INTO mdt_tags (name, type, color, job_type) VALUES (?, ?, ?, ?)', { name, tagType, color, jobType })
     if not id then
         return { success = false, message = 'Failed to create tag' }
     end
@@ -377,6 +397,7 @@ ps.registerCallback(resourceName .. ':server:updateTag', function(source, payloa
     local name = payload.name
     local tagType = payload.type
     local color = payload.color
+    local jobType = payload.job_type or 'all'
 
     if not id then
         return { success = false, message = 'Invalid tag ID' }
@@ -398,7 +419,7 @@ ps.registerCallback(resourceName .. ':server:updateTag', function(source, payloa
         return { success = false, message = 'Another tag with that name already exists' }
     end
 
-    MySQL.update.await('UPDATE mdt_tags SET name = ?, type = ?, color = ? WHERE id = ?', { name, tagType, color, id })
+    MySQL.update.await('UPDATE mdt_tags SET name = ?, type = ?, color = ?, job_type = ? WHERE id = ?', { name, tagType, color, jobType, id })
 
     -- Update references in profile tags and report tags if name changed
     if oldName and oldName ~= name then

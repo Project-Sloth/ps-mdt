@@ -253,11 +253,16 @@ end)
 
 -- Report Templates Configuration
 
-ps.registerCallback(resourceName .. ':server:getReportTemplates', function(source)
+ps.registerCallback(resourceName .. ':server:getReportTemplates', function(source, data)
     local src = source
     if not CheckAuth(src) then return {} end
 
-    local rows = MySQL.query.await('SELECT `id`, `name`, `type`, `content` FROM mdt_report_templates ORDER BY `type`, `name`')
+    local jobType = (type(data) == 'table' and data.jobType) or 'all'
+    -- Return templates matching the job type or 'all'
+    local rows = MySQL.query.await(
+        'SELECT `id`, `name`, `type`, `content`, `job_type` FROM mdt_report_templates WHERE `job_type` = ? OR `job_type` = ? ORDER BY `type`, `name`',
+        { jobType, 'all' }
+    )
     return rows or {}
 end)
 
@@ -280,25 +285,31 @@ ps.registerCallback(resourceName .. ':server:saveReportTemplate', function(sourc
         return { success = false, message = 'Name, type, and content are required' }
     end
 
+    local jobType = tostring(payload.jobType or 'all'):sub(1, 10)
+    -- Validate job_type
+    if jobType ~= 'leo' and jobType ~= 'ems' and jobType ~= 'all' then
+        jobType = 'all'
+    end
+
     local templateId = payload.id and tonumber(payload.id) or nil
 
     if templateId then
         -- Update existing
-        MySQL.update.await('UPDATE mdt_report_templates SET `name` = ?, `type` = ?, `content` = ? WHERE `id` = ?', {
-            name, tmplType, content, templateId
+        MySQL.update.await('UPDATE mdt_report_templates SET `name` = ?, `type` = ?, `content` = ?, `job_type` = ? WHERE `id` = ?', {
+            name, tmplType, content, jobType, templateId
         })
     else
         -- Insert new
-        templateId = MySQL.insert.await('INSERT INTO mdt_report_templates (`name`, `type`, `content`) VALUES (?, ?, ?)', {
-            name, tmplType, content
+        templateId = MySQL.insert.await('INSERT INTO mdt_report_templates (`name`, `type`, `content`, `job_type`) VALUES (?, ?, ?, ?)', {
+            name, tmplType, content, jobType
         })
     end
 
     if ps.auditLog then
-        ps.auditLog(src, 'settings_updated', 'settings', 'report_template_' .. tostring(templateId), { name = name, type = tmplType })
+        ps.auditLog(src, 'settings_updated', 'settings', 'report_template_' .. tostring(templateId), { name = name, type = tmplType, jobType = jobType })
     end
 
-    return { success = true, template = { id = templateId, name = name, type = tmplType, content = content } }
+    return { success = true, template = { id = templateId, name = name, type = tmplType, content = content, job_type = jobType } }
 end)
 
 ps.registerCallback(resourceName .. ':server:deleteReportTemplate', function(source, payload)

@@ -2,12 +2,13 @@
 
 function CheckAuth(source)
     ps.debug('Checking MDT Authorization')
-    if ps.getJobType(source) ~= Config.PoliceJobType then
-        ps.debug('Access Denied for ID: ' .. source .. ', Name: ' .. ps.getPlayerName(source) .. ', not a PoliceJobType')
-        ps.notify(source, 'Access Denied: Law Enforcement Only', 'error')
+    local jobType = ps.getJobType(source)
+    if jobType ~= Config.PoliceJobType and jobType ~= Config.MedicalJobType then
+        ps.debug('Access Denied for ID: ' .. source .. ', Name: ' .. ps.getPlayerName(source) .. ', not an authorized job type')
+        ps.notify(source, 'Access Denied: Authorized Personnel Only', 'error')
         return false
     else
-        ps.debug('Access Granted for ID: ' .. source .. ', Name: ' .. ps.getPlayerName(source) .. ', is a PoliceJobType')
+        ps.debug('Access Granted for ID: ' .. source .. ', Name: ' .. ps.getPlayerName(source) .. ', job type: ' .. tostring(jobType))
         return true
     end
 end

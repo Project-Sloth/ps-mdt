@@ -4,19 +4,22 @@ local resourceName = tostring(GetCurrentResourceName())
 
 -- Job and Duty Check
 RegisterNUICallback('checkAuth', function(_, cb)
-    local isLEO = ps.getJobType() == 'leo'
+    local jobType = ps.getJobType()
+    local isAuthorized = jobType == Config.PoliceJobType or jobType == Config.MedicalJobType
+    local mdtJobType = jobType == Config.MedicalJobType and 'ems' or 'leo'
     local onDuty = ps.getJobDuty() or false
     local playerData = ps.getPlayerData()
 
     cb({
-        authorized = isLEO and onDuty,
+        authorized = isAuthorized and onDuty,
         playerData = type(playerData) == 'table' and {
             citizenid = playerData.citizenid,
             job = playerData.job,
             charinfo = playerData.charinfo,
         } or nil,
-        isLEO = ps.getJobType() == 'leo',
+        isLEO = isAuthorized,
         onDuty = onDuty or false,
+        jobType = mdtJobType,
     })
 end)
 
@@ -33,16 +36,20 @@ end)
 
 -- Update Auth NUI Wrapper
 function NUIUpdateAuth()
+    local jobType = ps.getJobType()
+    local isAuthorized = jobType == Config.PoliceJobType or jobType == Config.MedicalJobType
+    local mdtJobType = jobType == Config.MedicalJobType and 'ems' or 'leo'
     local playerData = ps.getPlayerData()
     SendNUI('updateAuth', {
-        authorized = ps.getJobDuty() or false,
+        authorized = isAuthorized and (ps.getJobDuty() or false),
         playerData = type(playerData) == 'table' and {
             citizenid = playerData.citizenid,
             job = playerData.job,
             charinfo = playerData.charinfo,
         } or nil,
-        isLEO = ps.getJobType() == Config.PoliceJobType,
-        onDuty = ps.getJobDuty() or false
+        isLEO = isAuthorized,
+        onDuty = ps.getJobDuty() or false,
+        jobType = mdtJobType,
     })
 end
 

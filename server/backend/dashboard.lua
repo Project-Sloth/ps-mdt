@@ -145,14 +145,26 @@ ps.registerCallback(resourceName .. ':server:getRecentReports', function(source,
         pageSize = 50
     end
 
+    local identifier = ps.getIdentifier(src)
+    local job = ps.getJobName(src)
+    local jobType = ps.getJobType(src)
+
     local offset = (pageNumber - 1) * pageSize
     local rows = MySQL.query.await([[
-        SELECT id, title, type, contentplaintext, author, authorplaintext, datecreated, dateupdated
-        FROM mdt_reports
-        ORDER BY datecreated DESC
+        SELECT mr.id, mr.title, mr.type, mr.contentplaintext, mr.author, mr.authorplaintext, mr.datecreated, mr.dateupdated
+        FROM mdt_reports mr
+        LEFT JOIN mdt_reports_restrictions mrr ON mr.id = mrr.reportid
+        WHERE (
+            (mrr.reportid IS NULL AND ? = 'leo')
+            OR (mrr.type = 'citizenid' AND mrr.identifier = ?)
+            OR (mrr.type = 'job' AND mrr.identifier = ?)
+            OR (mrr.type = 'jobtype' AND mrr.identifier = ?)
+        )
+        GROUP BY mr.id
+        ORDER BY mr.datecreated DESC
         LIMIT ?
         OFFSET ?
-    ]], { pageSize, offset })
+    ]], { jobType, identifier, job, jobType, pageSize, offset })
     return rows or {}
 end)
 

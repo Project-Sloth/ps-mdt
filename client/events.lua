@@ -1,15 +1,23 @@
 local resourceName = tostring(GetCurrentResourceName())
 
+local function isAuthorizedJob(job)
+    if not job then return false, nil end
+    if job.type == Config.PoliceJobType then return true, 'leo' end
+    if job.type == Config.MedicalJobType then return true, 'ems' end
+    return false, nil
+end
+
 function NUIUpdateAuthWithData(jobData)
     local job = jobData or ps.getJob()
-    local isLEO = job and job.type == Config.PoliceJobType
+    local authorized, jobType = isAuthorizedJob(job)
     local onDuty = job and job.onduty or false
 
     SendNUI('updateAuth', {
-        authorized = isLEO and onDuty,
+        authorized = authorized and onDuty,
         playerData = ps.getPlayerData(),
-        isLEO = isLEO,
-        onDuty = onDuty
+        isLEO = authorized,
+        onDuty = onDuty,
+        jobType = jobType or 'leo'
     })
 end
 
@@ -18,9 +26,9 @@ local function onJobUpdate(JobInfo)
     ps.debug('Updated job info:', job)
 
     if MDTOpen then
-        local isLEO = job and job.type == Config.PoliceJobType
+        local authorized = isAuthorizedJob(job)
 
-        if not isLEO then
+        if not authorized then
             CloseMDT()
             ps.notify('MDT closed - Access revoked', 'error')
         else
@@ -36,8 +44,8 @@ local function onSetDuty(duty)
             job.onduty = duty
             NUIUpdateAuthWithData(job)
 
-            local isLEO = job.type == Config.PoliceJobType
-            if not isLEO then
+            local authorized = isAuthorizedJob(job)
+            if not authorized then
                 CloseMDT()
                 ps.notify('MDT closed - Access revoked', 'error')
             end

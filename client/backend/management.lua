@@ -76,13 +76,14 @@ end)
 
 -- SETTINGS: Report Templates -------------------------------------------
 
-RegisterNUICallback('getReportTemplates', function(_, cb)
+RegisterNUICallback('getReportTemplates', function(data, cb)
     if not MDTOpen then
         cb({})
         return
     end
 
-    local result = ps.callback(resourceName .. ':server:getReportTemplates')
+    local jobType = (type(data) == 'table' and data.jobType) or nil
+    local result = ps.callback(resourceName .. ':server:getReportTemplates', { jobType = jobType })
     cb(result or {})
 end)
 
@@ -108,12 +109,13 @@ end)
 
 -- TAG MANAGEMENT -------------------------------------------
 
-RegisterNUICallback('getTags', function(_, cb)
+RegisterNUICallback('getTags', function(data, cb)
     if not MDTOpen then
         cb({})
         return
     end
-    local result = ps.callback(resourceName .. ':server:getTags')
+    local jobType = (type(data) == 'table' and data.jobType) or nil
+    local result = ps.callback(resourceName .. ':server:getTags', { jobType = jobType })
     cb(result or {})
 end)
 
