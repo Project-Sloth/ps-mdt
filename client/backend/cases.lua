@@ -360,6 +360,26 @@ RegisterNUICallback('logEvidenceViewed', function(data, cb)
     cb(result or { success = false })
 end)
 
+RegisterNUICallback('addCaseNote', function(data, cb)
+    if not MDTOpen then cb({ success = false }) return end
+    if not data or not data.caseId or not data.content or data.content == '' then
+        cb({ success = false, message = 'Missing case ID or note content' })
+        return
+    end
+    local result = ps.callback(resourceName .. ':server:addCaseNote', data.caseId, data.content)
+    cb(result or { success = false })
+end)
+
+RegisterNUICallback('deleteCaseNote', function(data, cb)
+    if not MDTOpen then cb({ success = false }) return end
+    if not data or not data.noteId or not data.caseId then
+        cb({ success = false, message = 'Missing note ID or case ID' })
+        return
+    end
+    local result = ps.callback(resourceName .. ':server:deleteCaseNote', data.noteId, data.caseId)
+    cb(result or { success = false })
+end)
+
 RegisterNUICallback('openEvidenceStash', function(data, cb)
     if not MDTOpen then
         cb({ success = false, message = 'MDT is not open' })

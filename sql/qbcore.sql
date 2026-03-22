@@ -457,6 +457,18 @@ CREATE TABLE IF NOT EXISTS `mdt_case_attachments` (
   CONSTRAINT `FK_mdt_case_attachments_cases` FOREIGN KEY (`case_id`) REFERENCES `mdt_cases` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+CREATE TABLE IF NOT EXISTS `mdt_case_notes` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `case_id` int(10) unsigned NOT NULL,
+  `content` text NOT NULL,
+  `author_citizenid` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `author_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `case_id` (`case_id`),
+  CONSTRAINT `FK_mdt_case_notes_cases` FOREIGN KEY (`case_id`) REFERENCES `mdt_cases` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
 CREATE TABLE IF NOT EXISTS `mdt_case_reports` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `case_id` int(10) unsigned NOT NULL,
@@ -842,6 +854,44 @@ INSERT IGNORE INTO `mdt_custom_licenses` (`name`, `description`) VALUES
 ('Hunting License', 'Permits hunting of wildlife in designated areas'),
 ('Boating License', 'Required for operating watercraft'),
 ('Pilot License', 'Required for operating aircraft');
+
+-- Internal Affairs
+CREATE TABLE IF NOT EXISTS `mdt_ia_complaints` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `complaint_number` varchar(20) NOT NULL,
+  `complainant_citizenid` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `complainant_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `complainant_phone` varchar(20) DEFAULT NULL,
+  `officer_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `officer_badge` varchar(20) DEFAULT NULL,
+  `category` enum('misconduct','excessive_force','corruption','negligence','discrimination','other') NOT NULL DEFAULT 'other',
+  `description` text NOT NULL,
+  `incident_date` varchar(20) DEFAULT NULL,
+  `incident_location` varchar(200) DEFAULT NULL,
+  `witnesses` text DEFAULT NULL,
+  `evidence` text DEFAULT NULL,
+  `status` enum('open','under_review','investigated','sustained','exonerated','unfounded','closed') NOT NULL DEFAULT 'open',
+  `assigned_to` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `assigned_to_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `complaint_number` (`complaint_number`),
+  KEY `status` (`status`),
+  KEY `assigned_to` (`assigned_to`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+CREATE TABLE IF NOT EXISTS `mdt_ia_notes` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `complaint_id` int(10) unsigned NOT NULL,
+  `content` text NOT NULL,
+  `author_citizenid` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `author_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `complaint_id` (`complaint_id`),
+  CONSTRAINT `FK_ia_notes_complaints` FOREIGN KEY (`complaint_id`) REFERENCES `mdt_ia_complaints` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 /*!40103 SET TIME_ZONE=IFNULL(@OLD_TIME_ZONE, 'system') */;
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;

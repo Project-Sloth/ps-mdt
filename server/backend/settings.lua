@@ -336,3 +336,78 @@ ps.registerCallback(resourceName .. ':server:deleteReportTemplate', function(sou
 
     return { success = true }
 end)
+
+-- ═══════════════════════════════════════════════════════════════
+--  COLORS CONFIG
+-- ═══════════════════════════════════════════════════════════════
+
+local colorConfigCache = nil
+
+local function getColorSettingsKey(src)
+    local jobName = ps.getJobName and ps.getJobName(src) or 'police'
+    return 'colors_' .. (jobName or 'police')
+end
+
+ps.registerCallback(resourceName .. ':server:getColorConfig', function(source)
+    local src = source
+    if not CheckAuth(src) then return nil end
+
+    local settingsKey = getColorSettingsKey(src)
+
+    if colorConfigCache and colorConfigCache._key == settingsKey then
+        return colorConfigCache
+    end
+
+    local rows = MySQL.query.await('SELECT `value` FROM mdt_settings WHERE `key` = ?', { settingsKey })
+    if rows and rows[1] and rows[1].value then
+        local ok, parsed = pcall(json.decode, rows[1].value)
+        if ok and parsed then
+            parsed._key = settingsKey
+            colorConfigCache = parsed
+            return parsed
+        end
+    end
+
+    return nil
+end)
+
+ps.registerCallback(resourceName .. ':server:saveColorConfig', function(source, payload)
+    local src = source
+    if not CheckAuth(src) then return { success = false, message = 'Unauthorized' } end
+    if not CheckPermission(src, 'management_settings') then
+        return { success = false, message = 'You do not have permission to change color settings' }
+    end
+
+    if type(payload) ~= 'table' then
+        return { success = false, message = 'Invalid payload' }
+    end
+
+    local config = {
+        accent = type(payload.accent) == 'string' and payload.accent or nil,
+        accentText = type(payload.accentText) == 'string' and payload.accentText or nil,
+        background = type(payload.background) == 'string' and payload.background or nil,
+        cardBackground = type(payload.cardBackground) == 'string' and payload.cardBackground or nil,
+        buttonPrimary = type(payload.buttonPrimary) == 'string' and payload.buttonPrimary or nil,
+    }
+
+    if not config.accent then
+        return { success = false, message = 'Accent color is required' }
+    end
+
+    local settingsKey = getColorSettingsKey(src)
+    local jsonValue = json.encode(config)
+
+    MySQL.query.await([[
+        INSERT INTO mdt_settings (`key`, `value`) VALUES (?, ?)
+        ON DUPLICATE KEY UPDATE `value` = VALUES(`value`)
+    ]], { settingsKey, jsonValue })
+
+    config._key = settingsKey
+    colorConfigCache = config
+
+    if ps.auditLog then
+        ps.auditLog(src, 'settings_updated', 'settings', settingsKey, config)
+    end
+
+    return { success = true }
+end)

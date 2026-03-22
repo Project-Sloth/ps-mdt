@@ -153,9 +153,16 @@ ps.registerCallback(resourceName .. ':server:getCase', function(source, caseId)
     local reports = MySQL.query.await([[
         SELECT mr.id, mr.title, mr.type, mr.datecreated
         FROM mdt_case_reports mcr
-        LEFT JOIN mdt_reports mr ON mr.id = mcr.report_id
+        INNER JOIN mdt_reports mr ON mr.id = mcr.report_id
         WHERE mcr.case_id = ?
         ORDER BY mr.datecreated DESC
+    ]], { caseId })
+
+    local notes = MySQL.query.await([[
+        SELECT id, content, author_name, created_at
+        FROM mdt_case_notes
+        WHERE case_id = ?
+        ORDER BY created_at DESC
     ]], { caseId })
 
     return {
@@ -165,7 +172,8 @@ ps.registerCallback(resourceName .. ':server:getCase', function(source, caseId)
             officers = officers or {},
             attachments = attachments or {},
             evidence = {},
-            reports = reports or {}
+            reports = reports or {},
+            notes = notes or {}
         }
     }
 end)
@@ -178,6 +186,12 @@ ps.registerCallback(resourceName .. ':server:linkReportToCase', function(source,
     caseId = tonumber(caseId)
     if not reportId or not caseId then
         return { success = false, error = 'Invalid report or case' }
+    end
+
+    -- Validate report exists before linking
+    local reportExists = MySQL.single.await('SELECT id FROM mdt_reports WHERE id = ?', { reportId })
+    if not reportExists then
+        return { success = false, error = 'Report #' .. tostring(reportId) .. ' does not exist' }
     end
 
     MySQL.insert.await([[
@@ -742,4 +756,41 @@ ps.registerCallback(resourceName .. ':server:getEvidenceCustody', function(sourc
     ]], { evidenceId })
 
     return rows or {}
+end)
+
+-- Add a note to a case
+ps.registerCallback(resourceName .. ':server:addCaseNote', function(source, caseId, content)
+    local src = source
+    if not CheckAuth(src) then return { success = false, error = 'Unauthorized' } end
+
+    caseId = tonumber(caseId)
+    if not caseId or not content or content == '' then
+        return { success = false, error = 'Invalid case or empty note' }
+    end
+
+    local citizenId = ps.getIdentifier(src)
+    local profile = MySQL.single.await('SELECT fullname FROM mdt_profiles WHERE citizenid = ?', { citizenId })
+    local authorName = profile and profile.fullname or 'Unknown'
+
+    MySQL.insert.await([[
+        INSERT INTO mdt_case_notes (case_id, content, author_citizenid, author_name)
+        VALUES (?, ?, ?, ?)
+    ]], { caseId, content, citizenId, authorName })
+
+    return { success = true }
+end)
+
+-- Delete a note from a case
+ps.registerCallback(resourceName .. ':server:deleteCaseNote', function(source, noteId, caseId)
+    local src = source
+    if not CheckAuth(src) then return { success = false, error = 'Unauthorized' } end
+
+    noteId = tonumber(noteId)
+    caseId = tonumber(caseId)
+    if not noteId or not caseId then
+        return { success = false, error = 'Invalid note or case' }
+    end
+
+    MySQL.query.await('DELETE FROM mdt_case_notes WHERE id = ? AND case_id = ?', { noteId, caseId })
+    return { success = true }
 end)

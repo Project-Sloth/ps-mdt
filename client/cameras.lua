@@ -191,6 +191,30 @@ updateCameraControls = function()
         return
     end
 
+    -- For bodycams, attach camera to the target ped's head bone so it follows movement
+    if currentCameraData and currentCameraData.isBodycam and currentCameraData.targetSource then
+        local targetPed = GetPlayerPed(GetPlayerFromServerId(currentCameraData.targetSource))
+        if targetPed and targetPed ~= 0 and DoesEntityExist(targetPed) then
+            -- SKEL_Head bone index = 31086
+            local boneIndex = GetPedBoneIndex(targetPed, 31086)
+            local boneCoords = GetPedBoneCoords(targetPed, boneIndex, 0.0, 0.0, 0.0)
+            -- Offset slightly forward and up from the head to simulate chest/shoulder bodycam
+            local forward = GetEntityForwardVector(targetPed)
+            local camX = boneCoords.x + forward.x * 0.1
+            local camY = boneCoords.y + forward.y * 0.1
+            local camZ = boneCoords.z + 0.05
+            SetCamCoord(currentCamera, camX, camY, camZ)
+
+            -- Point camera in the direction the ped is facing
+            local heading = GetEntityHeading(targetPed)
+            local currentRot = GetCamRot(currentCamera, 2)
+            SetCamRot(currentCamera, currentRot.x, currentRot.y, -heading, 2)
+
+            -- Update focus area so world streams around the target
+            SetFocusPosAndVel(camX, camY, camZ, 0, 0, 0)
+        end
+    end
+
     -- Handle zoom controls (adjust FOV instead of position for CCTV)
     local currentFov = GetCamFov(currentCamera)
     local fovStep = camCfg.FovStep or 2.0
@@ -206,28 +230,31 @@ updateCameraControls = function()
     currentFov = math.max(camCfg.FovMin or 10.0, math.min(camCfg.FovMax or 100.0, currentFov))
     SetCamFov(currentCamera, currentFov)
 
-    -- Handle mouse look controls for CCTV rotation
-    local mouseX = GetDisabledControlNormal(0, 1) * cameraOptions.rotationSpeed
-    local mouseY = GetDisabledControlNormal(0, 2) * cameraOptions.rotationSpeed
+    -- Handle mouse look controls for CCTV rotation (only for static cameras, not bodycams)
+    if not (currentCameraData and currentCameraData.isBodycam) then
+        local mouseX = GetDisabledControlNormal(0, 1) * cameraOptions.rotationSpeed
+        local mouseY = GetDisabledControlNormal(0, 2) * cameraOptions.rotationSpeed
 
-    -- Get current rotation and apply mouse input
-    local currentRot = GetCamRot(currentCamera, 2)
-    local newRotX = currentRot.x - mouseY * 30.0  -- Vertical look
-    local newRotZ = currentRot.z - mouseX * 30.0  -- Horizontal look
+        -- Get current rotation and apply mouse input
+        local currentRot = GetCamRot(currentCamera, 2)
+        local newRotX = currentRot.x - mouseY * 30.0  -- Vertical look
+        local newRotZ = currentRot.z - mouseX * 30.0  -- Horizontal look
 
-    -- Limit vertical rotation
-    newRotX = math.max(-45.0, math.min(45.0, newRotX))
+        -- Limit vertical rotation
+        newRotX = math.max(-45.0, math.min(45.0, newRotX))
 
-    -- Apply new rotation while keeping camera at current position
-    local currentCoords = GetCamCoord(currentCamera)
-    SetCamCoord(currentCamera, currentCoords.x, currentCoords.y, currentCoords.z)
-    SetCamRot(currentCamera, newRotX, currentRot.y, newRotZ, 2)
+        -- Apply new rotation while keeping camera at current position
+        local currentCoords = GetCamCoord(currentCamera)
+        SetCamCoord(currentCamera, currentCoords.x, currentCoords.y, currentCoords.z)
+        SetCamRot(currentCamera, newRotX, currentRot.y, newRotZ, 2)
+    end
 
     -- Show help text
+    local helpLabel = currentCameraData and currentCameraData.isBodycam and 'Bodycam View' or 'Camera View'
     ShowCameraHelpNotification(
-        'Camera View' ..
+        helpLabel ..
         '~n~Mouse Wheel: Zoom In/Out (FOV: ' .. string.format('%.0f', currentFov) .. ')' ..
-        '~n~Mouse: Rotate Camera View' ..
+        (not (currentCameraData and currentCameraData.isBodycam) and '~n~Mouse: Rotate Camera View' or '') ..
         '~n~Press ~INPUT_FRONTEND_PAUSE_ALTERNATE~ Exit Camera'
     )
 end
