@@ -39,6 +39,7 @@ function EnsureProfileExists(citizenid)
         local charinfo = playerData.charinfo
         local fullname = charinfo.firstname .. ' ' .. charinfo.lastname
         local callsign = playerData.metadata and playerData.metadata.callsign or nil
+        if callsign == 'NO CALLSIGN' or callsign == '' then callsign = nil end
 
         local success = MySQL.insert.await([[
             INSERT INTO mdt_profiles (citizenid, fullname, callsign)
@@ -64,6 +65,7 @@ function EnsureProfileExists(citizenid)
     local metadata = row.metadata and json.decode(row.metadata) or {}
     local fullname = ((charinfo.firstname or '') .. ' ' .. (charinfo.lastname or '')):gsub('^%s+', ''):gsub('%s+$', '')
     local callsign = metadata.callsign
+    if callsign == 'NO CALLSIGN' or callsign == '' then callsign = nil end
 
     local success = MySQL.insert.await([[
         INSERT INTO mdt_profiles (citizenid, fullname, callsign)
