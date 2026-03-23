@@ -253,6 +253,9 @@ Config.ManagementPermissions = {
     -- PPR
     'ppr_view',
     'ppr_manage',
+    -- FTO
+    'fto_view',
+    'fto_manage',
     -- Management
     'management_permissions',
     'management_bulletins',

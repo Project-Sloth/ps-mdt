@@ -942,6 +942,104 @@ CREATE TABLE IF NOT EXISTS `mdt_ppr_notes` (
   CONSTRAINT `FK_ppr_notes_ppr` FOREIGN KEY (`ppr_id`) REFERENCES `mdt_ppr` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- FTO (Field Training Officer) Tables
+
+CREATE TABLE IF NOT EXISTS `mdt_fto_phases` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `job` varchar(50) NOT NULL DEFAULT 'police',
+  `name` varchar(200) NOT NULL,
+  `description` text DEFAULT NULL,
+  `duration_days` int(10) unsigned DEFAULT 0,
+  `sort_order` int(10) unsigned DEFAULT 0,
+  PRIMARY KEY (`id`),
+  KEY `job` (`job`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `mdt_fto_competencies` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `job` varchar(50) NOT NULL DEFAULT 'police',
+  `name` varchar(200) NOT NULL,
+  `category` varchar(100) DEFAULT 'General',
+  `sort_order` int(10) unsigned DEFAULT 0,
+  PRIMARY KEY (`id`),
+  KEY `job` (`job`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `mdt_fto_assignments` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `fto_number` varchar(20) NOT NULL DEFAULT '',
+  `trainee_citizenid` varchar(50) NOT NULL,
+  `trainee_name` varchar(100) NOT NULL,
+  `trainer_citizenid` varchar(50) NOT NULL,
+  `trainer_name` varchar(100) NOT NULL,
+  `current_phase_id` int(10) unsigned DEFAULT NULL,
+  `status` enum('active','completed','failed','suspended') NOT NULL DEFAULT 'active',
+  `start_date` varchar(20) DEFAULT NULL,
+  `end_date` varchar(20) DEFAULT NULL,
+  `notes` text DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `fto_number` (`fto_number`),
+  KEY `trainee_citizenid` (`trainee_citizenid`),
+  KEY `trainer_citizenid` (`trainer_citizenid`),
+  KEY `status` (`status`),
+  KEY `current_phase_id` (`current_phase_id`),
+  CONSTRAINT `FK_fto_assignments_phase` FOREIGN KEY (`current_phase_id`) REFERENCES `mdt_fto_phases` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `mdt_fto_dors` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `assignment_id` int(10) unsigned NOT NULL,
+  `phase_id` int(10) unsigned DEFAULT NULL,
+  `author_citizenid` varchar(50) NOT NULL,
+  `author_name` varchar(100) NOT NULL,
+  `shift_date` varchar(20) NOT NULL,
+  `overall_rating` int(1) unsigned NOT NULL DEFAULT 3,
+  `notes` text DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `assignment_id` (`assignment_id`),
+  KEY `phase_id` (`phase_id`),
+  CONSTRAINT `FK_fto_dors_assignment` FOREIGN KEY (`assignment_id`) REFERENCES `mdt_fto_assignments` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `FK_fto_dors_phase` FOREIGN KEY (`phase_id`) REFERENCES `mdt_fto_phases` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `mdt_fto_dor_ratings` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `dor_id` int(10) unsigned NOT NULL,
+  `competency_id` int(10) unsigned NOT NULL,
+  `rating` int(1) unsigned NOT NULL DEFAULT 3,
+  `notes` text DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `dor_id` (`dor_id`),
+  KEY `competency_id` (`competency_id`),
+  CONSTRAINT `FK_fto_dor_ratings_dor` FOREIGN KEY (`dor_id`) REFERENCES `mdt_fto_dors` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `FK_fto_dor_ratings_competency` FOREIGN KEY (`competency_id`) REFERENCES `mdt_fto_competencies` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- FTO Default Data (change 'police' to your job name if different)
+
+INSERT IGNORE INTO `mdt_fto_phases` (`id`, `job`, `name`, `description`, `duration_days`, `sort_order`) VALUES
+(1, 'police', 'Phase 1 - Observation', 'Trainee observes the FTO during calls and patrol. FTO demonstrates proper procedures, report writing, and radio communication.', 14, 1),
+(2, 'police', 'Phase 2 - Supervised Patrol', 'Trainee takes the lead on calls with FTO supervision. FTO evaluates decision-making, officer safety, and law application.', 21, 2),
+(3, 'police', 'Phase 3 - Reduced Supervision', 'Trainee operates with minimal FTO input. FTO only intervenes when necessary and evaluates readiness for solo patrol.', 14, 3),
+(4, 'police', 'Phase 4 - Solo Evaluation', 'Trainee patrols independently while the FTO observes from a distance or reviews reports. Final evaluation before sign-off.', 7, 4);
+
+INSERT IGNORE INTO `mdt_fto_competencies` (`id`, `job`, `name`, `category`, `sort_order`) VALUES
+(1, 'police', 'Driving and Vehicle Operations', 'Patrol', 1),
+(2, 'police', 'Radio Communication', 'Communication', 2),
+(3, 'police', 'Verbal Communication', 'Communication', 3),
+(4, 'police', 'Report Writing', 'Documentation', 4),
+(5, 'police', 'Knowledge of Penal Codes', 'Legal', 5),
+(6, 'police', 'Knowledge of Traffic Laws', 'Legal', 6),
+(7, 'police', 'Use of Force Decisions', 'Tactical', 7),
+(8, 'police', 'Officer Safety and Awareness', 'Tactical', 8),
+(9, 'police', 'Suspect Interaction and De-escalation', 'Communication', 9),
+(10, 'police', 'Scene Management', 'Tactical', 10),
+(11, 'police', 'Evidence Handling', 'Documentation', 11),
+(12, 'police', 'Professionalism and Conduct', 'General', 12);
+
 -- SOP (Standard Operating Procedures) Tables
 
 CREATE TABLE IF NOT EXISTS `mdt_sop_categories` (
