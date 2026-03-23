@@ -164,6 +164,14 @@ Config.ImpoundLocations = {
 | `Config.Fuel` | 'LegacyFuel' | Your fuel resource name |
 | `Config.Debug` | false | Debug logging |
 
+## Preview
+<img width="2445" height="1305" alt="Screenshot 2026-03-22 185605" src="https://github.com/user-attachments/assets/7f228a36-5d82-40ba-ade9-d9da78d249fd" />
+<img width="2455" height="1310" alt="Screenshot 2026-03-22 185655" src="https://github.com/user-attachments/assets/e0291f16-efa6-4d86-b3ad-f82ccdb8deb3" />
+<img width="2445" height="1316" alt="Screenshot 2026-03-22 185712" src="https://github.com/user-attachments/assets/f6c4bb93-c178-4b64-bb8c-3f38b7f09eba" />
+<img width="2447" height="1306" alt="Screenshot 2026-03-22 185704" src="https://github.com/user-attachments/assets/d6dbba26-189c-427b-9e10-4c5c2d20056c" />
+<img width="2431" height="1297" alt="Screenshot 2026-03-22 185726" src="https://github.com/user-attachments/assets/5ed25446-3706-4e35-8cc9-d18c265d1ed0" />
+
+
 ## Features
 
 ### Citizens
