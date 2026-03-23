@@ -85,6 +85,9 @@ function EnsureProfileData(citizenid, fullname, callsign, badgeNumber, rank, dep
         return nil
     end
 
+    -- Sanitize callsign to avoid UNIQUE constraint violations
+    if callsign == 'NO CALLSIGN' or callsign == '' then callsign = nil end
+
     local profile = MySQL.single.await('SELECT id FROM mdt_profiles WHERE citizenid = ?', { citizenid })
     if profile and profile.id then
         MySQL.update.await([[UPDATE mdt_profiles

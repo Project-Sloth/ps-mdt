@@ -17,9 +17,13 @@ local RegisterNUICallback = RegisterNUICallback
 
 -- Permissions check ------------------------------------------
 
--- Check Job Authorization
+-- Check Job Authorization (returns true, false, or { isCivilian = true })
 function CheckAuth()
-    return ps.callback(resourceName..':server:checkAuth')
+    local result = ps.callback(resourceName..':server:checkAuth')
+    if type(result) == 'table' and result.isCivilian then
+        return result
+    end
+    return result
 end
 
 -- Controls --------------------------------------------------
@@ -99,7 +103,10 @@ end
 -- Open MDT
 function OpenMDT()
     -- Check auth
-    if not CheckAuth() then return end
+    local authResult = CheckAuth()
+
+    local isCivilian = type(authResult) == 'table' and authResult.isCivilian
+    if not authResult and not isCivilian then return end
 
     -- Don't allow if player is dead
     if ps.isDead() then
@@ -114,14 +121,14 @@ function OpenMDT()
         return
     end
 
-    -- Don't allow if armed
-    if IsPedArmed(ped, 1) or IsPedArmed(ped, 2) or IsPedArmed(ped, 4) then
+    -- Don't allow if armed (skip for civilians)
+    if not isCivilian and (IsPedArmed(ped, 1) or IsPedArmed(ped, 2) or IsPedArmed(ped, 4)) then
         ps.notify('You cannot open the MDT right now', 'error')
         return
     end
 
     -- Don't allow if viewing a camera
-    if exports[resourceName]:isViewingCamera() then
+    if not isCivilian and exports[resourceName]:isViewingCamera() then
         ps.notify('You cannot open the MDT while viewing a camera', 'error')
         return
     end
@@ -132,7 +139,7 @@ function OpenMDT()
         SendNUI('setVisible', { visible = false })
         SetNuiFocus(false, false)
         SetNuiFocusKeepInput(false)
-        toggleControls(false) -- Re-enable controls
+        toggleControls(false)
         MDTOpen = false
         return
     end
@@ -141,17 +148,27 @@ function OpenMDT()
 
     SendNUI('setVisible', { visible = true, debugMode = Config.Debug })
 
-    PlayMDTSound('open')
-    PlayTabletAnimation()
-
-    -- Send NUI data
-    NUIUpdateAuth()
-
-    TriggerServerEvent('ps-mdt:server:trackLogin')
+    if isCivilian then
+        -- Civilian mode: send auth with civilian flag
+        local playerData = ps.getPlayerData()
+        SendNUI('updateAuth', {
+            authorized = true,
+            playerData = playerData,
+            isLEO = false,
+            onDuty = true,
+            isCivilian = true,
+            jobType = 'civilian',
+        })
+    else
+        PlayMDTSound('open')
+        PlayTabletAnimation()
+        NUIUpdateAuth()
+        TriggerServerEvent('ps-mdt:server:trackLogin')
+    end
 
     SetNuiFocus(true, true)
     SetNuiFocusKeepInput(false)
-    toggleControls(true) -- Disable controls
+    toggleControls(true)
 end
 
 -- Close MDT

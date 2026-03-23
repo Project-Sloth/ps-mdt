@@ -1,11 +1,13 @@
 -- Authorisation --
 
-function CheckAuth(source)
+function CheckAuth(source, silent)
     ps.debug('Checking MDT Authorization')
     local jobType = ps.getJobType(source)
     if jobType ~= Config.PoliceJobType and jobType ~= Config.MedicalJobType then
         ps.debug('Access Denied for ID: ' .. source .. ', Name: ' .. ps.getPlayerName(source) .. ', not an authorized job type')
-        ps.notify(source, 'Access Denied: Authorized Personnel Only', 'error')
+        if not silent then
+            ps.notify(source, 'Access Denied: Authorized Personnel Only', 'error')
+        end
         return false
     else
         ps.debug('Access Granted for ID: ' .. source .. ', Name: ' .. ps.getPlayerName(source) .. ', job type: ' .. tostring(jobType))
@@ -135,28 +137,21 @@ local function upsertProfileSession(src, action)
     end
 end
 
--- Discord webhook helper for duty logging
-local function SendDutyWebhook(officerName, citizenid, action, jobName)
-    local webhook = Config.Webhooks and Config.Webhooks.DutyLog or ''
-    if webhook == '' then return end
+-- FiveManage log helper for duty logging
+local function SendDutyLog(officerName, citizenid, action, jobName)
+    if not FiveManageQueueLog then return end
 
-    local color = action == 'login' and 65280 or 16711680 -- green for login, red for logout
-    local title = action == 'login' and 'MDT Clock In' or 'MDT Clock Out'
-    local timestamp = os.date('!%Y-%m-%dT%H:%M:%SZ')
-
-    PerformHttpRequest(webhook, function(err, text, headers) end, 'POST', json.encode({
-        embeds = {{
-            title = title,
-            color = color,
-            fields = {
-                { name = 'Officer', value = officerName or 'Unknown', inline = true },
-                { name = 'Citizen ID', value = citizenid or 'N/A', inline = true },
-                { name = 'Department', value = jobName or 'Unknown', inline = true },
-                { name = 'Time', value = os.date('%Y-%m-%d %H:%M:%S'), inline = false },
-            },
-            timestamp = timestamp,
-        }}
-    }), { ['Content-Type'] = 'application/json' })
+    FiveManageQueueLog({
+        action = action == 'login' and 'mdt_clock_in' or 'mdt_clock_out',
+        category = 'duty',
+        message = (action == 'login' and 'Clock In' or 'Clock Out') .. ': ' .. (officerName or 'Unknown'),
+        metadata = {
+            officer = officerName or 'Unknown',
+            citizenid = citizenid or 'N/A',
+            department = jobName or 'Unknown',
+            time = os.date('%Y-%m-%d %H:%M:%S')
+        }
+    })
 end
 
 RegisterNetEvent('ps-mdt:server:trackLogin', function()
@@ -165,11 +160,11 @@ RegisterNetEvent('ps-mdt:server:trackLogin', function()
     if ps.auditLog then
         ps.auditLog(src, 'mdt_login', 'profile', ps.getIdentifier(src), {})
     end
-    -- Discord webhook
+    -- FiveManage duty log
     local officerName = ps.getPlayerName(src) or 'Unknown'
     local citizenid = ps.getIdentifier(src) or 'N/A'
     local jobName = ps.getJobName(src) or 'Unknown'
-    SendDutyWebhook(officerName, citizenid, 'login', jobName)
+    SendDutyLog(officerName, citizenid, 'login', jobName)
 end)
 
 RegisterNetEvent('ps-mdt:server:trackLogout', function()
@@ -178,11 +173,11 @@ RegisterNetEvent('ps-mdt:server:trackLogout', function()
     if ps.auditLog then
         ps.auditLog(src, 'mdt_logout', 'profile', ps.getIdentifier(src), {})
     end
-    -- Discord webhook
+    -- FiveManage duty log
     local officerName = ps.getPlayerName(src) or 'Unknown'
     local citizenid = ps.getIdentifier(src) or 'N/A'
     local jobName = ps.getJobName(src) or 'Unknown'
-    SendDutyWebhook(officerName, citizenid, 'logout', jobName)
+    SendDutyLog(officerName, citizenid, 'logout', jobName)
 end)
 
 AddEventHandler('playerDropped', function()
@@ -191,13 +186,24 @@ AddEventHandler('playerDropped', function()
 end)
 
 ps.registerCallback(tostring(GetCurrentResourceName())..':server:checkAuth', function(source)
-    return CheckAuth(source)
+    local civAccess = Config.CivilianAccess and Config.CivilianAccess.enabled
+    local isAuthed = CheckAuth(source, civAccess)
+    if isAuthed then
+        return isAuthed
+    end
+
+    -- If not LEO/EMS but civilian access is enabled, return civilian flag
+    if civAccess then
+        return { isCivilian = true }
+    end
+
+    return false
 end)
 
 -- Get the current player's permissions based on their job + grade
 ps.registerCallback(tostring(GetCurrentResourceName())..':server:getMyPermissions', function(source)
     local src = source
-    if not CheckAuth(src) then return { permissions = {} } end
+    if not CheckAuth(src, true) then return { permissions = {} } end
 
     local jobName = ps.getJobName(src) or 'police'
     local jobData = ps.getJobData and ps.getJobData(src) or nil

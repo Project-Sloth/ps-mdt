@@ -29,3 +29,21 @@ end)
 exports('CloseMDT', function()
     CloseMDT()
 end)
+
+-- Open civilian MDT (profile + legislation view)
+exports('openCivilianMDT', function()
+    if MDTOpen then return end
+    MDTOpen = true
+    local playerData = ps.getPlayerData()
+    SendNUI('setVisible', { visible = true, debugMode = Config.Debug })
+    SendNUI('updateAuth', {
+        authorized = true,
+        playerData = playerData,
+        isLEO = false,
+        onDuty = true,
+        isCivilian = true,
+        jobType = 'civilian',
+    })
+    SetNuiFocus(true, true)
+    SetNuiFocusKeepInput(false)
+end)

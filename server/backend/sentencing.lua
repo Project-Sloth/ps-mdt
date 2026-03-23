@@ -20,14 +20,28 @@ ps.registerCallback(resourceName .. ':server:sendToJail', function(source, paylo
         return { success = false, message = 'Player must be online to send to jail' }
     end
 
-    local targetSource = targetPlayer.source or targetPlayer.PlayerData.source
-
-    if Config.UseCQCMugshot then
-        TriggerClientEvent(resourceName .. ':client:triggerMugshot', targetSource)
-        Wait(5000)
+    local targetSource = targetPlayer.source or (targetPlayer.PlayerData and targetPlayer.PlayerData.source)
+    if not targetSource then
+        return { success = false, message = 'Could not resolve player source' }
     end
 
-    TriggerEvent('police:server:JailPlayer', targetSource, sentence)
+    local OtherPlayer = QBCore and QBCore.Functions.GetPlayer(targetSource)
+    if not OtherPlayer then
+        return { success = false, message = 'Could not find target player' }
+    end
+
+    local currentDate = os.date('*t')
+    if currentDate.day == 31 then
+        currentDate.day = 30
+    end
+
+    OtherPlayer.Functions.SetMetaData('injail', sentence)
+    OtherPlayer.Functions.SetMetaData('criminalrecord', {
+        ['hasRecord'] = true,
+        ['date'] = currentDate
+    })
+    TriggerClientEvent('police:client:SendToJail', targetSource, sentence)
+    ps.notify(src, 'Sent to jail for ' .. sentence .. ' months', 'success')
 
     if ps.auditLog then
         ps.auditLog(src, 'sent_to_jail', 'citizen', citizenId, {
@@ -37,39 +51,6 @@ ps.registerCallback(resourceName .. ':server:sendToJail', function(source, paylo
 
     return { success = true, message = 'Sent to jail for ' .. sentence .. ' months' }
 end)
-
--- Give Citation Item
-local function giveCitationItem(src, citizenId, fine, reportId)
-    if not QBCore then return false end
-    local Player = QBCore.Functions.GetPlayerByCitizenId(citizenId)
-    if not Player then return false end
-
-    local Officer = QBCore.Functions.GetPlayer(src)
-    if not Officer then return false end
-
-    local PlayerName = Player.PlayerData.charinfo.firstname .. ' ' .. Player.PlayerData.charinfo.lastname
-    local OfficerFullName = '(' .. (Officer.PlayerData.metadata.callsign or '000') .. ') ' .. Officer.PlayerData.charinfo.firstname .. ' ' .. Officer.PlayerData.charinfo.lastname
-    local date = os.date('%Y-%m-%d %H:%M')
-
-    local info = {
-        citizenId = citizenId,
-        fine = '$' .. fine,
-        date = date,
-        incidentId = '#' .. (reportId or 'N/A'),
-        officer = OfficerFullName,
-    }
-
-    local success = pcall(function()
-        Player.Functions.AddItem('mdtcitation', 1, false, info)
-    end)
-
-    if success then
-        ps.notify(src, PlayerName .. ' (' .. citizenId .. ') received a citation!', 'success')
-        TriggerClientEvent('inventory:client:ItemBox', Player.PlayerData.source, QBCore.Shared.Items['mdtcitation'], 'add')
-    end
-
-    return success
-end
 
 ps.registerCallback(resourceName .. ':server:giveCitation', function(source, payload)
     local src = source
@@ -83,7 +64,36 @@ ps.registerCallback(resourceName .. ':server:giveCitation', function(source, pay
     if not citizenId then
         return { success = false, message = 'Missing citizen ID' }
     end
+    if fine <= 0 then
+        return { success = false, message = 'Invalid fine amount' }
+    end
 
-    local result = giveCitationItem(src, citizenId, fine, reportId)
-    return { success = result, message = result and 'Citation given' or 'Failed to give citation' }
+    local Player = ps.getPlayerByIdentifier(citizenId)
+    if not Player then
+        return { success = false, message = 'Player must be online to issue a fine' }
+    end
+
+    local playerSrc = Player.source or (Player.PlayerData and Player.PlayerData.source)
+    if not playerSrc then
+        return { success = false, message = 'Could not resolve player source' }
+    end
+
+    local removed = ps.removeMoney(playerSrc, 'bank', fine, 'mdt-fine')
+    if not removed then
+        return { success = false, message = 'Could not deduct fine (insufficient funds)' }
+    end
+
+    ps.notify(playerSrc, '$' .. fine .. ' fine deducted from your bank account', 'error')
+    ps.notify(src, '$' .. fine .. ' fine issued successfully', 'success')
+
+    if ps.auditLog then
+        local officerName = ps.getPlayerName(src) or 'Unknown Officer'
+        ps.auditLog(src, 'fine_issued', 'citizen', citizenId, {
+            fine = fine,
+            reportId = reportId,
+            officerName = officerName,
+        })
+    end
+
+    return { success = true, message = '$' .. fine .. ' fine issued' }
 end)

@@ -10,16 +10,22 @@ RegisterNUICallback('checkAuth', function(_, cb)
     local onDuty = ps.getJobDuty() or false
     local playerData = ps.getPlayerData()
 
+    local isCivilian = false
+    if not isAuthorized and Config.CivilianAccess and Config.CivilianAccess.enabled then
+        isCivilian = true
+    end
+
     cb({
-        authorized = isAuthorized and onDuty,
+        authorized = isCivilian or (isAuthorized and onDuty),
         playerData = type(playerData) == 'table' and {
             citizenid = playerData.citizenid,
             job = playerData.job,
             charinfo = playerData.charinfo,
         } or nil,
         isLEO = isAuthorized,
-        onDuty = onDuty or false,
-        jobType = mdtJobType,
+        onDuty = isCivilian or onDuty or false,
+        jobType = isCivilian and 'civilian' or mdtJobType,
+        isCivilian = isCivilian,
     })
 end)
 

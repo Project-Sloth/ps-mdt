@@ -130,17 +130,6 @@ Config.Sharing = {
 }
 ```
 
-### Discord webhooks
-
-```lua
-Config.Webhooks = {
-    DutyLog = 'https://discord.com/api/webhooks/...',     -- clock in/out
-    IncidentLog = 'https://discord.com/api/webhooks/...',  -- reports filed
-}
-```
-
-Leave empty to disable.
-
 ### Impound locations
 
 ```lua
@@ -248,6 +237,7 @@ For other resources to interact with the MDT.
 | `IsLEOJob` | `jobName: string?` | `boolean` | Checks if a job is law enforcement. If no argument is passed, checks the current player's job |
 | `isViewingCamera` | — | `boolean` | Returns whether the player is currently viewing a security camera feed |
 | `openComplaint` | — | — | Opens the standalone IA complaint form (works outside the MDT, useful for civilian resources) |
+| `openCivilianMDT` | — | — | Opens the MDT in civilian mode (profile + legislation view only). Use from phone apps, courthouse scripts, etc. |
 
 ### Server Exports
 

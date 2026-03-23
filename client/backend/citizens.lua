@@ -1,5 +1,11 @@
 local resourceName = tostring(GetCurrentResourceName())
 
+-- Civilian self-profile (no MDTOpen check needed, civilians don't use full MDT)
+RegisterNUICallback('getMyProfile', function(data, cb)
+    local result = ps.callback(resourceName .. ':server:getMyProfile')
+    cb(result or { success = false })
+end)
+
 RegisterNUICallback('getCitizens', function(data, cb)
     if not MDTOpen then cb({}) return end
     if type(data) ~= 'table' then
@@ -177,6 +183,28 @@ RegisterNUICallback('removeCitizenGallery', function(data, cb)
         return
     end
     local result = ps.callback(resourceName .. ':server:removeCitizenGallery', data)
+    cb(result or { success = false })
+end)
+
+-- Update citizen fingerprint
+RegisterNUICallback('updateCitizenFingerprint', function(data, cb)
+    if not MDTOpen then cb({ success = false }) return end
+    if not data or not data.citizenid then
+        cb({ success = false, message = 'Missing citizen id' })
+        return
+    end
+    local result = ps.callback(resourceName .. ':server:updateCitizenFingerprint', data.citizenid, data.fingerprint or '')
+    cb(result or { success = false })
+end)
+
+-- Update citizen DNA
+RegisterNUICallback('updateCitizenDNA', function(data, cb)
+    if not MDTOpen then cb({ success = false }) return end
+    if not data or not data.citizenid then
+        cb({ success = false, message = 'Missing citizen id' })
+        return
+    end
+    local result = ps.callback(resourceName .. ':server:updateCitizenDNA', data.citizenid, data.dna or '')
     cb(result or { success = false })
 end)
 

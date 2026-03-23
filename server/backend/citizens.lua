@@ -526,6 +526,7 @@ ps.registerCallback(resourceName .. ':server:getCitizenProfile', function(source
     end
     local licences = {}
     local fingerprint = nil
+    local dna = nil
     local metadata = nil
     if playerRow and playerRow.metadata then
         local ok, decoded = pcall(json.decode, playerRow.metadata)
@@ -536,6 +537,9 @@ ps.registerCallback(resourceName .. ':server:getCitizenProfile', function(source
             end
             if decoded.fingerprint then
                 fingerprint = decoded.fingerprint
+            end
+            if decoded.dna then
+                dna = decoded.dna
             end
         end
     end
@@ -565,6 +569,7 @@ ps.registerCallback(resourceName .. ':server:getCitizenProfile', function(source
             dob = playerRow.dateofbirth or 'N/A',
             phone = playerRow.phone or 'N/A',
             fingerprint = fingerprint,
+            dna = dna,
             occupations = occupations,
             properties = propertiesCount,
             vehicles = vehiclesCount,
@@ -663,8 +668,49 @@ ps.registerCallback(resourceName .. ':server:updateCitizenCustomLicense', functi
     return { success = true }
 end)
 
--- Add fingerprint to a citizen's metadata
+-- Trigger fingerprint scan on a suspect (opens qb-policejob fingerprint UI)
 ps.registerCallback(resourceName .. ':server:addSuspectFingerprint', function(source, citizenid)
+    local src = source
+    if not CheckAuth(src) then return { success = false, message = 'Unauthorized' } end
+
+    if not citizenid or citizenid == '' then
+        return { success = false, message = 'Missing citizen id' }
+    end
+
+    -- Check if suspect already has a fingerprint on file
+    local row = MySQL.single.await('SELECT metadata FROM players WHERE citizenid = ? LIMIT 1', { citizenid })
+    if row then
+        local metadata = row.metadata and json.decode(row.metadata) or {}
+        if metadata.fingerprint and metadata.fingerprint ~= '' then
+            return { success = true, fingerprint = metadata.fingerprint }
+        end
+    end
+
+    -- Find the suspect's server source (they must be online)
+    local targetPlayer = ps.getPlayerByIdentifier(citizenid)
+    if not targetPlayer then
+        return { success = false, message = 'Suspect is not online' }
+    end
+
+    local targetSource = targetPlayer.source or (targetPlayer.PlayerData and targetPlayer.PlayerData.source)
+    if not targetSource then
+        return { success = false, message = 'Could not find suspect' }
+    end
+
+    -- Trigger the fingerprint scan UI on both officer and suspect
+    local scanConfig = Config.FingerprintScan
+    if not scanConfig or not scanConfig.enabled then
+        return { success = false, message = 'Fingerprint scanning is not configured' }
+    end
+
+    TriggerClientEvent(scanConfig.suspectEvent, targetSource, src)
+    TriggerClientEvent(scanConfig.officerEvent, src, targetSource)
+
+    return { success = true, message = 'Fingerprint scan initiated' }
+end)
+
+-- Update citizen fingerprint
+ps.registerCallback(resourceName .. ':server:updateCitizenFingerprint', function(source, citizenid, fingerprint)
     local src = source
     if not CheckAuth(src) then return { success = false, message = 'Unauthorized' } end
 
@@ -678,30 +724,39 @@ ps.registerCallback(resourceName .. ':server:addSuspectFingerprint', function(so
     end
 
     local metadata = row.metadata and json.decode(row.metadata) or {}
-
-    -- If fingerprint already exists, return it
-    if metadata.fingerprint and metadata.fingerprint ~= '' then
-        return { success = true, fingerprint = metadata.fingerprint }
-    end
-
-    -- Generate a unique fingerprint (format: XX-XXXX-XXXX)
-    local chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
-    local function randomChar()
-        local idx = math.random(1, #chars)
-        return chars:sub(idx, idx)
-    end
-    local fp = randomChar() .. randomChar() .. '-'
-        .. randomChar() .. randomChar() .. randomChar() .. randomChar() .. '-'
-        .. randomChar() .. randomChar() .. randomChar() .. randomChar()
-
-    metadata.fingerprint = fp
+    metadata.fingerprint = fingerprint or ''
     MySQL.update.await('UPDATE players SET metadata = ? WHERE citizenid = ?', { json.encode(metadata), citizenid })
 
     if ps.auditLog then
-        ps.auditLog(src, 'add_fingerprint', 'citizens', citizenid, { fingerprint = fp })
+        ps.auditLog(src, 'update_fingerprint', 'citizens', citizenid, { fingerprint = fingerprint })
     end
 
-    return { success = true, fingerprint = fp }
+    return { success = true }
+end)
+
+-- Update citizen DNA
+ps.registerCallback(resourceName .. ':server:updateCitizenDNA', function(source, citizenid, dna)
+    local src = source
+    if not CheckAuth(src) then return { success = false, message = 'Unauthorized' } end
+
+    if not citizenid or citizenid == '' then
+        return { success = false, message = 'Missing citizen id' }
+    end
+
+    local row = MySQL.single.await('SELECT metadata FROM players WHERE citizenid = ? LIMIT 1', { citizenid })
+    if not row then
+        return { success = false, message = 'Citizen not found' }
+    end
+
+    local metadata = row.metadata and json.decode(row.metadata) or {}
+    metadata.dna = dna or ''
+    MySQL.update.await('UPDATE players SET metadata = ? WHERE citizenid = ?', { json.encode(metadata), citizenid })
+
+    if ps.auditLog then
+        ps.auditLog(src, 'update_dna', 'citizens', citizenid, { dna = dna })
+    end
+
+    return { success = true }
 end)
 
 ps.registerCallback(resourceName .. ':server:createBolo', function(source, payload)
@@ -905,4 +960,151 @@ ps.registerCallback(resourceName .. ':server:removeCitizenGallery', function(sou
 
     MySQL.query.await('DELETE FROM mdt_profiles_gallery WHERE profileId = ? AND image = ?', { profile.id, image })
     return { success = true }
+end)
+
+-- Civilian self-profile: returns own profile without LEO auth check
+ps.registerCallback(resourceName .. ':server:getMyProfile', function(source)
+    local src = source
+    local citizenid = ps.getIdentifier(src)
+    if not citizenid or citizenid == '' then
+        return { success = false, message = 'Could not identify player' }
+    end
+
+    -- Run all queries in parallel using promises
+    local pOk, pPlayer = pcall(MySQL.single.await, [[
+        SELECT p.citizenid,
+            JSON_UNQUOTE(JSON_EXTRACT(p.charinfo, '$.firstname')) AS firstname,
+            JSON_UNQUOTE(JSON_EXTRACT(p.charinfo, '$.lastname')) AS lastname,
+            JSON_UNQUOTE(JSON_EXTRACT(p.charinfo, '$.gender')) AS gender,
+            JSON_UNQUOTE(JSON_EXTRACT(p.charinfo, '$.birthdate')) AS dateofbirth,
+            JSON_UNQUOTE(JSON_EXTRACT(p.charinfo, '$.phone')) AS phone,
+            p.metadata,
+            (SELECT COUNT(*) FROM mdt_reports_charges WHERE citizenid COLLATE utf8mb4_general_ci = p.citizenid) AS arrests,
+            (SELECT COUNT(*) FROM player_vehicles WHERE citizenid COLLATE utf8mb4_general_ci = p.citizenid) AS vehicle_count
+        FROM players p WHERE p.citizenid = ? LIMIT 1
+    ]], { citizenid })
+
+    if not pOk or not pPlayer then
+        return { success = false, message = 'Profile not found' }
+    end
+
+    local fingerprint, dna = nil, nil
+    local licences = {}
+    if pPlayer.metadata then
+        local ok, decoded = pcall(json.decode, pPlayer.metadata)
+        if ok and decoded then
+            if decoded.fingerprint then fingerprint = decoded.fingerprint end
+            if decoded.dna then dna = decoded.dna end
+            if decoded.licences then licences = decoded.licences end
+        end
+    end
+
+    -- Profile picture from mdt_profiles
+    local prOk, profileRow = pcall(MySQL.single.await,
+        'SELECT profilepicture, notes FROM mdt_profiles WHERE citizenid COLLATE utf8mb4_general_ci = ? LIMIT 1',
+        { citizenid })
+    profileRow = prOk and profileRow or nil
+    local image = (profileRow and profileRow.profilepicture and profileRow.profilepicture ~= '') and profileRow.profilepicture or nil
+
+    local civConfig = Config.CivilianAccess or {}
+
+    -- Warrants (only if config allows)
+    local activeWarrants = {}
+    if civConfig.showWarrants ~= false then
+        local wOk, wResult = pcall(MySQL.query.await,
+            'SELECT reportid, expirydate FROM mdt_reports_warrants WHERE citizenid COLLATE utf8mb4_general_ci = ? AND expirydate >= NOW() ORDER BY expirydate ASC',
+            { citizenid })
+        activeWarrants = wOk and wResult or {}
+    end
+
+    -- BOLOs (only if config allows)
+    local activeBolos = {}
+    if civConfig.showBolos ~= false then
+        local bOk, bResult = pcall(MySQL.query.await,
+            'SELECT id, reportId, type, notes FROM mdt_bolos WHERE status = ? AND subject_id COLLATE utf8mb4_general_ci = ? ORDER BY id DESC',
+            { 'active', citizenid })
+        activeBolos = bOk and bResult or {}
+    end
+    local boloDetails = {}
+    for _, bolo in ipairs(activeBolos) do
+        boloDetails[#boloDetails + 1] = {
+            id = bolo.id,
+            reportId = bolo.reportId and tostring(bolo.reportId) or 'N/A',
+            type = bolo.type,
+            notes = bolo.notes or ''
+        }
+    end
+
+    -- Linked reports (from both involved and charges tables, same as officer profile)
+    local reportIdSet = {}
+    local linkedReports = {}
+
+    local riOk, involvedReports = pcall(MySQL.query.await,
+        'SELECT reportid FROM mdt_reports_involved WHERE citizenid COLLATE utf8mb4_general_ci = ?',
+        { citizenid })
+    for _, row in ipairs(riOk and involvedReports or {}) do
+        local rid = tonumber(row.reportid)
+        if rid and not reportIdSet[rid] then reportIdSet[rid] = true end
+    end
+
+    local rcOk, chargedReports = pcall(MySQL.query.await,
+        'SELECT reportid FROM mdt_reports_charges WHERE citizenid COLLATE utf8mb4_general_ci = ?',
+        { citizenid })
+    for _, row in ipairs(rcOk and chargedReports or {}) do
+        local rid = tonumber(row.reportid)
+        if rid and not reportIdSet[rid] then reportIdSet[rid] = true end
+    end
+
+    for rid, _ in pairs(reportIdSet) do
+        local rOk, report = pcall(MySQL.single.await, 'SELECT id, title, type FROM mdt_reports WHERE id = ?', { rid })
+        if rOk and report then
+            linkedReports[#linkedReports + 1] = { id = report.id, title = report.title, type = report.type }
+        end
+    end
+
+    -- Vehicles
+    local vOk, vehicles = pcall(MySQL.query.await,
+        'SELECT plate, vehicle FROM player_vehicles WHERE citizenid COLLATE utf8mb4_general_ci = ?',
+        { citizenid })
+    vehicles = vOk and vehicles or {}
+
+    -- Weapons
+    local wpOk, weapons = pcall(MySQL.query.await,
+        'SELECT id, serial, scratched, weaponModel FROM mdt_weapons WHERE owner COLLATE utf8mb4_general_ci = ?',
+        { citizenid })
+    weapons = wpOk and weapons or {}
+
+    -- Custom licenses
+    local clOk, customLicenses = pcall(MySQL.query.await,
+        'SELECT cl.id, cl.name, cl.description, COALESCE(cil.active, 0) as active FROM mdt_custom_licenses cl LEFT JOIN mdt_citizen_licenses cil ON cil.license_id = cl.id AND cil.citizenid COLLATE utf8mb4_general_ci = ? ORDER BY cl.id ASC',
+        { citizenid })
+    customLicenses = clOk and customLicenses or {}
+
+    local clList = {}
+    for _, r in ipairs(customLicenses) do
+        clList[#clList + 1] = { id = r.id, name = r.name, description = r.description or '', active = (tonumber(r.active) or 0) == 1 }
+    end
+
+    return {
+        success = true,
+        profile = {
+            citizenid = citizenid,
+            firstName = pPlayer.firstname or 'Unknown',
+            lastName = pPlayer.lastname or 'Unknown',
+            gender = getGender(tonumber(pPlayer.gender)),
+            dob = pPlayer.dateofbirth or 'N/A',
+            phone = pPlayer.phone or 'N/A',
+            fingerprint = fingerprint,
+            dna = dna,
+            image = image,
+            arrests = pPlayer.arrests or 0,
+            activeWarrants = activeWarrants,
+            activeBolos = boloDetails,
+            linkedReports = linkedReports,
+            ownedVehicles = vehicles,
+            weapons = weapons,
+            licenses = { driver = licences.driver or false, weapon = licences.weapon or false },
+            customLicenses = clList,
+        }
+    }
 end)

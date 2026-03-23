@@ -121,15 +121,6 @@ AddEventHandler(resourceName .. ':server:mugshotUpload', function(citizenid, mug
     ps.debug('Mugshot upload complete for ' .. citizenid .. ' (' .. #mugshotUrls .. ' photos)')
 end)
 
--- CQC Mugshot server-side trigger (forwards to target client)
-RegisterNetEvent(resourceName .. ':server:triggerMugshot')
-AddEventHandler(resourceName .. ':server:triggerMugshot', function(targetSource)
-    local src = source
-    if not CheckAuth(src) then return end
-    if not targetSource then return end
-    TriggerClientEvent(resourceName .. ':client:triggerMugshot', targetSource)
-end)
-
 -- Trigger mugshot on a suspect by citizenid (from MDT UI)
 ps.registerCallback(resourceName .. ':server:triggerSuspectMugshot', function(source, citizenid)
     if not citizenid then return { success = false, message = 'Missing citizen id' } end

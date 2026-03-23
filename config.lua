@@ -5,6 +5,14 @@ ps = exports.ps_lib:init()
 Config.Debug = false -- Enable/disable debug mode (boolean)
 Config.OnlyShowOnDuty = true -- Only allow the MDT to be opened when on duty (boolean)
 
+-- Civilian Access Settings
+Config.CivilianAccess = {
+    enabled = true,   -- Allow civilians to open the MDT (profile + legislation view only)
+    command = true,   -- Allow /mdt command for civilians
+    showWarrants = true, -- Show active warrants on civilian profile
+    showBolos = true,    -- Show active BOLOs on civilian profile
+}
+
 -- Time and Date Settings
 Config.DateTime = {
     GameTime = true, -- If set to true, the game time will be used instead of the server time (boolean)
@@ -87,17 +95,15 @@ Config.UseWolfknightRadar = true -- Enable/disable Wolfknight radar integration
 Config.WolfknightNotifyTime = 5000 -- Duration (ms) for plate reader notifications
 Config.PlateScanForDriversLicense = true -- Check driver's license on plate scan
 
--- Discord Webhook Settings
-Config.Webhooks = {
-    DutyLog = '', -- Discord webhook for clock in/out logging. Leave empty to disable.
-    IncidentLog = '', -- Discord webhook for incident/report logging. Leave empty to disable.
-}
-
--- Mugshot Settings
-Config.UseCQCMugshot = true -- Trigger mugshot before jailing (boolean)
-
 -- Fingerprint Settings
 Config.FingerprintAutoFilled = false -- Auto-populate fingerprints on citizen profiles (if false, officers must manually add fingerprints)
+
+-- Fingerprint Scan Integration
+Config.FingerprintScan = {
+    enabled = false,                                         -- Enable fingerprint scan trigger from MDT
+    officerEvent = 'police:client:showFingerprint',          -- Client event triggered on the officer
+    suspectEvent = 'police:client:showFingerprint',          -- Client event triggered on the suspect
+}
 
 -- Fuel Resource Name
 Config.Fuel = 'LegacyFuel' -- Fuel resource name for vehicle fuel management
@@ -272,6 +278,7 @@ Config.Bodycam = {
 -- }
 Config.PermissionDefaults = Config.PermissionDefaults or {}
 
+-- HIGHLY recommended not tuse this natively. Use FiveManage for this.
 -- Activity Tracking - Controls which actions are logged to the audit trail
 -- Categories can be toggled on/off from the Settings page in the MDT
 -- These are the DEFAULT values; runtime changes are stored in the mdt_settings table

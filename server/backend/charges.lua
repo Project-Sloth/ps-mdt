@@ -2,7 +2,9 @@
 local resourceName = tostring(GetCurrentResourceName())
 
 ps.registerCallback('ps-mdt:getChargeList', function(source)
-    if not CheckAuth(source) then return {} end
+    -- Allow civilians to view charges (legislation) if civilian access is enabled
+    local civAccess = Config.CivilianAccess
+    if not CheckAuth(source) and not (civAccess and civAccess.enabled) then return {} end
 
     local rows = MySQL.query.await([[
         SELECT
