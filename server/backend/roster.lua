@@ -1,4 +1,13 @@
 
+local function getRadioChannel(playerSource)
+    if not playerSource then return 0 end
+    local channel = 0
+    pcall(function()
+        channel = Player(playerSource).state.radioChannel or 0
+    end)
+    return tonumber(channel) or 0
+end
+
 local function getCertifications(citizenid)
     EnsureProfileExists(citizenid)
 
@@ -33,9 +42,8 @@ local function buildRosterFromQbx()
         end
     end
 
-    for _, playerId in ipairs(qbx:GetPlayers() or {}) do
-        local player = qbx:GetPlayer(playerId)
-        local data = player and player.PlayerData or nil
+    for _, player in ipairs(qbx:GetQBPlayers() or {}) do
+        local data = player.PlayerData or nil
         if data and data.job then
             local job = data.job
             if IsPoliceJob(job.name, job.type) then
@@ -63,6 +71,7 @@ local function buildRosterFromQbx()
             local department = job.name or 'police'
             local certifications = getCertifications(citizenid)
 
+            local onlineSrc = onlinePlayer and (onlinePlayer.PlayerData and onlinePlayer.PlayerData.source or onlinePlayer.source) or nil
             rosterList[#rosterList + 1] = {
                 id = #rosterList + 1,
                 citizenid = citizenid,
@@ -73,7 +82,8 @@ local function buildRosterFromQbx()
                 department = department,
                 status = (onlinePlayer and job.onduty) and 'On Duty' or 'Off Duty',
                 certifications = certifications,
-                badgeNumber = callsign
+                badgeNumber = callsign,
+                radioChannel = getRadioChannel(onlineSrc)
             }
 
             if rosterList[#rosterList].status == 'On Duty' then
@@ -95,16 +105,16 @@ local function buildRosterFromQbx()
 end
 
 local function checkDuty(citizenid)
-   local player = ps.getPlayerByIdentifier(citizenid)
-   if not player then return 'Off Duty' end
+    local player = ps.getPlayerByIdentifier(citizenid)
+    if not player then return 'Off Duty' end
 
-   local src = player.source or (player.PlayerData and player.PlayerData.source)
-   if not src then return 'Off Duty' end
+    local src = player.source or (player.PlayerData and player.PlayerData.source)
+    if not src then return 'Off Duty' end
 
-   if IsPoliceJob(ps.getJobName(src), ps.getJobType(src)) and ps.getJobDuty(src) then
-      return 'On Duty'
-   end
-   return 'Off Duty'
+    if IsPoliceJob(ps.getJobName(src), ps.getJobType(src)) and ps.getJobDuty(src) then
+        return 'On Duty'
+    end
+    return 'Off Duty'
 end
 
 ps.registerCallback('ps-mdt:server:getRosterList', function(source)
@@ -147,6 +157,8 @@ ps.registerCallback('ps-mdt:server:getRosterList', function(source)
             local lastName = charinfo.lastname or 'N/A'
             local rank = job.grade and job.grade.name or employee.grade and ps.getSharedJobGradeData(jobName or 'police', employee.grade, 'name') or 'Officer'
             local status = checkDuty(citizenid)
+            local onlinePlayer = ps.getPlayerByIdentifier(citizenid)
+            local onlineSrc = onlinePlayer and (onlinePlayer.source or (onlinePlayer.PlayerData and onlinePlayer.PlayerData.source)) or nil
             rosterList[#rosterList + 1] = {
                 id = #rosterList + 1,
                 citizenid = citizenid,
@@ -157,7 +169,8 @@ ps.registerCallback('ps-mdt:server:getRosterList', function(source)
                 department = jobName or employee.job or 'police',
                 status = status,
                 certifications = getCertifications(citizenid),
-                badgeNumber = callsign
+                badgeNumber = callsign,
+                radioChannel = getRadioChannel(onlineSrc)
             }
             if status == 'On Duty' then
                 activeUnits[#activeUnits + 1] = {
@@ -176,15 +189,27 @@ ps.registerCallback('ps-mdt:server:getRosterList', function(source)
     }
 end)
 
--- Get available officer tags/certifications
+-- Get available officer tags/certifications (filtered by job type)
 ps.registerCallback('ps-mdt:server:getOfficerTags', function(source)
     local src = source
     if not CheckAuth(src) then return {} end
-    local rows = MySQL.query.await([[
-        SELECT id, name, color FROM mdt_tags
-        WHERE type IN ('officer', 'both')
-        ORDER BY name ASC
-    ]])
+
+    local jobType = ps.getJobType(src)
+    local rows
+    if jobType and (jobType == 'leo' or jobType == 'ems') then
+        rows = MySQL.query.await([[
+            SELECT id, name, color FROM mdt_tags
+            WHERE type IN ('officer', 'both')
+              AND (job_type = ? OR job_type = 'all' OR job_type IS NULL)
+            ORDER BY name ASC
+        ]], { jobType })
+    else
+        rows = MySQL.query.await([[
+            SELECT id, name, color FROM mdt_tags
+            WHERE type IN ('officer', 'both')
+            ORDER BY name ASC
+        ]])
+    end
     return rows or {}
 end)
 

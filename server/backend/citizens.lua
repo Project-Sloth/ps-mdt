@@ -20,7 +20,8 @@ local function collectCitizenFlags(citizenids)
 
     local inClause = buildInClause(citizenids)
 
-    local warrantRows = MySQL.query.await(([[
+    -- Warrants (table may not exist yet)
+    local wOk, warrantRows = pcall(MySQL.query.await, ([[
         SELECT citizenid
         FROM mdt_reports_warrants
         WHERE expirydate >= NOW()
@@ -28,31 +29,36 @@ local function collectCitizenFlags(citizenids)
         GROUP BY citizenid
     ]]):format(inClause), citizenids)
 
-    for _, row in ipairs(warrantRows or {}) do
-        if row.citizenid then
-            flagsByCid[row.citizenid] = flagsByCid[row.citizenid] or {}
-            table.insert(flagsByCid[row.citizenid], 'Active Warrant')
+    if wOk then
+        for _, row in ipairs(warrantRows or {}) do
+            if row.citizenid then
+                flagsByCid[row.citizenid] = flagsByCid[row.citizenid] or {}
+                table.insert(flagsByCid[row.citizenid], 'Active Warrant')
+            end
         end
     end
 
+    -- BOLOs (table may not exist yet)
     local boloValues = { 'citizen', 'active' }
     for i = 1, #citizenids do
         boloValues[#boloValues + 1] = citizenids[i]
     end
 
-    local boloRows = MySQL.query.await(([[
+    local bOk, boloRows = pcall(MySQL.query.await, ([[
         SELECT subject_id
         FROM mdt_bolos
         WHERE type = ? AND status = ?
         AND subject_id IN (%s)
     ]]):format(inClause), boloValues)
 
-    local boloSeen = {}
-    for _, row in ipairs(boloRows or {}) do
-        if row.subject_id and not boloSeen[row.subject_id] then
-            boloSeen[row.subject_id] = true
-            flagsByCid[row.subject_id] = flagsByCid[row.subject_id] or {}
-            table.insert(flagsByCid[row.subject_id], 'Active Bolo')
+    if bOk then
+        local boloSeen = {}
+        for _, row in ipairs(boloRows or {}) do
+            if row.subject_id and not boloSeen[row.subject_id] then
+                boloSeen[row.subject_id] = true
+                flagsByCid[row.subject_id] = flagsByCid[row.subject_id] or {}
+                table.insert(flagsByCid[row.subject_id], 'Active Bolo')
+            end
         end
     end
 
@@ -68,6 +74,16 @@ local function getGender(gen)
     return 'Unknown'
 end
 
+-- Safe query helper: returns empty table on error (handles missing tables gracefully)
+local function safeQuery(query, params)
+    local ok, rows = pcall(MySQL.query.await, query, params)
+    if not ok then
+        ps.warn('[getCitizens] Query failed (table may not exist): ' .. tostring(rows))
+        return {}
+    end
+    return rows or {}
+end
+
 -- getCitizens - pulls citizens from database with pagination support
 ps.registerCallback(resourceName .. ':server:getCitizens', function(source, page)
     local src = source
@@ -79,18 +95,19 @@ ps.registerCallback(resourceName .. ':server:getCitizens', function(source, page
 
     -- Main query with pagination
     local query = [[
-        SELECT mp.id, p.citizenid, JSON_UNQUOTE(JSON_EXTRACT(p.charinfo, '$.firstname')) AS firstname, 
-        JSON_UNQUOTE(JSON_EXTRACT(p.charinfo, '$.lastname')) AS lastname, 
-        JSON_UNQUOTE(JSON_EXTRACT(p.charinfo, '$.gender')) AS gender, 
-        JSON_UNQUOTE(JSON_EXTRACT(p.charinfo, '$.birthdate')) AS dateofbirth, 
-        JSON_UNQUOTE(JSON_EXTRACT(p.charinfo, '$.phone')) AS phone, 
-        JSON_UNQUOTE(JSON_EXTRACT(p.job, '$.label')) AS job 
-        FROM players AS p 
-        LEFT JOIN mdt_profiles AS mp 
-        ON CONVERT(p.citizenid USING utf8mb4) COLLATE utf8mb4_general_ci = CONVERT(mp.citizenid USING utf8mb4) COLLATE utf8mb4_general_ci 
+        SELECT mp.id, p.citizenid, JSON_UNQUOTE(JSON_EXTRACT(p.charinfo, '$.firstname')) AS firstname,
+        JSON_UNQUOTE(JSON_EXTRACT(p.charinfo, '$.lastname')) AS lastname,
+        JSON_UNQUOTE(JSON_EXTRACT(p.charinfo, '$.gender')) AS gender,
+        JSON_UNQUOTE(JSON_EXTRACT(p.charinfo, '$.birthdate')) AS dateofbirth,
+        JSON_UNQUOTE(JSON_EXTRACT(p.charinfo, '$.phone')) AS phone,
+        JSON_UNQUOTE(JSON_EXTRACT(p.job, '$.label')) AS job
+        FROM players AS p
+        LEFT JOIN mdt_profiles AS mp
+        ON CONVERT(p.citizenid USING utf8mb4) COLLATE utf8mb4_general_ci = CONVERT(mp.citizenid USING utf8mb4) COLLATE utf8mb4_general_ci
         LIMIT ? OFFSET ?
     ]]
-    local result = MySQL.query.await(query, { limit, offset })
+    local result = safeQuery(query, { limit, offset })
+    if not result or #result == 0 then return {} end
 
     local citizenids = {}
     for _, v in ipairs(result) do
@@ -98,7 +115,13 @@ ps.registerCallback(resourceName .. ':server:getCitizens', function(source, page
             citizenids[#citizenids + 1] = v.citizenid
         end
     end
-    local flagsByCid = collectCitizenFlags(citizenids)
+
+    -- Wrap flags in pcall since it queries mdt_reports_warrants / mdt_bolos which may not exist
+    local ok, flagsByCid = pcall(collectCitizenFlags, citizenids)
+    if not ok then
+        ps.warn('[getCitizens] collectCitizenFlags failed: ' .. tostring(flagsByCid))
+        flagsByCid = {}
+    end
 
     -- Batch fetch profile pictures, property counts, vehicle counts, and arrest counts
     local profilePics = {}
@@ -109,37 +132,37 @@ ps.registerCallback(resourceName .. ':server:getCitizens', function(source, page
     if #citizenids > 0 then
         local inClause = buildInClause(citizenids)
 
-        local profileRows = MySQL.query.await(
+        local profileRows = safeQuery(
             ('SELECT citizenid, profilepicture FROM mdt_profiles WHERE citizenid IN (%s)'):format(inClause),
             citizenids
         )
-        for _, row in ipairs(profileRows or {}) do
+        for _, row in ipairs(profileRows) do
             if row.profilepicture and row.profilepicture ~= '' then
                 profilePics[row.citizenid] = row.profilepicture
             end
         end
 
-        local propRows = MySQL.query.await(
+        local propRows = safeQuery(
             ('SELECT citizenid, COUNT(*) AS cnt FROM player_houses WHERE citizenid IN (%s) GROUP BY citizenid'):format(inClause),
             citizenids
         )
-        for _, row in ipairs(propRows or {}) do
+        for _, row in ipairs(propRows) do
             propCounts[row.citizenid] = tonumber(row.cnt) or 0
         end
 
-        local vehRows = MySQL.query.await(
+        local vehRows = safeQuery(
             ('SELECT citizenid, COUNT(*) AS cnt FROM player_vehicles WHERE citizenid IN (%s) GROUP BY citizenid'):format(inClause),
             citizenids
         )
-        for _, row in ipairs(vehRows or {}) do
+        for _, row in ipairs(vehRows) do
             vehCounts[row.citizenid] = tonumber(row.cnt) or 0
         end
 
-        local arrestRows = MySQL.query.await(
+        local arrestRows = safeQuery(
             ('SELECT citizenid, COUNT(*) AS cnt FROM mdt_arrests WHERE citizenid IN (%s) GROUP BY citizenid'):format(inClause),
             citizenids
         )
-        for _, row in ipairs(arrestRows or {}) do
+        for _, row in ipairs(arrestRows) do
             arrestCounts[row.citizenid] = tonumber(row.cnt) or 0
         end
     end
@@ -214,9 +237,10 @@ ps.registerCallback(resourceName .. ':server:searchCitizens', function(source, q
     ]]
 
     local searchLimit = Config.Pagination and Config.Pagination.CitizenSearch or 20
-    local result = MySQL.query.await(sqlQuery, {
+    local result = safeQuery(sqlQuery, {
         searchTerm, searchTerm, searchTerm, searchTerm, searchTerm, searchTerm, searchLimit
     })
+    if not result or #result == 0 then return {} end
 
     -- Process results to match getCitizens format exactly
     local citizenids = {}
@@ -225,7 +249,12 @@ ps.registerCallback(resourceName .. ':server:searchCitizens', function(source, q
             citizenids[#citizenids + 1] = v.citizenid
         end
     end
-    local flagsByCid = collectCitizenFlags(citizenids)
+
+    local ok, flagsByCid = pcall(collectCitizenFlags, citizenids)
+    if not ok then
+        ps.warn('[searchCitizens] collectCitizenFlags failed: ' .. tostring(flagsByCid))
+        flagsByCid = {}
+    end
 
     -- Batch fetch profile pictures, property counts, vehicle counts, and arrest counts
     local profilePics = {}
@@ -236,37 +265,37 @@ ps.registerCallback(resourceName .. ':server:searchCitizens', function(source, q
     if #citizenids > 0 then
         local inClause = buildInClause(citizenids)
 
-        local profileRows = MySQL.query.await(
+        local profileRows = safeQuery(
             ('SELECT citizenid, profilepicture FROM mdt_profiles WHERE citizenid IN (%s)'):format(inClause),
             citizenids
         )
-        for _, row in ipairs(profileRows or {}) do
+        for _, row in ipairs(profileRows) do
             if row.profilepicture and row.profilepicture ~= '' then
                 profilePics[row.citizenid] = row.profilepicture
             end
         end
 
-        local propRows = MySQL.query.await(
+        local propRows = safeQuery(
             ('SELECT citizenid, COUNT(*) AS cnt FROM player_houses WHERE citizenid IN (%s) GROUP BY citizenid'):format(inClause),
             citizenids
         )
-        for _, row in ipairs(propRows or {}) do
+        for _, row in ipairs(propRows) do
             propCounts[row.citizenid] = tonumber(row.cnt) or 0
         end
 
-        local vehRows = MySQL.query.await(
+        local vehRows = safeQuery(
             ('SELECT citizenid, COUNT(*) AS cnt FROM player_vehicles WHERE citizenid IN (%s) GROUP BY citizenid'):format(inClause),
             citizenids
         )
-        for _, row in ipairs(vehRows or {}) do
+        for _, row in ipairs(vehRows) do
             vehCounts[row.citizenid] = tonumber(row.cnt) or 0
         end
 
-        local arrestRows = MySQL.query.await(
+        local arrestRows = safeQuery(
             ('SELECT citizenid, COUNT(*) AS cnt FROM mdt_arrests WHERE citizenid IN (%s) GROUP BY citizenid'):format(inClause),
             citizenids
         )
-        for _, row in ipairs(arrestRows or {}) do
+        for _, row in ipairs(arrestRows) do
             arrestCounts[row.citizenid] = tonumber(row.cnt) or 0
         end
     end

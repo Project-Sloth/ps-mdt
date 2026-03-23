@@ -214,3 +214,23 @@ RegisterNUICallback('deleteCustomLicense', function(data, cb)
     local result = ps.callback(resourceName .. ':server:deleteCustomLicense', data or {})
     cb(result or { success = false, message = 'Failed to delete license' })
 end)
+
+-- SETTINGS: Colors -------------------------------------------
+
+RegisterNUICallback('getColorConfig', function(_, cb)
+    if not MDTOpen then
+        cb(nil)
+        return
+    end
+    local result = ps.callback(resourceName .. ':server:getColorConfig')
+    cb(result)
+end)
+
+RegisterNUICallback('saveColorConfig', function(data, cb)
+    if not MDTOpen then
+        cb({ success = false, message = 'MDT is not open' })
+        return
+    end
+    local result = ps.callback(resourceName .. ':server:saveColorConfig', data or {})
+    cb(result or { success = false, message = 'Failed to save colors' })
+end)

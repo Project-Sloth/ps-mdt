@@ -6,7 +6,12 @@ RegisterNUICallback('getCitizens', function(data, cb)
         data = {page = 1}
     end
     local page = data.page or 1 -- Default to page 1 if not provided
-    local result = ps.callback(resourceName..':server:getCitizens', page)
+    local ok, result = pcall(ps.callback, resourceName..':server:getCitizens', page)
+    if not ok or type(result) ~= 'table' then
+        ps.warn('[getCitizens] Server callback failed: ' .. tostring(result))
+        cb({})
+        return
+    end
     ps.debug(('[getCitizens] Triggered NUI callback on client for page %d'):format(page), result)
     cb(result)
 end)

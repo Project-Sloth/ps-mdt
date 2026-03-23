@@ -244,6 +244,9 @@ Config.ManagementPermissions = {
     -- Roster
     'roster_manage_certifications',
     'roster_manage_officers',
+    -- PPR
+    'ppr_view',
+    'ppr_manage',
     -- Management
     'management_permissions',
     'management_bulletins',

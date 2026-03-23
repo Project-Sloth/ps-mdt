@@ -164,6 +164,14 @@ Config.ImpoundLocations = {
 | `Config.Fuel` | 'LegacyFuel' | Your fuel resource name |
 | `Config.Debug` | false | Debug logging |
 
+## Preview
+<img width="2445" height="1305" alt="Screenshot 2026-03-22 185605" src="https://github.com/user-attachments/assets/7f228a36-5d82-40ba-ade9-d9da78d249fd" />
+<img width="2455" height="1310" alt="Screenshot 2026-03-22 185655" src="https://github.com/user-attachments/assets/e0291f16-efa6-4d86-b3ad-f82ccdb8deb3" />
+<img width="2445" height="1316" alt="Screenshot 2026-03-22 185712" src="https://github.com/user-attachments/assets/f6c4bb93-c178-4b64-bb8c-3f38b7f09eba" />
+<img width="2447" height="1306" alt="Screenshot 2026-03-22 185704" src="https://github.com/user-attachments/assets/d6dbba26-189c-427b-9e10-4c5c2d20056c" />
+<img width="2431" height="1297" alt="Screenshot 2026-03-22 185726" src="https://github.com/user-attachments/assets/5ed25446-3706-4e35-8cc9-d18c265d1ed0" />
+
+
 ## Features
 
 ### Citizens
@@ -208,6 +216,18 @@ All officers with duty status, callsign, and department.
 ### Leaderboard
 Rankings by arrests, reports, and activity.
 
+### Charges
+Manage penal codes and charge definitions. Create, edit, and categorize charges by class (felony, misdemeanor, infraction) with configurable fines, jail time, and points.
+
+### Awards
+Recognize officers with department awards. Track commendations and achievements on officer profiles.
+
+### Internal Affairs (IA)
+File and manage internal affairs complaints against officers. Track complaint status through investigation stages (Open, Under Investigation, Investigated, Sustained, Exonerated, Unfounded, Closed). Includes a standalone complaint form accessible via `/complaint` command or export for civilian-facing resources. IA complaints appear in officer profiles under the IA History tab.
+
+### PPR (Performance Planning & Review)
+Create performance reviews for officers covering coachable moments, commendations, and developmental feedback. Supervisors can document incidents from cases, traffic stops, or any notable officer conduct. PPR records are tied to officer profiles and accessible from both the Personnel sidebar and the officer's profile PPR tab.
+
 ### Management
 Admin panel for the department. Set permissions per rank, post bulletins, view audit logs, manage tags. There are 25 permissions you can assign per role covering citizens, BOLOs, vehicles, weapons, cases, evidence, reports, warrants, charges, dispatch, cameras, bodycams, notes, and management access.
 
@@ -216,12 +236,23 @@ Every action gets logged. Who did what, when. Covers: logins, reports, cases, ev
 
 ## Exports
 
-For other resources to interact with the MDT:
+For other resources to interact with the MDT.
 
-```lua
-exports['ps-mdt']:OpenMDT()
-exports['ps-mdt']:CloseMDT()
-exports['ps-mdt']:IsMDTOpen()            -- returns boolean
-exports['ps-mdt']:IsLEOJob(jobName)      -- returns boolean
-exports['ps-mdt']:isViewingCamera()      -- returns boolean
-```
+### Client Exports
+
+| Export | Parameters | Returns | Description |
+|--------|------------|---------|-------------|
+| `OpenMDT` | — | — | Opens the MDT interface for the current player |
+| `CloseMDT` | — | — | Closes the MDT and restores player controls |
+| `IsMDTOpen` | — | `boolean` | Returns whether the MDT is currently open |
+| `IsLEOJob` | `jobName: string?` | `boolean` | Checks if a job is law enforcement. If no argument is passed, checks the current player's job |
+| `isViewingCamera` | — | `boolean` | Returns whether the player is currently viewing a security camera feed |
+| `openComplaint` | — | — | Opens the standalone IA complaint form (works outside the MDT, useful for civilian resources) |
+
+### Server Exports
+
+| Export | Parameters | Returns | Description |
+|--------|------------|---------|-------------|
+| `IsCidFelon` | `citizenid: string`, `cb: function?` | `boolean` | Checks if a citizen has any felony charges on record. Supports both callback and direct return |
+| `isRequestVehicle` | `vehicleId: number` | `boolean` | Checks if a vehicle was flagged for impound via the MDT. Consumes the entry on match |
+| `registerWeapon` | `citizenid: string`, `weaponName: string`, `serial: string`, `info: string?` | — | Registers a weapon in the MDT firearms registry with ownership history |

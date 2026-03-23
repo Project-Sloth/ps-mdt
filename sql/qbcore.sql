@@ -457,6 +457,18 @@ CREATE TABLE IF NOT EXISTS `mdt_case_attachments` (
   CONSTRAINT `FK_mdt_case_attachments_cases` FOREIGN KEY (`case_id`) REFERENCES `mdt_cases` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+CREATE TABLE IF NOT EXISTS `mdt_case_notes` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `case_id` int(10) unsigned NOT NULL,
+  `content` text NOT NULL,
+  `author_citizenid` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `author_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `case_id` (`case_id`),
+  CONSTRAINT `FK_mdt_case_notes_cases` FOREIGN KEY (`case_id`) REFERENCES `mdt_cases` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
 CREATE TABLE IF NOT EXISTS `mdt_case_reports` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `case_id` int(10) unsigned NOT NULL,
@@ -653,12 +665,6 @@ CREATE TABLE IF NOT EXISTS `mdt_impound` (
   CONSTRAINT `FK_mdt_impound_reports` FOREIGN KEY (`linkedreport`) REFERENCES `mdt_reports` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- TEST DATA (uncomment for development/testing only)
--- INSERT IGNORE INTO `mdt_bolos` (`id`, `type`, `subject_id`, `subject_name`, `reportId`, `notes`, `status`) VALUES
--- (1, 'citizen', 'PRQ22104', 'John Doe', 1, 'Missing person - last seen downtown', 'active'),
--- (2, 'vehicle', 'ABC123', 'Elegy Retro Custom', 2, 'Stolen vehicle - armed and dangerous occupants', 'inactive'),
--- (3, 'weapon', 'WP001234', 'Glock 19', 3, 'Used in armed robbery', 'resolved');
-
 SET @OLDTMP_SQL_MODE=@@SQL_MODE, SQL_MODE='STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION';
 DELIMITER //
 CREATE TRIGGER `mdt_reports_charges_after_delete` AFTER UPDATE ON `mdt_reports_charges` FOR EACH ROW BEGIN
@@ -721,9 +727,8 @@ END//
 DELIMITER ;
 SET SQL_MODE=@OLDTMP_SQL_MODE;
 
--- --------------------------------------------------------
 -- Tags master table
--- --------------------------------------------------------
+
 CREATE TABLE IF NOT EXISTS `mdt_tags` (
   `id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `name` VARCHAR(25) NOT NULL,
@@ -843,8 +848,248 @@ INSERT IGNORE INTO `mdt_custom_licenses` (`name`, `description`) VALUES
 ('Boating License', 'Required for operating watercraft'),
 ('Pilot License', 'Required for operating aircraft');
 
-/*!40103 SET TIME_ZONE=IFNULL(@OLD_TIME_ZONE, 'system') */;
-/*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;
-/*!40014 SET FOREIGN_KEY_CHECKS=IFNULL(@OLD_FOREIGN_KEY_CHECKS, 1) */;
-/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40111 SET SQL_NOTES=IFNULL(@OLD_SQL_NOTES, 1) */;
+-- Internal Affairs
+CREATE TABLE IF NOT EXISTS `mdt_ia_complaints` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `complaint_number` varchar(20) NOT NULL,
+  `complainant_citizenid` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `complainant_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `complainant_phone` varchar(20) DEFAULT NULL,
+  `officer_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `officer_badge` varchar(20) DEFAULT NULL,
+  `category` enum('misconduct','excessive_force','corruption','negligence','discrimination','other') NOT NULL DEFAULT 'other',
+  `description` text NOT NULL,
+  `incident_date` varchar(20) DEFAULT NULL,
+  `incident_location` varchar(200) DEFAULT NULL,
+  `witnesses` text DEFAULT NULL,
+  `evidence` text DEFAULT NULL,
+  `status` enum('open','under_review','investigated','sustained','exonerated','unfounded','closed') NOT NULL DEFAULT 'open',
+  `assigned_to` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `assigned_to_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `complaint_number` (`complaint_number`),
+  KEY `status` (`status`),
+  KEY `assigned_to` (`assigned_to`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+CREATE TABLE IF NOT EXISTS `mdt_ia_notes` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `complaint_id` int(10) unsigned NOT NULL,
+  `content` text NOT NULL,
+  `author_citizenid` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `author_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `complaint_id` (`complaint_id`),
+  CONSTRAINT `FK_ia_notes_complaints` FOREIGN KEY (`complaint_id`) REFERENCES `mdt_ia_complaints` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- PPR (Performance Planning and Review)
+
+CREATE TABLE IF NOT EXISTS `mdt_ppr` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `ppr_number` varchar(20) NOT NULL DEFAULT '',
+  `officer_citizenid` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `officer_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `author_citizenid` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `author_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `category` enum('positive','coaching','disciplinary') NOT NULL DEFAULT 'coaching',
+  `title` varchar(200) NOT NULL,
+  `description` text NOT NULL,
+  `incident_date` varchar(20) DEFAULT NULL,
+  `incident_location` varchar(200) DEFAULT NULL,
+  `linked_report_id` int(10) unsigned DEFAULT NULL,
+  `linked_case_id` int(10) unsigned DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `ppr_number` (`ppr_number`),
+  KEY `officer_citizenid` (`officer_citizenid`),
+  KEY `author_citizenid` (`author_citizenid`),
+  KEY `category` (`category`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+CREATE TABLE IF NOT EXISTS `mdt_ppr_notes` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `ppr_id` int(10) unsigned NOT NULL,
+  `content` text NOT NULL,
+  `author_citizenid` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `author_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `ppr_id` (`ppr_id`),
+  CONSTRAINT `FK_ppr_notes_ppr` FOREIGN KEY (`ppr_id`) REFERENCES `mdt_ppr` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- SOP (Standard Operating Procedures) Tables
+
+CREATE TABLE IF NOT EXISTS `mdt_sop_categories` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `job` varchar(50) NOT NULL,
+  `title` varchar(200) NOT NULL,
+  `icon` varchar(50) DEFAULT 'description',
+  `sort_order` int(10) unsigned DEFAULT 0,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `job` (`job`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+CREATE TABLE IF NOT EXISTS `mdt_sop_sections` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `category_id` int(10) unsigned NOT NULL,
+  `title` varchar(200) NOT NULL,
+  `content` text NOT NULL,
+  `sort_order` int(10) unsigned DEFAULT 0,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `category_id` (`category_id`),
+  CONSTRAINT `FK_sop_sections_category` FOREIGN KEY (`category_id`) REFERENCES `mdt_sop_categories` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+CREATE TABLE IF NOT EXISTS `mdt_sop_settings` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `job` varchar(50) NOT NULL,
+  `mission_statement` text DEFAULT NULL,
+  `introduction` text DEFAULT NULL,
+  `version` int(10) unsigned DEFAULT 0,
+  `updated_by` varchar(100) DEFAULT NULL,
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `job` (`job`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+CREATE TABLE IF NOT EXISTS `mdt_sop_acknowledgements` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `citizenid` varchar(50) NOT NULL,
+  `job` varchar(50) NOT NULL,
+  `version` int(10) unsigned NOT NULL,
+  `agreed_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `citizenid_job` (`citizenid`, `job`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- SOP Default Data (change 'police' to your job name if different)
+
+INSERT IGNORE INTO `mdt_sop_settings` (`job`, `mission_statement`, `introduction`, `version`) VALUES
+('police',
+ '<p><strong>Mission</strong></p><p>The mission of Law Enforcement is to provide efficient, effective, public safety services to the residents and visitors of the city. We deliver these services with character, competence, and open communication.</p><p><strong>Values</strong></p><p>Judgment, Unity, Skill, Trust, Ingenuity, Courage, Empowerment = <strong>JUSTICE</strong></p><p><strong>M.O.S. Requirement</strong></p><p>All Members of Service (M.O.S.) are expected to comply with the aforementioned values and proceeding code of conduct at all times.</p><p>A briefing must be conducted if there are 4 or more law enforcement officers in said department by their department CS. Department legislature will dictate the terms of those briefings.</p>',
+ '<p>By accessing this Mobile Data Terminal, you acknowledge that you have read, understood, and agree to follow all Standard Operating Procedures set forth by the Department.</p><p>All Members of Service are expected to maintain professionalism, uphold the law, and act with integrity at all times while on duty.</p><p>Failure to comply with these procedures may result in disciplinary action, including but not limited to suspension, demotion, or termination.</p><p>If you have any questions regarding these procedures, contact your supervisor or chain of command.</p>',
+ 0);
+
+INSERT IGNORE INTO `mdt_sop_categories` (`id`, `job`, `title`, `icon`, `sort_order`) VALUES
+(1, 'police', 'Code of Ethics', 'gavel', 1),
+(2, 'police', 'Oath of Service', 'military_tech', 2),
+(3, 'police', 'Patrol Standards', 'local_police', 3),
+(4, 'police', 'Member Conduct', 'groups', 4),
+(5, 'police', 'Command Disciplines', 'report', 5),
+(6, 'police', 'Incidents', 'emergency', 6),
+(7, 'police', 'Driving and Emergency Calls', 'directions_car', 7),
+(8, 'police', 'Policies', 'policy', 8),
+(9, 'police', 'Use of Force', 'security', 9),
+(10, 'police', 'Training and Procedures', 'school', 10),
+(11, 'police', 'Vehicles', 'directions_car', 11);
+
+INSERT IGNORE INTO `mdt_sop_sections` (`category_id`, `title`, `content`, `sort_order`) VALUES
+-- Code of Ethics
+(1, 'Code of Ethics',
+ '<p>The Code of Ethics lays out a set of values and principles in which all work of the department should be done within. Violation of any of the Ethics may lead to complaints, disciplinary action which may include dismissal.</p><p>When becoming a Law Enforcement Officer, you gain many responsibilities including the power and the ability to enforce the law. Within the law you have a lot of power to arrest, charge, and search civilians. All of these must be within the laws of the state. Any failure to follow any superior ranking officers may lead to Command Discipline. The ability that is given to LEOs may not be abused or be used in any miscellaneous way otherwise disciplinary action may be taken.</p><ul><li>Professionalism</li><li>Responsibility</li><li>Respect</li><li>Leadership</li></ul><p>I will never act officiously or permit personal feelings, prejudices, animosities, or friendships to influence my decisions. With no compromise for crime and with relentless prosecution of criminals, I will enforce the law courteously and appropriately without fear or favor, malice or ill will, never employing unnecessary force or violence and never accepting gratuities.</p><p>I recognize the badge of my office as a symbol of public faith, and I accept it as a public trust to be held so long as I am true to the ethics of the police service. I will constantly strive to achieve these objectives and ideals, dedicating myself before God to my chosen profession... law enforcement.</p>',
+ 1),
+
+-- Oath of Service
+(2, 'Oath of State',
+ '<p><em>"I do solemnly swear: I will support, protect and defend the Constitution and Government of the United States and of the State; I will render strict obedience to my superiors in the Law Enforcement Agency, and observe and abide by all orders and regulations prescribed by them for the government and administration of said Patrol; I will always conduct myself soberly, honorably and honestly; I will maintain strict, punctual and constant attention to my duties; I will abstain from all offensive personality or conduct unbecoming a Law Enforcement Officer; I will perform my duties fearlessly, impartially and with all due courtesy and I will well and faithfully perform the duties of a Law Enforcement Officer on which I am now about to enter. So help me God."</em></p>',
+ 1),
+
+-- Patrol Standards
+(3, 'Equipment and Readiness',
+ '<ul><li><strong>Law Enforcement Officers must have all proper equipment to carry out police duties.</strong></li><li><strong>Law Enforcement Officers must have all equipment serviceable and ready for use.</strong></li><li><strong>Law Enforcement Officers must ensure the vehicle has proper equipment and is serviceable.</strong></li><li><strong>Law Enforcement Officers must ensure all weapons are loaded and serviceable.</strong></li><li><strong>Law Enforcement Officers must attend any ALL CALLS.</strong></li><li><strong>Law Enforcement Officers will follow the proper chain of command.</strong></li><li><strong>Law Enforcement Officers must ensure that they act in a safe manner.</strong></li></ul>',
+ 1),
+
+-- Member Conduct
+(4, 'Officer Conduct Standards',
+ '<ul><li>Law Enforcement Officers are to maintain professional bearings at all times.</li><li>Law Enforcement Officers are to never harass, intimidate or otherwise infringe on any civilian''s rights.</li><li>Law Enforcement Officers are to never abuse their power to benefit themselves or hurt others in any way. (Financially, physically, verbally or in any way that is below that of an Officer''s oath to protect and serve.)</li><li>Law Enforcement Officers must aid any civilian in need to the best of his/her ability.</li><li>Law Enforcement Officers must obey any lawful order issued by a supervisor of rank above theirs.</li><li>Law Enforcement Officers are responsible for any harm he/she causes to a person outside the rule of law and in accordance with each department''s patrol guide.</li><li>Law Enforcement Officers must and will follow all road laws and not abuse sirens to ignore these laws.</li><li>Law Enforcement Officers must be able to justify any use of force or cause for an arrest/stop of any person.</li><li>Law Enforcement Officers will not discriminate against any person for any reason including but not limited to: Race, religion, sexual orientation and gender.</li></ul>',
+ 1),
+
+-- Command Disciplines
+(5, 'Command Disciplines',
+ '<p>Command Disciplines are recommended for misconduct that is more problematic than poor training, but does not rise to the level of charges. Command disciplines will be issued to all Law Enforcement Officers who break regulations or fail to obey a lawful order from a supervisor, also known as insubordination.</p><p>Law Enforcement Officers can accumulate up to <strong>(3)</strong> Command Disciplines prior to termination from the department. Law Enforcement Officers may be terminated also depending on the level of the offense or offenses committed; this is up to the command staff and approved by the Commissioner.</p><p><strong>Note:</strong> A Verbal and Written due to repeating the same misconduct will be equal to a FINAL.</p><p>(Verbal, Written, Final) are what CDs are referred to.</p>',
+ 1),
+(5, 'Suspension and Termination',
+ '<p>Law Enforcement Officers are subject to suspension on any written CD based on the supervisor''s discretion.</p><p>Termination is the final response to a Law Enforcement Officer''s issues with behavior. Officers will formally be let go by the department and this is decided by the supervisor. Probationary Officers, still on ride along status, can be terminated by a SGT/LT.</p>',
+ 2),
+(5, 'Rules and Attendance',
+ '<p><strong>Rules:</strong> All rules, policies and procedures apply to LEOs at all times.</p><p><strong>Attendance Policy:</strong> Law Enforcement Officers who are active are much appreciated but as we all know our lives and family are more important. Law Enforcement Officers who will be busy must notify the command staff.</p><p><strong>Prohibited Conduct:</strong></p><ul><li>Any consumption of narcotics and or alcohol while on duty = TERMINATION</li><li>Engaging in discussion with other members while intoxicated IRL in a patrol channel.</li></ul>',
+ 3),
+
+-- Incidents
+(6, 'Right to a Supervisor',
+ '<p>Members of the public have the right to speak with a supervisor. When a supervisor is requested by a civilian, they are expected to respond to the call when they are available.</p><p>Detainees also have the right to speak with a supervisor if they requested one. If a supervisor is requested by a suspect being arrested then they may be brought to the Police Department or to the current active scene to wait for one. <strong>But, they must not receive any criminal charges until the supervisor has spoken to them.</strong></p><p><strong>The right to a supervisor can only be declined in the following situations:</strong></p><ul><li>The Supervisor was previously involved in the suspect''s case and has confirmed the suspect is to be charged.</li><li>If the arresting officer is already a Supervisor. For example, the Sergeant does not have to request a Lieutenant or another supervisor to talk to his/her suspect if the suspect requests it.</li><li>There are no supervisors available.</li><li>If there are no supervisors on Duty, any FTA can take the supervisor''s role and talk to the Suspect as a Field Training Assistant.</li></ul>',
+ 1),
+(6, 'Receiving and Responding to Calls',
+ '<p><strong>Receiving an Emergency Call:</strong> Always acknowledge the call, if sent by dispatch, notify them and clarify that you are responding. If notified by the 911 system, then let everyone know of the Radio Traffic Channel that you will be responding to.</p><p><strong>Arriving On The Scene:</strong> When you have arrived on the scene, alert dispatch and your colleagues that you have arrived on the scene. Generally, unless designated, the first officer on the scene will always be the Officer in Charge (OIC). The first Supervisor on the scene will take scene command. It is their responsibility to keep dispatch and/or other officers informed of the situation unfolding and getting any suspects back to the Police Station.</p>',
+ 2),
+(6, 'Jail and Punishment',
+ '<p><strong>Handling of Suspects:</strong> If a supervisor is requested by a suspect being arrested then they may be brought to the Police Department to wait for one but they must not receive any criminal charges until the supervisor has spoken to them. Please refer to Right to a Supervisor for when the right to a supervisor can be denied.</p><p><strong>Punishments:</strong> Officers are expected to not add up laws and not maximize the sentences unless the subject is Felony. Minor breakage of laws (for example, Traffic Offences) should <strong>NEVER</strong> be added up to create a larger jail sentence. Generally, the extent or cooperation offered by the suspect should be considered when setting a jail sentence or issuing a fine.</p><ul><li><strong>Arresting officer MUST read the Miranda Rights</strong> before arresting or transporting the subject to the Station. *In different circumstances Miranda rights may be read at the station.</li><li>Arresting Officers have to explain the suspect''s charge(s) before jailing them.</li><li>Officers must uncuff the suspect before sending them to Jail.</li><li>When transporting a suspect, the vehicle must include a Prison Transport Cage in it.</li><li>The suspect(s) must be searched before they get transported.</li><li>Arresting Officers must write an Arrest Report on the MDT system.</li><li><strong>When arresting a suspect, the Arresting Officer must always use the Penal Codes for the Sentences and for the Charges.</strong></li></ul><p>All sentencing is subject to officer discretion after taking into consideration other pending crimes, probation status, repeat offenses, or other information obtained during the investigation. Officers are encouraged to give leniency to cooperative, non-violent criminals. All charges are stackable and subject to change without notice.</p><p><strong>Classification of Crimes:</strong></p><ul><li><strong>Infraction</strong> - Least serious violation of the penal code. Results in a fine and/or loss of a privilege.</li><li><strong>Misdemeanor</strong> - Minor violation of the penal code. Results in arrest, a fine and/or jail time.</li><li><strong>Felony</strong> - Serious violation of the penal code. Results in arrest, a fine and jail time.</li></ul>',
+ 3),
+
+-- Driving and Emergency Calls
+(7, 'Emergency Driving Definitions',
+ '<p><strong>Emergency Driving (Non-Pursuit):</strong> The operation of an emergency vehicle (emergency red and blue lights and siren in operation) by a Law Enforcement Officer in response to a life-threatening situation or a violent crime in progress, using due regard for the safety of others.</p><p><strong>Pursuit Driving:</strong> An attempt by a Law Enforcement Officer operating an emergency vehicle and simultaneously utilizing Red and Blue Lights and siren to apprehend an occupant(s) of another moving vehicle, when the driver of the fleeing vehicle is aware of the attempt and is resisting apprehension by maintaining or increasing speed, disobeying Traffic Laws, ignoring or attempting to elude Law Enforcement Officers.</p><p>Officer(s) always must leave space between the suspect and their car during the Pursuit, in case of emergency braking or accidents. Pit Maneuver can only be performed by Supervisors or Pit Certified Officers. Pit Maneuver should only be performed if there is no traffic. Pit Maneuver should never be performed in Residential Areas.</p><p><strong>Following:</strong> Driving in close proximity to a subject vehicle without using any apprehension efforts, such as red and blue lights or sirens, or any other method of direction to stop.</p>',
+ 1),
+(7, 'Response Codes',
+ '<p><strong>Emergency Call Response Codes:</strong></p><p><strong>Code 1 - Non-Urgent / No Lights, No Sirens:</strong> Supervisor Calls, Damage to property, Trespassing, Theft of property (not in progress), Jaywalking.</p><p><strong>Code 2 - High Priority / Lights On, No Sirens:</strong> Traffic Stop calls, Fight in Progress, Car Accidents, Shots Fired in the Area, Theft of Property in progress.</p><p><strong>Code 3 - Emergency / Lights and Sirens On:</strong> Vehicle Pursuit, Officer Down or in distress, Armed Robbery, Wanted Person, Felony Upgrade, Active Shooting.</p>',
+ 2),
+
+-- Policies
+(8, 'Identification of Officers',
+ '<p>Officers are always expected to identify themselves as law enforcement officers during a situation and especially when entering a building or during Traffic Stops. Otherwise the officers could be mistaken as hostile persons. Officers must also report their name and badge numbers to others if requested, if the person requesting them wishes to make a complaint.</p><p><em>*Undercover officers are not obligated to identify themselves to Civilians if they are running an Investigation.</em></p>',
+ 1),
+(8, 'Performance of Duties',
+ '<p><strong>Negligent Performance of Duties:</strong> An officer performing duties, even within the limits of the law, may be found negligent in the performance of his or her duties if they obviously do not act to the best of their ability or if their behavior unreasonably endangers the lives of citizens, other officers, or themselves and the risks obviously and heavily outweigh the benefits.</p><p><strong>Supervisor Responses to Calls:</strong> Supervisors are expected to respond to the most important call at the time and may not stay idle or ignore regular policing and supervising duties in preference of more menial tasks. <strong>Supervisors must respond to and judge all officer-involved shooting incidents.</strong></p><ul><li>Supervisors must take Incident Reports (on MDT) of Shooting Involved Scenes, Officer Accidents, Vehicle Pursuits.</li></ul>',
+ 2),
+(8, 'Warrant Structure',
+ '<p>For a warrant to be reason enough to arrest someone and be classed as "valid", you need to provide an overview of the situation including evidence and weapons used (if any). Warrants only saying "Tried to run the uber driver over" will not be classed as "valid" or be enough to arrest someone for, as it does not give an overview of the situation nor does it tell us what kind of evidence was present at the time. It is also important to specify if it is a search warrant or if it is an arrest warrant.</p><p>A good example of an arrest warrant is: <em>"Arrest Warrant: Shot and killed the civilian during the armed robbery at 24/7 Sandy with an M9 Beretta. Several witnesses including police officers witnessed the situation. Evidence found on the scene."</em></p><p>A good example of a search warrant is: <em>"Search Warrant: Drug plants appear to be visible from the apartment window, indicating production of drugs is ongoing. Owner of the apartment refused to open the door for Officers."</em></p>',
+ 3),
+(8, 'Panic Button and Scene Command',
+ '<p><strong>Panic Button:</strong> The Panic Button is only to be pressed when there is an urgent concern for the personal safety of you or a colleague, which requires immediate assistance.</p><ul><li><strong>All Units must respond to 10-99 Scenes. Supervisors can call-off if no more units needed on the scene.</strong></li></ul><p><strong>Scene Command:</strong> First Sergeant or higher on the scene will be considered as Scene Command. Only Scene Command can clear off Units from the Active Scene regardless of Rank. Active Scene Command will advise officers on what to do. <strong>Field Training Assistants can take Scene Command if there is no Active Supervisor on Duty.</strong></p>',
+ 4),
+(8, 'Traffic Stops',
+ '<p>At the time of any traffic stop, it is and shall be known as a scene and will be treated as such. While a police officer has any said person under investigation for speeding, inoperable equipment and vehicles deemed unfit for the roadways, all suspects will currently at that time be DETAINED (<strong>they do not have to be in handcuffs, they can be in their vehicle</strong>) during the traffic stop. They may not leave the scene, but may call a lawyer ahead of time if they feel the need to do so. At no point during a traffic stop should the use of deadly force be used unless an officer fears for his life. Less than lethal is always permitted if the situation arises.</p><p>During a traffic stop, if commands by law enforcement officers are given to the suspect or the accused and after multiple attempts the suspect refuses to comply, then various steps of less than lethal force are permitted. The use of this force is determined by the department head. Use of deadly force is not permitted and will result in the removal of the officer or disciplinary action.</p>',
+ 5),
+(8, 'Speed Limits and Robberies',
+ '<p><strong>Speed Limits:</strong></p><ul><li>City Limits - 40 MPH</li><li>Highways / Out-of-City - 80 MPH</li></ul><p><strong>Maximum Officers Allowed Per Robbery:</strong></p><ul><li>Casino Heist: 4</li><li>Pacific Robbery: 5</li><li>Jewelry Robbery: 3</li><li>Fleeca Robbery: 4</li><li>House Robbery: 2</li><li>Store Robbery: 3</li><li>Train Robbery: 4</li><li>Truck Robbery: 3</li><li>Active 10-80s: 3 (cars)</li></ul>',
+ 6),
+(8, 'Air One',
+ '<p>For an officer to be Air One certified, one must be trained and cleared by a FTI (Field Training Instructor). Only a Department FTI who is Air One certified may clear others to be certified. To be cleared for Air One certification your training instructor will take you through the Air One training course where you will have to show your instructor your ability to fly and use Air One. You will only pass if you have shown your instructor that you are ready. You will also be taught the correct way to use Air One.</p><p><strong>Rules:</strong></p><ul><li>Air One can only be out for 30 minutes before having to go back to MRPD to refuel.</li><li>There must be a 3-5 minute refuel time before Air One can get back into the air or reattach back to an active situation.</li><li>Can only airdrop people off if the area is safe (meaning no one is shooting at Air One).</li></ul>',
+ 7),
+
+-- Use of Force
+(9, 'Use of Force Policy',
+ '<p>Law enforcement officers may use any amount of force in the execution of their duties provided that it is reasonable and justifiable.</p><ul><li><strong>A firearm may only be used when there is a clear and present danger to life and other non-lethal methods are inappropriate or have failed.</strong></li><li><strong>Firearms should never be used to apprehend a fleeing suspect unless justified in the point above.</strong></li><li><strong>Warning shot(s) should never be fired.</strong></li><li><strong>Should only be discharging your firearm if you have a clear line of sight and it is safe to do so.</strong> (DO NOT CROSSFIRE FELLOW OFFICERS)</li><li><strong>Officers that use excessive force in the execution of their duties without a reasonable and justifiable reason may lead to disciplinary action.</strong></li></ul>',
+ 1),
+(9, 'Deadly Force Guidelines',
+ '<p><strong>(a) Use of Deadly Force:</strong> Deadly force means force that is used against another individual, that is likely to cause serious bodily harm or death to the individual in question. The Use of Deadly force may be used if one or more of the following circumstances exists:</p><p><strong>1 - Self Defence:</strong> When deadly force reasonably appears to be necessary to protect an officer who reasonably believes himself or herself is in imminent danger of death or serious bodily harm.</p><p><strong>2 - Serious Offences:</strong> When deadly force reasonably and objectively appears to be necessary to protect the general public from a serious offense. Examples: The subject in question is driving reckless to the point where it is posing an imminent threat to the general public or officers. Or the subject is currently armed with a firearm and the officers believe that without any doubt, the subject will use it.</p><p><strong>3 - Tires:</strong> Officers should aim for the tires of a vehicle when it is necessary to shoot a recklessly driving vehicle where the occupants are known to be armed or they are a danger to the public. Once the tires have been popped, officers should stop shooting the vehicle.</p><p><strong>4 - A Warning:</strong> "POLICE STOP" or "POLICE, STOP OR YOU WILL BE SHOT" should generally be given if possible before the officer discharges his firearm.</p><p><strong>5 - Vehicles:</strong> Vehicles should generally not be used as a weapon unless this is the officer''s last resort.</p>',
+ 2),
+
+-- Training and Procedures
+(10, 'Training Phases',
+ '<p>When you become a Law Enforcement Officer within the department, you must go through 3 stages of Field Training. Each trainee will be assigned with a Field Training Officer or Field Training Assistant. Trainees who pass the 3 stages of Field Training will have the ability to Patrol Alone. Until then, they can only Patrol with Patrol Officers or their assigned FTO.</p>',
+ 1),
+(10, 'Miranda Rights',
+ '<p><em>"You have the right to remain silent, anything you say or do can be used against you in a court of law, you have the right to an attorney. If you can not afford one, one will be appointed to you by the state. Do you understand the rights that have been read to you? With these rights in mind, do you wish to speak to me?"</em></p>',
+ 2),
+(10, 'Lawyer Ping',
+ '<p>When you arrest someone they have the right to a lawyer present. Ping a lawyer in Discord on the DOJ Category > #lawyer-ping. Wait for an answer or for a lawyer to arrive. If no one has arrived after 10 minutes proceed with the arrest.</p>',
+ 3),
+
+-- Vehicles
+(11, 'PD Vehicles',
+ '<p>PD cars (the ones you find in the garage) will be given out as personal cars. You can park them in your garages and do upgrades to your personal cruisers.</p><ul><li>You may not change the colors or liveries.</li><li>You may install upgrades to make your car faster with any of the mechanics in town.</li></ul>',
+ 1),
+(11, 'K9 Unit',
+ '<p><em>Work in Progress</em></p>',
+ 2);

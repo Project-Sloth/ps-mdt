@@ -68,9 +68,10 @@ local function getAllPermissions()
         'charges_view', 'charges_edit',
         'dispatch_attach', 'dispatch_route',
         'cameras_view', 'bodycams_view',
-        'roster_manage_certifications',
+        'roster_manage_certifications', 'roster_manage_officers',
         'management_permissions', 'management_bulletins', 'management_activity',
-        'management_tags', 'management_tracking',
+        'management_tags', 'management_tracking', 'management_settings',
+        'ia_view', 'ia_manage',
     }
 end
 
