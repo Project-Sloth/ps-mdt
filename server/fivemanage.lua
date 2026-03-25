@@ -86,8 +86,7 @@ ps.registerCallback(resourceName .. ':server:uploadMugshotBase64', function(sour
 end)
 
 -- Server event: receive mugshot URLs from client and store in profile gallery
-RegisterNetEvent(resourceName .. ':server:mugshotUpload')
-AddEventHandler(resourceName .. ':server:mugshotUpload', function(citizenid, mugshotUrls)
+RegisterNetEvent(resourceName .. ':server:mugshotUpload', function(citizenid, mugshotUrls)
     local src = source
     if not CheckAuth(src) then return end
     if not citizenid or not mugshotUrls or #mugshotUrls == 0 then return end

@@ -28,25 +28,21 @@ RegisterNUICallback('syncReportData', function(data, cb)
 end)
 
 -- Server push events -> forward to NUI
-RegisterNetEvent(resourceName .. ':client:reportEditorJoined')
-AddEventHandler(resourceName .. ':client:reportEditorJoined', function(data)
+RegisterNetEvent(resourceName .. ':client:reportEditorJoined', function(data)
     SendNUI('reportEditorJoined', data)
 end)
 
-RegisterNetEvent(resourceName .. ':client:reportEditorLeft')
-AddEventHandler(resourceName .. ':client:reportEditorLeft', function(data)
+RegisterNetEvent(resourceName .. ':client:reportEditorLeft', function(data)
     SendNUI('reportEditorLeft', data)
 end)
 
 local yjsIncomingBuffer = {}
 
-RegisterNetEvent(resourceName .. ':client:yjsBatch')
-AddEventHandler(resourceName .. ':client:yjsBatch', function(data)
+RegisterNetEvent(resourceName .. ':client:yjsBatch', function(data)
     yjsIncomingBuffer[#yjsIncomingBuffer + 1] = data
 end)
 
-RegisterNetEvent(resourceName .. ':client:yjsUpdate')
-AddEventHandler(resourceName .. ':client:yjsUpdate', function(data)
+RegisterNetEvent(resourceName .. ':client:yjsUpdate', function(data)
     yjsIncomingBuffer[#yjsIncomingBuffer + 1] = data
 end)
 
@@ -61,7 +57,6 @@ RegisterNUICallback('pollYjsUpdates', function(data, cb)
 end)
 
 -- Structured data update from server
-RegisterNetEvent(resourceName .. ':client:reportDataUpdate')
-AddEventHandler(resourceName .. ':client:reportDataUpdate', function(data)
+RegisterNetEvent(resourceName .. ':client:reportDataUpdate', function(data)
     SendNUI('reportDataUpdate', data)
 end)

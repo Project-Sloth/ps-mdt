@@ -39,8 +39,7 @@ RegisterNUICallback('setRadio', function(data, cb)
 end)
 
 -- Radio set event from server
-RegisterNetEvent(resourceName .. ':client:setRadio')
-AddEventHandler(resourceName .. ':client:setRadio', function(radio)
+RegisterNetEvent(resourceName .. ':client:setRadio', function(radio)
     if type(tonumber(radio)) == 'number' then
         local success = pcall(function()
             exports['pma-voice']:setVoiceProperty('radioEnabled', true)

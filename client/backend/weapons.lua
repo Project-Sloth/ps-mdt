@@ -58,8 +58,7 @@ RegisterNUICallback('deleteWeapon', function(data, cb)
 end)
 
 -- Weapon Self-Register (3rd Eye integration)
-RegisterNetEvent(resourceName .. ':client:selfregister')
-AddEventHandler(resourceName .. ':client:selfregister', function()
+RegisterNetEvent(resourceName .. ':client:selfregister', function()
     local weaponInfos = ps.callback(resourceName .. ':server:getWeaponInfo')
     if weaponInfos and #weaponInfos > 0 then
         for _, weaponInfo in ipairs(weaponInfos) do

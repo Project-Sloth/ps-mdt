@@ -87,8 +87,7 @@ local function TakeOutImpound(data, garageIndex)
 end
 
 -- Event: Vehicle released from impound, spawn it
-RegisterNetEvent(resourceName .. ':client:TakeOutImpound')
-AddEventHandler(resourceName .. ':client:TakeOutImpound', function(data)
+RegisterNetEvent(resourceName .. ':client:TakeOutImpound', function(data)
     if not data then return end
 
     local pos = GetEntityCoords(PlayerPedId())
@@ -109,7 +108,6 @@ AddEventHandler(resourceName .. ':client:TakeOutImpound', function(data)
 end)
 
 -- Also listen for the v1 event name for backwards compatibility
-RegisterNetEvent('ps-mdt:client:TakeOutImpound')
-AddEventHandler('ps-mdt:client:TakeOutImpound', function(data)
+RegisterNetEvent('ps-mdt:client:TakeOutImpound', function(data)
     TriggerEvent(resourceName .. ':client:TakeOutImpound', data)
 end)
