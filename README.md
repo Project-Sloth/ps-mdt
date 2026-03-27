@@ -246,3 +246,24 @@ For other resources to interact with the MDT.
 | `IsCidFelon` | `citizenid: string`, `cb: function?` | `boolean` | Checks if a citizen has any felony charges on record. Supports both callback and direct return |
 | `isRequestVehicle` | `vehicleId: number` | `boolean` | Checks if a vehicle was flagged for impound via the MDT. Consumes the entry on match |
 | `registerWeapon` | `citizenid: string`, `weaponName: string`, `serial: string`, `info: string?` | — | Registers a weapon in the MDT firearms registry with ownership history |
+
+
+# 1of1 Servers - VPS & Dedicated Servers
+
+[![1of1 Servers](https://github.com/user-attachments/assets/29e4ef8e-7b24-4821-a6ce-7c9e3c111fd1)](https://billing.1of1servers.com/aff.php?aff=1)
+
+We are a VPS and dedicated server provider, specializing in strong gaming DDoS protection and 99.9% uptime.  
+
+We host some of the biggest FiveM servers in the industry such as Prodigy RP, Smile RP, The Academy RP, and many more.  
+
+---
+
+### Features
+- 6 Tbps DDoS Protection by Gcore or 477 Tbps by Magic Transit CloudFlare 
+- 99.9% Network Uptime  
+- NVMe SSD Storage  
+- Unlimited Player Slots  
+- Free transfer of files and setup  
+- Free Windows licenses  
+- Windows Remote Desktop  
+- 24/7 Support with ~30 min average ticket response  
