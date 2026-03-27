@@ -38,16 +38,14 @@ RegisterNUICallback('sendCallResponse', function(data, cb)
 end)
 
 -- Dispatch message received from server
-RegisterNetEvent(resourceName .. ':client:dispatchMessage')
-AddEventHandler(resourceName .. ':client:dispatchMessage', function(sentData)
+RegisterNetEvent(resourceName .. ':client:dispatchMessage', function(sentData)
     if ps.getJobType() == 'leo' then
         SendNUI('dispatchMessage', sentData)
     end
 end)
 
 -- Call response received from server
-RegisterNetEvent(resourceName .. ':client:callResponse')
-AddEventHandler(resourceName .. ':client:callResponse', function(message, time, callid, name)
+RegisterNetEvent(resourceName .. ':client:callResponse', function(message, time, callid, name)
     SendNUI('callResponse', {
         message = message,
         time = time,
@@ -68,8 +66,7 @@ RegisterNUICallback('signal100', function(data, cb)
 end)
 
 -- Signal 100 event from server
-RegisterNetEvent(resourceName .. ':client:sig100')
-AddEventHandler(resourceName .. ':client:sig100', function(radio, isActive)
+RegisterNetEvent(resourceName .. ':client:sig100', function(radio, isActive)
     if ps.getJobType() ~= 'leo' then return end
     if not ps.getJobDuty() then return end
 
@@ -135,8 +132,7 @@ if Config.UseWolfknightRadar then
         return GetLabelText(GetDisplayNameFromVehicleModel(GetEntityModel(vehicle)))
     end
 
-    RegisterNetEvent(resourceName .. ':client:trafficStop')
-    AddEventHandler(resourceName .. ':client:trafficStop', function()
+    RegisterNetEvent(resourceName .. ':client:trafficStop', function()
         if not IsPedInAnyPoliceVehicle(PlayerPedId()) then
             ps.notify('Not in a police vehicle!', 'error')
             return

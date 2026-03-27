@@ -59,8 +59,7 @@ RegisterNetEvent(resourceName..':server:viewReport', function(reportId)
     ps.debug("Server: Viewing report:", reportId)
 end)
 
-RegisterNetEvent("wk:onPlateScanned")
-AddEventHandler("wk:onPlateScanned", function(cam, plate, index)
+RegisterNetEvent("wk:onPlateScanned", function(cam, plate, index)
     local src = source
     local Player = ps.getPlayer(src)
     local driversLicense = ps.getMetadata(src, 'licences') and ps.getMetadata(src, 'licences').driver
