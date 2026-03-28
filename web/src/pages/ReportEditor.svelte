@@ -981,6 +981,7 @@
 				onRemove={handlers.handleRemoveSuspect}
 				onUpdate={handlers.handleUpdateSuspect}
 				onIssueWarrant={issueWarrant}
+				onCloseWarrant={closeWarrant}
 				onIssueBenchWarrant={jobType === 'leo' ? openBenchWarrantModal : undefined}
 				onIssueBolo={issueBolo}
 				onTakeMugshot={triggerSuspectMugshot}
