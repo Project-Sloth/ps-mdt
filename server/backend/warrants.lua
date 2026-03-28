@@ -100,9 +100,17 @@ ps.registerCallback(resourceName .. ':server:issueWarrant', function(source, dat
         return { success = false, error = 'Missing required fields' }
     end
 
-    local existing = MySQL.single.await('SELECT reportid FROM mdt_reports_warrants WHERE reportid = ? AND citizenid = ?', { reportId, citizenid })
-    if existing and existing.reportid then
+    local activeWarrant = MySQL.single.await('SELECT reportid FROM mdt_reports_warrants WHERE reportid = ? AND citizenid = ? AND expirydate >= NOW()', { reportId, citizenid })
+    if activeWarrant then
         return { success = false, error = 'An active warrant already exists for this subject on this report' }
+    end
+
+    local expiredWarrant = MySQL.single.await('SELECT reportid FROM mdt_reports_warrants WHERE reportid = ? AND citizenid = ?', { reportId, citizenid })
+    if expiredWarrant then
+        -- Expired row exists, reactivate it with new expiry
+        MySQL.update.await([[
+            UPDATE mdt_reports_warrants SET expirydate = ? WHERE reportid = ? AND citizenid = ?
+        ]], { expiryDate, reportId, citizenid })
     else
         MySQL.insert.await([[
             INSERT INTO mdt_reports_warrants (reportid, citizenid, felonies, misdemeanors, infractions, expirydate)
