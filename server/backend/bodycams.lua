@@ -2,19 +2,21 @@ local resourceName = tostring(GetCurrentResourceName())
 local bodycamInstances = {}
 local bodycamViewers = {}
 
+local function getBodycamConfig()
+    return Config and Config.Bodycam or {}
+end
+
 local function shouldUseQbCore()
-    local cfg = Config and Config.Bodycam or {}
-    local resourceName = cfg.DutyResource or 'qb-core'
+    local cfg = getBodycamConfig()
     if cfg.DutyEventMode == 'pslib' then
         return false
     end
-    return exports[resourceName] ~= nil
+    return exports[cfg.DutyResource] ~= nil
 end
 
 local function getQbCoreObject()
-    local cfg = Config and Config.Bodycam or {}
-    local resourceName = cfg.DutyResource or 'qb-core'
-    local resource = exports[resourceName]
+    local cfg = getBodycamConfig()
+    local resource = exports[cfg.DutyResource]
     if not resource then
         return nil
     end
@@ -343,26 +345,23 @@ local function handleDutyChange(playerId, job, onDuty, employeeData)
 end
 
 local function registerDutyEvents()
-    local cfg = Config and Config.Bodycam or {}
-    local dutyEvent = cfg.DutyEvent or 'QBCore:Server:OnJobUpdate'
-    local dutyMode = cfg.DutyEventMode or 'qbcore'
-    local multiJobEvent = cfg.MultiJobDutyEvent or 'ps-multijob:server:dutyChanged'
+    local cfg = getBodycamConfig()
 
-    if dutyMode == 'qbcore' then
-        RegisterNetEvent(dutyEvent, function(source, job)
+    if cfg.DutyEventMode == 'qbcore' then
+        RegisterNetEvent(cfg.DutyEvent, function(source, job)
             local src = source
             if not src or not job then return end
             handleDutyChange(src, job, job.onduty == true, nil)
         end)
-    elseif dutyMode == 'pslib' then
-        RegisterNetEvent(dutyEvent, function(playerId, jobName, onDuty, employeeData)
+    elseif cfg.DutyEventMode == 'pslib' then
+        RegisterNetEvent(cfg.DutyEvent, function(playerId, jobName, onDuty, employeeData)
             if not playerId then return end
             handleDutyChange(playerId, { name = jobName }, onDuty == true, employeeData)
         end)
     end
 
-    if multiJobEvent then
-        RegisterNetEvent(multiJobEvent, function(playerId, jobName, onDuty, employeeData)
+    if cfg.MultiJobDutyEvent and GetResourceState(cfg.MultiJobResource) == 'started' then
+        RegisterNetEvent(cfg.MultiJobDutyEvent, function(playerId, jobName, onDuty, employeeData)
             if not playerId then return end
             handleDutyChange(playerId, { name = jobName }, onDuty == true, employeeData)
         end)
@@ -373,10 +372,10 @@ end
 CreateThread(function()
     Wait(5000)
 
-    local cfg = Config and Config.Bodycam or {}
-    local multiJobResource = cfg.MultiJobResource or 'ps-multijob'
-    if multiJobResource and exports[multiJobResource] then
-        local police = exports[multiJobResource]:getEmployees('police')
+    local cfg = getBodycamConfig()
+    local multiJobAvailable = GetResourceState(cfg.MultiJobResource) == 'started'
+    if multiJobAvailable and exports[cfg.MultiJobResource] then
+        local police = exports[cfg.MultiJobResource]:getEmployees('police')
         if police then
             for _, officer in pairs(police) do
                 if officer.citizenid then

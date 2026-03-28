@@ -1,0 +1,132 @@
+:root {
+	font-family:
+		-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+	line-height: 1.5;
+	font-weight: 400;
+	color: rgba(255, 255, 255, 0.87);
+	font-synthesis: none;
+	text-rendering: geometricPrecision;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+
+	/* Theme variables */
+	--dark-bg: rgb(23, 23, 23);
+	--card-dark-bg: rgb(14, 15, 15);
+
+	--off-white: rgba(255, 255, 255, 0.7);
+	--grey: rgba(255, 255, 255, 0.1);
+	--green: rgb(16, 185, 129);
+
+	--pill-blue-bg: rgba(var(--accent-rgb), 0.2);
+	--pill-blue-border: rgba(var(--accent-rgb), 0.3);
+
+	--priority-red: rgb(239, 68, 68);
+	--priority-orange: rgb(245, 158, 11);
+	--priority-green: rgb(16, 185, 129);
+	--priority-grey: rgb(107, 114, 128);
+
+	/* Accent color system (default: LEO blue) */
+	--accent-rgb: 59, 130, 246;
+	--accent: rgba(var(--accent-rgb), 1);
+	--accent-06: rgba(var(--accent-rgb), 0.06);
+	--accent-08: rgba(var(--accent-rgb), 0.08);
+	--accent-10: rgba(var(--accent-rgb), 0.1);
+	--accent-15: rgba(var(--accent-rgb), 0.15);
+	--accent-20: rgba(var(--accent-rgb), 0.2);
+	--accent-25: rgba(var(--accent-rgb), 0.25);
+	--accent-30: rgba(var(--accent-rgb), 0.3);
+	--accent-35: rgba(var(--accent-rgb), 0.35);
+	--accent-50: rgba(var(--accent-rgb), 0.5);
+	--accent-60: rgba(var(--accent-rgb), 0.6);
+	--accent-70: rgba(var(--accent-rgb), 0.7);
+	--accent-text-rgb: 147, 197, 253;
+	--accent-text: rgba(var(--accent-text-rgb), 0.95);
+	--accent-text-70: rgba(var(--accent-text-rgb), 0.7);
+}
+
+/* EMS red accent override */
+[data-job-type="ems"] {
+	--accent-rgb: 220, 50, 50;
+	--accent-text-rgb: 252, 165, 165;
+	--dark-bg: rgb(18, 14, 14);
+	--card-dark-bg: rgb(14, 10, 10);
+}
+
+* {
+	box-sizing: border-box;
+}
+
+body {
+	margin: 0;
+	padding: 0;
+	background: transparent;
+	min-width: 320px;
+	min-height: 100vh;
+	overflow: hidden;
+}
+
+#app {
+	width: 100vw;
+	height: 100vh;
+	overflow: hidden;
+}
+
+*::-webkit-scrollbar {
+	width: 8px;
+	height: 8px;
+}
+
+*::-webkit-scrollbar-track {
+	background: rgba(255, 255, 255, 0.05);
+	border-radius: 4px;
+}
+
+*::-webkit-scrollbar-thumb {
+	background: rgba(255, 255, 255, 0.2);
+	border-radius: 4px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+	background: rgba(255, 255, 255, 0.3);
+}
+
+*::-webkit-scrollbar-corner {
+	background: rgba(255, 255, 255, 0.05);
+}
+
+[data-job-type="ems"] *::-webkit-scrollbar-thumb {
+	background: rgba(220, 50, 50, 0.15);
+}
+
+[data-job-type="ems"] *::-webkit-scrollbar-thumb:hover {
+	background: rgba(220, 50, 50, 0.25);
+}
+
+button {
+	font-family: inherit;
+	font-size: inherit;
+	line-height: inherit;
+	margin: 0;
+	outline: none;
+}
+
+button:focus-visible {
+	outline: 2px solid var(--accent);
+	outline-offset: 2px;
+}
+
+button:focus:not(:focus-visible) {
+	outline: none;
+}
+
+.sr-only {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+	border: 0;
+}

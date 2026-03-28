@@ -86,7 +86,8 @@ ps.registerCallback(resourceName .. ':server:uploadMugshotBase64', function(sour
 end)
 
 -- Server event: receive mugshot URLs from client and store in profile gallery
-RegisterNetEvent(resourceName .. ':server:mugshotUpload', function(citizenid, mugshotUrls)
+RegisterNetEvent(resourceName .. ':server:mugshotUpload')
+AddEventHandler(resourceName .. ':server:mugshotUpload', function(citizenid, mugshotUrls)
     local src = source
     if not CheckAuth(src) then return end
     if not citizenid or not mugshotUrls or #mugshotUrls == 0 then return end
@@ -170,11 +171,9 @@ ps.registerCallback(resourceName .. ':server:uploadSuspectPhoto', function(sourc
     return { success = true, message = 'Photo uploaded', imageUrl = imageUrl }
 end)
 
--- ============================================================
 -- FiveManage Activity Logging (batched)
 -- Forwards MDT audit log entries to FiveManage Logs API
 -- Docs: https://docs.fivemanage.com/fivemanage/guides/logs/best-practices
--- ============================================================
 
 local LOG_BATCH_SIZE = 50         -- Send when batch reaches this size
 local LOG_BATCH_INTERVAL = 5000   -- Or every 5 seconds (ms), whichever comes first

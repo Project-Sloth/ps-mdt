@@ -1,0 +1,76 @@
+:root {
+	font-family:
+		-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+	line-height: 1.5;
+	font-weight: 400;
+	color: rgba(255, 255, 255, 0.87);
+	font-synthesis: none;
+	text-rendering: geometricPrecision;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+
+	/* Accent (customizable via Colors settings) */
+	--accent-rgb: 59, 130, 246;
+	--accent-text-rgb: 147, 197, 253;
+
+	/* Background */
+	--dark-bg: rgb(23, 23, 23);
+	--light-bg: #1d1d1d;
+	--card-dark-bg: rgb(14, 15, 15);
+	--card-light-bg: rgb(255, 255, 255);
+	--secondary-bg: rgb(29, 29, 29);
+	--hover-bg: rgba(255, 255, 255, 0.05);
+	--active-bg: rgba(255, 255, 255, 0.1);
+
+	/* Text */
+	--primary-text: rgba(255, 255, 255, 0.87);
+	--secondary-text: rgba(255, 255, 255, 0.7);
+	--muted-text: rgba(255, 255, 255, 0.6);
+	--disabled-text: rgba(255, 255, 255, 0.5);
+
+	/* Border */
+	--border-primary: rgba(255, 255, 255, 0.1);
+	--border-secondary: rgba(255, 255, 255, 0.2);
+	--border-hover: rgba(255, 255, 255, 0.3);
+
+	/* Button */
+	--btn-primary: rgb(41, 158, 109);
+	--btn-primary-hover: rgb(34, 190, 131);
+	--btn-secondary: rgba(255, 255, 255, 0.1);
+	--btn-secondary-hover: rgba(255, 255, 255, 0.3);
+	--btn-secondary-active: rgba(255, 255, 255, 0.3);
+	--btn-danger: rgb(239, 68, 68);
+	--btn-danger-hover: rgb(220, 38, 38);
+
+	/* Status */
+	--success: rgb(16, 185, 129);
+	--warning: rgb(245, 158, 11);
+	--error: rgb(239, 68, 68);
+	--info: rgb(var(--accent-rgb));
+
+	/* Priority */
+	--priority-red: rgb(239, 68, 68);
+	--priority-orange: rgb(245, 158, 11);
+	--priority-green: rgb(16, 185, 129);
+	--priority-grey: rgb(107, 114, 128);
+
+	/* Pill/Badge */
+	--pill-blue-bg: rgba(var(--accent-rgb), 0.2);
+	--pill-blue-border: rgba(var(--accent-rgb), 0.3);
+	--pill-green-bg: rgba(16, 185, 129, 0.2);
+	--pill-green-border: rgba(16, 185, 129, 0.3);
+	--pill-red-bg: rgba(239, 68, 68, 0.2);
+	--pill-red-border: rgba(239, 68, 68, 0.3);
+	--pill-orange-bg: rgba(245, 158, 11, 0.2);
+	--pill-orange-border: rgba(245, 158, 11, 0.3);
+
+	/* Form */
+	--input-bg: rgba(255, 255, 255, 0.1);
+	--input-border: rgba(255, 255, 255, 0.2);
+	--input-focus: rgb(var(--accent-rgb));
+	--input-placeholder: rgba(255, 255, 255, 0.5);
+
+	/* Loading/Spinner */
+	--spinner-primary: rgb(var(--accent-rgb));
+	--spinner-track: rgba(255, 255, 255, 0.1);
+}

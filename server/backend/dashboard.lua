@@ -1,6 +1,18 @@
 
 local resourceName = tostring(GetCurrentResourceName())
 
+local function getEffectiveJobType(src)
+    local jobType = ps.getJobType(src)
+    local jobName = ps.getJobName(src)
+    if Config.DojJobs then
+        for _, name in ipairs(Config.DojJobs) do
+            if name == jobName then return 'doj' end
+        end
+    end
+    if Config.DojJobType and jobType == Config.DojJobType then return 'doj' end
+    return jobType
+end
+
 ps.registerCallback(resourceName .. ':server:getJobData', function(source)
     local src = source
     assert(src, 'Player ID cannot be nil')
@@ -28,7 +40,6 @@ ps.registerCallback(resourceName .. ':server:getReportStatistics', function(sour
             totalThisWeek = tonumber(row.totalThisWeek) or 0,
             changeFromLastWeek = (tonumber(row.totalThisWeek) or 0) - (tonumber(row.totalLastWeek) or 0)
         }
-        ps.debug('Report Statistics: ', reportStatistics)
         return reportStatistics
     end)
 end)
@@ -147,7 +158,7 @@ ps.registerCallback(resourceName .. ':server:getRecentReports', function(source,
 
     local identifier = ps.getIdentifier(src)
     local job = ps.getJobName(src)
-    local jobType = ps.getJobType(src)
+    local jobType = getEffectiveJobType(src)
 
     local offset = (pageNumber - 1) * pageSize
     local rows = MySQL.query.await([[
@@ -155,7 +166,11 @@ ps.registerCallback(resourceName .. ':server:getRecentReports', function(source,
         FROM mdt_reports mr
         LEFT JOIN mdt_reports_restrictions mrr ON mr.id = mrr.reportid
         WHERE (
-            (mrr.reportid IS NULL AND ? = 'leo')
+            (? = 'doj' AND NOT EXISTS(
+                SELECT 1 FROM mdt_reports_restrictions mrr_ems
+                WHERE mrr_ems.reportid = mr.id AND mrr_ems.type = 'jobtype' AND mrr_ems.identifier = 'ems'
+            ))
+            OR (mrr.reportid IS NULL AND (? = 'leo' OR ? = 'ems'))
             OR (mrr.type = 'citizenid' AND mrr.identifier = ?)
             OR (mrr.type = 'job' AND mrr.identifier = ?)
             OR (mrr.type = 'jobtype' AND mrr.identifier = ?)
@@ -164,7 +179,7 @@ ps.registerCallback(resourceName .. ':server:getRecentReports', function(source,
         ORDER BY mr.datecreated DESC
         LIMIT ?
         OFFSET ?
-    ]], { jobType, identifier, job, jobType, pageSize, offset })
+    ]], { jobType, jobType, jobType, identifier, job, jobType, pageSize, offset })
     return rows or {}
 end)
 

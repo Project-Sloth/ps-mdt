@@ -1,9 +1,19 @@
 -- Authorisation --
 
+local function isDojJob(jobName)
+    if not jobName or not Config.DojJobs then return false end
+    for _, name in ipairs(Config.DojJobs) do
+        if name == jobName then return true end
+    end
+    return false
+end
+
 function CheckAuth(source, silent)
     ps.debug('Checking MDT Authorization')
     local jobType = ps.getJobType(source)
-    if jobType ~= Config.PoliceJobType and jobType ~= Config.MedicalJobType then
+    local jobName = ps.getJobName(source)
+    local dojCheck = isDojJob(jobName) or (Config.DojJobType and jobType == Config.DojJobType)
+    if jobType ~= Config.PoliceJobType and jobType ~= Config.MedicalJobType and not dojCheck then
         ps.debug('Access Denied for ID: ' .. source .. ', Name: ' .. ps.getPlayerName(source) .. ', not an authorized job type')
         if not silent then
             ps.notify(source, 'Access Denied: Authorized Personnel Only', 'error')

@@ -1,9 +1,18 @@
 local resourceName = tostring(GetCurrentResourceName())
 
+local function isDojJob(jobName)
+    if not jobName or not Config.DojJobs then return false end
+    for _, name in ipairs(Config.DojJobs) do
+        if name == jobName then return true end
+    end
+    return false
+end
+
 local function isAuthorizedJob(job)
     if not job then return false, nil end
     if job.type == Config.PoliceJobType then return true, 'leo' end
     if job.type == Config.MedicalJobType then return true, 'ems' end
+    if isDojJob(job.name) or (Config.DojJobType and job.type == Config.DojJobType) then return true, 'doj' end
     return false, nil
 end
 

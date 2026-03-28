@@ -23,15 +23,53 @@ Optional but HIGHLY RECOMMENDED:
 | Resource | Why |
 |----------|-----|
 | [ps-dispatch](https://github.com/Project-Sloth/ps-dispatch) | Dispatch integration |
+| [ps-multijob](https://github.com/Project-Sloth/ps-multijob) | Officers Bodycam |
 
 ## Installation
-No backwards compatibility with ps-mdtv1. 
+No backwards compatibility with ps-mdtv1.
 
-### 1. Import the database
+### 1. Add DOJ jobs to QBCore
+
+First, remove the default `judge` and `lawyer` entries from `qb-core/shared/jobs.lua`:
+
+```lua
+-- REMOVE THESE
+judge = { label = 'Honorary', defaultDuty = true, offDutyPay = false, grades = { ['0'] = { name = 'Judge', payment = 100 } } },
+lawyer = { label = 'Law Firm', defaultDuty = true, offDutyPay = false, grades = { ['0'] = { name = 'Associate', payment = 50 } } },
+```
+
+Then add the DOJ versions in their place:
+
+```lua
+judge = {
+    label = 'Department of Justice',
+    type = 'doj',
+    defaultDuty = true,
+    offDutyPay = false,
+    grades = {
+        ['0'] = { name = 'Clerk', payment = 75 },
+        ['1'] = { name = 'Magistrate', payment = 100 },
+        ['2'] = { name = 'Judge', isboss = true, payment = 150 },
+    },
+},
+lawyer = {
+    label = 'Law Firm',
+    type = 'doj',
+    defaultDuty = true,
+    offDutyPay = false,
+    grades = {
+        ['0'] = { name = 'Paralegal', payment = 50 },
+        ['1'] = { name = 'Associate', payment = 75 },
+        ['2'] = { name = 'Partner', isboss = true, payment = 125 },
+    },
+},
+```
+
+### 2. Import the database
 
 Run `sql/qbcore.sql` against your FiveM database. This creates all the tables the MDT needs. Use phpMyAdmin, HeidiSQL, or whatever database tool you prefer.
 
-### 2. Set your FiveManage API keys
+### 3. Set your FiveManage API keys
 
 Image uploads (mugshots, evidence photos, suspect photos) and activity log forwarding go through [FiveManage](https://www.fivemanage.com/). You need API keys from their site.
 
@@ -49,7 +87,7 @@ set ps_mdt_fivemanage_key_logs   "YOUR_LOGS_API_KEY_HERE"
 
 Both are optional. Without the images key you won't be able to upload any images. Without the logs key the audit trail still works locally in the database, it just won't forward to FiveManage.
 
-### 3. Build the frontend
+### 4. Build the frontend
 
 If you grabbed a release with `web/dist` already in it, skip this step.
 
@@ -61,7 +99,7 @@ npm install
 npm run build
 ```
 
-### 4. Add to server.cfg
+### 5. Add to server.cfg
 
 ```
 ensure ps_lib
@@ -85,11 +123,13 @@ Config.PoliceJobType = "leo"
 Config.PoliceJobs = { 'lspd', 'bcso', 'sahp', 'fib', 'gov' }
 
 Config.DojJobType = "doj"
-Config.DojJobs = { 'doj', 'lawyer' }
+Config.DojJobs = { 'lawyer', 'judge' }
 
 Config.MedicalJobType = "ems"
 Config.MedicalJobs = { 'ambulance' }
 ```
+
+DOJ access works two ways. Either the job name is in `Config.DojJobs`, or the job has `type = 'doj'` matching `Config.DojJobType`. You can use one or both.
 
 ### Keybind and command
 
@@ -231,13 +271,13 @@ For other resources to interact with the MDT.
 
 | Export | Parameters | Returns | Description |
 |--------|------------|---------|-------------|
-| `OpenMDT` | — | — | Opens the MDT interface for the current player |
-| `CloseMDT` | — | — | Closes the MDT and restores player controls |
-| `IsMDTOpen` | — | `boolean` | Returns whether the MDT is currently open |
+| `OpenMDT` | - | — | Opens the MDT interface for the current player |
+| `CloseMDT` | - | — | Closes the MDT and restores player controls |
+| `IsMDTOpen` | - | `boolean` | Returns whether the MDT is currently open |
 | `IsLEOJob` | `jobName: string?` | `boolean` | Checks if a job is law enforcement. If no argument is passed, checks the current player's job |
-| `isViewingCamera` | — | `boolean` | Returns whether the player is currently viewing a security camera feed |
-| `openComplaint` | — | — | Opens the standalone IA complaint form (works outside the MDT, useful for civilian resources) |
-| `openCivilianMDT` | — | — | Opens the MDT in civilian mode (profile + legislation view only). Use from phone apps, courthouse scripts, etc. |
+| `isViewingCamera` | - | `boolean` | Returns whether the player is currently viewing a security camera feed |
+| `openComplaint` | - | — | Opens the standalone IA complaint form (works outside the MDT, useful for civilian resources) |
+| `openCivilianMDT` | - | — | Opens the MDT in civilian mode (profile + legislation view only). Use from phone apps, courthouse scripts, etc. |
 
 ### Server Exports
 
@@ -245,8 +285,7 @@ For other resources to interact with the MDT.
 |--------|------------|---------|-------------|
 | `IsCidFelon` | `citizenid: string`, `cb: function?` | `boolean` | Checks if a citizen has any felony charges on record. Supports both callback and direct return |
 | `isRequestVehicle` | `vehicleId: number` | `boolean` | Checks if a vehicle was flagged for impound via the MDT. Consumes the entry on match |
-| `registerWeapon` | `citizenid: string`, `weaponName: string`, `serial: string`, `info: string?` | — | Registers a weapon in the MDT firearms registry with ownership history |
-
+| `registerWeapon` | `citizenid: string`, `weaponName: string`, `serial: string`, `info: string?` | - | Registers a weapon in the MDT firearms registry with ownership history |
 
 # 1of1 Servers - VPS & Dedicated Servers
 

@@ -267,7 +267,7 @@ ps.registerCallback(resourceName .. ':server:checkSOPAgreement', function(source
     -- Get current SOP version for this department
     local settings = MySQL.single.await('SELECT version, introduction, mission_statement FROM mdt_sop_settings WHERE job = ?', { jobName })
 
-    -- No SOP published yet — skip agreement
+    -- No SOP published yet - skip agreement
     if not settings or not settings.version or settings.version == 0 then
         return { agreed = true, introduction = '' }
     end

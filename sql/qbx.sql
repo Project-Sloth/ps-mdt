@@ -1210,3 +1210,117 @@ INSERT IGNORE INTO `mdt_sop_sections` (`category_id`, `title`, `content`, `sort_
 (11, 'K9 Unit',
  '<p><em>Work in Progress</em></p>',
  2);
+
+-- DOJ Court Cases
+CREATE TABLE IF NOT EXISTS `mdt_court_cases` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `case_number` varchar(30) NOT NULL DEFAULT '',
+  `title` varchar(255) NOT NULL,
+  `summary` text DEFAULT NULL,
+  `status` enum('pending','scheduled','in_trial','closed','dismissed','appealed') NOT NULL DEFAULT 'pending',
+  `case_type` enum('criminal','civil','appeal','motion') NOT NULL DEFAULT 'criminal',
+  `presiding_judge` varchar(50) DEFAULT NULL,
+  `presiding_judge_name` varchar(100) DEFAULT NULL,
+  `prosecutor` varchar(50) DEFAULT NULL,
+  `prosecutor_name` varchar(100) DEFAULT NULL,
+  `defense_attorney` varchar(50) DEFAULT NULL,
+  `defense_attorney_name` varchar(100) DEFAULT NULL,
+  `defendant_citizenid` varchar(50) DEFAULT NULL,
+  `defendant_name` varchar(100) DEFAULT NULL,
+  `hearing_date` datetime DEFAULT NULL,
+  `filed_date` datetime DEFAULT CURRENT_TIMESTAMP,
+  `closed_date` datetime DEFAULT NULL,
+  `linked_mdt_case_id` int(10) unsigned DEFAULT NULL,
+  `referred_from_report_id` int(10) unsigned DEFAULT NULL,
+  `notes` text DEFAULT NULL,
+  `created_by` varchar(50) NOT NULL,
+  `created_by_name` varchar(100) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_status` (`status`),
+  KEY `idx_defendant` (`defendant_citizenid`),
+  KEY `idx_hearing_date` (`hearing_date`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- DOJ Court Orders
+CREATE TABLE IF NOT EXISTS `mdt_court_orders` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `order_number` varchar(30) NOT NULL DEFAULT '',
+  `court_case_id` int(10) unsigned DEFAULT NULL,
+  `type` enum('restraining_order','subpoena','bail_conditions','search_warrant','arrest_warrant','other') NOT NULL,
+  `title` varchar(255) NOT NULL,
+  `content` text NOT NULL,
+  `target_citizenid` varchar(50) DEFAULT NULL,
+  `target_name` varchar(100) DEFAULT NULL,
+  `status` enum('active','expired','revoked') NOT NULL DEFAULT 'active',
+  `issued_by` varchar(50) NOT NULL,
+  `issued_by_name` varchar(100) DEFAULT NULL,
+  `effective_date` datetime DEFAULT CURRENT_TIMESTAMP,
+  `expiry_date` datetime DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_court_case` (`court_case_id`),
+  KEY `idx_target` (`target_citizenid`),
+  KEY `idx_status` (`status`),
+  KEY `idx_type` (`type`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- DOJ Legal Documents
+CREATE TABLE IF NOT EXISTS `mdt_legal_documents` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `court_case_id` int(10) unsigned DEFAULT NULL,
+  `type` enum('brief','motion','ruling','opinion','plea_deal','sentencing','other') NOT NULL,
+  `title` varchar(255) NOT NULL,
+  `content` longtext DEFAULT NULL,
+  `status` enum('draft','filed','approved','rejected') NOT NULL DEFAULT 'draft',
+  `author_citizenid` varchar(50) NOT NULL,
+  `author_name` varchar(100) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_court_case` (`court_case_id`),
+  KEY `idx_author` (`author_citizenid`),
+  KEY `idx_type` (`type`),
+  KEY `idx_status` (`status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- DOJ Warrant Requests (separate from mdt_reports_warrants)
+CREATE TABLE IF NOT EXISTS `mdt_warrant_requests` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `citizenid` varchar(50) NOT NULL,
+  `citizen_name` varchar(100) NOT NULL DEFAULT '',
+  `requesting_officer` varchar(50) NOT NULL,
+  `officer_name` varchar(100) NOT NULL DEFAULT '',
+  `charges` text DEFAULT NULL,
+  `reason` text NOT NULL,
+  `linked_report_id` int(10) unsigned DEFAULT NULL,
+  `status` enum('pending','approved','denied') NOT NULL DEFAULT 'pending',
+  `reviewer_citizenid` varchar(50) DEFAULT NULL,
+  `reviewer_name` varchar(100) DEFAULT NULL,
+  `review_reason` text DEFAULT NULL,
+  `reviewed_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_citizenid` (`citizenid`),
+  KEY `idx_status` (`status`),
+  KEY `idx_requesting_officer` (`requesting_officer`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- DOJ Warrant Reviews (audit log)
+CREATE TABLE IF NOT EXISTS `mdt_warrant_reviews` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `warrant_request_id` int(10) unsigned NOT NULL,
+  `reviewer_citizenid` varchar(50) NOT NULL,
+  `reviewer_name` varchar(100) DEFAULT NULL,
+  `decision` enum('approved','denied') NOT NULL,
+  `reason` text DEFAULT NULL,
+  `reviewed_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_warrant_request` (`warrant_request_id`),
+  KEY `idx_reviewer` (`reviewer_citizenid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Add lawyer_requested column to mdt_reports
+ALTER TABLE `mdt_reports` ADD COLUMN IF NOT EXISTS `lawyer_requested` tinyint(1) NOT NULL DEFAULT 0;

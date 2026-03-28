@@ -1,0 +1,63 @@
+{
+    "name": "@types/leaflet",
+    "version": "1.9.20",
+    "description": "TypeScript definitions for leaflet",
+    "homepage": "https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/leaflet",
+    "license": "MIT",
+    "contributors": [
+        {
+            "name": "Alejandro Sánchez",
+            "githubUsername": "alejo90",
+            "url": "https://github.com/alejo90"
+        },
+        {
+            "name": "Arne Schubert",
+            "githubUsername": "atd-schubert",
+            "url": "https://github.com/atd-schubert"
+        },
+        {
+            "name": "Michael Auer",
+            "githubUsername": "mcauer",
+            "url": "https://github.com/mcauer"
+        },
+        {
+            "name": "Roni Karilkar",
+            "githubUsername": "ronikar",
+            "url": "https://github.com/ronikar"
+        },
+        {
+            "name": "Vladimir Dashukevich",
+            "githubUsername": "life777",
+            "url": "https://github.com/life777"
+        },
+        {
+            "name": "Henry Thasler",
+            "githubUsername": "henrythasler",
+            "url": "https://github.com/henrythasler"
+        },
+        {
+            "name": "Colin Doig",
+            "githubUsername": "captain-igloo",
+            "url": "https://github.com/captain-igloo"
+        },
+        {
+            "name": "Hugo Sales",
+            "githubUsername": "someonewithpc",
+            "url": "https://github.com/someonewithpc"
+        }
+    ],
+    "main": "",
+    "types": "index.d.ts",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/DefinitelyTyped/DefinitelyTyped.git",
+        "directory": "types/leaflet"
+    },
+    "scripts": {},
+    "dependencies": {
+        "@types/geojson": "*"
+    },
+    "peerDependencies": {},
+    "typesPublisherContentHash": "6129f7d1b7c45052292fd02a136a3cdfe14399eb5d7a026e642a7d849492bd0a",
+    "typeScriptVersion": "5.1"
+}

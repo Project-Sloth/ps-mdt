@@ -153,7 +153,8 @@ end)
 
 local yjsPendingBroadcasts = {}
 
-RegisterNetEvent(resourceName .. ':server:collabSyncYjs', function(reportId, update)
+RegisterNetEvent(resourceName .. ':server:collabSyncYjs')
+AddEventHandler(resourceName .. ':server:collabSyncYjs', function(reportId, update)
     local src = source
     if not CheckAuth(src) then return end
 
@@ -204,7 +205,8 @@ RegisterNetEvent(resourceName .. ':server:collabSyncYjs', function(reportId, upd
     end
 end)
 
-RegisterNetEvent(resourceName .. ':server:collabSyncData', function(reportId, dataType, data)
+RegisterNetEvent(resourceName .. ':server:collabSyncData')
+AddEventHandler(resourceName .. ':server:collabSyncData', function(reportId, dataType, data)
     local src = source
     if not CheckAuth(src) then return end
 

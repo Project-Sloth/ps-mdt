@@ -1,0 +1,63 @@
+{
+  "name": "@tanstack/query-devtools",
+  "version": "5.81.2",
+  "description": "Developer tools to interact with and visualize the TanStack Query cache",
+  "author": "tannerlinsley",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/TanStack/query.git",
+    "directory": "packages/query-devtools"
+  },
+  "homepage": "https://tanstack.com/query",
+  "funding": {
+    "type": "github",
+    "url": "https://github.com/sponsors/tannerlinsley"
+  },
+  "type": "module",
+  "main": "./build/index.cjs",
+  "module": "./build/index.js",
+  "types": "./build/index.d.ts",
+  "browser": {},
+  "exports": {
+    "@tanstack/custom-condition": "./src/index.ts",
+    "solid": {
+      "development": "./build/index.js",
+      "import": "./build/index.js"
+    },
+    "development": {
+      "import": {
+        "types": "./build/index.d.ts",
+        "default": "./build/dev.js"
+      },
+      "require": "./build/dev.cjs"
+    },
+    "import": {
+      "types": "./build/index.d.ts",
+      "default": "./build/index.js"
+    },
+    "require": "./build/index.cjs"
+  },
+  "files": [
+    "build",
+    "src",
+    "!src/__tests__"
+  ],
+  "devDependencies": {
+    "@kobalte/core": "^0.13.4",
+    "@solid-primitives/keyed": "^1.2.2",
+    "@solid-primitives/resize-observer": "^2.0.26",
+    "@solid-primitives/storage": "^1.3.11",
+    "@tanstack/match-sorter-utils": "^8.19.4",
+    "clsx": "^2.1.1",
+    "goober": "^2.1.16",
+    "npm-run-all2": "^5.0.0",
+    "solid-js": "^1.9.5",
+    "solid-transition-group": "^0.2.3",
+    "superjson": "^2.2.1",
+    "tsup-preset-solid": "^2.2.0",
+    "vite-plugin-solid": "^2.11.6",
+    "@tanstack/query-core": "5.81.2"
+  },
+  "scripts": {}
+}

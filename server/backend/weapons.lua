@@ -424,7 +424,8 @@ do
 end
 
 -- Weapon Self-Register (server event from 3rd eye)
-RegisterNetEvent(resourceName .. ':server:selfRegisterWeapon', function(serial, imageurl, notes, owner, weapClass, weapModel)
+RegisterNetEvent(resourceName .. ':server:selfRegisterWeapon')
+AddEventHandler(resourceName .. ':server:selfRegisterWeapon', function(serial, imageurl, notes, owner, weapClass, weapModel)
     local src = source
     if not serial then return end
 

@@ -130,8 +130,8 @@ Config.PoliceJobs = {
 
 Config.DojJobType = "doj"
 Config.DojJobs = {
-    'doj',
     'lawyer',
+    'judge',
 }
 
 Config.MedicalJobType = "ems"
@@ -262,7 +262,7 @@ Config.ManagementPermissions = {
     'management_activity',
 }
 
--- Bodycam Settings
+-- Bodycam Settings (override defaults if needed, remove to use built-in defaults)
 Config.Bodycam = {
     DutyEvent = 'QBCore:Server:OnJobUpdate',
     DutyEventMode = 'qbcore',

@@ -1,12 +1,19 @@
 local resourceName = tostring(GetCurrentResourceName())
 
--- AUTH -----------------------------------------------
+local function _isDojJob(jobName)
+    if not jobName or not Config.DojJobs then return false end
+    for _, name in ipairs(Config.DojJobs) do
+        if name == jobName then return true end
+    end
+    return false
+end
 
--- Job and Duty Check
 RegisterNUICallback('checkAuth', function(_, cb)
     local jobType = ps.getJobType()
-    local isAuthorized = jobType == Config.PoliceJobType or jobType == Config.MedicalJobType
-    local mdtJobType = jobType == Config.MedicalJobType and 'ems' or 'leo'
+    local jobName = ps.getJob() and ps.getJob().name or ''
+    local isDoj = _isDojJob(jobName) or (Config.DojJobType and jobType == Config.DojJobType)
+    local isAuthorized = jobType == Config.PoliceJobType or jobType == Config.MedicalJobType or isDoj
+    local mdtJobType = isDoj and 'doj' or (jobType == Config.MedicalJobType and 'ems' or 'leo')
     local onDuty = ps.getJobDuty() or false
     local playerData = ps.getPlayerData()
 
@@ -16,14 +23,14 @@ RegisterNUICallback('checkAuth', function(_, cb)
     end
 
     cb({
-        authorized = isCivilian or (isAuthorized and onDuty),
+        authorized = isCivilian or (isAuthorized and (isDoj or onDuty)),
         playerData = type(playerData) == 'table' and {
             citizenid = playerData.citizenid,
             job = playerData.job,
             charinfo = playerData.charinfo,
         } or nil,
         isLEO = isAuthorized,
-        onDuty = isCivilian or onDuty or false,
+        onDuty = isCivilian or isDoj or onDuty or false,
         jobType = isCivilian and 'civilian' or mdtJobType,
         isCivilian = isCivilian,
     })
@@ -40,11 +47,12 @@ RegisterNUICallback('getMyPermissions', function(_, cb)
     cb(result or { permissions = {}, isBoss = false })
 end)
 
--- Update Auth NUI Wrapper
 function NUIUpdateAuth()
     local jobType = ps.getJobType()
-    local isAuthorized = jobType == Config.PoliceJobType or jobType == Config.MedicalJobType
-    local mdtJobType = jobType == Config.MedicalJobType and 'ems' or 'leo'
+    local jobName = ps.getJob() and ps.getJob().name or ''
+    local isDoj = _isDojJob(jobName) or (Config.DojJobType and jobType == Config.DojJobType)
+    local isAuthorized = jobType == Config.PoliceJobType or jobType == Config.MedicalJobType or isDoj
+    local mdtJobType = isDoj and 'doj' or (jobType == Config.MedicalJobType and 'ems' or 'leo')
     local playerData = ps.getPlayerData()
     SendNUI('updateAuth', {
         authorized = isAuthorized and (ps.getJobDuty() or false),
@@ -96,7 +104,6 @@ RegisterNUICallback('getReportStatistics', function(_, cb)
         return
     end
     local reportStats = ps.callback(resourceName .. ':server:getReportStatistics')
-    -- ps.debug('[getReportStatistics] Triggered NUI callback on client', reportStats)
     cb(reportStats)
 end)
 
@@ -177,7 +184,6 @@ RegisterNUICallback('getRecentReports', function(data, cb)
     local page = data and data.page or nil
     local limit = data and data.limit or nil
     local recentReports = ps.callback(resourceName .. ':server:getRecentReports', page, limit)
-    -- ps.debug('[getRecentReports] Recent Reports Data:', recentReports)
     cb(recentReports)
 end)
 

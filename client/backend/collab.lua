@@ -56,7 +56,6 @@ RegisterNUICallback('pollYjsUpdates', function(data, cb)
     cb({ updates = batch })
 end)
 
--- Structured data update from server
 RegisterNetEvent(resourceName .. ':client:reportDataUpdate', function(data)
     SendNUI('reportDataUpdate', data)
 end)

@@ -1,5 +1,16 @@
 local resourceName = tostring(GetCurrentResourceName())
 
+local function getEffectiveJobType(src)
+    local jobType = ps.getJobType(src)
+    local jobName = ps.getJobName(src)
+    if Config.DojJobs then
+        for _, name in ipairs(Config.DojJobs) do
+            if name == jobName then return 'doj' end
+        end
+    end
+    if Config.DojJobType and jobType == Config.DojJobType then return 'doj' end
+    return jobType
+end
 
 local function collectCitizenIds(reportData)
     local citizenids = {}
@@ -30,11 +41,13 @@ local function checkReportAccess(src, reportId)
 
     local identifier = ps.getIdentifier(src)
     local job = ps.getJobName(src)
-    local jobType = ps.getJobType(src)
+    local jobType = getEffectiveJobType(src)
 
     if not identifier then
         return false
     end
+
+    if jobType == 'doj' then return true end
 
     local hasAccess = MySQL.query.await([[
         SELECT mr.id
@@ -177,7 +190,11 @@ end
 local function buildReportAccessClause()
     return [[
         (
-            (mrr.reportid IS NULL AND ? = 'leo')
+            (? = 'doj' AND NOT EXISTS(
+                SELECT 1 FROM mdt_reports_restrictions mrr_ems
+                WHERE mrr_ems.reportid = mr.id AND mrr_ems.type = 'jobtype' AND mrr_ems.identifier = 'ems'
+            ))
+            OR (mrr.reportid IS NULL AND (? = 'leo' OR ? = 'ems'))
             OR (mrr.type = 'citizenid' AND mrr.identifier = ?)
             OR (mrr.type = 'job' AND mrr.identifier = ?)
             OR (mrr.type = 'jobtype' AND mrr.identifier = ?)
@@ -192,13 +209,12 @@ ps.registerCallback(resourceName .. ':server:getReports', function(source, page,
 
     local identifier = ps.getIdentifier(src)
     local job = ps.getJobName(src)
-    local jobType = ps.getJobType(src)
+    local jobType = getEffectiveJobType(src)
 
 	local pageNumber = tonumber(page) or 1
 	pageNumber = math.max(1, pageNumber)
 	local limit = 20
 	local offset = (pageNumber - 1) * limit
-
 
 	local filterClause, filterValues = buildReportFilterClause(filters)
 	filterClause = filterClause or ''
@@ -230,7 +246,7 @@ ps.registerCallback(resourceName .. ':server:getReports', function(source, page,
 		LIMIT %d
 		OFFSET %d
 	]]):format(buildReportAccessClause(), filterClause, limit, offset)
-	local params = { jobType, identifier, job, jobType }
+	local params = { jobType, jobType, jobType, identifier, job, jobType }
 	for _, value in ipairs(filterValues or {}) do
 		params[#params + 1] = value
 	end
@@ -244,7 +260,7 @@ ps.registerCallback(resourceName..':server:getReport', function(source, reportid
 
 	local identifier = ps.getIdentifier(src)
     local job = ps.getJobName(src)
-    local jobType = ps.getJobType(src)
+    local jobType = getEffectiveJobType(src)
 
     local result = MySQL.query.await([[
         SELECT
@@ -963,7 +979,7 @@ ps.registerCallback(resourceName..':server:getReportAnalytics', function(source,
 
     local identifier = ps.getIdentifier(src)
     local job = ps.getJobName(src)
-    local jobType = ps.getJobType(src)
+    local jobType = getEffectiveJobType(src)
 
     local filterClause, filterValues = buildReportFilterClause(filters)
     filterClause = filterClause or ''
@@ -991,7 +1007,7 @@ ps.registerCallback(resourceName..':server:getReportAnalytics', function(source,
         WHERE %s%s
           AND mr.type = 'Incident Report'
 	]]):format(accessClause, filterClause)
-	local incidentParams = { jobType, identifier, job, jobType }
+	local incidentParams = { jobType, jobType, jobType, identifier, job, jobType }
 	for _, value in ipairs(filterValues or {}) do
 		incidentParams[#incidentParams + 1] = value
 	end
@@ -1004,7 +1020,7 @@ ps.registerCallback(resourceName..':server:getReportAnalytics', function(source,
         LEFT JOIN mdt_reports_restrictions AS mrr ON mr.id = mrr.reportid
         WHERE %s%s
 	]]):format(accessClause, filterClause)
-	local arrestParams = { jobType, identifier, job, jobType }
+	local arrestParams = { jobType, jobType, jobType, identifier, job, jobType }
 	for _, value in ipairs(filterValues or {}) do
 		arrestParams[#arrestParams + 1] = value
 	end
@@ -1018,7 +1034,7 @@ ps.registerCallback(resourceName..':server:getReportAnalytics', function(source,
         WHERE %s%s
           AND mw.expirydate >= NOW()
 	]]):format(accessClause, filterClause)
-	local warrantParams = { jobType, identifier, job, jobType }
+	local warrantParams = { jobType, jobType, jobType, identifier, job, jobType }
 	for _, value in ipairs(filterValues or {}) do
 		warrantParams[#warrantParams + 1] = value
 	end

@@ -1,0 +1,18 @@
+{
+	"version": 3,
+	"file": "index.d.ts",
+	"names": [
+		"PrintOptions",
+		"print"
+	],
+	"sources": [
+		"../src/types.d.ts",
+		"../src/index.js"
+	],
+	"sourcesContent": [
+		null,
+		null
+	],
+	"mappings": ";kBAsEiBA,YAAYA;;;;;;;;;;iBC/CbC,KAAKA",
+	"ignoreList": []
+}
