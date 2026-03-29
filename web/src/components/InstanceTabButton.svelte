@@ -35,6 +35,19 @@
 			onInstanceClose(instance.id, syntheticEvent);
 		}
 	}
+
+	function handleAuxClick(event: MouseEvent): void {
+		if (event.button === 1) {
+			event.preventDefault();
+			onInstanceClose(instance.id, event);
+		}
+	}
+
+	function handleMouseDown(event: MouseEvent): void {
+		if (event.button === 1) {
+			event.preventDefault();
+		}
+	}
 </script>
 
 <div class="instance-tab-container">
@@ -42,6 +55,8 @@
 		class="instance-tab"
 		class:active={instance.isActive}
 		onclick={handleInstanceClick}
+		onauxclick={handleAuxClick}
+		onmousedown={handleMouseDown}
 		aria-label="Switch to {instance.currentTab}"
 	>
 		<span class="tab-icon material-icons">{tabIcon}</span>
