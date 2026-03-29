@@ -1,0 +1,7 @@
+# Dependencies
+/web/node_modules
+
+# Editor
+.vscode/
+.cursor/
+.claude/
