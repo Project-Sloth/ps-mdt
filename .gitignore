@@ -1,6 +1,8 @@
 # Dependencies
 /web/node_modules
+/web/dist
 
 # Editor
 .vscode/
 .cursor/
+.idea/
