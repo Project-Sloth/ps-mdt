@@ -1,21 +1,9 @@
-import type { PlayerData } from "./../interfaces/IPlayerData";
-import { fetchNui } from "../utils/fetchNui";
-import { debugError } from "../utils/debug";
-import { TIMING } from "../constants";
-import { NUI_EVENTS } from "../constants/nuiEvents";
-import type { AuthUpdateData } from "../interfaces/IUser";
-import type { JobType } from "../interfaces/IUser";
-
-export interface AuthState {
-	isAuthorized: boolean;
-	isCheckingAuth: boolean;
-	authError: string;
-	playerData: PlayerData | null;
-	isLEO: boolean;
-	onDuty: boolean;
-	showLoadingScreen: boolean;
-	showInterface: boolean;
-}
+import type { PlayerData } from "@/interfaces/IPlayerData";
+import { fetchNui } from "@/utils/fetchNui";
+import { debugError } from "@/utils/debug";
+import { TIMING } from "@/constants/index";
+import { NUI_EVENTS } from "@/constants/nuiEvents";
+import type { AuthUpdateData, JobType } from "@/interfaces/IUser";
 
 export interface PlayerInfo {
 	rank: string;
@@ -43,7 +31,7 @@ export const MOCK_AUTH_DATA: AuthUpdateData = {
 	onDuty: true,
 	permissions: [],
 	isBoss: true,
-	jobType: 'leo',
+	jobType: "leo",
 };
 
 /** Creates the authentication service */
@@ -58,8 +46,9 @@ export function createAuthService() {
 	let showInterface = $state(false);
 	let permissions = $state<string[]>([]);
 	let isBoss = $state(false);
-	let jobType = $state<JobType>('leo');
+	let jobType = $state<JobType>("leo");
 	let isCivilian = $state(false);
+	let isLoadingPermissions = $state(false);
 
 	const playerInfo = $derived((): PlayerInfo => {
 		if (!playerData) {
@@ -105,7 +94,7 @@ export function createAuthService() {
 		isAuthorized = data.authorized || false;
 		permissions = data.permissions || [];
 		isBoss = data.isBoss || false;
-		jobType = data.jobType || 'leo';
+		jobType = data.jobType || "leo";
 		isCivilian = data.isCivilian || false;
 
 		// Civilians are always authorized for their limited view
@@ -201,17 +190,26 @@ export function createAuthService() {
 			}, TIMING.offDutyLoadingDuration);
 		}
 
-		// Load permissions and color config after auth succeeds
-		if (isAuthorized && onDuty) {
+		if (
+			isAuthorized &&
+			onDuty &&
+			!isLoadingPermissions &&
+			permissions.length === 0
+		) {
 			loadPermissions();
-			loadColorConfig();
 		}
 	}
 
 	/** Fetches the current player's permissions from the server */
-	async function loadPermissions(): Promise<void> {
+	async function loadPermissions(force = false): Promise<void> {
+		if (isLoadingPermissions || (!force && permissions.length > 0)) return;
+
 		try {
-			const response = await fetchNui<{ permissions?: string[]; isBoss?: boolean }>(
+			isLoadingPermissions = true;
+			const response = await fetchNui<{
+				permissions?: string[];
+				isBoss?: boolean;
+			}>(
 				NUI_EVENTS.AUTH.GET_MY_PERMISSIONS,
 				{},
 				{ permissions: [], isBoss: true },
@@ -220,30 +218,10 @@ export function createAuthService() {
 			isBoss = response?.isBoss || false;
 		} catch (error) {
 			debugError("Failed to load permissions:", error);
-			// On failure, default to no permissions (safe)
 			permissions = [];
 			isBoss = false;
-		}
-	}
-
-	/** Loads department color config and applies CSS variable overrides */
-	async function loadColorConfig(): Promise<void> {
-		try {
-			const config = await fetchNui<{ accent?: string; accentText?: string; background?: string; cardBackground?: string; buttonPrimary?: string } | null>(
-				NUI_EVENTS.SETTINGS.GET_COLOR_CONFIG,
-				{},
-				null,
-			);
-			if (config && config.accent) {
-				const root = document.documentElement;
-				root.style.setProperty("--accent-rgb", config.accent);
-				if (config.accentText) root.style.setProperty("--accent-text-rgb", config.accentText);
-				if (config.background) root.style.setProperty("--dark-bg", `rgb(${config.background})`);
-				if (config.cardBackground) root.style.setProperty("--card-dark-bg", `rgb(${config.cardBackground})`);
-				if (config.buttonPrimary) root.style.setProperty("--btn-primary", `rgb(${config.buttonPrimary})`);
-			}
-		} catch {
-			// Non-critical - default CSS variables will apply
+		} finally {
+			isLoadingPermissions = false;
 		}
 	}
 
@@ -323,6 +301,9 @@ export function createAuthService() {
 		get playerInfo() {
 			return playerInfo;
 		},
+		get isLoadingPermissions() {
+			return isLoadingPermissions;
+		},
 		get permissions() {
 			return permissions;
 		},
@@ -342,9 +323,6 @@ export function createAuthService() {
 
 		/** Performs initial authentication check with server */
 		checkAuth,
-
-		/** Handles auth completion and updates UI state */
-		handleAuthComplete,
 
 		/** Sends request to go on duty */
 		goOnDuty,
@@ -376,6 +354,7 @@ export interface AuthService {
 	readonly showLoadingScreen: boolean;
 	readonly showInterface: boolean;
 	readonly playerInfo: () => PlayerInfo;
+	readonly isLoadingPermissions: boolean;
 	readonly permissions: string[];
 	readonly isBoss: boolean;
 	readonly jobType: JobType;
@@ -392,5 +371,3 @@ export interface AuthService {
 	hasAnyPermission: (...perms: string[]) => boolean;
 	hasRawPermission: (perm: string) => boolean;
 }
-
-export type AuthServiceType = ReturnType<typeof createAuthService>;

@@ -1,8 +1,9 @@
 <script lang="ts">
 	import { onMount } from "svelte";
-	import { fetchNui } from "../../utils/fetchNui";
-	import { isEnvBrowser } from "../../utils/misc";
-	import { NUI_EVENTS } from "../../constants/nuiEvents";
+	import { fetchNui } from "@/utils/fetchNui";
+	import { isEnvBrowser } from "@/utils/misc";
+	import { NUI_EVENTS } from "@/constants/nuiEvents";
+	import { settingsService } from "@/services/settingsService.svelte";
 
 	interface ColorConfig {
 		accent: string;
@@ -11,7 +12,6 @@
 		cardBackground: string;
 		buttonPrimary: string;
 	}
-
 	const DEFAULT_LEO: ColorConfig = {
 		accent: "59, 130, 246",
 		accentText: "147, 197, 253",
@@ -61,11 +61,11 @@
 	let selectedTheme: string | null = $state(null);
 
 	let hasChanges = $derived(
-		config.accent !== savedConfig.accent ||
-		config.accentText !== savedConfig.accentText ||
-		config.background !== savedConfig.background ||
-		config.cardBackground !== savedConfig.cardBackground ||
-		config.buttonPrimary !== savedConfig.buttonPrimary
+			config.accent !== savedConfig.accent ||
+			config.accentText !== savedConfig.accentText ||
+			config.background !== savedConfig.background ||
+			config.cardBackground !== savedConfig.cardBackground ||
+			config.buttonPrimary !== savedConfig.buttonPrimary
 	);
 
 	function showStatus(text: string, type: "success" | "error" = "success") {
@@ -123,23 +123,24 @@
 
 	async function loadConfig() {
 		if (isEnvBrowser()) return;
-		try {
-			isLoading = true;
-			const response = await fetchNui<ColorConfig | null>(
-				NUI_EVENTS.SETTINGS.GET_COLOR_CONFIG,
-				{},
-				null,
-			);
-			if (response && typeof response === "object" && response.accent) {
-				config = { ...DEFAULT_LEO, ...response };
-				savedConfig = { ...config };
-				applyPreview();
-			}
-		} catch (error) {
-			console.error("Failed to load color config:", error);
-		} finally {
-			isLoading = false;
+
+		if (settingsService.isLoading) return;
+
+		if (!settingsService.colorConfig) {
+			await settingsService.loadColorConfig();
 		}
+
+		if (settingsService.error) {
+			showStatus(settingsService.error, "error");
+			return;
+		}
+
+		if (settingsService.colorConfig) {
+			config = { ...DEFAULT_LEO, ...settingsService.colorConfig };
+			savedConfig = { ...config };
+			applyPreview();
+		}
+
 	}
 
 	async function saveConfig() {
@@ -151,12 +152,13 @@
 		try {
 			isSaving = true;
 			const result = await fetchNui<{ success: boolean; message?: string }>(
-				NUI_EVENTS.SETTINGS.SAVE_COLOR_CONFIG,
-				config,
-				{ success: false },
+					NUI_EVENTS.SETTINGS.SAVE_COLOR_CONFIG,
+					config,
+					{ success: false },
 			);
 			if (result?.success) {
 				savedConfig = { ...config };
+				settingsService.setColorConfig(config);
 				showStatus("Colors saved - applies to all officers on next MDT open");
 			} else {
 				showStatus(result?.message || "Failed to save colors", "error");
@@ -186,9 +188,9 @@
 					{#each COLOR_FIELDS as field}
 						<div class="color-tile">
 							<input
-								type="color"
-								value={rgbToHex(config[field.key])}
-								oninput={(e) => updateField(field.key, (e.target as HTMLInputElement).value)}
+									type="color"
+									value={rgbToHex(config[field.key])}
+									oninput={(e) => updateField(field.key, (e.target as HTMLInputElement).value)}
 							/>
 							<span class="tile-name">{field.label}</span>
 							<span class="tile-desc">{field.description}</span>
@@ -203,9 +205,9 @@
 				<div class="themes-hz">
 					{#each THEMES as theme}
 						<button
-							class="theme-card"
-							class:active={selectedTheme === theme.name}
-							onclick={() => applyTheme(theme)}
+								class="theme-card"
+								class:active={selectedTheme === theme.name}
+								onclick={() => applyTheme(theme)}
 						>
 							<div class="theme-preview" style="background: rgb({theme.config.background})">
 								<div class="theme-sidebar" style="background: rgb({theme.config.cardBackground})">
