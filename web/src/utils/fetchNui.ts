@@ -58,7 +58,7 @@ export async function fetchNui<T = any>(
 
 		throw new Error(`HTTP error! status: ${resp.status}`);
 	} catch (err) {
-		if (mockData !== undefined) {
+		if (isEnvBrowser() && mockData !== undefined) {
 			return mockData;
 		}
 		if (err instanceof DOMException && err.name === "AbortError") {
