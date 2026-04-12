@@ -107,12 +107,15 @@
 	let copyNotice = $state("");
 	let copyTimeout: ReturnType<typeof setTimeout> | null = null;
 
+	// im sure there's a better more streamlined way to do this, but here's a bandaid.
 	let citizenPage = $state(1);
-	let citizenPerPage = $state(25);
+	let citizenPerPage = $state(20);
+	let citizenTotalPages = $state(1); // how many pages exist
 
-	let allFilteredCitizens = $derived.by(() => {
+	let filteredCitizens = $derived.by(() => {
 		const query = searchQuery.trim().toLowerCase();
 		if (!query) return citizens;
+
 		return citizens.filter(({ firstName, lastName, cid, phone }) =>
 			[firstName, lastName, cid, phone].some((val) =>
 				val?.toLowerCase().includes(query),
@@ -120,11 +123,12 @@
 		);
 	});
 
-	let citizenTotalPages = $derived(Math.max(1, Math.ceil(allFilteredCitizens.length / citizenPerPage)));
-
-	let filteredCitizens = $derived.by(() => {
-		const start = (citizenPage - 1) * citizenPerPage;
-		return allFilteredCitizens.slice(start, start + citizenPerPage);
+	// auto calls fetchCitizens for citizenpage
+	$effect(() => {
+		citizenPage;
+		if (!isEnvBrowser()) {
+			fetchCitizens();
+		}
 	});
 
 	// Reset to page 1 when search changes
@@ -136,11 +140,16 @@
 	async function fetchCitizens() {
 		loading = true;
 		try {
-			const result = await fetchNui(NUI_EVENTS.CITIZEN.GET_CITIZENS);
-			citizens = Array.isArray(result) ? result : [];
+			const result = await fetchNui(NUI_EVENTS.CITIZEN.GET_CITIZENS, {
+				page: citizenPage
+			}); // this shit makes the whole world go round
+			
+			citizens = Array.isArray(result) ? result : []; // this shit shows you the world spinning
+			citizenTotalPages = Number(result?.totalPages) || 1;
 		} catch (error) {
 			globalNotifications.error("Failed to fetch citizens");
 			citizens = [];
+			citizenTotalpages = 1;
 		}
 		loading = false;
 	}
@@ -156,7 +165,6 @@
 			];
 			return;
 		}
-		await fetchCitizens();
 	});
 
 	useNuiEvent<Citizen[]>(NUI_EVENTS.CITIZEN.UPDATE_CITIZENS, (data) => {
