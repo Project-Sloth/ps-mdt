@@ -84,16 +84,23 @@ local function safeQuery(query, params)
     return rows or {}
 end
 
--- getCitizens - pulls citizens from database with pagination support
+-- getCitizens - pulls citizens from database with pagination support - this shit is broken
+-- this shit is now fixed. 
 ps.registerCallback(resourceName .. ':server:getCitizens', function(source, page)
     local src = source
-    if not CheckAuth(src) then return {} end
+    if not CheckAuth(src) then
+        --added data to actually be pulled
+        return { data = {}, total = 0, totalPages = 1, page = 1, limit = 20 }
+    end
+
     local startTime = os.clock()
-    page = page or 1 -- Default to page 1 if not provided
+    page = tonumber(page) or 1
     local limit = Config.Pagination and Config.Pagination.Citizens or 20
     local offset = (page - 1) * limit
 
-    -- Main query with pagination
+    local total = MySQL.scalar.await('SELECT COUNT(*) FROM players') or 0
+    local totalPages = math.max(1, math.ceil(total / limit))
+
     local query = [[
         SELECT mp.id, p.citizenid, JSON_UNQUOTE(JSON_EXTRACT(p.charinfo, '$.firstname')) AS firstname,
         JSON_UNQUOTE(JSON_EXTRACT(p.charinfo, '$.lastname')) AS lastname,
@@ -104,10 +111,21 @@ ps.registerCallback(resourceName .. ':server:getCitizens', function(source, page
         FROM players AS p
         LEFT JOIN mdt_profiles AS mp
         ON CONVERT(p.citizenid USING utf8mb4) COLLATE utf8mb4_general_ci = CONVERT(mp.citizenid USING utf8mb4) COLLATE utf8mb4_general_ci
+        ORDER BY JSON_UNQUOTE(JSON_EXTRACT(p.charinfo, '$.lastname')) ASC,
+                 JSON_UNQUOTE(JSON_EXTRACT(p.charinfo, '$.firstname')) ASC
         LIMIT ? OFFSET ?
     ]]
+
     local result = safeQuery(query, { limit, offset })
-    if not result or #result == 0 then return {} end
+    if not result or #result == 0 then
+        return { --same shit different row
+            data = {},
+            total = total,
+            totalPages = totalPages,
+            page = page,
+            limit = limit
+        }
+    end
 
     local citizenids = {}
     for _, v in ipairs(result) do
@@ -116,7 +134,7 @@ ps.registerCallback(resourceName .. ':server:getCitizens', function(source, page
         end
     end
 
-    -- Wrap flags in pcall since it queries mdt_reports_warrants / mdt_bolos which may not exist
+    -- Wrap flags in pcall since it queries mdt_reports_warrants / mdt_bolos which may not exist    
     local ok, flagsByCid = pcall(collectCitizenFlags, citizenids)
     if not ok then
         ps.warn('[getCitizens] collectCitizenFlags failed: ' .. tostring(flagsByCid))
@@ -167,8 +185,8 @@ ps.registerCallback(resourceName .. ':server:getCitizens', function(source, page
         end
     end
 
-    for _, v in ipairs(result) do
-        v.id = _
+    for i, v in ipairs(result) do
+        v.id = i
         v.cid = v.citizenid
         v.firstName = v.firstname
         v.lastName = v.lastname
@@ -182,15 +200,18 @@ ps.registerCallback(resourceName .. ':server:getCitizens', function(source, page
         v.arrests = arrestCounts[v.citizenid] or 0
         v.flags = flagsByCid[v.citizenid] or {}
     end
+
     local endTime = os.clock()
     local elapsedTime = (endTime - startTime) * 1000
     ps.debug(string.format("getCitizens callback executed in %.2f ms for page %d", elapsedTime, page))
-
-    if result[1] then
-        ps.debug('[getCitizens] Sample citizen data structure:', result[1])
-    end
-
-    return result
+    --no more sample citizen stuff.
+    return {
+        data = result,
+        total = total,
+        totalPages = totalPages,
+        page = page,
+        limit = limit
+    }
 end)
 
 -- searchPlayers - searches the database for citizens by provided query (first/last name, citizenid, phone number, occupation)
