@@ -635,6 +635,16 @@ ps.registerCallback(resourceName .. ':server:updateCitizenLicense', function(sou
     metadata.licences[licenseType] = enabled
 
     MySQL.update.await('UPDATE players SET metadata = ? WHERE citizenid = ?', { json.encode(metadata), citizenId })
+
+    -- Sync to QBCore in-memory player data if the target is currently online
+    if exports['qb-core'] then
+        local QBCore = exports['qb-core']:GetCoreObject()
+        local onlinePlayer = QBCore.Functions.GetPlayerByCitizenId(citizenId)
+        if onlinePlayer then
+            onlinePlayer.Functions.SetMetaData('licences', metadata.licences)
+        end
+    end
+
     return { success = true }
 end)
 
