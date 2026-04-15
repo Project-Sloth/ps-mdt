@@ -18,7 +18,7 @@ dependencies {
 
 shared_scripts {
   'config.lua',
-  '@ox_lib/init.lua'
+  '@ox_lib/init.lua',
 }
 
 client_script {
@@ -32,7 +32,8 @@ server_scripts {
 
 files {
   'web/dist/index.html',
-  'web/dist/**/*'
+  'web/dist/**/*',
+  'locales/*.json'
 }
 
 data_file 'DLC_ITYP_REQUEST' 'stream/ps-mdt.ytyp'

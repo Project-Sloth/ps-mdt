@@ -569,14 +569,14 @@ ps.registerCallback(resourceName..':server:saveReport', function(source, reportD
 
     local title = reportData.report and reportData.report.title
     if not title or title == "" then
-        ps.notify(src, 'Failed to save Report: Needs a title', 'error')
+        ps.notify(src, locale('Reports.FailedToSaveReportTitle'), 'error')
         ps.warn('Report with missing/empty title from player: ' .. src .. ' Name: ' .. playerName)
         return { success = false, error = 'Report needs a title' }
     end
 
     local content = reportData.report and reportData.report.content
     if not content or content == "" then
-        ps.notify(src, 'Failed to save Report: Needs content', 'error')
+        ps.notify(src, locale('Reports.FailedToSaveReportContent'), 'error')
         ps.warn('Report with missing/empty content from player: ' .. src .. ' Name: ' .. playerName)
         return { success = false, error = 'Report needs content' }
     end
@@ -584,7 +584,7 @@ ps.registerCallback(resourceName..':server:saveReport', function(source, reportD
     -- Tags are required
     local tags = reportData.tags
     if not tags or type(tags) ~= 'table' or #tags == 0 then
-        ps.notify(src, 'Failed to save Report: At least one tag is required', 'error')
+        ps.notify(src, locale('Reports.FailedToSaveReportTag'), 'error')
         return { success = false, message = 'At least one tag is required' }
     end
 
@@ -606,7 +606,7 @@ ps.registerCallback(resourceName..':server:saveReport', function(source, reportD
 
     if reportId then
         if not checkReportAccess(src, reportId) then
-            ps.notify(src, 'Failed to save Report: Not found or no access', 'error')
+            ps.notify(src, locale('Reports.FailedToSaveReportNoAccess'), 'error')
             ps.warn(('[Failed to save] Player [%s] %s tried to save a report (%s), but it was not found or they do not have access.')
                 :format(src, playerName, reportId))
             return { success = false, error = "Report not found or access denied" }
@@ -627,7 +627,7 @@ ps.registerCallback(resourceName..':server:saveReport', function(source, reportD
         })
 
         if not insertResult then
-            ps.notify(src, 'Failed to save Report', 'error')
+            ps.notify(src, locale('Reports.FailedToSaveReport'), 'error')
             ps.warn(('[Failed to save] Player [%s] %s tried to save a report (new). Insert failed.')
                 :format(src, playerName))
             return { success = false, error = 'Failed to insert report' }
@@ -649,7 +649,7 @@ ps.registerCallback(resourceName..':server:saveReport', function(source, reportD
         })
 
         if not updateSuccess or updateSuccess == 0 then
-            ps.notify(src, 'Failed to save Report', 'error')
+            ps.notify(src, locale('Reports.FailedToSaveReport'), 'error')
             ps.warn(('[Failed to save] Player [%s] %s tried to save a report (%s). Update failed.')
                 :format(src, playerName, reportId))
             return { success = false, error = 'Failed to update report' }
@@ -903,7 +903,7 @@ ps.registerCallback(resourceName..':server:deleteReport', function(source, repor
     local playerName = ps.getPlayerName(src)
 
     if not checkReportAccess(src, reportId) then
-        ps.notify(src, 'Failed to delete Report: Not found or no access', 'error')
+        ps.notify(src, locale('Reports.CantDeleteReport'), 'error')
         ps.warn(('[Failed to delete] Player [%s] %s tried to delete a report (%s), but it was not found or they do not have access.')
             :format(src, playerName, reportId))
         return { success = false, error = "Report not found or access denied" }
@@ -917,7 +917,7 @@ ps.registerCallback(resourceName..':server:deleteReport', function(source, repor
     if success then
         Cache.invalidate('dashboard:reportStats')
         Cache.invalidate('dashboard:usageMetrics')
-        ps.notify(src, 'Report deleted successfully', 'success')
+        ps.notify(src, locale('Reports.ReportDeletedSuccessfully'), 'success')
         ps.debug(('[Report Deleted] Player [%s] %s successfully deleted report (%s): "%s"')
             :format(src, playerName, reportId, reportTitle))
 
@@ -933,7 +933,7 @@ ps.registerCallback(resourceName..':server:deleteReport', function(source, repor
             reportId = reportId
         }
     else
-        ps.notify(src, 'Failed to delete report', 'error')
+        ps.notify(src, locale('Reports.FailedToDeleteReport'), 'error')
         ps.warn(('[Failed to delete] Player [%s] %s tried to delete report (%s). Database query failed.')
             :format(src, playerName, reportId))
 

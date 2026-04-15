@@ -1,0 +1,98 @@
+{
+    "Camera": {
+        "CameraPlacememtCancelled": "Camera Placement Cancelled",
+        "InvalidCameraIDFormat": "Camera ID can only contain letters, numbers, underscores, and dashes",
+        "InvalidVec4Format": "Invalid vector4 format",
+        "CoordsOutOfRange": "Coordinates out of range. X,Y: -4000 to 4000, Z: -100 to 1000",
+        "InvalidCameraModel": "Invalid camera model selected",
+        "NoCamerasFound": "No Cameras Found",
+        "CameraEditCancelled": "Camera Edit Cancelled",
+        "InvalidVec4Format2": "Invalid vector4 format. Use: vector4(x, y, z, heading)",
+        "CameraUpdateFailed": "Camera Update Failed",
+        "CameraCreationCancelled": "Camera Creation Cancelled",
+        "FailedToCreateCamObj": "Failed to create temporary camera object for placement",
+        "UseGizmoPos": "Use the gizmo to position the camera, then press ENTER when done",
+        "CameraCreated": "Camera created at position: %{x}, %{y}, %{z}",
+        "FailedToCreatePlacementObj": "Failed to create placement object",
+        "GizmoRepos": "Use the gizmo to reposition camera \"%{label}\", then press ENTER when done",
+        "CameraReposCancelled": "Camera repositioning cancelled",
+        "CameraRepos": "Camera repositioned at: %{x}, %{y}, %{z}"
+    },
+    "ClientEvents": {
+        "MDTClosed": "MDT closed - Access revoked"
+    },
+    "Impound": {
+        "InvalidImpLoc": "Invalid impound location",
+        "TooFarFromImp": "You are too far away from the impound location!"
+    },
+    "Keys": {
+        "CantOpenMDT": "You cannot open the MDT right now",
+        "CantOpenMDTCam": "You cannot open the MDT while viewing a camera"
+    },
+    "Mugshot": {
+        "ScreenshotBasic": "screenshot-basic is not running"
+    },
+    "Dashboard": {
+        "MDTSignOut": "Signed out of MDT",
+        "NoLocDataDis": "No location data for this dispatch",
+        "InvalidLocData": "Invalid location data",
+        "DispatchRoute": "Set Route to Dispatch Location"
+    },
+    "Dispatch": {
+        "CurrentSig100": "Radio %{radio} is currently Signal 100!",
+        "ClearedSig100": "Radio %{radio} is Signal 100 cleared",
+        "Mention": "Dispatch (Mention): %{message}",
+        "NotInPDVeh": "Not in a police vehicle!",
+        "TrafficStopCooldown": "Traffic stop cooldown active!",
+        "NoVehDetected": "No vehicle detected by radar"
+    },
+    "Officers": {
+        "RadioFreq": "Radio frequency set to %{radio}",
+        "Failed2SetRadio": "Failed to set radio - pma-voice not available",
+        "InvalidRadio": "Invalid radio frequency",
+        "GPSSetOfficer": "GPS set to officer location",
+        "OfficerNotOn": "Officer not found or offline",
+        "GPSSetProperty": "GPS set to property location"
+    },
+    "Weapons": {
+        "NoWeapFound": "No Weapons found to register"
+    },
+    "Auth": {
+        "AccessDenied": "Access Denied: Authorized Personnel Only"
+    },
+    "Commands": {
+        "AuthDenied": "You do not have permission to use this command",
+        "ProvideAMessage": "Please provide a message",
+        "FailedMessageOTD": "Failed to save Message of the Day",
+        "MOTDUpdated": "Message of the Day has been updated"
+    },
+    "ServerEvents": {
+        "Bolos": "BOLO ID: %{id} | Title: %{title} | Registered Owner: %{owner} | Plate: %{plate}",
+        "Warrant": "WANTED - INCIDENT ID: %{id} | Registered Owner: %{owner} | Plate: %{plate}",
+        "NoDriversLic": "NO DRIVERS LICENCE | Registered Owner: %{owner} | Plate: %{plate}"
+    },
+    "Charges": {
+        "FineDeducted": "$%{amount} fine deducted from your bank account"
+    },
+    "ServerOfficers": {
+        "PlayerMissing": "Citizen seems asleep / missing"
+    },
+    "Reports": {
+        "FailedToSaveReportTitle": "Failed to save Report: Needs a title",
+        "FailedToSaveReportContent": "Failed to save Report: Needs content",
+        "FailedToSaveReportTag": "Failed to save Report: At least one tag is required",
+        "FailedToSaveReportNoAccess": "Failed to save Report: Not found or no access",
+        "FailedToSaveReport": "Failed to save Report",
+        "CantDeleteReport": "Failed to delete Report: Not found or no access",
+        "ReportDeletedSuccessfully": "Report deleted successfully",
+        "FailedToDeleteReport": "Failed to delete report"
+    },
+    "Sentencing": {
+        "SendToJail": "Sent to jail for %{time} months",
+        "PaidFine": "$%{amount} fine deducted from your bank account",
+        "FinePaid": "$%{amount} fine issued successfully"
+    },
+    "ServerWeapons": {
+        "WeapRegistered": "Weapon registered in police database"
+    }
+}

@@ -64,7 +64,7 @@ ps.registerCallback(resourceName .. ':server:processFine', function(source, payl
     -- Remove money from bank
     local removed = ps.removeMoney(Player.source or Player.PlayerData.source, 'bank', fine, 'mdt-fine')
     if removed then
-        ps.notify(Player.source or Player.PlayerData.source, '$' .. fine .. ' fine deducted from your bank account', 'error')
+        ps.notify(Player.source or Player.PlayerData.source, locale('Charges.FineDeducted'), {amount = fine}, 'error')
 
         -- Anti-spam cooldown
         fineAntiSpam = true

@@ -39,7 +39,7 @@ local function onJobUpdate(JobInfo)
 
         if not authorized then
             CloseMDT()
-            ps.notify('MDT closed - Access revoked', 'error')
+            ps.notify(locale('ClientEvents.MDTClosed'), 'error')
         else
             NUIUpdateAuthWithData(job)
         end
@@ -56,7 +56,7 @@ local function onSetDuty(duty)
             local authorized = isAuthorizedJob(job)
             if not authorized then
                 CloseMDT()
-                ps.notify('MDT closed - Access revoked', 'error')
+                ps.notify(locale('ClientEvents.MDTClosed'), 'error')
             end
         end
     end

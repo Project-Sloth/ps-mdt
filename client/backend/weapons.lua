@@ -72,6 +72,6 @@ RegisterNetEvent(resourceName .. ':client:selfregister', function()
             )
         end
     else
-        ps.notify('No weapons found to register', 'error')
+        ps.notify(locale('Weapons.NoWeapFound'), 'error')
     end
 end)

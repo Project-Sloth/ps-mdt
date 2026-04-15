@@ -434,6 +434,6 @@ AddEventHandler(resourceName .. ':server:selfRegisterWeapon', function(serial, i
     end)
 
     if success then
-        ps.notify(src, 'Weapon registered in police database', 'success')
+        ps.notify(src, locale('ServerWeapons.WeapRegistered'), 'success')
     end
 end)

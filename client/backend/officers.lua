@@ -46,12 +46,12 @@ RegisterNetEvent(resourceName .. ':client:setRadio', function(radio)
             exports['pma-voice']:setRadioChannel(tonumber(radio))
         end)
         if success then
-            ps.notify('Radio frequency set to ' .. radio, 'success')
+            ps.notify(locale('Officers.RadioFreq', {radio}), 'success')
         else
-            ps.notify('Failed to set radio - pma-voice not available', 'error')
+            ps.notify(locale('Officers.Failed2SetRadio'), 'error')
         end
     else
-        ps.notify('Invalid radio frequency', 'error')
+        ps.notify(locale('Officers.InvalidRadio'), 'error')
     end
 end)
 
@@ -61,9 +61,9 @@ RegisterNUICallback('setWaypointU', function(data, cb)
     local coords = ps.callback(resourceName .. ':server:getUnitLocation', data.cid)
     if coords then
         SetNewWaypoint(coords.x, coords.y)
-        ps.notify('GPS set to officer location', 'success')
+        ps.notify(locale('Officers.GPSSetOfficer'), 'success')
     else
-        ps.notify('Officer not found or offline', 'error')
+        ps.notify(locale('Officers.OfficerNotOn'), 'error')
     end
     cb('ok')
 end)
@@ -78,11 +78,11 @@ RegisterNUICallback('SetHouseLocation', function(data, cb)
         end
         if coords[1] and coords[2] then
             SetNewWaypoint(coords[1], coords[2])
-            ps.notify('GPS set to property location', 'success')
+            ps.notify(locale('Officers.GPSSetProperty'), 'success')
         end
     elseif data.x and data.y then
         SetNewWaypoint(data.x, data.y)
-        ps.notify('GPS set to property location', 'success')
+        ps.notify(locale('Officers.GPSSetProperty'), 'success')
     end
     cb('ok')
 end)

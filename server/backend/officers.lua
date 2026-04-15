@@ -7,7 +7,7 @@ ps.registerCallback(resourceName .. ':server:GetPlayerSourceId', function(source
     if not targetCitizenId then return nil end
     local targetPlayer = ps.getPlayerByIdentifier(targetCitizenId)
     if not targetPlayer then
-        ps.notify(source, 'Citizen seems asleep / missing', 'error')
+        ps.notify(source, locale('ServerOfficers.PlayerMissing'), 'error')
         return nil
     end
     return targetPlayer.source or targetPlayer.PlayerData.source

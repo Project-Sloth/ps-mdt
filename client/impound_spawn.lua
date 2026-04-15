@@ -52,7 +52,7 @@ end
 local function TakeOutImpound(data, garageIndex)
     local coords = ImpoundLocations[garageIndex]
     if not coords then
-        ps.notify('Invalid impound location', 'error')
+        ps.notify(locale('Impound.InvalidImpLoc'), 'error')
         return
     end
 
@@ -95,7 +95,7 @@ RegisterNetEvent(resourceName .. ':client:TakeOutImpound', function(data)
     local impoundCoords = ImpoundLocations[garageIndex]
 
     if not impoundCoords then
-        ps.notify('Invalid impound location', 'error')
+        ps.notify(locale('Impound.InvalidImpLoc'), 'error')
         return
     end
 
@@ -103,7 +103,7 @@ RegisterNetEvent(resourceName .. ':client:TakeOutImpound', function(data)
     if #(pos - takeDist) <= 15.0 then
         TakeOutImpound(data, garageIndex)
     else
-        ps.notify('You are too far away from the impound location!', 'error')
+        ps.notify(locale('Impound.TooFarFromImp'), 'error')
     end
 end)
 
