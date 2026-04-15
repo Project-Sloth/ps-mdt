@@ -785,7 +785,6 @@ function CameraPlacement.createWithGizmo()
     -- Send to server for creation
     TriggerServerEvent(resourceName .. ':server:createStaticCamera', cameraData)
     ps.info('Camera placement request sent to server for: ' .. cameraData.camId)
-    --ps.notify('Camera created at position: ' .. string.format('%.2f, %.2f, %.2f', finalCoords.x, finalCoords.y, finalCoords.z), 'success')
     ps.notify(locale('Camera.CameraCreated', {x = string.format('%.2f', finalCoords.x), y = string.format('%.2f', finalCoords.y), z = string.format('%.2f', finalCoords.z)}), 'success')
 end
 
