@@ -1,0 +1,92 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build and publish release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Resolve version
+        id: version
+        run: |
+          TAG_NAME="${GITHUB_REF_NAME}"
+          VERSION="${TAG_NAME#v}"
+          echo "tag=${TAG_NAME}" >> "$GITHUB_OUTPUT"
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "Releasing tag '${TAG_NAME}' (version '${VERSION}')"
+
+      - name: Sync fxmanifest.lua version
+        run: |
+          sed -i -E "s/^(version[[:space:]]+')[^']*(')/\1${{ steps.version.outputs.version }}\2/" fxmanifest.lua
+          grep -E "^version " fxmanifest.lua
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+          run_install: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+          cache-dependency-path: web/pnpm-lock.yaml
+
+      - name: Install web dependencies
+        working-directory: web
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Build web frontend
+        working-directory: web
+        run: pnpm run build
+
+      - name: Stage release files
+        run: |
+          STAGE_DIR="release-stage/ps-mdt"
+          mkdir -p "${STAGE_DIR}"
+
+          cp -r client       "${STAGE_DIR}/"
+          cp -r server       "${STAGE_DIR}/"
+          cp -r sql          "${STAGE_DIR}/"
+          cp -r stream       "${STAGE_DIR}/"
+          cp    config.lua   "${STAGE_DIR}/"
+          cp    fxmanifest.lua "${STAGE_DIR}/"
+          cp    LICENSE      "${STAGE_DIR}/"
+          cp    README.md    "${STAGE_DIR}/"
+          cp    SECURITY.md  "${STAGE_DIR}/"
+
+          mkdir -p "${STAGE_DIR}/web"
+          cp -r web/dist "${STAGE_DIR}/web/dist"
+
+          echo "Staged contents:"
+          find "${STAGE_DIR}" -maxdepth 3 -print
+
+      - name: Create release archive
+        id: archive
+        run: |
+          ARCHIVE_NAME="ps-mdt-${{ steps.version.outputs.tag }}.zip"
+          (cd release-stage && zip -r "../${ARCHIVE_NAME}" ps-mdt)
+          echo "name=${ARCHIVE_NAME}" >> "$GITHUB_OUTPUT"
+          ls -lh "${ARCHIVE_NAME}"
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: ${{ steps.version.outputs.tag }}
+          generate_release_notes: true
+          draft: false
+          prerelease: ${{ contains(steps.version.outputs.tag, '-') }}
+          files: ${{ steps.archive.outputs.name }}
