@@ -19,6 +19,8 @@
 		gender: string;
 		dob: string;
 		phone: string;
+		fingerprint?: string;
+		dna?: string;
 		image?: string;
 		occupations: string[];
 		properties: number;
@@ -113,9 +115,10 @@
 	let allFilteredCitizens = $derived.by(() => {
 		const query = searchQuery.trim().toLowerCase();
 		if (!query) return citizens;
-		return citizens.filter(({ firstName, lastName, cid, phone }) =>
-			[firstName, lastName, cid, phone].some((val) =>
+		return citizens.filter(({ firstName, lastName, cid, phone, fingerprint, dna }) =>
+			[firstName, lastName, cid, phone, fingerprint, dna].some((val) =>
 				val?.toLowerCase().includes(query),
+				console.log(query, dna)
 			),
 		);
 	});
@@ -543,15 +546,16 @@
 		type: "state" | "custom";
 		active: boolean;
 		customId?: number;
+		description?: string;
 	}
 
 	let issuableLicenses = $derived.by((): IssuableLicense[] => {
 		if (!selectedProfile) return [];
 		const result: IssuableLicense[] = [];
-		result.push({ key: "driver", name: "Driver's License", type: "state", active: selectedProfile.licenses?.driver || false });
-		result.push({ key: "weapon", name: "Weapon License", type: "state", active: selectedProfile.licenses?.weapon || false });
+		result.push({ key: "driver", name: "Driver's License", type: "state", description: "State-issued license for operating motor vehicles", active: selectedProfile.licenses?.driver || false });
+		result.push({ key: "weapon", name: "Weapon License", type: "state", description: "State-issued license for carrying firearms", active: selectedProfile.licenses?.weapon || false });
 		for (const cl of selectedProfile.customLicenses || []) {
-			result.push({ key: `custom-${cl.id}`, name: cl.name, type: "custom", active: cl.active, customId: cl.id });
+			result.push({ key: `custom-${cl.id}`, name: cl.name, type: "custom", active: cl.active, customId: cl.id, description: cl.description });
 		}
 		return result;
 	});
@@ -1006,8 +1010,15 @@
 						{#each issuableLicenses as license (license.key)}
 							<div class="license-modal-row">
 								<div class="license-modal-info">
-									<span class="license-modal-name">{license.name}</span>
-									<span class="license-modal-type">{license.type === 'state' ? 'State' : 'Custom'}</span>
+									<div style="display: flex; flex-direction: column; gap: 2px; min-width: 0;">
+										<div style="display: flex; align-items: center; gap: 6px;">
+											<span class="license-modal-name">{license.name}</span>
+											<span class="license-modal-type">{license.type === 'state' ? 'State' : 'Custom'}</span>
+										</div>
+										{#if license.description}
+											<span class="license-modal-description">{license.description}</span>
+										{/if}
+									</div>
 								</div>
 								<label class="toggle"><input type="checkbox" checked={license.active} onchange={() => toggleIssuableLicense(license)} /><span class="toggle-track"></span></label>
 							</div>
@@ -1022,7 +1033,7 @@
 			<div class="list-topbar">
 		<div class="search-box">
 					<svg width="14" height="14" fill="rgba(255,255,255,0.35)" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
-					<input bind:value={searchQuery} type="text" placeholder="Search by name, ID, or phone..." />
+					<input bind:value={searchQuery} type="text" placeholder="Search by name, ID, phone, fingerprint or DNA..." />
 				</div>
 			</div>
 
@@ -1282,8 +1293,11 @@
 	/* License modal */
 	.license-modal-body { padding: 4px 0; }
 	.license-modal-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 16px; border-bottom: 1px solid rgba(255,255,255,0.03); }
+	.license-modal-row:hover { background: rgba(255,255,255,0.02); }
+	.license-modal-row:hover .license-modal-description { max-height: 50px; opacity: 1; }
 	.license-modal-row:last-child { border-bottom: none; }
 	.license-modal-info { display: flex; align-items: center; gap: 8px; }
 	.license-modal-name { font-size: 12px; color: rgba(255,255,255,0.75); font-weight: 500; }
-	.license-modal-type { font-size: 8px; font-weight: 700; letter-spacing: 0.5px; padding: 1px 5px; border-radius: 3px; text-transform: uppercase; background: rgba(255,255,255,0.04); color: rgba(255,255,255,0.25); }
+	.license-modal-type { font-size: 8px; font-weight: 700; letter-spacing: 0.5px; padding: 1px 5px; border-radius: 3px; text-transform: uppercase; background: rgba(255,255,255,0.04); color: rgba(255,255,255,0.25); flex-shrink: 0; }
+	.license-modal-description { font-size: 10px; color: rgba(255,255,255,0.35); line-height: 1.3; overflow: hidden; text-overflow: ellipsis; max-height: 0; opacity: 0; transition: max-height 0.8s ease, opacity 0.8s ease; }
 </style>
