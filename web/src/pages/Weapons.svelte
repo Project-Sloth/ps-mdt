@@ -167,14 +167,6 @@
 				{ id: 3, serial: 'WPN-55194', scratched: false, owner: 'Sarah Williams', information: 'Licensed for personal protection', weaponClass: 'Pistol', weaponModel: 'WEAPON_COMBATPISTOL', name: 'Combat Pistol', image: '', type: 'Handgun', seenIn: 0, flags: [], tint: 'Default' },
 				{ id: 4, serial: 'WPN-10477', scratched: false, owner: 'David Chen', information: 'Hunting rifle, valid license', weaponClass: 'Rifle', weaponModel: 'WEAPON_MUSKET', name: 'Musket', image: '', type: 'Rifle', seenIn: 2, flags: ['Bolo'], tint: 'Default' },
 			];
-			weaponOptions = [
-				{ model: "weapon_heavypistol", label: "Schwere Pistole" },
-				{ model: "weapon_sniperrifle", label: "Jagdgewehr" },
-				{ model: "weapon_ceramicpistol", label: "Keramikpistole" },
-				{ model: "weapon_doubleaction", label: "Doppellauf-Revolver" },
-				{ model: "weapon_navyrevolver", label: "Marine-Revolver" },
-				{ model: "weapon_musket", label: "Muskete" },
-			];
 			loading = false;
 			return;
 		}
@@ -184,7 +176,6 @@
 				fetchNui(NUI_EVENTS.WEAPON.GET_WEAPONS),
 				fetchNui<{ weapons: { model: string; label: string }[] }>(NUI_EVENTS.WEAPON.GET_WEAPON_CONFIG, {}, { weapons: [] }),
 			]);
-			console.log('configRes:', JSON.stringify(configRes));
 			weapons = Array.isArray(weaponsRes.weapons) ? weaponsRes.weapons : [];
 			weaponOptions = configRes.weapons ?? [];
 		} catch (error) {
@@ -211,7 +202,7 @@
 		if (!addWeaponForm.weaponModel.trim() || !addWeaponForm.serial.trim()) return;
 
 		if (isEnvBrowser()) {
-			addWeaponForm = { weaponModel: "", serial: "", owner: "", ownerName: "", notes: "" };
+			addWeaponForm = { weaponModel: "", serial: "", owner: "", ownerName: "", notes: addWeaponForm.notes.trim() };
 			showAddWeaponModal = false;
 			return;
 		}
@@ -229,7 +220,7 @@
 		if (response?.success) {
 			globalNotifications.success("Weapon saved successfully");
 			refreshWeapons()
-			addWeaponForm = { weaponModel: "", serial: "", owner: "", ownerName: "", notes: "" };
+			addWeaponForm = { weaponModel: "", serial: "", owner: "", ownerName: "", notes: addWeaponForm.notes.trim() };
 			showAddWeaponModal = false;
 		} else {
 			globalNotifications.error(response?.message || "Failed to save weapon");

@@ -118,7 +118,6 @@
 		return citizens.filter(({ firstName, lastName, cid, phone, fingerprint, dna }) =>
 			[firstName, lastName, cid, phone, fingerprint, dna].some((val) =>
 				val?.toLowerCase().includes(query),
-				console.log(query, dna)
 			),
 		);
 	});
