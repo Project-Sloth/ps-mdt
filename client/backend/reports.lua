@@ -106,9 +106,12 @@ RegisterNUICallback('saveReport', function(data, cb)
     if data.evidence then
         for _, item in ipairs(data.evidence) do
             table.insert(evidence, {
+                title = item.title or '',
                 type = item.type or 'Evidence',
-                content = item.serial or (item.images and item.images[1]) or item.title or '',
-                note = item.notes or ''
+                content = item.serial or '',
+                note = item.notes or '',
+                stored = item.stored or 0,
+                images = item.images or {}
             })
         end
     end
