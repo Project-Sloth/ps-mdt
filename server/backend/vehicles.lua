@@ -193,6 +193,11 @@ ps.registerCallback(resourceName .. ':server:UpdateVehicle', function(source, pa
         values[#values + 1] = payload.information
     end
 
+    if payload.image ~= nil then
+        updates[#updates + 1] = 'mdt_vehicle_image = ?'
+        values[#values + 1] = payload.image
+    end
+
     if points ~= nil then
         updates[#updates + 1] = 'mdt_vehicle_points = ?'
         values[#values + 1] = points
