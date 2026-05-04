@@ -258,13 +258,14 @@
 
 		<div class="list-panel">
 			<div class="list-header">
-				<span class="col-name">Weapon</span>
-				<span class="col-serial">Serial</span>
-				<span class="col-owner">Owner</span>
-				<span class="col-class">Class</span>
-				<span class="col-type">Type</span>
-				<span class="col-tint">Tint</span>
-				<span class="col-flags">Flags</span>
+				<span></span>
+				<span>Weapon</span>
+				<span>Serial</span>
+				<span>Owner</span>
+				<span>Class</span>
+				<span>Type</span>
+				<span>Tint</span>
+				<span>Flags</span>
 			</div>
 			<div class="list-body">
 				{#if loading}
@@ -274,6 +275,9 @@
 				{:else}
 					{#each filteredWeapons as weapon}
 						<button class="weapon-row" onclick={() => viewWeapon(weapon.id)}>
+							<div class="weapon-avatar">
+								<img src={weapon.image} alt="" />
+							</div>
 							<span class="col-name">
 								{weapon.name}
 								{#if weapon.scratched}<span class="scratched-badge">Scratched</span>{/if}
@@ -348,6 +352,9 @@
 		gap: 4px;
 		margin-left: auto;
 	}
+
+	.weapon-avatar { width: 28px; height: 28px; border-radius: 50%; background: rgba(255,255,255,0.04); display: grid; place-items: center; overflow: hidden; flex-shrink: 0; }
+	.weapon-avatar img { width: 100%; height: 100%; object-fit: cover; }
 
 	.back-btn {
 		display: flex;
@@ -427,19 +434,7 @@
 		border-radius: 0;
 	}
 
-	.list-header {
-		display: grid;
-		grid-template-columns: 1.8fr 1fr 1.5fr 0.8fr 0.9fr 0.7fr 1.2fr;
-		gap: 8px;
-		padding: 8px 16px;
-		border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-		color: rgba(255, 255, 255, 0.35);
-		font-size: 9px;
-		font-weight: 600;
-		text-transform: uppercase;
-		letter-spacing: 0.6px;
-		flex-shrink: 0;
-	}
+	.list-header { display: grid; grid-template-columns: 24px 1.8fr 1fr 1.5fr 0.8fr 0.9fr 0.7fr 1.2fr; gap: 8px; padding: 8px 16px; border-bottom: 1px solid rgba(255,255,255,0.06); color: rgba(255,255,255,0.35); font-size: 9px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.6px; flex-shrink: 0; }
 
 	.list-body {
 		flex: 1;
@@ -451,22 +446,8 @@
 	.list-body::-webkit-scrollbar-track { background: transparent; }
 	.list-body::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.06); border-radius: 2px; }
 
-	.weapon-row {
-		display: grid;
-		grid-template-columns: 1.8fr 1fr 1.5fr 0.8fr 0.9fr 0.7fr 1.2fr;
-		gap: 8px;
-		padding: 7px 16px;
-		align-items: center;
-		border: none;
-		border-bottom: 1px solid rgba(255, 255, 255, 0.03);
-		background: transparent;
-		cursor: pointer;
-		transition: background 0.1s;
-		width: 100%;
-		text-align: left;
-		font: inherit;
-		color: inherit;
-	}
+	.weapon-row { display: grid; grid-template-columns: 24px 1.8fr 1fr 1.5fr 0.8fr 0.9fr 0.7fr 1.2fr; gap: 8px; padding: 7px 16px; align-items: center; border: none; border-bottom: 1px solid rgba(255,255,255,0.03); background: transparent; cursor: pointer; transition: background 0.1s; width: 100%; text-align: left; font: inherit; color: inherit; }
+
 
 	.weapon-row:hover {
 		background: rgba(255, 255, 255, 0.02);
@@ -598,8 +579,8 @@
 	}
 
 	.info-card-icon {
-		width: 36px;
-		height: 36px;
+		width: 108px;
+		height: 108px;
 		border-radius: 3px;
 		background: rgba(255, 255, 255, 0.03);
 		display: flex;
