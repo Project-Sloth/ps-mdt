@@ -775,7 +775,7 @@
 						<div class="panel">
 							<div class="panel-title">
 								Notes
-								{#if !editingNotes}
+								{#if !editingNotes && !isEMS}
 									<button class="issue-license-btn" onclick={startEditNotes}>
 										<span class="material-icons" style="font-size: 12px;">edit</span> Edit
 									</button>
