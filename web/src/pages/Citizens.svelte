@@ -127,6 +127,38 @@
 		return allFilteredCitizens.slice(start, start + citizenPerPage);
 	});
 
+	// Notes editing
+	let editingNotes = $state(false);
+	let notesValue = $state("");
+	let notesSaving = $state(false);
+
+	function startEditNotes() {
+		notesValue = selectedProfile?.notes || "";
+		editingNotes = true;
+	}
+
+	async function saveNotes() {
+		if (!selectedProfile) return;
+		notesSaving = true;
+		try {
+			const result = await fetchNui<{ success: boolean }>(
+				NUI_EVENTS.CITIZEN.UPDATE_CITIZEN,
+				{ citizenid: selectedProfile.citizenid, notes: notesValue },
+				{ success: true },
+			);
+			if (result?.success) {
+				selectedProfile = { ...selectedProfile, notes: notesValue };
+				editingNotes = false;
+				globalNotifications.success("Notes saved");
+			} else {
+				globalNotifications.error("Failed to save notes");
+			}
+		} catch {
+			globalNotifications.error("Failed to save notes");
+		}
+		notesSaving = false;
+	}
+
 	// Reset to page 1 when search changes
 	$effect(() => {
 		searchQuery;
@@ -317,6 +349,8 @@
 			evidencePage = 1;
 			reportsPage = 1;
 			licensesPage = 1;
+			editingNotes = false;
+			notesValue = "";
 		}
 	});
 
@@ -737,10 +771,39 @@
 
 				<!-- Main content -->
 				<div class="profile-main">
-					{#if selectedProfile.notes}
+					{#if selectedProfile.notes !== undefined}
 						<div class="panel">
-							<div class="panel-title">Notes</div>
-							<div class="notes-text">{selectedProfile.notes}</div>
+							<div class="panel-title">
+								Notes
+								{#if !editingNotes}
+									<button class="issue-license-btn" onclick={startEditNotes}>
+										<span class="material-icons" style="font-size: 12px;">edit</span> Edit
+									</button>
+								{/if}
+							</div>
+							{#if editingNotes}
+								<textarea
+									class="dna-input"
+									style="width:100%;min-height:80px;resize:vertical;font-family:inherit;"
+									bind:value={notesValue}
+									placeholder="Enter notes..."
+									maxlength={250}
+									onkeydown={(e) => { if (e.key === 'Enter' && e.ctrlKey) saveNotes(); }}
+								></textarea>
+								<div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px;">
+									<div style="display:flex;gap:6px;">
+										<button class="notes-save-btn" onclick={saveNotes} disabled={notesSaving}>{notesSaving ? 'Saving...' : 'Save'}</button>
+										<button class="view-btn" onclick={() => { editingNotes = false; notesValue = selectedProfile?.notes || ''; }}>Cancel</button>
+									</div>
+									<span style="font-size:10px;color:{notesValue.length > 225 ? '#f87171' : 'rgba(255,255,255,0.2)'};">{notesValue.length}/250</span>
+								</div>
+							{:else}
+								{#if selectedProfile.notes?.trim()}
+									<div class="notes-text">{selectedProfile.notes}</div>
+								{:else}
+									<div class="empty-msg">No notes on file.</div>
+								{/if}
+							{/if}
 						</div>
 					{/if}
 
@@ -1286,4 +1349,9 @@
 	.license-modal-info { display: flex; align-items: center; gap: 8px; }
 	.license-modal-name { font-size: 12px; color: rgba(255,255,255,0.75); font-weight: 500; }
 	.license-modal-type { font-size: 8px; font-weight: 700; letter-spacing: 0.5px; padding: 1px 5px; border-radius: 3px; text-transform: uppercase; background: rgba(255,255,255,0.04); color: rgba(255,255,255,0.25); }
+
+	/* Notes */
+	.notes-save-btn { background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.15); color: rgba(52,211,153,0.8); padding: 4px 12px; border-radius: 3px; font-size: 10px; font-weight: 600; cursor: pointer; transition: all 0.12s; }
+	.notes-save-btn:hover:not(:disabled) { background: rgba(16,185,129,0.14); color: #34d399; }
+	.notes-save-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 </style>
