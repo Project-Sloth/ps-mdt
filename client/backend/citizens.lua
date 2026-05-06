@@ -18,7 +18,6 @@ RegisterNUICallback('getProperty', function(data, cb)
         return
     end
 
-    -- Straßenname client-seitig auflösen
     if result.property and result.property.coords then
         local coords = result.property.coords
         local street1, street2 = GetStreetNameAtCoord(coords.x, coords.y, coords.z)
