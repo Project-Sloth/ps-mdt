@@ -97,6 +97,7 @@ export const NUI_EVENTS = {
 		GET_WEAPON: "getWeapon",
 		GET_WEAPON_HISTORY: "getWeaponOwnershipHistory",
 		UPDATE_WEAPON: "updateWeapon",
+		SAVE_WEAPON_FLAGS: "saveWeaponFlags",
 	},
 	CHARGE: {
 		GET_CHARGES: "getCharges",
