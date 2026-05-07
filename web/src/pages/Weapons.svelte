@@ -6,6 +6,11 @@
 	import { globalNotifications } from "../services/notificationService.svelte";
 	import Pagination from "../components/Pagination.svelte";
 
+	interface WeaponFlag {
+		type: string;
+		info: string;
+	}
+
 	interface Weapon {
 		id: number;
 		serial: string;
@@ -18,7 +23,7 @@
 		image: string;
 		type: string;
 		seenIn: number;
-		flags: string[];
+		flags: WeaponFlag[];
 		tint: string;
 	}
 
@@ -41,6 +46,13 @@
 	let weaponHistory = $state<WeaponHistoryEntry[]>([]);
 	let historyLoading = $state(false);
 
+	let newFlag = $state({ type: "", info: "" });
+	const PRESET_FLAGS = ["Stolen", "Wanted"];
+	
+	const FLAG_TEMPLATES: Record<string, string> = {
+		"Stolen": "Reported stolen on [DATE] by [NAME].",
+		"Wanted": "Wanted in connection with [CASE/REASON] as of [DATE].",
+	};
 	let weaponPage = $state(1);
 	let weaponPerPage = $state(25);
 
@@ -66,14 +78,15 @@
 		weaponPage = 1;
 	});
 
-	function getFlagClass(flag: string): string {
-		switch (flag) {
-			case "Active Warrant":
-			case "Dangerous":
+	function onFlagTypeChange() {
+		newFlag.info = FLAG_TEMPLATES[newFlag.type] ?? "";
+	}
+
+	function getFlagClass(flag: WeaponFlag): string {
+		switch (flag.type) {
+			case "Stolen":
+			case "Wanted":
 				return "pill pill-red";
-			case "Bolo":
-			case "Flight Risk":
-				return "pill pill-orange";
 			default:
 				return "pill pill-grey";
 		}
@@ -106,7 +119,55 @@
 		}
 	}
 
+	async function addFlag() {
+		if (!newFlag.type || !selectedWeapon) return;
+
+		const currentFlags = selectedWeapon.flags ?? [];
+		if (currentFlags.some(f => f.type === newFlag.type)) return;
+
+		const updated = [...currentFlags, { type: newFlag.type, info: newFlag.info.trim() }];
+
+		if (isEnvBrowser()) {
+			selectedWeapon = { ...selectedWeapon, flags: updated };
+			newFlag = { type: "", info: "" };
+			return;
+		}
+
+		const response = await fetchNui<{ success: boolean }>(
+			NUI_EVENTS.WEAPON.SAVE_WEAPON_FLAGS,
+			{ serial: selectedWeapon.serial, flags: updated },
+		);
+		if (response?.success) {
+			selectedWeapon = { ...selectedWeapon, flags: updated };
+			newFlag = { type: "", info: "" };
+		} else {
+			globalNotifications.error("Failed to save flag");
+		}
+	}
+
+	async function removeFlag(type: string) {
+		if (!selectedWeapon) return;
+		const currentFlags = selectedWeapon.flags ?? [];
+		const updated = currentFlags.filter(f => f.type !== type);
+
+		if (isEnvBrowser()) {
+			selectedWeapon = { ...selectedWeapon, flags: updated };
+			return;
+		}
+
+		const response = await fetchNui<{ success: boolean }>(
+			NUI_EVENTS.WEAPON.SAVE_WEAPON_FLAGS,
+			{ serial: selectedWeapon.serial, flags: updated },
+		);
+		if (response?.success) {
+			selectedWeapon = { ...selectedWeapon, flags: updated };
+		} else {
+			globalNotifications.error("Failed to remove flag");
+		}
+	}
+
 	function closeWeapon() {
+		refreshWeapons()
 		selectedWeapon = null;
 		weaponHistory = [];
 	}
@@ -114,10 +175,10 @@
 	onMount(async () => {
 		if (isEnvBrowser()) {
 			weapons = [
-				{ id: 1, serial: 'WPN-48291', scratched: false, owner: 'Marcus Johnson', information: 'Registered service weapon', weaponClass: 'Pistol', weaponModel: 'WEAPON_PISTOL', name: 'Pistol', image: '', type: 'Handgun', seenIn: 3, flags: [], tint: 'Default' },
-				{ id: 2, serial: 'WPN-73820', scratched: true, owner: 'Unknown', information: 'Serial scratched off - found at crime scene', weaponClass: 'SMG', weaponModel: 'WEAPON_SMG', name: 'SMG', image: '', type: 'Submachine Gun', seenIn: 1, flags: ['Dangerous'], tint: 'Army' },
+				{ id: 1, serial: 'WPN-48291', scratched: false, owner: 'Marcus Johnson', information: 'Registered service weapon', weaponClass: 'Pistol', weaponModel: 'WEAPON_PISTOL', name: 'Pistol', image: '', type: 'Handgun', seenIn: 3, flags: [{ type: "Stolen", info: "reported Stolen" }], tint: 'Default' },
+				{ id: 2, serial: 'WPN-73820', scratched: true, owner: 'Unknown', information: 'Serial scratched off - found at crime scene', weaponClass: 'SMG', weaponModel: 'WEAPON_SMG', name: 'SMG', image: '', type: 'Submachine Gun', seenIn: 1, flags: [{ type: "Stolen", info: "reported Stolen" }], tint: 'Army' },
 				{ id: 3, serial: 'WPN-55194', scratched: false, owner: 'Sarah Williams', information: 'Licensed for personal protection', weaponClass: 'Pistol', weaponModel: 'WEAPON_COMBATPISTOL', name: 'Combat Pistol', image: '', type: 'Handgun', seenIn: 0, flags: [], tint: 'Default' },
-				{ id: 4, serial: 'WPN-10477', scratched: false, owner: 'David Chen', information: 'Hunting rifle, valid license', weaponClass: 'Rifle', weaponModel: 'WEAPON_MUSKET', name: 'Musket', image: '', type: 'Rifle', seenIn: 2, flags: ['Bolo'], tint: 'Default' },
+				{ id: 4, serial: 'WPN-10477', scratched: false, owner: 'David Chen', information: 'Hunting rifle, valid license', weaponClass: 'Rifle', weaponModel: 'WEAPON_MUSKET', name: 'Musket', image: '', type: 'Rifle', seenIn: 2, flags: [{ type: "Wanted", info: "Found Bullets - Report #1337" }], tint: 'Default' },
 			];
 			loading = false;
 			return;
@@ -164,7 +225,7 @@
 					<span class="pill pill-red">Scratched</span>
 				{/if}
 				{#each selectedWeapon.flags as flag}
-					<span class={getFlagClass(flag)}>{flag}</span>
+					<span class={getFlagClass(flag)}>{flag.type}</span>
 				{/each}
 			</div>
 		</div>
@@ -202,16 +263,45 @@
 				</div>
 			{/if}
 
-			{#if selectedWeapon.flags && selectedWeapon.flags.length}
-				<div class="section">
-					<div class="section-title">Flags</div>
-					<div class="flags-row">
+			<div class="section">
+				<div class="section-title">Flags</div>
+
+				{#if selectedWeapon.flags?.length}
+					<div class="flags-row" style="margin-bottom: 8px;">
 						{#each selectedWeapon.flags as flag}
-							<span class={getFlagClass(flag)}>{flag}</span>
+							<span class={getFlagClass(flag)} style="display:inline-flex;align-items:center;gap:6px;">
+								<span>{flag.type}</span>
+								{#if flag.info}
+									<span style="opacity:0.6;font-weight:400;">— {flag.info}</span>
+								{/if}
+								<button class="tag-remove" onclick={() => removeFlag(flag.type)} aria-label="Remove flag">
+									<svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+								</button>
+							</span>
 						{/each}
 					</div>
+				{/if}
+
+				<div class="flag-add-row">
+					<select class="form-select" bind:value={newFlag.type} onchange={onFlagTypeChange}>
+						<option value="">-- Select --</option>
+						{#each PRESET_FLAGS as preset}
+							<option value={preset} disabled={selectedWeapon.flags?.some(f => f.type === preset)}>
+								{preset}
+							</option>
+						{/each}
+					</select>
+					<input
+						class="form-input"
+						bind:value={newFlag.info}
+						placeholder="Additional info..."
+						onkeydown={(e) => { if (e.key === 'Enter') addFlag(); }}
+					/>
+					<button class="add-tag-btn" onclick={addFlag} disabled={!newFlag.type.trim()}>
+						+ Add
+					</button>
 				</div>
-			{/if}
+			</div>
 
 			<div class="section">
 				<div class="section-title">Ownership History</div>
@@ -258,13 +348,14 @@
 
 		<div class="list-panel">
 			<div class="list-header">
-				<span class="col-name">Weapon</span>
-				<span class="col-serial">Serial</span>
-				<span class="col-owner">Owner</span>
-				<span class="col-class">Class</span>
-				<span class="col-type">Type</span>
-				<span class="col-tint">Tint</span>
-				<span class="col-flags">Flags</span>
+				<span></span>
+				<span>Weapon</span>
+				<span>Serial</span>
+				<span>Owner</span>
+				<span>Class</span>
+				<span>Type</span>
+				<span>Tint</span>
+				<span>Flags</span>
 			</div>
 			<div class="list-body">
 				{#if loading}
@@ -274,6 +365,9 @@
 				{:else}
 					{#each filteredWeapons as weapon}
 						<button class="weapon-row" onclick={() => viewWeapon(weapon.id)}>
+							<div class="weapon-avatar">
+								<img src={weapon.image} alt="" />
+							</div>
 							<span class="col-name">
 								{weapon.name}
 								{#if weapon.scratched}<span class="scratched-badge">Scratched</span>{/if}
@@ -284,8 +378,8 @@
 							<span class="col-type">{weapon.type}</span>
 							<span class="col-tint">{weapon.tint || 'Default'}</span>
 							<span class="col-flags">
-								{#each weapon.flags as flag}
-									<span class={getFlagClass(flag)}>{flag}</span>
+								{#each weapon.flags || [] as flag}
+									<span class={getFlagClass(flag)}>{flag.type}</span>
 								{/each}
 							</span>
 						</button>
@@ -348,6 +442,9 @@
 		gap: 4px;
 		margin-left: auto;
 	}
+
+	.weapon-avatar { width: 28px; height: 28px; border-radius: 50%; background: rgba(255,255,255,0.04); display: grid; place-items: center; overflow: hidden; flex-shrink: 0; }
+	.weapon-avatar img { width: 100%; height: 100%; object-fit: cover; }
 
 	.back-btn {
 		display: flex;
@@ -427,19 +524,7 @@
 		border-radius: 0;
 	}
 
-	.list-header {
-		display: grid;
-		grid-template-columns: 1.8fr 1fr 1.5fr 0.8fr 0.9fr 0.7fr 1.2fr;
-		gap: 8px;
-		padding: 8px 16px;
-		border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-		color: rgba(255, 255, 255, 0.35);
-		font-size: 9px;
-		font-weight: 600;
-		text-transform: uppercase;
-		letter-spacing: 0.6px;
-		flex-shrink: 0;
-	}
+	.list-header { display: grid; grid-template-columns: 24px 1.8fr 1fr 1.5fr 0.8fr 0.9fr 0.7fr 1.2fr; gap: 8px; padding: 8px 16px; border-bottom: 1px solid rgba(255,255,255,0.06); color: rgba(255,255,255,0.35); font-size: 9px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.6px; flex-shrink: 0; }
 
 	.list-body {
 		flex: 1;
@@ -451,22 +536,8 @@
 	.list-body::-webkit-scrollbar-track { background: transparent; }
 	.list-body::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.06); border-radius: 2px; }
 
-	.weapon-row {
-		display: grid;
-		grid-template-columns: 1.8fr 1fr 1.5fr 0.8fr 0.9fr 0.7fr 1.2fr;
-		gap: 8px;
-		padding: 7px 16px;
-		align-items: center;
-		border: none;
-		border-bottom: 1px solid rgba(255, 255, 255, 0.03);
-		background: transparent;
-		cursor: pointer;
-		transition: background 0.1s;
-		width: 100%;
-		text-align: left;
-		font: inherit;
-		color: inherit;
-	}
+	.weapon-row { display: grid; grid-template-columns: 24px 1.8fr 1fr 1.5fr 0.8fr 0.9fr 0.7fr 1.2fr; gap: 8px; padding: 7px 16px; align-items: center; border: none; border-bottom: 1px solid rgba(255,255,255,0.03); background: transparent; cursor: pointer; transition: background 0.1s; width: 100%; text-align: left; font: inherit; color: inherit; }
+
 
 	.weapon-row:hover {
 		background: rgba(255, 255, 255, 0.02);
@@ -598,8 +669,8 @@
 	}
 
 	.info-card-icon {
-		width: 36px;
-		height: 36px;
+		width: 108px;
+		height: 108px;
 		border-radius: 3px;
 		background: rgba(255, 255, 255, 0.03);
 		display: flex;
@@ -693,10 +764,96 @@
 		padding: 16px;
 	}
 
+	/* ===== Tags/Flags ===== */
 	.flags-row {
 		display: flex;
 		gap: 4px;
 		flex-wrap: wrap;
+	}
+
+	.tag-remove {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		background: transparent;
+		border: none;
+		color: inherit;
+		opacity: 0.4;
+		cursor: pointer;
+		padding: 0;
+		transition: opacity 0.1s;
+		line-height: 1;
+	}
+
+	.tag-remove:hover {
+		opacity: 1;
+	}
+
+	.flag-add-row {
+		display: flex;
+		gap: 6px;
+		align-items: center;
+		margin-top: 8px;
+	}
+
+	.flag-add-row .form-select {
+		width: 120px;
+		flex-shrink: 0;
+		background: rgba(255, 255, 255, 0.03);
+		border: 1px solid rgba(255, 255, 255, 0.06);
+		border-radius: 3px;
+		padding: 5px 8px;
+		color: rgba(255, 255, 255, 0.8);
+		font-size: 10px;
+		font-family: inherit;
+	}
+
+	.flag-add-row .form-select:focus {
+		outline: none;
+		border-color: rgba(255, 255, 255, 0.1);
+	}
+
+	.flag-add-row .form-input {
+		flex: 1;
+		background: rgba(255, 255, 255, 0.03);
+		border: 1px solid rgba(255, 255, 255, 0.06);
+		border-radius: 3px;
+		padding: 5px 8px;
+		color: rgba(255, 255, 255, 0.8);
+		font-size: 11px;
+		font-family: inherit;
+	}
+
+	.flag-add-row .form-input:focus {
+		outline: none;
+		border-color: rgba(255, 255, 255, 0.1);
+	}
+
+	.flag-add-row .form-input::placeholder {
+		color: rgba(255, 255, 255, 0.2);
+	}
+
+	.add-tag-btn {
+		background: rgba(16, 185, 129, 0.06);
+		color: rgba(52, 211, 153, 0.7);
+		border: 1px solid rgba(16, 185, 129, 0.1);
+		border-radius: 3px;
+		padding: 4px 10px;
+		font-size: 10px;
+		font-weight: 500;
+		cursor: pointer;
+		transition: all 0.1s;
+		white-space: nowrap;
+	}
+
+	.add-tag-btn:hover:not(:disabled) {
+		background: rgba(16, 185, 129, 0.12);
+		color: rgba(110, 231, 183, 0.9);
+	}
+
+	.add-tag-btn:disabled {
+		opacity: 0.3;
+		cursor: not-allowed;
 	}
 
 	/* ===== History ===== */

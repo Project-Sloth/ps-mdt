@@ -65,6 +65,8 @@ export const NUI_EVENTS = {
 	},
 	CITIZEN: {
 		GET_CITIZENS: "getCitizens",
+		GET_PROPERTY: "getProperty",
+		SET_WAYPOINT: "setWaypoint",
 		SEARCH_CITIZENS: "searchCitizens",
 		GET_CITIZEN: "getCitizen",
 		UPDATE_CITIZEN: "updateCitizen",
@@ -99,6 +101,7 @@ export const NUI_EVENTS = {
 		GET_WEAPON: "getWeapon",
 		GET_WEAPON_HISTORY: "getWeaponOwnershipHistory",
 		UPDATE_WEAPON: "updateWeapon",
+		SAVE_WEAPON_FLAGS: "saveWeaponFlags",
 	},
 	CHARGE: {
 		GET_CHARGES: "getCharges",

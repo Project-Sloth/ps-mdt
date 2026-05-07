@@ -91,7 +91,8 @@
 			vehicle: string;
 		}>;
 		propertiesList?: Array<{
-			house: string;
+			id: number;
+			property_name: string;
 		}>;
 	}
 
@@ -367,8 +368,8 @@
 	async function viewProfile(citizenId: string) {
 		if (isEnvBrowser()) {
 			const mockProfiles: Record<string, CitizenProfile> = {
-				'ABC12345': { citizenid: 'ABC12345', firstName: 'Marcus', lastName: 'Rodriguez', gender: 'Male', dob: '1990-05-15', phone: '555-0142', fingerprint: 'FP-8291-AXKF', image: '', occupations: ['Mechanic', 'Taxi Driver'], properties: 2, vehicles: 3, arrests: 1, flags: ['Active Warrant', 'Violent'], notes: 'Known associate of local gangs. Exercise caution during traffic stops.', licenses: { driver: true, weapon: false }, customLicenses: [{ id: 1, name: 'Hunting License', active: true }, { id: 2, name: 'Boating License', active: false }, { id: 3, name: 'Pilot License', active: false }], ownedVehicles: [{ plate: '03ROY490', vehicle: 'Exemplar' }, { plate: 'FAST001', vehicle: 'Sultan' }, { plate: 'LOW99X', vehicle: 'Bati 801' }], propertiesList: [{ house: '4 Integrity Way, Apt 30' }, { house: '1561 San Vitas Street' }], weapons: [{ id: 1, serial: 'WPN-4821', scratched: 0, weaponModel: 'weapon_pistol' }, { id: 2, serial: 'WPN-9012', scratched: 1, weaponModel: 'weapon_smg' }], evidence: [{ id: 1, title: 'Shell Casings', type: 'Physical', report_id: 42, notes: 'Found at scene near Vespucci' }, { id: 2, title: 'CCTV Footage', type: 'Digital', case_id: 7 }], linkedReports: [{ id: 42, title: 'Armed Robbery - Fleeca Bank', type: 'Incident' }, { id: 55, title: 'Traffic Violation - Speeding', type: 'Citation' }], activeBolos: [{ id: 1, type: 'Person', reportId: '42', notes: 'Armed and dangerous, last seen near Legion Square' }] },
-				'DEF67890': { citizenid: 'DEF67890', firstName: 'Sarah', lastName: 'Chen', gender: 'Female', dob: '1995-11-22', phone: '555-0299', fingerprint: 'FP-1122-BXYZ', image: '', occupations: ['Doctor'], properties: 1, vehicles: 1, arrests: 0, flags: [], licenses: { driver: true, weapon: true }, customLicenses: [{ id: 1, name: 'Hunting License', active: false }, { id: 2, name: 'Boating License', active: true }, { id: 3, name: 'Pilot License', active: true }], ownedVehicles: [{ plate: 'MED001', vehicle: 'Schafter' }], propertiesList: [{ house: 'Eclipse Towers, Apt 5' }], weapons: [], evidence: [], linkedReports: [], activeBolos: [] },
+				'ABC12345': { citizenid: 'ABC12345', firstName: 'Marcus', lastName: 'Rodriguez', gender: 'Male', dob: '1990-05-15', phone: '555-0142', fingerprint: 'FP-8291-AXKF', image: '', occupations: ['Mechanic', 'Taxi Driver'], properties: 2, vehicles: 3, arrests: 1, flags: ['Active Warrant', 'Violent'], notes: 'Known associate of local gangs. Exercise caution during traffic stops.', licenses: { driver: true, weapon: false }, customLicenses: [{ id: 1, name: 'Hunting License', active: true }, { id: 2, name: 'Boating License', active: false }, { id: 3, name: 'Pilot License', active: false }], ownedVehicles: [{ plate: '03ROY490', vehicle: 'Exemplar' }, { plate: 'FAST001', vehicle: 'Sultan' }, { plate: 'LOW99X', vehicle: 'Bati 801' }], propertiesList: [{ property_name: '4 Integrity Way, Apt 30' }, { property_name: '1561 San Vitas Street' }], weapons: [{ id: 1, serial: 'WPN-4821', scratched: 0, weaponModel: 'weapon_pistol' }, { id: 2, serial: 'WPN-9012', scratched: 1, weaponModel: 'weapon_smg' }], evidence: [{ id: 1, title: 'Shell Casings', type: 'Physical', report_id: 42, notes: 'Found at scene near Vespucci' }, { id: 2, title: 'CCTV Footage', type: 'Digital', case_id: 7 }], linkedReports: [{ id: 42, title: 'Armed Robbery - Fleeca Bank', type: 'Incident' }, { id: 55, title: 'Traffic Violation - Speeding', type: 'Citation' }], activeBolos: [{ id: 1, type: 'Person', reportId: '42', notes: 'Armed and dangerous, last seen near Legion Square' }] },
+				'DEF67890': { citizenid: 'DEF67890', firstName: 'Sarah', lastName: 'Chen', gender: 'Female', dob: '1995-11-22', phone: '555-0299', fingerprint: 'FP-1122-BXYZ', image: '', occupations: ['Doctor'], properties: 1, vehicles: 1, arrests: 0, flags: [], licenses: { driver: true, weapon: true }, customLicenses: [{ id: 1, name: 'Hunting License', active: false }, { id: 2, name: 'Boating License', active: true }, { id: 3, name: 'Pilot License', active: true }], ownedVehicles: [{ plate: 'MED001', vehicle: 'Schafter' }], propertiesList: [{ property_name: 'Eclipse Towers, Apt 5' }], weapons: [], evidence: [], linkedReports: [], activeBolos: [] },
 				'GHI11223': { citizenid: 'GHI11223', firstName: 'James', lastName: 'Wilson', gender: 'Male', dob: '1988-03-08', phone: '555-0377', fingerprint: 'FP-3344-CDEF', image: '', occupations: [], properties: 0, vehicles: 2, arrests: 5, flags: ['Flight Risk'], licenses: { driver: false, weapon: false }, customLicenses: [{ id: 1, name: 'Hunting License', active: false }, { id: 2, name: 'Boating License', active: false }, { id: 3, name: 'Pilot License', active: false }], ownedVehicles: [{ plate: 'RUN4IT', vehicle: 'Comet' }, { plate: 'GHOST7', vehicle: 'Elegy' }], propertiesList: [], weapons: [{ id: 3, serial: 'WPN-5577', scratched: 0, weaponModel: 'weapon_assaultrifle' }], evidence: [], linkedReports: [{ id: 12, title: 'Evading Police', type: 'Incident' }], activeBolos: [] },
 			};
 			selectedProfile = mockProfiles[citizenId] || null;
@@ -378,6 +379,7 @@
 			const response = await fetchNui(NUI_EVENTS.CITIZEN.GET_CITIZEN, { citizenid: citizenId });
 			if (response?.profile) {
 				selectedProfile = response.profile;
+				globalNotifications.success("Profile loaded");
 				citizens = citizens.map((citizen) =>
 					citizen.cid === response.profile.citizenid
 						? { ...citizen, firstName: response.profile.firstName, lastName: response.profile.lastName, gender: response.profile.gender, dob: response.profile.dob, phone: response.profile.phone, image: response.profile.image, occupations: response.profile.occupations || citizen.occupations, properties: response.profile.properties, vehicles: response.profile.vehicles, arrests: response.profile.arrests, flags: response.profile.flags || citizen.flags }
@@ -430,6 +432,48 @@
 		if (selectedProfile) citizenImageBroken = false;
 	});
 
+	// Photo upload/mugshot
+	let citizenPhotoInput: HTMLInputElement | undefined = $state();
+	let uploading = $state(false);
+
+	function openCitizenPhotoUpload() {
+		citizenPhotoInput?.click();
+	}
+
+	async function handleCitizenPhotoUpload(event: Event) {
+		const input = event.target as HTMLInputElement;
+		const file = input.files?.[0];
+		if (!file || !selectedProfile) return;
+
+		uploading = true;
+		globalNotifications.info("Uploading photo...");
+
+		try {
+			const base64 = await compressImage(file);
+
+			const result = await fetchNui<{ success: boolean; message?: string; imageUrl?: string }>(
+				NUI_EVENTS.CITIZEN.UPLOAD_SUSPECT_PHOTO,
+				{ citizenid: selectedProfile.citizenid, image: base64 },
+				{ success: true, message: "Photo uploaded", imageUrl: base64 },
+			);
+
+			if (result.success) {
+				citizenImageBroken = false;
+				selectedProfile = { ...selectedProfile, image: result.imageUrl || base64 };
+				citizens = citizens.map((c) =>
+					c.cid === selectedProfile!.citizenid ? { ...c, image: result.imageUrl || base64 } : c,
+				);
+				globalNotifications.success(result.message || "Photo uploaded");
+			} else {
+				globalNotifications.error(result.message || "Failed to upload photo");
+			}
+		} catch {
+			globalNotifications.error("Failed to upload photo");
+		}
+		uploading = false;
+		input.value = "";
+	}
+
 	async function triggerCitizenMugshot() {
 		if (!selectedProfile) return;
 		try {
@@ -472,6 +516,20 @@
 	let vehicleDetail: VehicleDetail | null = $state(null);
 	let vehicleDetailLoading = $state(false);
 
+	// ── Property detail modal ──
+	interface PropertyDetail {
+		property_name: string;
+		coords?: { x: number; y: number; z: number } | null;
+		streetName?: string;
+		owner?: string;
+		ownerName?: string;
+		keyholders?: Array<{ citizenid: string; name?: string }>;
+	}
+	let propertyDetail: PropertyDetail | null = $state(null);
+	let propertyDetailLoading = $state(false);
+	let waypointSet = $state(false);
+	let waypointTimeout: ReturnType<typeof setTimeout> | null = null;
+
 	function goToBolo(boloId: number) {
 		openBoloDetail(boloId);
 		tabService.setActiveTab("BOLOs");
@@ -503,6 +561,64 @@
 		vehicleDetail = null;
 	}
 
+	async function openPropertyFromProfile(propertyId: number, propertyName: string) {
+		if (!propertyId) return;
+		propertyDetailLoading = true;
+		propertyDetail = null;
+		waypointSet = false;
+
+		if (isEnvBrowser()) {
+			await new Promise((r) => setTimeout(r, 400));
+			propertyDetail = {
+				property_name: propertyName,
+				coords: { x: -59.4, y: -616.29, z: 37.36 },
+				owner: 'ABC12345',
+				ownerName: 'Marcus Rodriguez',
+				keyholders: [
+					{ citizenid: 'DEF67890', name: 'Sarah Chen' },
+					{ citizenid: 'GHI11223', name: 'James Wilson' },
+				],
+			};
+			propertyDetailLoading = false;
+			return;
+		}
+
+		try {
+			const response = await fetchNui<any>('getProperty', { property_id: propertyId });
+			if (response?.property) {
+				propertyDetail = response.property;
+			} else {
+				propertyDetail = { property_name: propertyName };
+			}
+		} catch {
+			propertyDetail = { property_name: propertyName };
+		}
+		propertyDetailLoading = false;
+	}
+
+	function closePropertyDetail() {
+		propertyDetail = null;
+		waypointSet = false;
+		if (waypointTimeout) clearTimeout(waypointTimeout);
+	}
+
+	async function setPropertyWaypoint() {
+		if (!propertyDetail?.coords) return;
+		try {
+			await fetchNui(NUI_EVENTS.CITIZEN.SET_WAYPOINT, { x: propertyDetail.coords.x, y: propertyDetail.coords.y });
+			waypointSet = true;
+			if (waypointTimeout) clearTimeout(waypointTimeout);
+			waypointTimeout = setTimeout(() => { waypointSet = false; }, 2500);
+		} catch {
+			// silent — waypoint set is best-effort
+		}
+	}
+
+	function formatCoords(coords: { x: number; y: number; z: number } | null | undefined): string {
+		if (!coords) return 'Unknown';
+		return `${coords.x.toFixed(1)}, ${coords.y.toFixed(1)}, ${coords.z.toFixed(1)}`;
+	}
+
 	async function toggleLicense(type: "driver" | "weapon", enabled: boolean) {
 		if (!selectedProfile) return;
 		const response = await fetchNui(NUI_EVENTS.CITIZEN.UPDATE_CITIZEN_LICENSE, {
@@ -531,6 +647,7 @@
 		}
 	}
 
+	// ── Active licenses ──
 	interface LicenseEntry {
 		key: string;
 		name: string;
@@ -592,14 +709,18 @@
 			await fetchNui("copyToClipboard", { text: value });
 			showCopyNotice(label);
 			return;
-		} catch { /* NUI not available */ }
+		} catch {
+			// NUI callback not available
+		}
 		try {
 			if (navigator?.clipboard?.writeText) {
 				await navigator.clipboard.writeText(value);
 				showCopyNotice(label);
 				return;
 			}
-		} catch { /* blocked */ }
+		} catch {
+			// silent
+		}
 		try {
 			const textarea = document.createElement("textarea");
 			textarea.value = value;
@@ -610,7 +731,9 @@
 			document.execCommand("copy");
 			document.body.removeChild(textarea);
 			showCopyNotice(label);
-		} catch { /* silent */ }
+		} catch {
+			// silent
+		}
 	}
 </script>
 
@@ -873,7 +996,12 @@
 							<div class="section-list">
 								{#if selectedProfile.propertiesList && selectedProfile.propertiesList.length > 0}
 									{#each sectionSlice(selectedProfile.propertiesList, propertiesPage) as p}
-										<div class="sitem"><div class="sitem-info"><span class="sitem-primary">{p.house}</span></div></div>
+										<div class="sitem">
+											<div class="sitem-info"><span class="sitem-primary">{p.property_name}</span></div>
+											<button class="sitem-arrow" title="View Property" onclick={() => openPropertyFromProfile(p.id, p.property_name)}>
+												<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+											</button>
+										</div>
 									{/each}
 								{:else}<div class="empty-msg">No properties</div>{/if}
 							</div>
@@ -1068,6 +1196,7 @@
 		{/if}
 
 		<!-- Vehicle Detail Modal -->
+		<!-- ── Vehicle Detail Modal ── -->
 		{#if vehicleDetail || vehicleDetailLoading}
 			<div class="modal-overlay" onclick={closeVehicleDetail}>
 				<div class="modal-card" onclick={(e) => e.stopPropagation()}>
@@ -1090,6 +1219,101 @@
 							{#if vehicleDetail.stolen}<div class="vd-row"><span class="vd-label">Stolen</span><span class="vd-value accent-red">Yes</span></div>{/if}
 							{#if vehicleDetail.boloactive}<div class="vd-row"><span class="vd-label">BOLO</span><span class="vd-value" style="color: #fbbf24;">Active</span></div>{/if}
 							{#if vehicleDetail.information}<div class="vd-row vd-notes"><span class="vd-label">Notes</span><span class="vd-value">{vehicleDetail.information}</span></div>{/if}
+						</div>
+					{/if}
+				</div>
+			</div>
+		{/if}
+
+		<!-- ── Property Detail Modal ── -->
+		{#if propertyDetail || propertyDetailLoading}
+			<div class="modal-overlay" onclick={closePropertyDetail}>
+				<div class="modal-card modal-card-property" onclick={(e) => e.stopPropagation()}>
+					{#if propertyDetailLoading}
+						<div class="center-msg"><div class="spinner"></div><span>Loading property...</span></div>
+					{:else if propertyDetail}
+						<div class="modal-header">
+							<div class="prop-modal-title-group">
+								<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: rgba(96,165,250,0.6); flex-shrink:0; margin-top:1px"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+								<h3>{propertyDetail.property_name}</h3>
+							</div>
+							<button class="modal-close" onclick={closePropertyDetail}>
+								<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+							</button>
+						</div>
+
+						<!-- Location banner -->
+						{#if propertyDetail.coords}
+							<button
+								class="prop-location-banner"
+								class:waypoint-active={waypointSet}
+								onclick={setPropertyWaypoint}
+								title="Set GPS waypoint"
+							>
+								<div class="prop-location-left">
+									<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
+									<div class="prop-location-text">
+										<span class="prop-location-label">Location</span>
+										<span class="prop-location-coords">
+											{propertyDetail.streetName || propertyDetail.property_name}
+										</span>
+									</div>
+								</div>
+								<div class="prop-waypoint-btn" class:waypoint-done={waypointSet}>
+									{#if waypointSet}
+										<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+										Waypoint Set
+									{:else}
+										<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
+										Set Waypoint
+									{/if}
+								</div>
+							</button>
+						{/if}
+
+						<div class="modal-body">
+							<!-- Owner row -->
+							<div class="prop-section-label">Owner</div>
+							{#if propertyDetail.ownerName || propertyDetail.owner}
+								<div class="prop-person-row prop-owner-row">
+									<div class="prop-person-avatar prop-owner-avatar">
+										<svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+									</div>
+									<div class="prop-person-info">
+										<span class="prop-person-name">{propertyDetail.ownerName || 'Unknown'}</span>
+										{#if propertyDetail.owner}
+											<span class="prop-person-cid">{propertyDetail.owner}</span>
+										{/if}
+									</div>
+									<span class="prop-role-badge prop-role-owner">Owner</span>
+								</div>
+							{:else}
+								<div class="prop-empty-row">No owner on record</div>
+							{/if}
+
+							<!-- Keyholders -->
+							<div class="prop-section-label prop-section-label-gap">
+								Keyholders
+								<span class="prop-kh-count">{propertyDetail.keyholders?.length || 0}</span>
+							</div>
+							{#if propertyDetail.keyholders && propertyDetail.keyholders.length > 0}
+								<div class="prop-keyholders-list">
+									{#each propertyDetail.keyholders as kh}
+										<button class="prop-person-row prop-person-clickable" onclick={() => { closePropertyDetail(); viewProfile(kh.citizenid); }}>
+											<div class="prop-person-avatar">
+												<svg width="13" height="13" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+											</div>
+											<div class="prop-person-info">
+												<span class="prop-person-name">{kh.name || 'Unknown'}</span>
+												<span class="prop-person-cid">{kh.citizenid}</span>
+											</div>
+											<span class="prop-role-badge prop-role-key">Key Access</span>
+										</button>
+									{/each}
+								</div>
+							{:else}
+								<div class="prop-empty-row">No keyholders</div>
+							{/if}
 						</div>
 					{/if}
 				</div>
@@ -1299,6 +1523,12 @@
 	.panel-caution { font-size: 9px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; padding: 3px 8px; border-radius: 3px; margin-bottom: 8px; }
 	.caution-danger { background: rgba(239,68,68,0.08); color: #f87171; }
 	.caution-warning { background: rgba(245,158,11,0.08); color: #fbbf24; }
+	.profile-view { display: flex; flex-direction: column; height: 100%; overflow: hidden;}
+
+	.panel-caution { font-size: 9px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; padding: 3px 8px; border-radius: 3px; margin-bottom: 8px; }
+	.caution-danger { background: rgba(239,68,68,0.08); color: #f87171; }
+	.caution-warning { background: rgba(245,158,11,0.08); color: #fbbf24; }
+
 	.panel-danger { border: 1px solid rgba(239,68,68,0.35) !important; }
 	.panel-warning { border: 1px solid rgba(245,158,11,0.35) !important; }
 	.cnt-danger { background: rgba(239,68,68,0.12) !important; color: #f87171 !important; }
@@ -1351,6 +1581,8 @@
 
 	.license-status { font-size: 11px; color: rgba(239,68,68,0.8); font-weight: 500; }
 	.license-status.license-active { color: rgba(34,197,94,0.8); }
+	.license-status { font-size: 11px; color: rgba(239, 68, 68, 0.8); font-weight: 500; }
+	.license-status.license-active { color: rgba(34, 197, 94, 0.8); }
 
 	.toggle { position: relative; display: inline-block; width: 32px; height: 16px; flex-shrink: 0; }
 	.toggle input { opacity: 0; width: 0; height: 0; }
@@ -1365,6 +1597,7 @@
 	.profile-main::-webkit-scrollbar { width: 3px; }
 	.profile-main::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.06); border-radius: 2px; }
 	.sections-grid { display: grid; grid-template-columns: 1fr 1fr; }
+
 	.sections-grid .panel { border-bottom: 1px solid rgba(255,255,255,0.06); border-right: 1px solid rgba(255,255,255,0.06); }
 	.sections-grid .panel:nth-child(2n) { border-right: none; }
 	.profile-main > .panel { border-bottom: 1px solid rgba(255,255,255,0.06); }
@@ -1408,6 +1641,19 @@
 	.modal-close:hover { color: rgba(255,255,255,0.7); border-color: rgba(255,255,255,0.1); }
 	.modal-body { padding: 0; }
 
+	.upload-spinner { width: 10px; height: 10px; border: 2px solid rgba(255,255,255,0.15); border-left-color: var(--accent-60); border-radius: 50%; animation: spin 0.8s linear infinite; }
+
+	/* ── Shared modals ── */
+	.modal-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 100; backdrop-filter: blur(2px); }
+	.modal-card { background: var(--dark-bg); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; width: 360px; max-height: 80%; overflow-y: auto; }
+	.modal-card-property { width: 400px; }
+	.modal-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid rgba(255,255,255,0.06); }
+	.modal-header h3 { margin: 0; font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.85); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+	.modal-close { background: none; border: none; color: rgba(255,255,255,0.3); cursor: pointer; padding: 4px; border-radius: 4px; display: flex; flex-shrink: 0; }
+	.modal-close:hover { color: rgba(255,255,255,0.7); background: rgba(255,255,255,0.04); }
+	.modal-body { padding: 0; }
+
+	/* ── Vehicle modal rows ── */
 	.vd-row { display: flex; justify-content: space-between; align-items: center; padding: 9px 16px; border-bottom: 1px solid rgba(255,255,255,0.04); }
 	.vd-row:last-child { border-bottom: none; }
 	.vd-label { color: rgba(255,255,255,0.3); font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
@@ -1420,6 +1666,54 @@
 	.vd-status-bolo { color: #fbbf24 !important; }
 	.vd-status-valid { color: #34d399 !important; }
 
+	/* ── Property modal ── */
+	.prop-modal-title-group { display: flex; align-items: flex-start; gap: 7px; flex: 1; min-width: 0; }
+	.prop-modal-title-group h3 { white-space: normal; line-height: 1.3; }
+
+	/* Location banner — clickable strip */
+	.prop-location-banner { display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; background: rgba(96,165,250,0.04); border-bottom: 1px solid rgba(96,165,250,0.08); cursor: pointer; width: 100%; border: none; text-align: left; transition: background 0.12s; }
+	.prop-location-banner:hover { background: rgba(96,165,250,0.08); }
+	.prop-location-banner.waypoint-active { background: rgba(52,211,153,0.05); border-bottom-color: rgba(52,211,153,0.1); }
+	.prop-location-left { display: flex; align-items: center; gap: 8px; min-width: 0; }
+	.prop-location-left svg { color: rgba(96,165,250,0.5); flex-shrink: 0; }
+	.prop-location-text { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+	.prop-location-label { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: rgba(255,255,255,0.25); }
+	.prop-location-coords { font-size: 11px; color: rgba(255,255,255,0.6); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+	.prop-person-clickable { cursor: pointer; background: transparent; border: none; width: 100%; text-align: left; font: inherit; color: inherit; }
+	.prop-person-clickable:hover { background: rgba(255,255,255,0.03); }
+
+	.prop-waypoint-btn { display: flex; align-items: center; gap: 4px; font-size: 10px; font-weight: 600; color: rgba(96,165,250,0.6); flex-shrink: 0; padding: 4px 8px; border-radius: 4px; border: 1px solid rgba(96,165,250,0.12); background: rgba(96,165,250,0.05); transition: all 0.12s; }
+	.prop-location-banner:hover .prop-waypoint-btn { color: rgba(96,165,250,0.9); border-color: rgba(96,165,250,0.25); background: rgba(96,165,250,0.1); }
+	.prop-waypoint-btn.waypoint-done { color: #34d399; border-color: rgba(52,211,153,0.2); background: rgba(52,211,153,0.06); }
+
+	/* Property body sections */
+	.prop-section-label { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: rgba(255,255,255,0.25); padding: 12px 16px 6px; display: flex; align-items: center; gap: 6px; }
+	.prop-section-label-gap { padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.04); }
+	.prop-kh-count { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.3); font-size: 9px; padding: 0 5px; border-radius: 3px; line-height: 15px; }
+
+	.prop-person-row { display: flex; align-items: center; gap: 10px; padding: 8px 16px; transition: background 0.1s; }
+	.prop-person-row:hover { background: rgba(255,255,255,0.02); }
+	.prop-keyholders-list { display: flex; flex-direction: column; padding-bottom: 4px; }
+
+	.prop-person-avatar { width: 28px; height: 28px; border-radius: 50%; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: rgba(255,255,255,0.25); }
+	.prop-owner-avatar { background: rgba(96,165,250,0.08); color: rgba(96,165,250,0.5); }
+
+	.prop-person-info { display: flex; flex-direction: column; gap: 1px; flex: 1; min-width: 0; }
+	.prop-person-name { font-size: 12px; font-weight: 500; color: rgba(255,255,255,0.8); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+	.prop-person-cid { font-size: 10px; color: rgba(255,255,255,0.25); font-family: monospace; }
+
+	.prop-role-badge { font-size: 9px; font-weight: 700; letter-spacing: 0.3px; padding: 2px 7px; border-radius: 3px; flex-shrink: 0; border: 1px solid transparent; }
+	.prop-role-owner { background: rgba(96,165,250,0.1); color: #93c5fd; border-color: rgba(96,165,250,0.15); }
+	.prop-role-key { background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.35); border-color: rgba(255,255,255,0.06); }
+
+	.prop-empty-row { padding: 10px 16px; font-size: 11px; color: rgba(255,255,255,0.2); }
+
+	.prop-owner-row { border-bottom: none; }
+
+	.prop-coords-row { display: flex; align-items: center; gap: 6px; padding: 8px 16px 12px; border-top: 1px solid rgba(255,255,255,0.04); color: rgba(255,255,255,0.2); font-size: 10px; font-family: monospace; }
+	.prop-coords-row svg { color: rgba(255,255,255,0.15); flex-shrink: 0; }
+
+	/* Issue License button */
 	.issue-license-btn { display: flex; align-items: center; gap: 3px; margin-left: auto; background: rgba(59,130,246,0.06); border: 1px solid rgba(59,130,246,0.1); border-radius: 3px; padding: 2px 8px; color: rgba(147,197,253,0.7); font-size: 9px; font-weight: 600; cursor: pointer; transition: all 0.12s; text-transform: none; letter-spacing: 0; }
 	.issue-license-btn:hover { background: rgba(59,130,246,0.12); color: rgba(147,197,253,0.9); }
 
