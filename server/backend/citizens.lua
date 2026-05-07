@@ -143,11 +143,11 @@ ps.registerCallback(resourceName .. ':server:getCitizens', function(source, page
         end
 
         local propRows = safeQuery(
-            ('SELECT citizenid, COUNT(*) AS cnt FROM properties WHERE owner IN (%s) GROUP BY owner'):format(inClause),
+            ('SELECT owner, COUNT(*) AS cnt FROM properties WHERE owner IN (%s) GROUP BY owner'):format(inClause),
             citizenids
         )
         for _, row in ipairs(propRows) do
-            propCounts[row.citizenid] = tonumber(row.cnt) or 0
+            propCounts[row.owner] = tonumber(row.cnt) or 0
         end
 
         local vehRows = safeQuery(
@@ -280,7 +280,7 @@ ps.registerCallback(resourceName .. ':server:searchCitizens', function(source, q
             citizenids
         )
         for _, row in ipairs(propRows) do
-            propCounts[row.citizenid] = tonumber(row.cnt) or 0
+            propCounts[row.owner] = tonumber(row.cnt) or 0
         end
 
         local vehRows = safeQuery(
