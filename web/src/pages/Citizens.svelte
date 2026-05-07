@@ -81,6 +81,7 @@
 			information?: string;
 			weaponClass?: number;
 			weaponModel?: string;
+			flags?: Array<{ type: string; info: string }>;
 		}>;
 		linkedReports?: Array<{
 			id: number;
@@ -326,6 +327,16 @@
 			case "Violent": return "flag-orange";
 			case "Flight Risk": return "flag-amber";
 			default: return "";
+		}
+	}
+
+	function getFlagClass(flag: { type: string; info: string }): string {
+		switch (flag.type) {
+			case "Stolen":
+			case "Wanted":
+				return "pill pill-red";
+			default:
+				return "pill pill-grey";
 		}
 	}
 
@@ -1088,8 +1099,20 @@
 								{#if selectedProfile.weapons && selectedProfile.weapons.length > 0}
 									{#each sectionSlice(selectedProfile.weapons, weaponsPage) as w}
 										<div class="sitem">
-											<div class="sitem-info"><span class="sitem-primary">{w.weaponModel}</span><span class="sitem-secondary">{w.serial}</span></div>
-											{#if w.scratched}<span class="badge badge-red">Scratched</span>{:else}<span class="badge badge-green">Intact</span>{/if}
+											<div class="sitem-info">
+												<span class="sitem-primary">{w.weaponModel}</span>
+												<span class="sitem-secondary">{w.serial}</span>
+											</div>
+											<div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap;">
+												{#if w.scratched}
+													<span class="badge badge-red">Scratched</span>
+												{:else}
+													<span class="badge badge-green">Intact</span>
+												{/if}
+												{#each w.flags ?? [] as flag}
+													<span class="badge {flag.type === 'Stolen' || flag.type === 'Wanted' ? 'badge-red' : ''}">{flag.type}</span>
+												{/each}
+											</div>
 										</div>
 									{/each}
 								{:else}<div class="empty-msg">No weapons</div>{/if}
