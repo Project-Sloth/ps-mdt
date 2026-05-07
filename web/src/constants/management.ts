@@ -87,6 +87,7 @@ export const PERMISSION_CATEGORIES: PermissionCategory[] = [
 		icon: "security",
 		permissions: [
 			{ key: "weapons_search", label: "Search Weapons", description: "Search and view weapon records" },
+			{ key: "weapons_add", label: "Add Weapons", description: "Register a new gun manually" },
 		],
 	},
 	{

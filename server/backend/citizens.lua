@@ -100,7 +100,9 @@ ps.registerCallback(resourceName .. ':server:getCitizens', function(source, page
         JSON_UNQUOTE(JSON_EXTRACT(p.charinfo, '$.gender')) AS gender,
         JSON_UNQUOTE(JSON_EXTRACT(p.charinfo, '$.birthdate')) AS dateofbirth,
         JSON_UNQUOTE(JSON_EXTRACT(p.charinfo, '$.phone')) AS phone,
-        JSON_UNQUOTE(JSON_EXTRACT(p.job, '$.label')) AS job
+        JSON_UNQUOTE(JSON_EXTRACT(p.job, '$.label')) AS job,
+        JSON_UNQUOTE(JSON_EXTRACT(p.metadata, '$.fingerprint')) AS fingerprint,
+        JSON_UNQUOTE(JSON_EXTRACT(p.metadata, '$.dna')) AS dna
         FROM players AS p
         LEFT JOIN mdt_profiles AS mp
         ON CONVERT(p.citizenid USING utf8mb4) COLLATE utf8mb4_general_ci = CONVERT(mp.citizenid USING utf8mb4) COLLATE utf8mb4_general_ci
@@ -143,11 +145,11 @@ ps.registerCallback(resourceName .. ':server:getCitizens', function(source, page
         end
 
         local propRows = safeQuery(
-            ('SELECT citizenid, COUNT(*) AS cnt FROM player_houses WHERE citizenid IN (%s) GROUP BY citizenid'):format(inClause),
+            ('SELECT owner, COUNT(*) AS cnt FROM properties WHERE owner IN (%s) GROUP BY owner'):format(inClause),
             citizenids
         )
         for _, row in ipairs(propRows) do
-            propCounts[row.citizenid] = tonumber(row.cnt) or 0
+            propCounts[row.owner] = tonumber(row.cnt) or 0
         end
 
         local vehRows = safeQuery(
@@ -176,6 +178,8 @@ ps.registerCallback(resourceName .. ':server:getCitizens', function(source, page
         v.dob = v.dateofbirth
         v.phone = v.phone
         v.image = profilePics[v.citizenid] or nil
+        v.fingerprint = v.fingerprint or nil
+        v.dna = v.dna or nil
         v.occupations = { v.job }
         v.properties = propCounts[v.citizenid] or 0
         v.vehicles = vehCounts[v.citizenid] or 0
@@ -216,14 +220,15 @@ ps.registerCallback(resourceName .. ':server:searchCitizens', function(source, q
     -- Build a complex search query that searches across multiple fields and returns same data as getCitizens
     local sqlQuery = [[
         SELECT DISTINCT
-            mp.id,
-            p.citizenid,
+            mp.id, p.citizenid,
             JSON_UNQUOTE(JSON_EXTRACT(p.charinfo, '$.firstname')) AS firstname,
             JSON_UNQUOTE(JSON_EXTRACT(p.charinfo, '$.lastname')) AS lastname,
             JSON_UNQUOTE(JSON_EXTRACT(p.charinfo, '$.gender')) AS gender,
             JSON_UNQUOTE(JSON_EXTRACT(p.charinfo, '$.birthdate')) AS dateofbirth,
             JSON_UNQUOTE(JSON_EXTRACT(p.charinfo, '$.phone')) AS phone,
-            JSON_UNQUOTE(JSON_EXTRACT(p.job, '$.label')) AS job
+            JSON_UNQUOTE(JSON_EXTRACT(p.job, '$.label')) AS job,
+            JSON_UNQUOTE(JSON_EXTRACT(p.metadata, '$.fingerprint')) AS fingerprint,
+            JSON_UNQUOTE(JSON_EXTRACT(p.metadata, '$.dna')) AS dna
         FROM players AS p
         LEFT JOIN mdt_profiles AS mp ON p.citizenid COLLATE utf8mb4_general_ci = mp.citizenid COLLATE utf8mb4_general_ci
         WHERE 
@@ -232,13 +237,15 @@ ps.registerCallback(resourceName .. ':server:searchCitizens', function(source, q
             LOWER(CONCAT(JSON_UNQUOTE(JSON_EXTRACT(p.charinfo, '$.firstname')), ' ', JSON_UNQUOTE(JSON_EXTRACT(p.charinfo, '$.lastname')))) LIKE ? OR
             LOWER(p.citizenid) LIKE ? OR
             LOWER(JSON_UNQUOTE(JSON_EXTRACT(p.charinfo, '$.phone'))) LIKE ? OR
-            LOWER(JSON_UNQUOTE(JSON_EXTRACT(p.job, '$.label'))) LIKE ?
+            LOWER(JSON_UNQUOTE(JSON_EXTRACT(p.job, '$.label'))) LIKE ? OR
+            LOWER(JSON_UNQUOTE(JSON_EXTRACT(p.metadata, '$.fingerprint'))) LIKE ? OR
+            LOWER(JSON_UNQUOTE(JSON_EXTRACT(p.metadata, '$.dna'))) LIKE ?
         LIMIT ?
     ]]
 
-    local searchLimit = Config.Pagination and Config.Pagination.CitizenSearch or 20
     local result = safeQuery(sqlQuery, {
-        searchTerm, searchTerm, searchTerm, searchTerm, searchTerm, searchTerm, searchLimit
+        searchTerm, searchTerm, searchTerm, searchTerm,
+        searchTerm, searchTerm, searchTerm, searchTerm
     })
     if not result or #result == 0 then return {} end
 
@@ -276,11 +283,11 @@ ps.registerCallback(resourceName .. ':server:searchCitizens', function(source, q
         end
 
         local propRows = safeQuery(
-            ('SELECT citizenid, COUNT(*) AS cnt FROM player_houses WHERE citizenid IN (%s) GROUP BY citizenid'):format(inClause),
+            ('SELECT owner, COUNT(*) AS cnt FROM properties WHERE owner IN (%s) GROUP BY owner'):format(inClause),
             citizenids
         )
         for _, row in ipairs(propRows) do
-            propCounts[row.citizenid] = tonumber(row.cnt) or 0
+            propCounts[row.owner] = tonumber(row.cnt) or 0
         end
 
         local vehRows = safeQuery(
@@ -420,7 +427,7 @@ ps.registerCallback(resourceName .. ':server:getCitizenProfile', function(source
     local flags = collectCitizenFlags({ citizenid })
     local vehicles = MySQL.query.await('SELECT plate, vehicle FROM player_vehicles WHERE citizenid = ?', { citizenid }) or {}
     local vehiclesCount = #vehicles
-    local properties = MySQL.query.await('SELECT house FROM player_houses WHERE citizenid = ?', { citizenid }) or {}
+    local properties = MySQL.query.await('SELECT id, property_name, coords, keyholders FROM properties WHERE owner = ?', { citizenid }) or {}
     local propertiesCount = #properties
     local arrestsCount = MySQL.scalar.await('SELECT COUNT(*) FROM mdt_arrests WHERE citizenid = ?', { citizenid }) or 0
     local activeWarrants = MySQL.query.await([[
@@ -1105,6 +1112,117 @@ ps.registerCallback(resourceName .. ':server:getMyProfile', function(source)
             weapons = weapons,
             licenses = { driver = licences.driver or false, weapon = licences.weapon or false },
             customLicenses = clList,
+        }
+    }
+end)
+
+ps.registerCallback(resourceName .. ':server:getProperty', function(source, propertyId)
+    local src = source
+    if not CheckAuth(src) then return { success = false, message = 'Unauthorized' } end
+
+    if not propertyId then
+        return { success = false, message = 'Missing property id' }
+    end
+
+    local propRow = MySQL.single.await([[
+        SELECT id, property_name, coords, owner, keyholders
+        FROM properties
+        WHERE id = ?
+        LIMIT 1
+    ]], { propertyId })
+ 
+    if not propRow then
+        return { success = false, message = 'Property not found' }
+    end
+ 
+    -- Decode coords JSON → table
+    local coords = nil
+    if propRow.coords and propRow.coords ~= '' then
+        local ok, decoded = pcall(json.decode, propRow.coords)
+        if ok and decoded then
+            coords = decoded
+        end
+    end
+ 
+    -- Resolve owner citizenid → full name
+    local ownerName = nil
+    if propRow.owner and propRow.owner ~= '' then
+        local ownerRow = MySQL.single.await([[
+            SELECT JSON_UNQUOTE(JSON_EXTRACT(charinfo, '$.firstname')) AS firstname,
+                   JSON_UNQUOTE(JSON_EXTRACT(charinfo, '$.lastname'))  AS lastname
+            FROM players
+            WHERE citizenid = ?
+            LIMIT 1
+        ]], { propRow.owner })
+        if ownerRow then
+            ownerName = (ownerRow.firstname or '') .. ' ' .. (ownerRow.lastname or '')
+            ownerName = ownerName:match('^%s*(.-)%s*$') -- trim
+        end
+    end
+ 
+    -- Decode keyholders JSON → array of citizenids
+    -- The column stores either a JSON array of citizenids (["CID1","CID2",...])
+    -- or a JSON object keyed by citizenid — we handle both.
+    local keyholderList = {}
+    if propRow.keyholders and propRow.keyholders ~= '' and propRow.keyholders ~= '{}' and propRow.keyholders ~= '[]' then
+        local ok, decoded = pcall(json.decode, propRow.keyholders)
+        if ok and decoded then
+            -- Array form: ["CID1", "CID2"]
+            if decoded[1] ~= nil then
+                for _, cid in ipairs(decoded) do
+                    keyholderList[#keyholderList + 1] = tostring(cid)
+                end
+            else
+                -- Object/map form: { CID1 = true, CID2 = 1, ... }
+                for cid, _ in pairs(decoded) do
+                    keyholderList[#keyholderList + 1] = tostring(cid)
+                end
+            end
+        end
+    end
+ 
+    -- Batch-resolve keyholder names
+    local keyholders = {}
+    if #keyholderList > 0 then
+        local placeholders = {}
+        for i = 1, #keyholderList do placeholders[i] = '?' end
+        local khRows = MySQL.query.await(([[
+            SELECT citizenid,
+                   JSON_UNQUOTE(JSON_EXTRACT(charinfo, '$.firstname')) AS firstname,
+                   JSON_UNQUOTE(JSON_EXTRACT(charinfo, '$.lastname'))  AS lastname
+            FROM players
+            WHERE citizenid IN (%s)
+        ]]):format(table.concat(placeholders, ',')), keyholderList)
+ 
+        -- Build a lookup map for fast access
+        local nameMap = {}
+        for _, row in ipairs(khRows or {}) do
+            local full = ((row.firstname or '') .. ' ' .. (row.lastname or '')):match('^%s*(.-)%s*$')
+            nameMap[row.citizenid] = full ~= '' and full or nil
+        end
+ 
+        -- Preserve original keyholder order
+        for _, cid in ipairs(keyholderList) do
+            -- Skip if the keyholder is the owner (already shown as owner)
+            if cid ~= propRow.owner then
+                keyholders[#keyholders + 1] = {
+                    citizenid = cid,
+                    name = nameMap[cid] or 'Unknown',
+                }
+            end
+        end
+    end
+
+
+    return {
+        success = true,
+        property = {
+            property_name = propRow.property_name,
+            coords        = coords,
+            streetName    = propRow.streetName,
+            owner         = propRow.owner or nil,
+            ownerName     = ownerName,
+            keyholders    = keyholders,
         }
     }
 end)

@@ -65,6 +65,8 @@ export const NUI_EVENTS = {
 	},
 	CITIZEN: {
 		GET_CITIZENS: "getCitizens",
+		GET_PROPERTY: "getProperty",
+		SET_WAYPOINT: "setWaypoint",
 		SEARCH_CITIZENS: "searchCitizens",
 		GET_CITIZEN: "getCitizen",
 		UPDATE_CITIZEN: "updateCitizen",
@@ -83,6 +85,8 @@ export const NUI_EVENTS = {
 		ADD_SUSPECT_FINGERPRINT: "addSuspectFingerprint",
 		UPDATE_CITIZEN_DNA: "updateCitizenDNA",
 		UPDATE_CITIZEN_FINGERPRINT: "updateCitizenFingerprint",
+		ADD_CITIZEN_GALLERY: 'addCitizenGallery',
+		REMOVE_CITIZEN_GALLERY: 'removeCitizenGallery',
 	},
 	VEHICLE: {
 		GET_VEHICLES: "getVehicles",
@@ -96,7 +100,10 @@ export const NUI_EVENTS = {
 		SEARCH_WEAPONS: "searchWeapons",
 		GET_WEAPON: "getWeapon",
 		GET_WEAPON_HISTORY: "getWeaponOwnershipHistory",
+		SAVE_WEAPON_INFO: 'saveWeaponInfo',
 		UPDATE_WEAPON: "updateWeapon",
+		GET_WEAPON_CONFIG: "getWeaponConfig",
+		SAVE_WEAPON_FLAGS: "saveWeaponFlags",
 	},
 	CHARGE: {
 		GET_CHARGES: "getCharges",

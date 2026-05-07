@@ -109,7 +109,7 @@
 		citizens: ["citizens_search"],
 		bolos: ["bolos_view", "bolos_create"],
 		vehicles: ["vehicles_search"],
-		weapons: ["weapons_search"],
+		weapons: ["weapons_search", "weapons_add"],
 		cases: ["cases_view", "cases_create"],
 		evidence: ["evidence_view", "evidence_create"],
 		reports: ["reports_view", "reports_create"],
@@ -208,7 +208,7 @@
 		{:else if activeComponent === "vehicles"}
 			<Vehicles {tabService} />
 		{:else if activeComponent === "weapons"}
-			<Weapons />
+			<Weapons {tabService} {authService} />
 		{:else if activeComponent === "cases"}
 			<Cases {tabService} />
 		{:else if String(activeComponent) === "evidence"}

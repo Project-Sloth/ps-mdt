@@ -60,7 +60,7 @@ local function getAllPermissions()
         'citizens_search', 'citizens_edit_licenses',
         'bolos_view', 'bolos_create',
         'vehicles_search', 'vehicles_edit_dmv',
-        'weapons_search',
+        'weapons_search', 'weapons_add',
         'cases_view', 'cases_create', 'cases_edit', 'cases_delete',
         'evidence_view', 'evidence_create', 'evidence_transfer', 'evidence_upload',
         'reports_view', 'reports_create', 'reports_delete',
