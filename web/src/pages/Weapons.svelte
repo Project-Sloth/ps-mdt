@@ -154,7 +154,7 @@
 		historyLoading = true;
 		try {
 			const response = await fetchNui<WeaponHistoryEntry[]>(
-				"getWeaponOwnershipHistory" as unknown as typeof NUI_EVENTS.WEAPON.GET_WEAPONS,
+				NUI_EVENTS.WEAPON.GET_WEAPON_HISTORY,
 				{ serial: weapon.serial },
 				[],
 			);
@@ -240,7 +240,7 @@
 			weapons = Array.isArray(weaponsRes.weapons) ? weaponsRes.weapons : [];
 			weaponOptions = configRes.weapons ?? [];
 		} catch (error) {
-			globalNotifications.error("Failed to load weapons");
+			globalNotifications.error("Failed to load weapons #1");
 			weapons = [];
 		}
 		loading = false;
@@ -253,7 +253,7 @@
 			const response = await fetchNui(NUI_EVENTS.WEAPON.GET_WEAPONS);
 			weapons = Array.isArray(response.weapons) ? response.weapons : [];
 		} catch (error) {
-			globalNotifications.error("Failed to load weapons");
+			globalNotifications.error("Failed to load weapons #2");
 			weapons = [];
 		}
 		loading = false;
