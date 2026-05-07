@@ -517,11 +517,24 @@ ps.registerCallback(resourceName .. ':server:getCitizenProfile', function(source
     end
 
     local weapons = MySQL.query.await([[
-        SELECT id, serial, scratched, owner, information, weaponClass, weaponModel
+        SELECT id, serial, scratched, owner, information, weaponClass, weaponModel, flags
         FROM mdt_weapons
         WHERE owner = ?
         ORDER BY id DESC
     ]], { citizenid }) or {}
+
+    local weaponsMapped = {}
+    for _, w in ipairs(weapons) do
+        weaponsMapped[#weaponsMapped + 1] = {
+            id = w.id,
+            serial = w.serial,
+            scratched = w.scratched,
+            information = w.information,
+            weaponClass = w.weaponClass,
+            weaponModel = w.weaponModel,
+            flags = w.flags and json.decode(w.flags) or {},
+        }
+    end
 
     local linkedReports = {}
     if #involvedReportIds > 0 then
@@ -589,7 +602,7 @@ ps.registerCallback(resourceName .. ':server:getCitizenProfile', function(source
             activeWarrants = activeWarrants,
             activeBolos = activeBoloDetails,
             evidence = evidence,
-            weapons = weapons,
+            weapons = weaponsMapped,
             linkedReports = linkedReports,
             ownedVehicles = vehicles,
             propertiesList = properties,
