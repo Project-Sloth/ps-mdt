@@ -1109,21 +1109,20 @@ ps.registerCallback(resourceName .. ':server:getMyProfile', function(source)
     }
 end)
 
-ps.registerCallback(resourceName .. ':server:getProperty', function(source, propertyName)
+ps.registerCallback(resourceName .. ':server:getProperty', function(source, propertyId)
     local src = source
     if not CheckAuth(src) then return { success = false, message = 'Unauthorized' } end
- 
-    if not propertyName or propertyName == '' then
-        return { success = false, message = 'Missing property name' }
+
+    if not propertyId then
+        return { success = false, message = 'Missing property id' }
     end
- 
-    -- Fetch the property row (match by property_name)
+
     local propRow = MySQL.single.await([[
         SELECT id, property_name, coords, owner, keyholders
         FROM properties
-        WHERE property_name = ?
+        WHERE id = ?
         LIMIT 1
-    ]], { propertyName })
+    ]], { propertyId })
  
     if not propRow then
         return { success = false, message = 'Property not found' }
