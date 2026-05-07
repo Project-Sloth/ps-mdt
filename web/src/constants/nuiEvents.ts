@@ -100,7 +100,9 @@ export const NUI_EVENTS = {
 		SEARCH_WEAPONS: "searchWeapons",
 		GET_WEAPON: "getWeapon",
 		GET_WEAPON_HISTORY: "getWeaponOwnershipHistory",
+		SAVE_WEAPON_INFO: 'saveWeaponInfo',
 		UPDATE_WEAPON: "updateWeapon",
+		GET_WEAPON_CONFIG: "getWeaponConfig",
 		SAVE_WEAPON_FLAGS: "saveWeaponFlags",
 	},
 	CHARGE: {

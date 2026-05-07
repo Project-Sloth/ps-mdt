@@ -100,7 +100,9 @@ ps.registerCallback(resourceName .. ':server:getCitizens', function(source, page
         JSON_UNQUOTE(JSON_EXTRACT(p.charinfo, '$.gender')) AS gender,
         JSON_UNQUOTE(JSON_EXTRACT(p.charinfo, '$.birthdate')) AS dateofbirth,
         JSON_UNQUOTE(JSON_EXTRACT(p.charinfo, '$.phone')) AS phone,
-        JSON_UNQUOTE(JSON_EXTRACT(p.job, '$.label')) AS job
+        JSON_UNQUOTE(JSON_EXTRACT(p.job, '$.label')) AS job,
+        JSON_UNQUOTE(JSON_EXTRACT(p.metadata, '$.fingerprint')) AS fingerprint,
+        JSON_UNQUOTE(JSON_EXTRACT(p.metadata, '$.dna')) AS dna
         FROM players AS p
         LEFT JOIN mdt_profiles AS mp
         ON CONVERT(p.citizenid USING utf8mb4) COLLATE utf8mb4_general_ci = CONVERT(mp.citizenid USING utf8mb4) COLLATE utf8mb4_general_ci
@@ -176,6 +178,8 @@ ps.registerCallback(resourceName .. ':server:getCitizens', function(source, page
         v.dob = v.dateofbirth
         v.phone = v.phone
         v.image = profilePics[v.citizenid] or nil
+        v.fingerprint = v.fingerprint or nil
+        v.dna = v.dna or nil
         v.occupations = { v.job }
         v.properties = propCounts[v.citizenid] or 0
         v.vehicles = vehCounts[v.citizenid] or 0
@@ -216,14 +220,15 @@ ps.registerCallback(resourceName .. ':server:searchCitizens', function(source, q
     -- Build a complex search query that searches across multiple fields and returns same data as getCitizens
     local sqlQuery = [[
         SELECT DISTINCT
-            mp.id,
-            p.citizenid,
+            mp.id, p.citizenid,
             JSON_UNQUOTE(JSON_EXTRACT(p.charinfo, '$.firstname')) AS firstname,
             JSON_UNQUOTE(JSON_EXTRACT(p.charinfo, '$.lastname')) AS lastname,
             JSON_UNQUOTE(JSON_EXTRACT(p.charinfo, '$.gender')) AS gender,
             JSON_UNQUOTE(JSON_EXTRACT(p.charinfo, '$.birthdate')) AS dateofbirth,
             JSON_UNQUOTE(JSON_EXTRACT(p.charinfo, '$.phone')) AS phone,
-            JSON_UNQUOTE(JSON_EXTRACT(p.job, '$.label')) AS job
+            JSON_UNQUOTE(JSON_EXTRACT(p.job, '$.label')) AS job,
+            JSON_UNQUOTE(JSON_EXTRACT(p.metadata, '$.fingerprint')) AS fingerprint,
+            JSON_UNQUOTE(JSON_EXTRACT(p.metadata, '$.dna')) AS dna
         FROM players AS p
         LEFT JOIN mdt_profiles AS mp ON p.citizenid COLLATE utf8mb4_general_ci = mp.citizenid COLLATE utf8mb4_general_ci
         WHERE 
@@ -232,13 +237,15 @@ ps.registerCallback(resourceName .. ':server:searchCitizens', function(source, q
             LOWER(CONCAT(JSON_UNQUOTE(JSON_EXTRACT(p.charinfo, '$.firstname')), ' ', JSON_UNQUOTE(JSON_EXTRACT(p.charinfo, '$.lastname')))) LIKE ? OR
             LOWER(p.citizenid) LIKE ? OR
             LOWER(JSON_UNQUOTE(JSON_EXTRACT(p.charinfo, '$.phone'))) LIKE ? OR
-            LOWER(JSON_UNQUOTE(JSON_EXTRACT(p.job, '$.label'))) LIKE ?
+            LOWER(JSON_UNQUOTE(JSON_EXTRACT(p.job, '$.label'))) LIKE ? OR
+            LOWER(JSON_UNQUOTE(JSON_EXTRACT(p.metadata, '$.fingerprint'))) LIKE ? OR
+            LOWER(JSON_UNQUOTE(JSON_EXTRACT(p.metadata, '$.dna'))) LIKE ?
         LIMIT ?
     ]]
 
-    local searchLimit = Config.Pagination and Config.Pagination.CitizenSearch or 20
     local result = safeQuery(sqlQuery, {
-        searchTerm, searchTerm, searchTerm, searchTerm, searchTerm, searchTerm, searchLimit
+        searchTerm, searchTerm, searchTerm, searchTerm,
+        searchTerm, searchTerm, searchTerm, searchTerm
     })
     if not result or #result == 0 then return {} end
 

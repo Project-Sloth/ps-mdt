@@ -218,6 +218,7 @@ Config.ManagementPermissions = {
     'vehicles_edit_dmv',
     -- Weapons
     'weapons_search',
+    'weapons_add',
     -- Cases
     'cases_view',
     'cases_create',
@@ -332,4 +333,14 @@ Config.CameraModels = {
     ['cctv_cam_07'] = 'prop_cctv_pole_03',
     ['cctv_cam_08'] = 'p_cctv_s',
     ['cctv_cam_09'] = 'hei_prop_bank_cctv_02',
+}
+
+-- Which Weapons should be allowed to be registered manually
+Config.Weapons = {
+    { model = "weapon_heavypistol", label = "Heavy Pistol" },
+    { model = "weapon_sniperrifle", label = "Hunting Rifle" },
+    { model = "weapon_ceramicpistol", label = "Ceramic Pistol" },
+    { model = "weapon_doubleaction", label = "Double-Action Revolver" },
+    { model = "weapon_navyrevolver", label = "Navy Revolver" },
+    { model = "weapon_musket", label = "Musket" },
 }

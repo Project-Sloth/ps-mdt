@@ -161,17 +161,26 @@ ps.registerCallback('ps-mdt:server:getWeapons', function(source)
     return { weapons = newData, bolos = weaponBolo }
 end)
 
-ps.registerCallback(resourceName .. ':server:getWeaponOwnershipHistory', function(source, serial)
+ps.registerCallback(resourceName .. ':server:getWeaponOwnershipHistory', function(source, payload)
     local src = source
-    if not CheckAuth(src) then return end
+    if not CheckAuth(src) then return {} end
+
+    payload = payload or {}
+    local serial = payload.serial
+
     if not serial or serial == '' then return {} end
 
     local rows = MySQL.query.await([[
-        SELECT id, serial, owner, weapon_model, weapon_class, information, changed_by, reason, created_at
-        FROM mdt_weapon_ownership_history
-        WHERE serial = ?
-        ORDER BY created_at DESC
+        SELECT h.id, h.serial, h.owner, h.weapon_model, h.weapon_class, h.information, h.changed_by, h.reason, h.created_at,
+               p.fullname AS owner_name,
+               cb.fullname AS changed_by_name
+        FROM mdt_weapon_ownership_history h
+        LEFT JOIN mdt_profiles p ON p.citizenid = h.owner
+        LEFT JOIN mdt_profiles cb ON cb.citizenid = h.changed_by
+        WHERE h.serial = ?
+        ORDER BY h.created_at DESC
     ]], { serial })
+
     return rows or {}
 end)
 
@@ -216,6 +225,11 @@ ps.registerCallback(resourceName .. ':server:saveWeaponInfo', function(source, p
         return { success = false, message = 'Missing serial number' }
     end
 
+    -- Ensure profile exists before insert/update to avoid FK constraint error
+    -- if owner and owner ~= '' then
+    --     EnsureProfileExists(owner)
+    -- end
+
     local existing = MySQL.single.await('SELECT id FROM mdt_weapons WHERE serial = ? LIMIT 1', { serial })
 
     if existing then
@@ -224,6 +238,11 @@ ps.registerCallback(resourceName .. ':server:saveWeaponInfo', function(source, p
             SET information = ?, owner = ?, weaponClass = ?, weaponModel = ?
             WHERE serial = ?
         ]], { notes, owner, weapClass, weapModel, serial })
+
+        MySQL.insert.await([[
+            INSERT INTO mdt_weapon_ownership_history (serial, owner, weapon_model, weapon_class, information, changed_by, reason)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        ]], { serial, owner, weapModel, weapClass, notes, ps.getIdentifier(src), 'ownership_transfer' })
     else
         MySQL.insert.await([[
             INSERT INTO mdt_weapons (serial, scratched, owner, information, weaponClass, weaponModel)
