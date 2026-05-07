@@ -290,10 +290,16 @@ ps.registerCallback(resourceName..':server:getReport', function(source, reportid
             ) FROM mdt_reports_charges mrc WHERE mrc.reportid = mr.id) as charges,
             (SELECT JSON_ARRAYAGG(
                 JSON_OBJECT(
+                    'title', mre.title,
                     'type', mre.type,
                     'content', mre.content,
                     'note', mre.note,
-                    'stored', mre.stored
+                    'stored', mre.stored,
+                    'images', CASE
+                        WHEN mre.images IS NOT NULL AND mre.images != ''
+                        THEN JSON_EXTRACT(mre.images, '$')
+                        ELSE JSON_ARRAY()
+                    END
                 )
             ) FROM mdt_reports_evidence mre WHERE mre.reportid = mr.id) as evidence,
             (SELECT JSON_ARRAYAGG(
@@ -700,10 +706,21 @@ ps.registerCallback(resourceName..':server:saveReport', function(source, reportD
 
     if reportData.evidence and #reportData.evidence > 0 then
         for _, evidence in ipairs(reportData.evidence) do
+            local imagesJson = nil
+            if evidence.images and type(evidence.images) == 'table' and #evidence.images > 0 then
+                imagesJson = json.encode(evidence.images)
+            end
             table.insert(attachmentQueries, {
-                query =
-                "INSERT INTO mdt_reports_evidence (reportid, type, content, note, stored) VALUES (?, ?, ?, ?, ?)",
-                values = { reportId, evidence.type, evidence.content, evidence.note, evidence.stored or 0 }
+                query = "INSERT INTO mdt_reports_evidence (reportid, title, type, content, note, stored, images) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                values = {
+                    reportId,
+                    evidence.title or '',
+                    evidence.type or 'Physical',
+                    evidence.content or '',
+                    evidence.note or '',
+                    evidence.stored or 0,
+                    imagesJson
+                }
             })
         end
     end
