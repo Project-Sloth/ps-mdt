@@ -8,26 +8,24 @@ end)
 
 RegisterNUICallback('getProperty', function(data, cb)
     if not MDTOpen then cb({ success = false }) return end
-    if not data or not data.property_name then
-        cb({ success = false, message = 'Missing property name' })
+    if not data or not data.property_id then
+        cb({ success = false, message = 'Missing property id' })
         return
     end
-    local result = ps.callback(resourceName .. ':server:getProperty', data.property_name)
+    local result = ps.callback(resourceName .. ':server:getProperty', data.property_id)
     if not result or not result.success then
         cb(result or { success = false, message = 'Property not found' })
         return
     end
-
     if result.property and result.property.coords then
         local coords = result.property.coords
-        local street1, street2 = GetStreetNameAtCoord(coords.x, coords.y, coords.z)
+        local street1, street2 = GetStreetNameAtCoord(coords.x, coords.y, coords.z, 1.0)
         local s1 = street1 and GetStreetNameFromHashKey(street1) or nil
         local s2 = street2 and GetStreetNameFromHashKey(street2) or nil
         if s1 and s1 ~= '' then
             result.property.streetName = (s2 and s2 ~= '') and (s1 .. ' / ' .. s2) or s1
         end
     end
-
     cb(result)
 end)
  
