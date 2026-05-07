@@ -42,6 +42,7 @@
 		title: string;
 		reportId: string;
 		author: string;
+		authorplaintext: string;
 		type: string;
 		datecreated: number;
 		dateupdated: number;
@@ -106,13 +107,13 @@
 		if (isEnvBrowser()) {
 			const now = Date.now();
 			reports = [
-				{ id: '1', title: 'Armed Robbery at Fleeca Bank', reportId: 'RPT-001', author: 'Ofc. Smith', type: 'Incident', datecreated: now - 86400000, dateupdated: now - 3600000, tag: 'Priority' },
-				{ id: '2', title: 'Traffic Stop - Suspended License', reportId: 'RPT-002', author: 'Ofc. Johnson', type: 'Citation', datecreated: now - 172800000, dateupdated: now - 86400000 },
-				{ id: '3', title: 'Drive-by Shooting on Vinewood Blvd', reportId: 'RPT-003', author: 'Det. Williams', type: 'Incident', datecreated: now - 259200000, dateupdated: now - 172800000, tag: 'Priority' },
-				{ id: '4', title: 'Arrest Report - David Chen', reportId: 'RPT-004', author: 'Sgt. Garcia', type: 'Arrest', datecreated: now - 345600000, dateupdated: now - 259200000 },
-				{ id: '5', title: 'Noise Complaint - Vespucci Beach', reportId: 'RPT-005', author: 'Ofc. Brown', type: 'Incident', datecreated: now - 432000000, dateupdated: now - 345600000 },
-				{ id: '6', title: 'Warrant Execution - Marcus Johnson', reportId: 'RPT-006', author: 'Det. Williams', type: 'Arrest', datecreated: now - 518400000, dateupdated: now - 432000000, tag: 'Warrant' },
-				{ id: '7', title: 'Hit and Run - Del Perro Pier', reportId: 'RPT-007', author: 'Ofc. Smith', type: 'Incident', datecreated: now - 604800000, dateupdated: now - 518400000 },
+				{ id: '1', title: 'Armed Robbery at Fleeca Bank', reportId: 'RPT-001', author: 'identifier_123', authorplaintext: 'Ofc. Smith', type: 'Incident', datecreated: now - 86400000, dateupdated: now - 3600000, tag: 'Priority' },
+				{ id: '2', title: 'Traffic Stop - Suspended License', reportId: 'RPT-002', author: 'identifier_123', authorplaintext: 'Ofc. Johnson', type: 'Citation', datecreated: now - 172800000, dateupdated: now - 86400000 },
+				{ id: '3', title: 'Drive-by Shooting on Vinewood Blvd', reportId: 'RPT-003', author: 'identifier_123', authorplaintext: 'Det. Williams', type: 'Incident', datecreated: now - 259200000, dateupdated: now - 172800000, tag: 'Priority' },
+				{ id: '4', title: 'Arrest Report - David Chen', reportId: 'RPT-004', author: 'identifier_123', authorplaintext: 'Sgt. Smith', type: 'Arrest', datecreated: now - 345600000, dateupdated: now - 259200000 },
+				{ id: '5', title: 'Noise Complaint - Vespucci Beach', reportId: 'RPT-005', author: 'identifier_123', authorplaintext: 'Ofc. Brown', type: 'Incident', datecreated: now - 432000000, dateupdated: now - 345600000 },
+				{ id: '6', title: 'Warrant Execution - Marcus Johnson', reportId: 'RPT-006', author: 'identifier_123', authorplaintext: 'Det. Williams', type: 'Arrest', datecreated: now - 518400000, dateupdated: now - 432000000, tag: 'Warrant' },
+				{ id: '7', title: 'Hit and Run - Del Perro Pier', reportId: 'RPT-007', author: 'identifier_123', authorplaintext: 'Ofc. Smith', type: 'Incident', datecreated: now - 604800000, dateupdated: now - 518400000 },
 			];
 			filteredReports = reports;
 			analytics = { incidents: 4, arrests: 2, warrants: 1 };
@@ -376,7 +377,21 @@
 						<button class="report-row" onclick={() => viewReport(report.id)}>
 							<span class="col-title">{report.title}</span>
 							<span class="col-id mono">{report.reportId}</span>
-							<span class="col-author">{report.author}</span>
+							<span class="col-author">
+								{#if report.authorplaintext}
+									{#if report.authorplaintext.startsWith('NO CALLSIGN')}
+										<span class="author-badge no-callsign">NO CS</span>
+										<span>{report.authorplaintext.replace('NO CALLSIGN', '').trim()}</span>
+									{:else if report.authorplaintext.includes(' ')}
+										<span class="author-badge">{report.authorplaintext.split(' ')[0]}</span>
+										<span>{report.authorplaintext.split(' ').slice(1).join(' ')}</span>
+									{:else}
+										{report.authorplaintext}
+									{/if}
+								{:else}
+									{report.author}
+								{/if}
+							</span>
 							<span class="col-type">
 								<span class={getTypePillClass(report.type)}>{report.type}</span>
 							</span>
@@ -666,6 +681,33 @@
 		text-overflow: ellipsis;
 	}
 
+	.col-author {
+		display: flex;
+		color: rgba(255, 255, 255, 0.4);
+		font-size: 11px;
+		align-items: center;
+		gap: 5px;
+		overflow: hidden;
+	}
+
+	.author-badge {
+		background: rgba(var(--accent-rgb), 0.1);
+		border: 1px solid rgba(var(--accent-rgb), 0.2);
+		color: rgba(var(--accent-text-rgb), 0.8);
+		font-size: 9px;
+		font-weight: 600;
+		padding: 1px 5px;
+		border-radius: 3px;
+		letter-spacing: 0.3px;
+		white-space: nowrap;
+		flex-shrink: 0;
+	}
+
+	.author-badge.no-callsign {
+		background: rgba(255, 255, 255, 0.03);
+		border-color: rgba(255, 255, 255, 0.06);
+		color: rgba(255, 255, 255, 0.35);
+	}
 	.col-type {
 		display: flex;
 		align-items: center;
