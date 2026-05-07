@@ -65,6 +65,8 @@ export const NUI_EVENTS = {
 	},
 	CITIZEN: {
 		GET_CITIZENS: "getCitizens",
+		GET_PROPERTY: "getProperty",
+		SET_WAYPOINT: "setWaypoint",
 		SEARCH_CITIZENS: "searchCitizens",
 		GET_CITIZEN: "getCitizen",
 		UPDATE_CITIZEN: "updateCitizen",
