@@ -165,8 +165,7 @@ ps.registerCallback(resourceName .. ':server:getWeaponOwnershipHistory', functio
     local src = source
     if not CheckAuth(src) then return {} end
 
-    payload = payload or {}
-    local serial = payload.serial
+    local serial = payload
 
     if not serial or serial == '' then return {} end
 
@@ -182,6 +181,10 @@ ps.registerCallback(resourceName .. ':server:getWeaponOwnershipHistory', functio
     ]], { serial })
 
     return rows or {}
+end)
+
+ps.registerCallback(resourceName .. ':server:getWeaponConfig', function(source)
+    return { weapons = Config.Weapons }
 end)
 
 ps.registerCallback(resourceName .. ':server:saveWeaponFlags', function(source, serial, flags)
