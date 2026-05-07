@@ -85,6 +85,7 @@ export function createReportService() {
 				...report,
 				id: report.id ?? report.reportId,
 			};
+
 			const response = await fetchNui<{ success: boolean; message?: string; error?: string; reportId?: string }>(
 				NUI_EVENTS.REPORT.SAVE_REPORT,
 				reportToSave,

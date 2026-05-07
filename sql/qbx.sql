@@ -566,6 +566,7 @@ CREATE TABLE IF NOT EXISTS `mdt_weapons` (
   `information` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `weaponClass` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `weaponModel` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `flags` JSON DEFAULT NULL,
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE KEY `unique_serial` (`serial`),
   KEY `FK_mdt_weapons_mdt_profiles` (`owner`),

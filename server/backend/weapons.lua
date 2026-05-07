@@ -141,6 +141,7 @@ ps.registerCallback('ps-mdt:server:getWeapons', function(source)
             name = (QBCore and QBCore.Shared and QBCore.Shared.Weapons and QBCore.Shared.Weapons[GetHashKey(v.weaponModel)] and QBCore.Shared.Weapons[GetHashKey(v.weaponModel)].label) or v.weaponModel,
             image = 'https://docs.fivem.net/weapons/' .. v.weaponModel:upper() .. '.png',
             type = class[modelLower] and class[modelLower].type or 'unknown',
+            flags = v.flags and json.decode(v.flags) or {},
         }
         table.insert(newData, weaponInfo)
     end
@@ -183,6 +184,31 @@ ps.registerCallback(resourceName .. ':server:getWeaponOwnershipHistory', functio
     return rows or {}
 end)
 
+ps.registerCallback(resourceName .. ':server:saveWeaponFlags', function(source, serial, flags)
+    local src = source
+    if not CheckAuth(src) then return { success = false } end
+    if not serial or serial == '' then return { success = false } end
+
+    local decoded
+    if type(flags) == 'table' then
+        decoded = flags
+    elseif type(flags) == 'string' then
+        decoded = json.decode(flags) or {}
+    else
+        decoded = {}
+    end
+
+    local encoded = json.encode(decoded)
+    local affected = MySQL.update.await('UPDATE mdt_weapons SET flags = ? WHERE serial = ?', { encoded, serial })
+
+    if affected and affected > 0 then
+        return { success = true }
+    else
+        return { success = false, message = 'Database error' }
+    end
+end)
+
+-- Save/Edit Weapon Info (from NUI)
 ps.registerCallback(resourceName .. ':server:saveWeaponInfo', function(source, payload)
     local src = source
     if not CheckAuth(src) then return { success = false, message = 'Unauthorized' } end
