@@ -87,6 +87,7 @@
 			vehicle: string;
 		}>;
 		propertiesList?: Array<{
+			id: number;
 			property_name: string;
 		}>;
 	}
@@ -474,8 +475,8 @@
 		vehicleDetail = null;
 	}
 
-	async function openPropertyFromProfile(propertyName: string) {
-		if (!propertyName) return;
+	async function openPropertyFromProfile(propertyId: number, propertyName: string) {
+		if (!propertyId) return;
 		propertyDetailLoading = true;
 		propertyDetail = null;
 		waypointSet = false;
@@ -497,7 +498,7 @@
 		}
 
 		try {
-			const response = await fetchNui<any>(NUI_EVENTS.CITIZEN.GET_PROPERTY, { property_name: propertyName });
+			const response = await fetchNui<any>('getProperty', { property_id: propertyId });
 			if (response?.property) {
 				propertyDetail = response.property;
 			} else {
@@ -929,7 +930,7 @@
 									{#each sectionSlice(selectedProfile.propertiesList, propertiesPage) as p}
 										<div class="sitem">
 											<div class="sitem-info"><span class="sitem-primary">{p.property_name}</span></div>
-											<button class="sitem-arrow" title="View Property" onclick={() => openPropertyFromProfile(p.property_name)}>
+											<button class="sitem-arrow" title="View Property" onclick={() => openPropertyFromProfile(p.id, p.property_name)}>
 												<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
 											</button>
 										</div>
