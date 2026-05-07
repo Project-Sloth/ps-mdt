@@ -242,7 +242,7 @@ ps.registerCallback(resourceName .. ':server:getReports', function(source, page,
 		GROUP BY
 			mr.id
 		ORDER BY
-			mr.datecreated DESC
+			mr.id
 		LIMIT %d
 		OFFSET %d
 	]]):format(buildReportAccessClause(), filterClause, limit, offset)
