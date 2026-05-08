@@ -174,11 +174,14 @@ end
 -- Close MDT
 local closeControlsPending = false
 
-function CloseMDT()
+
+function CloseMDT(keepAnimation)
     if MDTOpen then
         MDTOpen = false
 
-        StopTabletAnimation()
+        if not keepAnimation then
+            StopTabletAnimation()
+        end
 
         SendNUI('setVisible', { visible = false })
         SetNuiFocus(false, false)
