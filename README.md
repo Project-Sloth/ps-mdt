@@ -1,3 +1,12 @@
+THIS CHANGES NEEDS TO BE DONE:
+```lua
+ALTER TABLE mdt_reports_evidence
+  ADD COLUMN title VARCHAR(255) NOT NULL DEFAULT '' AFTER reportid,
+  ADD COLUMN images LONGTEXT NULL DEFAULT NULL AFTER stored;
+
+ALTER TABLE `mdt_weapons` ADD COLUMN `flags` JSON DEFAULT NULL;
+```
+
 # ps-mdt v3
 
 Police MDT (Mobile Data Terminal) for FiveM. Built with Svelte 5 and Lua. Works on QBCore and QBX through the ps_lib abstraction layer.
