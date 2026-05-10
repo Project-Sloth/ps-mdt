@@ -1325,3 +1325,10 @@ CREATE TABLE IF NOT EXISTS `mdt_warrant_reviews` (
 
 -- Add lawyer_requested column to mdt_reports
 ALTER TABLE `mdt_reports` ADD COLUMN IF NOT EXISTS `lawyer_requested` tinyint(1) NOT NULL DEFAULT 0;
+-- Update mdt_reports_evidence with new columns
+ALTER TABLE mdt_reports_evidence
+  ADD COLUMN IF NOT EXISTS title VARCHAR(255) NOT NULL DEFAULT '' AFTER reportid,
+  ADD COLUMN IF NOT EXISTS images LONGTEXT NULL DEFAULT NULL AFTER stored;
+
+-- Add flags column to mdt_weapons
+ALTER TABLE `mdt_weapons` ADD COLUMN IF NOT EXISTS `flags` JSON DEFAULT NULL;
