@@ -5,6 +5,9 @@ ALTER TABLE mdt_reports_evidence
   ADD COLUMN images LONGTEXT NULL DEFAULT NULL AFTER stored;
 
 ALTER TABLE `mdt_weapons` ADD COLUMN `flags` JSON DEFAULT NULL;
+
+ALTER TABLE player_vehicles 
+MODIFY COLUMN mdt_vehicle_status VARCHAR(500) DEFAULT 'valid';
 ```
 
 # ps-mdt v3
