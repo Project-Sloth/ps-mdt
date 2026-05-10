@@ -551,12 +551,12 @@ CREATE TABLE IF NOT EXISTS `mdt_audit_logs` (
 
 -- Extend player_vehicles with MDT fields (fresh install)
 ALTER TABLE `player_vehicles`
-  ADD COLUMN IF NOT EXISTS `mdt_vehicle_information` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  ADD COLUMN IF NOT EXISTS `mdt_vehicle_information` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   ADD COLUMN IF NOT EXISTS `mdt_vehicle_points` int(11) NOT NULL DEFAULT 0,
-  ADD COLUMN IF NOT EXISTS `mdt_vehicle_status` enum('valid','suspended','expired','impounded') NOT NULL DEFAULT 'valid',
+  ADD COLUMN IF NOT EXISTS `mdt_vehicle_status` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'valid',
   ADD COLUMN IF NOT EXISTS `mdt_vehicle_stolen` tinyint(1) NOT NULL DEFAULT 0,
   ADD COLUMN IF NOT EXISTS `mdt_vehicle_boloactive` tinyint(1) NOT NULL DEFAULT 0,
-  ADD COLUMN IF NOT EXISTS `mdt_vehicle_image` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL;
+  ADD COLUMN IF NOT EXISTS `mdt_vehicle_image` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL;
 
 CREATE TABLE IF NOT EXISTS `mdt_weapons` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
