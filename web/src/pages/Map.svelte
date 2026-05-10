@@ -26,10 +26,19 @@
 	let vehicleLayer = L.layerGroup();
 	let bodycamLayer = L.layerGroup();
 
-	const coordScale = 4.5;
+	// bigger = right
+	// smaller = left
+	const offsetX = 13;
+
+	// bigger = down
+	// smaller = up
+	const offsetY = 5;
 
 	function toMapLatLng(coords: { x: number; y: number }) {
-		return [coords.y / coordScale, coords.x / coordScale] as [number, number];
+		return [
+			coords.y - offsetY,
+			coords.x + offsetX
+		];
 	}
 
 	function getTrackConfig(kind: "officer" | "vehicle" | "bodycam") {
