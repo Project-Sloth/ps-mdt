@@ -23,6 +23,7 @@
 		seenIn?: number;
 		points?: number;
 		status?: string;
+		reason?: string;
 		core_state?: number;
 	}
 
@@ -32,6 +33,7 @@
 		stolen?: boolean;
 		boloactive?: boolean;
 		core_state?: number;
+		reason?: string;
 		bolos?: Array<{
 			id: number;
 			reportId: string;
@@ -48,14 +50,51 @@
 	let vehicleDetailLoading = $state(false);
 	let vehicleDetailError = $state<string | null>(null);
 	let vehicleSaving = $state(false);
+	let editingNotes = $state(false);
+	let notesValue = $state("");
+	let notesSaving = $state(false);
 	let imageModalOpen = $state(false);
 	let imageUrlInput = $state("");
 	let imageSaving = $state(false);
 	let vehicleLightboxOpen = $state(false);
 	let vehicleImageBroken = $state(false)
+
 	$effect(() => {
 		if (selectedVehicle) vehicleImageBroken = false;
 	});
+
+	$effect(() => {
+		if (selectedVehicle) {
+			editingNotes = false;
+			notesValue = "";
+		}
+	});
+
+	function startEditNotes() {
+		notesValue = selectedVehicle?.information || "";
+		editingNotes = true;
+	}
+
+	async function saveNotes() {
+		if (!selectedVehicle) return;
+		notesSaving = true;
+		try {
+			const response = await fetchNui(NUI_EVENTS.VEHICLE.UPDATE_VEHICLE, {
+				plate: selectedVehicle.plate,
+				information: notesValue,
+			});
+			if (response?.success) {
+				selectedVehicle = { ...selectedVehicle, information: notesValue };
+				editingNotes = false;
+				globalNotifications.success("Notes saved");
+			} else {
+				globalNotifications.error(response?.message || "Failed to save notes");
+			}
+		} catch {
+			globalNotifications.error("Failed to save notes");
+		}
+		notesSaving = false;
+	}
 
 	function openVehicleLightbox() {
 		if (!selectedVehicle?.image || selectedVehicle.image.startsWith('https://docs.fivem.net')) return;
@@ -183,7 +222,7 @@
 				};
 				vehicleForm.points = match.points ?? 0;
 				vehicleForm.status = match.status ?? "valid";
-				vehicleForm.reason = "";
+				vehicleForm.reason = match.reason ?? "";
 				linkedReports = [
 					{ id: 42, title: "Armed Robbery - Fleeca Bank", type: "Incident Report", datecreated: "2026-03-19", authorplaintext: "D2020 Ofc. Smith" },
 				];
@@ -194,11 +233,12 @@
 
 		try {
 			const response = await fetchNui(NUI_EVENTS.VEHICLE.GET_VEHICLE, { plate });
+			console.log(response.vehicle)
 			if (response?.vehicle) {
 				selectedVehicle = response.vehicle;
 				vehicleForm.points = response.vehicle.points ?? 0;
 				vehicleForm.status = response.vehicle.status ?? "valid";
-				vehicleForm.reason = "";
+				vehicleForm.reason = response.vehicle.reason ?? "";
 			} else {
 				vehicleDetailError = response?.message || "Failed to load vehicle";
 			}
@@ -241,6 +281,9 @@
 		vehicleDetailLoading = false;
 		vehicleSaving = false;
 		linkedReports = [];
+		editingNotes = false;
+		notesValue = "";
+		notesSaving = false;
 	}
 
 	async function saveVehicle() {
@@ -251,6 +294,7 @@
 				plate: selectedVehicle.plate,
 				points: vehicleForm.points,
 				status: vehicleForm.status,
+				reason: vehicleForm.reason,
 			});
 			if (!response?.success) {
 				vehicleDetailError = response?.message || "Failed to update vehicle";
@@ -260,10 +304,11 @@
 				...selectedVehicle,
 				points: vehicleForm.points,
 				status: vehicleForm.status,
+				reason: vehicleForm.reason,
 			};
 			vehicleList = vehicleList.map((vehicle) =>
 				vehicle.plate === selectedVehicle?.plate
-					? { ...vehicle, points: vehicleForm.points, status: vehicleForm.status }
+					? { ...vehicle, points: vehicleForm.points, status: vehicleForm.status, reason: vehicleForm.reason }
 					: vehicle,
 			);
 		} catch (error) {
@@ -331,7 +376,9 @@
 					{#if selectedVehicle.boloactive}
 						<span class="pill pill-orange">BOLO</span>
 					{/if}
-					<span class="pill {getStatusClass(selectedVehicle.status || 'valid')}">{selectedVehicle.status || 'Valid'}</span>
+					<span class="pill {getStatusClass(selectedVehicle.status || 'valid')}">
+						{(selectedVehicle.status || 'Valid').charAt(0).toUpperCase() + (selectedVehicle.status || 'Valid').slice(1)}{selectedVehicle.reason?.trim() ? ` (${selectedVehicle.reason.trim()})` : ''}
+					</span>
 				</div>
 			{/if}
 		</div>
@@ -383,21 +430,52 @@
 					</div>
 				</div>
 
-				{#if selectedVehicle.flags && selectedVehicle.flags.length}
+				<div class="section">
+					<div class="section-title">
+						Notes
+						{#if !editingNotes}
+							<button class="notes-edit-btn" onclick={startEditNotes}>
+								<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+								Edit
+							</button>
+						{/if}
+					</div>
+					{#if editingNotes}
+						<textarea
+							class="notes-textarea"
+							bind:value={notesValue}
+							placeholder="Enter notes..."
+							maxlength={500}
+							onkeydown={(e) => { if (e.key === 'Enter' && e.ctrlKey) saveNotes(); if (e.key === 'Escape') { editingNotes = false; } }}
+						></textarea>
+						<div class="notes-actions">
+							<div style="display:flex;gap:6px;">
+								<button class="notes-save-btn" onclick={saveNotes} disabled={notesSaving}>
+									{notesSaving ? 'Saving...' : 'Save'}
+								</button>
+								<button class="notes-cancel-btn" onclick={() => { editingNotes = false; }}>Cancel</button>
+							</div>
+							<span class="notes-char-count" class:notes-char-warn={notesValue.length > 450}>
+								{notesValue.length}/500
+							</span>
+						</div>
+					{:else}
+						{#if selectedVehicle.information?.trim()}
+							<p class="section-text">{selectedVehicle.information}</p>
+						{:else}
+							<div class="section-empty">No notes on file.</div>
+						{/if}
+					{/if}
+				</div>
+
+				{#if selectedVehicle.flags?.filter(f => !f.toLowerCase().startsWith('status:')).length}
 					<div class="section">
 						<div class="section-title">Flags</div>
 						<div class="flags-row">
-							{#each selectedVehicle.flags as flag}
+							{#each selectedVehicle.flags.filter(f => !f.toLowerCase().startsWith('status:')) as flag}
 								<span class={getFlagClass(flag)}>{flag}</span>
 							{/each}
 						</div>
-					</div>
-				{/if}
-
-				{#if selectedVehicle.information}
-					<div class="section">
-						<div class="section-title">Information</div>
-						<p class="section-text">{selectedVehicle.information}</p>
 					</div>
 				{/if}
 
@@ -571,10 +649,14 @@
 							<span class="col-class">{vehicle.class}</span>
 							<span class="col-points" class:accent-red={(vehicle.points ?? 0) > 0}>{vehicle.points ?? 0}</span>
 							<span class="col-status">
-								<span class="status-pill {getStatusClass(vehicle.status || 'valid')}">{vehicle.status || 'Valid'}</span>
+								<span 
+									class="status-pill {getStatusClass(vehicle.status || 'valid')}"
+									title={vehicle.reason?.trim() ? `${vehicle.status}: ${vehicle.reason}` : undefined}
+									>{vehicle.status || 'Valid'}
+								</span>
 							</span>
 							<span class="col-flags">
-								{#each vehicle.flags || [] as flag}
+								{#each (vehicle.flags || []).filter(f => !f.toLowerCase().startsWith('status:')) as flag}
 									<span class={getFlagClass(flag)}>{flag}</span>
 								{/each}
 							</span>
@@ -822,7 +904,7 @@
 		text-overflow: ellipsis;
 	}
 
-	.col-class, .col-type {
+	.col-class {
 		color: rgba(255, 255, 255, 0.35);
 		font-size: 10px;
 	}
@@ -1023,20 +1105,13 @@
 		border-bottom: none;
 	}
 
-	.section-title {
-		color: rgba(255, 255, 255, 0.35);
-		font-size: 9px;
-		font-weight: 600;
-		text-transform: uppercase;
-		letter-spacing: 0.6px;
-		margin-bottom: 8px;
-	}
-
 	.section-text {
 		margin: 0;
 		color: rgba(255, 255, 255, 0.5);
 		font-size: 11px;
 		line-height: 1.5;
+		word-break: break-word;
+		white-space: pre-wrap;
 	}
 
 	.flags-row {
@@ -1243,57 +1318,335 @@
 	.state-garaged { color: rgba(var(--accent-text-rgb), 0.8) !important; }
 	.state-impounded-state { color: rgba(251, 191, 36, 0.8) !important; }
 
-	/* MODAL FOR LINK/PROFIL PIC */
-	
-	.img-modal-overlay { position:absolute;inset:0;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;z-index:100;backdrop-filter:blur(2px); }
-	
-	.img-modal { background:var(--dark-bg);border:1px solid rgba(255,255,255,0.08);border-radius:6px;width:min(360px,92vw);display:flex;flex-direction:column; }
-	
-	.img-modal-header { display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:1px solid rgba(255,255,255,0.06);font-size:12px;font-weight:600;color:rgba(255,255,255,0.85); }
-	
-	.img-modal-close { background:transparent;border:1px solid rgba(255,255,255,0.06);border-radius:3px;color:rgba(255,255,255,0.3);cursor:pointer;padding:4px;display:flex;align-items:center;justify-content:center;transition:all 0.1s; }
-	
-	.img-modal-close:hover { color:rgba(255,255,255,0.7);border-color:rgba(255,255,255,0.1); }
-	
-	.img-modal-body { padding:14px 16px;display:flex;flex-direction:column;gap:6px; }
-	
-	.img-modal-label { color:rgba(255,255,255,0.35);font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:0.6px; }
-	
-	.img-modal-input { background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:3px;padding:5px 8px;color:rgba(255,255,255,0.8);font-size:11px;font-family:inherit;width:100%; }
-	
-	.img-modal-input:focus { outline:none;border-color:rgba(255,255,255,0.1); }
-	
-	.img-modal-input::placeholder { color:rgba(255,255,255,0.2); }
-	
-	.img-modal-hint { display:flex;align-items:center;gap:5px;font-size:10px;color:rgba(255,255,255,0.25);line-height:1.4; }
-	
-	.img-modal-hint a { color:rgba(var(--accent-text-rgb),0.5);text-decoration:none;transition:color 0.1s; }
-	
-	.img-modal-hint a:hover { color:rgba(var(--accent-text-rgb),0.85);text-decoration:underline; }
-	
-	.img-modal-footer { display:flex;justify-content:flex-end;gap:6px;padding:10px 16px;border-top:1px solid rgba(255,255,255,0.06); }
-	
-	.img-modal-cancel { background:transparent;border:1px solid rgba(255,255,255,0.06);border-radius:3px;padding:4px 10px;color:rgba(255,255,255,0.4);font-size:10px;font-weight:500;cursor:pointer;transition:all 0.1s; }
-	
-	.img-modal-cancel:hover:not(:disabled) { color:rgba(255,255,255,0.7);border-color:rgba(255,255,255,0.1); }
-	
-	.img-modal-cancel:disabled { opacity:0.4;cursor:not-allowed; }
-	
-	.img-modal-confirm { background:rgba(16,185,129,0.06);color:rgba(52,211,153,0.7);border:1px solid rgba(16,185,129,0.1);border-radius:3px;padding:4px 12px;font-size:10px;font-weight:600;cursor:pointer;transition:all 0.1s; }
-	
-	.img-modal-confirm:hover:not(:disabled) { background:rgba(16,185,129,0.12);color:rgba(110,231,183,0.9); }
-	
-	.img-modal-confirm:disabled { opacity:0.4;cursor:not-allowed; }
+	/* ===== Modal ===== */
+	.img-modal-overlay {
+		position: absolute;
+		inset: 0;
+		background: rgba(0, 0, 0, 0.6);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		z-index: 100;
+		backdrop-filter: blur(2px);
+	}
 
-	.img-edit-btn { position: absolute; bottom: -1px; right: -1px; width: 22px; height: 22px; background: rgba(0,0,0,0.7); border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; color: rgba(255,255,255,0.5); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.1s; }	
-	
-	.img-edit-btn:hover { color: rgba(255,255,255,0.9); border-color: rgba(255,255,255,0.2); }
-	
-	.vehicle-lightbox { position: relative; padding-top: 32px; }
-	
-	.lightbox-close-btn { position: absolute; top: 0; right: 0; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.12); border-radius: 4px; color: rgba(255,255,255,0.6); cursor: pointer; padding: 4px; display: flex; align-items: center; justify-content: center; transition: all 0.1s; }
-	
-	.lightbox-close-btn:hover { background: rgba(255,255,255,0.2); color: #fff; }
-	
-	.vehicle-lightbox-img { max-width: 90vw; max-height: calc(90vh - 32px); object-fit: contain; display: block; border-radius: 4px; }
+	.img-modal {
+		background: var(--dark-bg);
+		border: 1px solid rgba(255, 255, 255, 0.08);
+		border-radius: 6px;
+		width: min(360px, 92vw);
+		display: flex;
+		flex-direction: column;
+	}
+
+	.img-modal-header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: 10px 16px;
+		border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+		font-size: 12px;
+		font-weight: 600;
+		color: rgba(255, 255, 255, 0.85);
+	}
+
+	.img-modal-close {
+		background: transparent;
+		border: 1px solid rgba(255, 255, 255, 0.06);
+		border-radius: 3px;
+		color: rgba(255, 255, 255, 0.3);
+		cursor: pointer;
+		padding: 4px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		transition: all 0.1s;
+	}
+
+	.img-modal-close:hover {
+		color: rgba(255, 255, 255, 0.7);
+		border-color: rgba(255, 255, 255, 0.1);
+	}
+
+	.img-modal-body {
+		padding: 14px 16px;
+		display: flex;
+		flex-direction: column;
+		gap: 6px;
+	}
+
+	.img-modal-label {
+		color: rgba(255, 255, 255, 0.35);
+		font-size: 9px;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.6px;
+	}
+
+	.img-modal-input {
+		background: rgba(255, 255, 255, 0.03);
+		border: 1px solid rgba(255, 255, 255, 0.06);
+		border-radius: 3px;
+		padding: 5px 8px;
+		color: rgba(255, 255, 255, 0.8);
+		font-size: 11px;
+		font-family: inherit;
+		width: 100%;
+	}
+
+	.img-modal-input:focus {
+		outline: none;
+		border-color: rgba(255, 255, 255, 0.1);
+	}
+
+	.img-modal-input::placeholder {
+		color: rgba(255, 255, 255, 0.2);
+	}
+
+	.img-modal-hint {
+		display: flex;
+		align-items: center;
+		gap: 5px;
+		font-size: 10px;
+		color: rgba(255, 255, 255, 0.25);
+		line-height: 1.4;
+	}
+
+	.img-modal-hint a {
+		color: rgba(var(--accent-text-rgb), 0.5);
+		text-decoration: none;
+		transition: color 0.1s;
+	}
+
+	.img-modal-hint a:hover {
+		color: rgba(var(--accent-text-rgb), 0.85);
+		text-decoration: underline;
+	}
+
+	.img-modal-footer {
+		display: flex;
+		justify-content: flex-end;
+		gap: 6px;
+		padding: 10px 16px;
+		border-top: 1px solid rgba(255, 255, 255, 0.06);
+	}
+
+	.img-modal-cancel {
+		background: transparent;
+		border: 1px solid rgba(255, 255, 255, 0.06);
+		border-radius: 3px;
+		padding: 4px 10px;
+		color: rgba(255, 255, 255, 0.4);
+		font-size: 10px;
+		font-weight: 500;
+		cursor: pointer;
+		transition: all 0.1s;
+	}
+
+	.img-modal-cancel:hover:not(:disabled) {
+		color: rgba(255, 255, 255, 0.7);
+		border-color: rgba(255, 255, 255, 0.1);
+	}
+
+	.img-modal-cancel:disabled {
+		opacity: 0.4;
+		cursor: not-allowed;
+	}
+
+	.img-modal-confirm {
+		background: rgba(16, 185, 129, 0.06);
+		color: rgba(52, 211, 153, 0.7);
+		border: 1px solid rgba(16, 185, 129, 0.1);
+		border-radius: 3px;
+		padding: 4px 12px;
+		font-size: 10px;
+		font-weight: 600;
+		cursor: pointer;
+		transition: all 0.1s;
+	}
+
+	.img-modal-confirm:hover:not(:disabled) {
+		background: rgba(16, 185, 129, 0.12);
+		color: rgba(110, 231, 183, 0.9);
+	}
+
+	.img-modal-confirm:disabled {
+		opacity: 0.4;
+		cursor: not-allowed;
+	}
+
+	/* ===== Image Edit / Lightbox ===== */
+	.img-edit-btn {
+		position: absolute;
+		bottom: -1px;
+		right: -1px;
+		width: 22px;
+		height: 22px;
+		background: rgba(0, 0, 0, 0.7);
+		border: 1px solid rgba(255, 255, 255, 0.1);
+		border-radius: 4px;
+		color: rgba(255, 255, 255, 0.5);
+		cursor: pointer;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		transition: all 0.1s;
+	}
+
+	.img-edit-btn:hover {
+		color: rgba(255, 255, 255, 0.9);
+		border-color: rgba(255, 255, 255, 0.2);
+	}
+
+	.vehicle-lightbox {
+		position: relative;
+		padding-top: 32px;
+	}
+
+	.lightbox-close-btn {
+		position: absolute;
+		top: 0;
+		right: 0;
+		background: rgba(255, 255, 255, 0.1);
+		border: 1px solid rgba(255, 255, 255, 0.12);
+		border-radius: 4px;
+		color: rgba(255, 255, 255, 0.6);
+		cursor: pointer;
+		padding: 4px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		transition: all 0.1s;
+	}
+
+	.lightbox-close-btn:hover {
+		background: rgba(255, 255, 255, 0.2);
+		color: #fff;
+	}
+
+	.vehicle-lightbox-img {
+		max-width: 90vw;
+		max-height: calc(90vh - 32px);
+		object-fit: contain;
+		display: block;
+		border-radius: 4px;
+	}
+
+	/* ===== Vehicle Notes ===== */
+	.section-title {
+		display: flex;
+		align-items: center;
+		gap: 6px;
+		color: rgba(255, 255, 255, 0.35);
+		font-size: 9px;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.6px;
+		margin-bottom: 8px;
+	}
+
+	.notes-edit-btn {
+		display: flex;
+		align-items: center;
+		gap: 3px;
+		margin-left: auto;
+		background: rgba(59, 130, 246, 0.06);
+		border: 1px solid rgba(59, 130, 246, 0.1);
+		border-radius: 3px;
+		padding: 2px 8px;
+		color: rgba(147, 197, 253, 0.7);
+		font-size: 9px;
+		font-weight: 600;
+		cursor: pointer;
+		transition: all 0.12s;
+		text-transform: none;
+		letter-spacing: 0;
+	}
+
+	.notes-edit-btn:hover {
+		background: rgba(59, 130, 246, 0.12);
+		color: rgba(147, 197, 253, 0.9);
+	}
+
+	.notes-textarea {
+		width: 100%;
+		min-height: 80px;
+		max-height: 300px;
+		resize: vertical;
+		overflow-y: auto;
+		background: rgba(255, 255, 255, 0.03);
+		border: 1px solid rgba(255, 255, 255, 0.08);
+		border-radius: 3px;
+		padding: 6px 8px;
+		color: rgba(255, 255, 255, 0.8);
+		font-size: 11px;
+		font-family: inherit;
+		line-height: 1.5;
+		outline: none;
+		box-sizing: border-box;
+		transition: border-color 0.1s;
+	}
+
+	.notes-textarea:focus {
+		border-color: rgba(96, 165, 250, 0.3);
+	}
+
+	.notes-textarea::placeholder {
+		color: rgba(255, 255, 255, 0.2);
+	}
+
+	.notes-actions {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		margin-top: 8px;
+	}
+
+	.notes-save-btn {
+		background: rgba(16, 185, 129, 0.08);
+		border: 1px solid rgba(16, 185, 129, 0.15);
+		color: rgba(52, 211, 153, 0.8);
+		padding: 4px 12px;
+		border-radius: 3px;
+		font-size: 10px;
+		font-weight: 600;
+		cursor: pointer;
+		transition: all 0.12s;
+	}
+
+	.notes-save-btn:hover:not(:disabled) {
+		background: rgba(16, 185, 129, 0.14);
+		color: #34d399;
+	}
+
+	.notes-save-btn:disabled {
+		opacity: 0.4;
+		cursor: not-allowed;
+	}
+
+	.notes-cancel-btn {
+		background: transparent;
+		border: 1px solid rgba(255, 255, 255, 0.06);
+		color: rgba(255, 255, 255, 0.35);
+		padding: 4px 10px;
+		border-radius: 3px;
+		font-size: 10px;
+		font-weight: 500;
+		cursor: pointer;
+		transition: all 0.12s;
+	}
+
+	.notes-cancel-btn:hover {
+		color: rgba(255, 255, 255, 0.6);
+		border-color: rgba(255, 255, 255, 0.1);
+	}
+
+	.notes-char-count {
+		font-size: 10px;
+		color: rgba(255, 255, 255, 0.2);
+	}
+
+	.notes-char-warn {
+		color: #f87171;
+	}
 </style>
