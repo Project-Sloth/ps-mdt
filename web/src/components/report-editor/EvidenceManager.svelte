@@ -38,6 +38,42 @@
 		"Other",
 	];
 
+		function getSerialPlaceholder(type: string) {
+		switch (type) {
+			case "Physical": return "Item ID / Description";
+			case "Digital": return "File Hash / ID";
+			case "Document": return "Document Number";
+			case "Weapon": return "Weapon Serial Number";
+			case "Drug": return "Batch / Substance ID";
+			case "Vehicle": return "VIN / License Plate";
+			default: return "Reference ID";
+		}
+	}
+
+	function getNotesPlaceholder(type: string) {
+		switch (type) {
+			case "Physical": return "Describe the physical evidence...";
+			case "Digital": return "Describe the digital evidence...";
+			case "Document": return "Document details...";
+			case "Weapon": return "Weapon condition, caliber, etc...";
+			case "Drug": return "Type, quantity, packaging...";
+			case "Vehicle": return "Vehicle condition, location...";
+			default: return "Additional notes...";
+		}
+	}
+	
+	function getTitlePlaceholder(type: string) {
+		switch (type) {
+			case "Physical": return "Item name (e.g. Blood-stained shirt)";
+			case "Digital": return "File name (e.g. chat_log.txt)";
+			case "Document": return "Document title (e.g. Contract)";
+			case "Weapon": return "Weapon name + Serial Number (e.g. Glock 17)";
+			case "Drug": return "Substance name (e.g. Cocaine)";
+			case "Vehicle": return "Vehicle (e.g. Sultan RS)";
+			default: return "Evidence title";
+		}
+	}
+
 	// --- Add Image Modal state ---
 	let addImgOpen = $state(false);
 	let addImgEvidenceId = $state<string | null>(null);
@@ -164,7 +200,7 @@
 				<div class="card-info">
 					<input
 						type="text"
-						placeholder="Evidence Title"
+						placeholder={getTitlePlaceholder(item.type)}
 						value={item.title}
 						oninput={(e) => updateEvidence(item.id, "title", e.currentTarget.value)}
 						class="title-input"
@@ -200,14 +236,14 @@
 					</select>
 					<input
 						type="text"
-						placeholder="Serial Number"
+						placeholder={getSerialPlaceholder(item.type)}
 						value={item.serial}
 						oninput={(e) => updateEvidence(item.id, "serial", e.currentTarget.value)}
 						class="field-input"
 					/>
 				</div>
 				<textarea
-					placeholder="Notes"
+					placeholder={getNotesPlaceholder(item.type)}
 					value={item.notes}
 					oninput={(e) => updateEvidence(item.id, "notes", e.currentTarget.value)}
 					class="notes-input"
