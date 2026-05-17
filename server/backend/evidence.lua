@@ -42,6 +42,38 @@ ps.registerCallback(resourceName .. ':server:getEvidenceItems', function(source,
         LIMIT ? OFFSET ?
     ]]):format(whereClause), listValues)
 
+    -- Images batch-laden
+    if evidence and #evidence > 0 then
+        local ids = {}
+        local idLookup = {}
+        for _, item in ipairs(evidence) do
+            ids[#ids + 1] = item.id
+            idLookup[item.id] = item
+            item.images = {}
+        end
+
+        local placeholders = string.rep('?,', #ids - 1) .. '?'
+        local images = MySQL.query.await(([[
+            SELECT id, evidence_id, url, label, uploaded_by, uploaded_at
+            FROM mdt_evidence_images
+            WHERE evidence_id IN (%s)
+            ORDER BY uploaded_at DESC
+        ]]):format(placeholders), ids)
+
+        for _, img in ipairs(images or {}) do
+            local parent = idLookup[img.evidence_id]
+            if parent then
+                parent.images[#parent.images + 1] = {
+                    id = img.id,
+                    url = img.url,
+                    label = img.label,
+                    uploaded_by = img.uploaded_by,
+                    uploaded_at = img.uploaded_at
+                }
+            end
+        end
+    end
+
     return {
         success = true,
         data = {
@@ -83,6 +115,38 @@ ps.registerCallback(resourceName .. ':server:searchEvidenceItems', function(sour
         LIMIT ? OFFSET ?
     ]], { likeQuery, likeQuery, likeQuery, likeQuery, likeQuery, limit, offset })
 
+    -- Images batch-laden
+    if evidence and #evidence > 0 then
+        local ids = {}
+        local idLookup = {}
+        for _, item in ipairs(evidence) do
+            ids[#ids + 1] = item.id
+            idLookup[item.id] = item
+            item.images = {}
+        end
+
+        local placeholders = string.rep('?,', #ids - 1) .. '?'
+        local images = MySQL.query.await(([[
+            SELECT id, evidence_id, url, label, uploaded_by, uploaded_at
+            FROM mdt_evidence_images
+            WHERE evidence_id IN (%s)
+            ORDER BY uploaded_at DESC
+        ]]):format(placeholders), ids)
+
+        for _, img in ipairs(images or {}) do
+            local parent = idLookup[img.evidence_id]
+            if parent then
+                parent.images[#parent.images + 1] = {
+                    id = img.id,
+                    url = img.url,
+                    label = img.label,
+                    uploaded_by = img.uploaded_by,
+                    uploaded_at = img.uploaded_at
+                }
+            end
+        end
+    end
+
     return {
         success = true,
         data = {
@@ -99,12 +163,34 @@ ps.registerCallback(resourceName .. ':server:addEvidenceItem', function(source, 
     if not CheckAuth(src) then return { success = false, error = 'Unauthorized' } end
 
     payload = payload or {}
-    local caseId = tonumber(payload.caseId)
-    local reportId = tonumber(payload.reportId)
     local evidence = payload.evidence or payload
 
     if not evidence or not evidence.title then
         return { success = false, error = 'Invalid evidence: title is required' }
+    end
+
+    local caseId = nil
+    if payload.caseId and tostring(payload.caseId) ~= '' then
+        local n = tonumber(payload.caseId)
+        if n then
+            local row = MySQL.single.await('SELECT id FROM mdt_cases WHERE id = ?', { n })
+            if not row then
+                return { success = false, error = 'Case #' .. tostring(n) .. ' doesnt exist' }
+            end
+            caseId = n
+        end
+    end
+
+    local reportId = nil
+    if payload.reportId and tostring(payload.reportId) ~= '' then
+        local n = tonumber(payload.reportId)
+        if n then
+            local row = MySQL.single.await('SELECT id FROM mdt_reports WHERE id = ?', { n })
+            if not row then
+                return { success = false, error = 'Report #' .. tostring(n) .. ' doesnt exist' }
+            end
+            reportId = n
+        end
     end
 
     local evidenceId = MySQL.insert.await([[
@@ -303,40 +389,8 @@ ps.registerCallback(resourceName .. ':server:addEvidenceImage', function(source,
         return { success = false, error = 'Invalid image' }
     end
 
-    local url = image.url
+    local url = image.url or image.data or ''
     local label = image.label or ''
-
-    -- Upload via FiveManage if base64 data is provided
-    if image.data and image.filename then
-        local contentType = image.contentType or ''
-        if Config.Uploads and Config.Uploads.AllowedEvidenceImageTypes then
-            local allowed = false
-            for _, mime in ipairs(Config.Uploads.AllowedEvidenceImageTypes) do
-                if mime == contentType then
-                    allowed = true
-                    break
-                end
-            end
-            if not allowed then
-                return { success = false, error = 'Unsupported image type' }
-            end
-        end
-
-        if not FiveManageUpload then
-            return { success = false, error = 'FiveManage upload not available' }
-        end
-
-        local dataUri = image.data
-        if type(dataUri) ~= 'string' or dataUri == '' then
-            return { success = false, error = 'Invalid image data' }
-        end
-
-        local uploadedUrl, uploadError = FiveManageUpload(dataUri, image.filename)
-        if not uploadedUrl then
-            return { success = false, error = 'Upload failed: ' .. (uploadError or 'Unknown error') }
-        end
-        url = uploadedUrl
-    end
 
     if not url or url == '' then
         return { success = false, error = 'Missing image URL' }
@@ -409,7 +463,6 @@ ps.registerCallback(resourceName .. ':server:linkEvidenceToCase', function(sourc
     evidenceId = tonumber(evidenceId)
     reportId = tonumber(reportId)
 
-    -- Support case number format like "CASE-2026-003" by looking up the numeric ID
     local numericCaseId = tonumber(caseId)
     if not numericCaseId and type(caseId) == 'string' and caseId ~= '' then
         local row = MySQL.single.await('SELECT id FROM mdt_cases WHERE case_number = ? LIMIT 1', { caseId })
@@ -423,9 +476,18 @@ ps.registerCallback(resourceName .. ':server:linkEvidenceToCase', function(sourc
         return { success = false, error = 'Invalid evidence or case' }
     end
 
+    local caseExists = MySQL.single.await('SELECT id FROM mdt_cases WHERE id = ?', { caseId })
+    if not caseExists then
+        return { success = false, error = 'Case #' .. tostring(caseId) .. ' does not exist' }
+    end
+
     MySQL.update.await('UPDATE mdt_evidence_items SET case_id = ? WHERE id = ?', { caseId, evidenceId })
+
     if reportId then
-        linkReportToCase(reportId, caseId, ps.getIdentifier(src))
+        local reportExists = MySQL.single.await('SELECT id FROM mdt_reports WHERE id = ?', { reportId })
+        if reportExists then
+            linkReportToCase(reportId, caseId, ps.getIdentifier(src))
+        end
     end
 
     if ps.auditLog then
@@ -447,6 +509,11 @@ ps.registerCallback(resourceName .. ':server:linkEvidenceToReport', function(sou
 
     if not evidenceId or not reportId then
         return { success = false, error = 'Invalid evidence or report' }
+    end
+
+    local reportExists = MySQL.single.await('SELECT id FROM mdt_reports WHERE id = ?', { reportId })
+    if not reportExists then
+        return { success = false, error = 'Report #' .. tostring(reportId) .. ' does not exist' }
     end
 
     MySQL.update.await('UPDATE mdt_evidence_items SET report_id = ? WHERE id = ?', { reportId, evidenceId })
@@ -503,11 +570,23 @@ end)
 RegisterNetEvent(resourceName .. ':server:openEvidenceStash', function(stashId)
     local src = source
     if not CheckAuth(src) then return end
-
     if not stashId or stashId == '' then return end
 
-    exports['qb-inventory']:OpenInventory(src, stashId, {
-        maxweight = 4000000,
-        slots = 500,
-    })
+    -- qb-inventory
+    if GetResourceState('qb-inventory') == 'started' then
+        exports['qb-inventory']:OpenInventory(src, stashId, {
+            maxweight = 4000000,
+            slots = 500,
+        })
+        return
+    end
+
+    -- ox_inventory mit forceOpenInventory
+    if GetResourceState('ox_inventory') == 'started' then
+        
+        exports.ox_inventory:RegisterStash(stashId, stashId , 500 , 4000000)
+
+        exports.ox_inventory:forceOpenInventory(src, 'stash', stashId)
+        return
+    end
 end)

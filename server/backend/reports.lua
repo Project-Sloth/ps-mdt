@@ -361,7 +361,8 @@ ps.registerCallback(resourceName..':server:getReport', function(source, reportid
                         ' ',
                         JSON_UNQUOTE(JSON_EXTRACT(p.charinfo, '$.lastname'))
                     ) as fullname,
-                    mp.profilepicture as image
+                    mp.profilepicture as image,
+                    JSON_UNQUOTE(JSON_EXTRACT(p.metadata, '$.fingerprint')) as fingerprint
                 FROM players p
                 LEFT JOIN mdt_profiles mp ON mp.citizenid COLLATE utf8mb4_general_ci = p.citizenid COLLATE utf8mb4_general_ci
                 WHERE p.citizenid COLLATE utf8mb4_general_ci IN (%s)
@@ -369,10 +370,12 @@ ps.registerCallback(resourceName..':server:getReport', function(source, reportid
 
             local lookupRows = MySQL.query.await(lookupQuery, cidList)
             local cidInfo = {}
-            if lookupRows then
-                for _, row in ipairs(lookupRows) do
-                    cidInfo[row.citizenid] = { name = row.fullname, image = row.image }
-                end
+            for _, row in ipairs(lookupRows) do
+                cidInfo[row.citizenid] = {
+                    name = row.fullname,
+                    image = row.image,
+                    fingerprint = (row.fingerprint and row.fingerprint ~= 'null') and row.fingerprint or nil  -- neu
+                }
             end
 
             for _, entry in ipairs(involved) do
@@ -380,6 +383,7 @@ ps.registerCallback(resourceName..':server:getReport', function(source, reportid
                     local info = cidInfo[entry.citizenid]
                     entry.name = info.name or entry.name
                     entry.image = info.image
+                    entry.fingerprint = info.fingerprint
                 end
             end
         end

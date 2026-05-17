@@ -549,21 +549,42 @@ ps.registerCallback(resourceName .. ':server:removeCaseAttachment', function(sou
     return { success = true }
 end)
 
-ps.registerCallback(resourceName .. ':server:addEvidenceItem', function(source, caseId, evidence)
+ps.registerCallback(resourceName .. ':server:addEvidenceItem', function(source, payload)
     local src = source
     if not CheckAuth(src) then return { success = false, error = 'Unauthorized' } end
 
-    caseId = tonumber(caseId)
-    if not caseId or not evidence or not evidence.title then
-        return { success = false, error = 'Invalid evidence' }
+    payload = payload or {}
+    local caseId = tonumber(payload.caseId)
+    local reportId = tonumber(payload.reportId)
+    local evidence = payload.evidence or payload
+
+    if not evidence or not evidence.title then
+        return { success = false, error = 'Invalid evidence: title is required' }
+    end
+
+    -- Validiere caseId falls angegeben
+    if caseId then
+        local caseExists = MySQL.single.await('SELECT id FROM mdt_cases WHERE id = ?', { caseId })
+        if not caseExists then
+            caseId = nil -- Setze auf nil wenn Case nicht existiert
+        end
+    end
+
+    -- Validiere reportId falls angegeben — das ist der Hauptfehler!
+    if reportId then
+        local reportExists = MySQL.single.await('SELECT id FROM mdt_reports WHERE id = ?', { reportId })
+        if not reportExists then
+            reportId = nil -- Setze auf nil wenn Report nicht existiert
+        end
     end
 
     local evidenceId = MySQL.insert.await([[
         INSERT INTO mdt_evidence_items
-        (case_id, title, type, serial, notes, location, stash_id, stored, last_holder, created_by)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        (case_id, report_id, title, type, serial, notes, location, stash_id, stored, last_holder, created_by)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ]], {
         caseId,
+        reportId,
         evidence.title,
         evidence.type or 'Evidence',
         evidence.serial or '',
