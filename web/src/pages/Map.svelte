@@ -60,8 +60,6 @@
 		const config = getTrackConfig(kind);
 		const latLng = toMapLatLng(coords);
 
-		// Heading umrechnen: GTA heading → CSS rotation
-		// GTA: 0 = Nord, 90 = West — CSS: 0 = oben, dreht clockwise
 		const rotation = heading != null ? (360 - heading) : 0;
 		const hasHeading = heading != null;
 
