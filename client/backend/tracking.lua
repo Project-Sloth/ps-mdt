@@ -13,3 +13,13 @@ RegisterNUICallback('getTracking', function(_, cb)
         cb({ success = false, message = 'Failed to fetch tracking data', data = {} })
     end
 end)
+
+RegisterNetEvent(resourceName .. ':client:checkVehicleClass', function(netId, plate, coords, heading)
+    local veh = NetworkGetEntityFromNetworkId(netId)
+    if not veh or veh == 0 then return end
+
+    local vehClass = GetVehicleClass(veh)
+    if vehClass ~= 18 then     ps.error(plate.. ' is not a emergency vehicle') return end
+
+    TriggerServerEvent(resourceName .. ':server:cacheVehicle', plate, coords, heading)
+end)
