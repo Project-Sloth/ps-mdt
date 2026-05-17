@@ -831,16 +831,6 @@
 						<input class="form-input" placeholder="Label" bind:value={attachmentDraft.label} />
 						<button class="action-btn" onclick={handleAddAttachment}>Add</button>
 					</div>
-					<div class="upload-row">
-						<input type="file" accept=".jpg,.jpeg,.png,.webp,.pdf" class="file-input" onchange={(event) => {
-							const input = event.target as HTMLInputElement;
-							attachmentFile = input.files && input.files[0] ? input.files[0] : null;
-						}} />
-						{#if attachmentFile}
-							<span class="muted-text">{attachmentFile.name} ({formatBytes(attachmentFile.size)})</span>
-						{/if}
-						<button class="primary-btn" onclick={handleUploadAttachment}>Upload</button>
-					</div>
 					{#if attachmentError}
 						<p class="error-text">{attachmentError}</p>
 					{/if}

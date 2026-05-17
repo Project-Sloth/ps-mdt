@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { onMount } from "svelte";
 	import { createEvidenceService } from "../services/evidenceService.svelte";
-	import { formatBytes, compressImage } from "../services/uploadService";
 	import { isEnvBrowser } from "../utils/misc";
 	import type { createTabService } from "../services/tabService.svelte";
 	import type { MDTTab } from "../constants";
@@ -58,7 +57,7 @@
 		quantity: "",
 	});
 
-	// Per-type field config: which fields to show and custom labels/placeholders
+	// Per-type field config
 	const TYPE_FIELDS: Record<string, {
 		serial?: boolean; serialLabel?: string; serialPlaceholder?: string;
 		description?: boolean; descriptionPlaceholder?: string;
@@ -81,23 +80,29 @@
 	let custodyEntries = $state<any[]>([]);
 	let transferCitizenId = $state("");
 	let transferNotes = $state("");
-	let evidenceImageFile = $state<File | null>(null);
-	let evidenceImageLabel = $state("");
 	let evidenceError = $state("");
-	let isUploading = $state(false);
 	let linkCaseId = $state("");
 	let linkReportId = $state("");
 	let statusMessage: { text: string; type: "success" | "error" } | null = $state(null);
 	let lightboxUrl = $state<string | null>(null);
 	let lightboxLabel = $state("");
-	let createImageFiles = $state<File[]>([]);
+
+	// ── Image URL modal (for create form) ──
+	let createImageUrlModalOpen = $state(false);
+	let createImageUrlInput = $state("");
+	let createImageUrls = $state<{ url: string; label: string }[]>([]);
+
+	// ── Image URL modal (for selected evidence sidebar) ──
+	let sidebarImageUrlModalOpen = $state(false);
+	let sidebarImageUrlInput = $state("");
+	let sidebarImageLabelInput = $state("");
+	let isSidebarUploading = $state(false);
+	let uploadSuccess = $state("");
 
 	function showStatus(text: string, type: "success" | "error" = "success") {
 		statusMessage = { text, type };
 		setTimeout(() => { statusMessage = null; }, 3000);
 	}
-
-	const allowedEvidenceImageTypes = ["image/jpeg", "image/png", "image/webp"];
 
 	function openLightbox(url: string, label: string) {
 		lightboxUrl = url;
@@ -126,13 +131,11 @@
 				items = response.data?.items || [];
 				total = response.data?.total || 0;
 			} else {
-				const response = await evidenceService.getEvidenceItems(
-					pageNumber,
-					limit,
-				);
+				const response = await evidenceService.getEvidenceItems(pageNumber, limit);
 				items = response.data?.items || [];
 				total = response.data?.total || 0;
 			}
+			
 			page = pageNumber;
 		} catch (error) {
 			items = [];
@@ -144,7 +147,7 @@
 
 	function resetCreateForm() {
 		createForm = { caseId: "", reportId: "", title: "", type: "Physical", serial: "", description: "", location: "", stashId: "", stored: false, notes: "", plateNumber: "", quantity: "" };
-		createImageFiles = [];
+		createImageUrls = [];
 	}
 
 	function buildNotes(): string {
@@ -162,9 +165,10 @@
 			evidenceError = "Title is required.";
 			return;
 		}
+
 		if (isEnvBrowser()) {
 			const newItem = {
-				id: items.length + 10,
+				id: Date.now(),
 				case_id: createForm.caseId ? Number(createForm.caseId) : null,
 				title: createForm.title.trim(),
 				type: createForm.type,
@@ -175,56 +179,67 @@
 				notes: buildNotes(),
 				created_at: new Date().toISOString(),
 				updated_by: "You",
+				images: createImageUrls.map((img, i) => ({ id: i + 1, url: img.url, label: img.label })),
 			};
 			items = [newItem, ...items];
 			total = items.length;
 			showCreate = false;
 			resetCreateForm();
+			showStatus("Evidence created successfully");
 			return;
 		}
-		const payload = {
-			caseId: createForm.caseId ? Number(createForm.caseId) : undefined,
-			reportId: createForm.reportId ? Number(createForm.reportId) : undefined,
-			evidence: {
-				title: createForm.title.trim(),
-				type: createForm.type,
-				serial: createForm.serial.trim() || (createForm.plateNumber.trim() ? createForm.plateNumber.trim() : ""),
-				location: createForm.location.trim(),
-				stashId: createForm.stashId.trim(),
-				stored: createForm.stored,
-				notes: buildNotes(),
-			},
-		};
-		const stashToOpen = createForm.stashId.trim();
-		const response = await evidenceService.addEvidenceItem(payload as any);
-		if (response.success) {
-			const newId = response.id || response.data?.id;
-			if (newId && createImageFiles.length > 0) {
-				for (const file of createImageFiles) {
-					const base64 = await fileToBase64(file);
-					await evidenceService.addEvidenceImage(newId, {
-						data: base64,
-						filename: file.name,
-						contentType: file.type,
-						label: file.name,
-					});
+
+		try {
+			const payload = {
+				caseId: createForm.caseId ? Number(createForm.caseId) : undefined,
+				reportId: createForm.reportId && createForm.reportId.trim() !== "" 
+					? Number(createForm.reportId) 
+					: undefined,  // explizit undefined statt leerer String
+				evidence: {
+					title: createForm.title.trim(),
+					type: createForm.type,
+					serial: createForm.serial.trim() || (createForm.plateNumber.trim() ? createForm.plateNumber.trim() : ""),
+					location: createForm.location.trim(),
+					stashId: createForm.stashId.trim(),
+					stored: createForm.stored,
+					notes: buildNotes(),
+				},
+			};
+			const stashToOpen = createForm.stashId.trim();
+			const response = await evidenceService.addEvidenceItem(payload as any);
+
+			if (response?.success) {
+				const newId = response.id || response.data?.id;
+				if (newId && createImageUrls.length > 0) {
+					for (const img of createImageUrls) {
+						await evidenceService.addEvidenceImage(newId, {
+							data: img.url,
+							filename: img.label || "image",
+							contentType: "url",
+							label: img.label,
+						});
+					}
 				}
+				showCreate = false;
+				resetCreateForm();
+				await loadEvidence(1);
+				showStatus("Evidence created successfully");
+				if (stashToOpen) {
+					await openStash(stashToOpen);
+				}
+			} else {
+				evidenceError = (response as any)?.error || "Failed to create evidence. Please try again.";
 			}
-			showCreate = false;
-			resetCreateForm();
-			await loadEvidence(1);
-			if (stashToOpen) {
-				await openStash(stashToOpen);
-			}
+		} catch (err) {
+			evidenceError = "An error occurred while creating evidence.";
 		}
 	}
 
 	async function selectEvidence(item: any) {
 		selectedEvidenceId = item.id;
-		selectedEvidence = item;
+		selectedEvidence = items.find(i => i.id === item.id) || item;
 		linkCaseId = item.case_id ? String(item.case_id) : "";
 		linkReportId = item.report_id ? String(item.report_id) : "";
-		// Log that this evidence was viewed (fire and forget, then refresh custody)
 		evidenceService.logEvidenceViewed(item.id);
 		custodyEntries = await evidenceService.getEvidenceCustody(item.id);
 	}
@@ -235,7 +250,6 @@
 			return;
 		}
 		try {
-			// Pass raw string - server handles both numeric IDs and case numbers like "CASE-2026-003"
 			const caseIdValue = /^\d+$/.test(linkCaseId.trim()) ? Number(linkCaseId.trim()) : linkCaseId.trim();
 			const result = await evidenceService.linkEvidenceToCase(
 				selectedEvidenceId,
@@ -264,10 +278,7 @@
 				showStatus("Report ID must be a number", "error");
 				return;
 			}
-			const result = await evidenceService.linkEvidenceToReport(
-				selectedEvidenceId,
-				reportIdNum,
-			);
+			const result = await evidenceService.linkEvidenceToReport(selectedEvidenceId, reportIdNum);
 			if (result?.success) {
 				showStatus("Evidence linked to Report #" + linkReportId.trim());
 				await loadEvidence(page);
@@ -317,38 +328,42 @@
 			transferCitizenId.trim(),
 			transferNotes.trim(),
 		);
-		custodyEntries = await evidenceService.getEvidenceCustody(
-			selectedEvidenceId,
-		);
+		custodyEntries = await evidenceService.getEvidenceCustody(selectedEvidenceId);
 		transferCitizenId = "";
 		transferNotes = "";
 	}
 
-	let uploadSuccess = $state("");
+	// ── Sidebar: add image via URL ──
+	async function handleAddSidebarImageUrl() {
+		const url = sidebarImageUrlInput.trim();
+		if (!selectedEvidenceId || !url || isSidebarUploading) return;
+		isSidebarUploading = true;
 
-	async function handleUploadEvidenceImage() {
-		if (!selectedEvidenceId || !evidenceImageFile || isUploading) return;
-		if (!allowedEvidenceImageTypes.includes(evidenceImageFile.type)) {
-			evidenceError = "Unsupported image type.";
-			return;
-		}
-		isUploading = true;
 		if (isEnvBrowser()) {
-			await new Promise((r) => setTimeout(r, 1000));
-			uploadSuccess = `Uploaded: ${evidenceImageFile.name}`;
-			evidenceImageFile = null;
-			evidenceImageLabel = "";
-			isUploading = false;
+			await new Promise((r) => setTimeout(r, 600));
+			if (selectedEvidence) {
+				if (!selectedEvidence.images) selectedEvidence.images = [];
+				selectedEvidence.images = [...selectedEvidence.images, {
+					id: Date.now(),
+					url,
+					label: sidebarImageLabelInput.trim() || "Evidence",
+				}];
+			}
+			uploadSuccess = "Image added successfully";
+			sidebarImageUrlInput = "";
+			sidebarImageLabelInput = "";
+			sidebarImageUrlModalOpen = false;
+			isSidebarUploading = false;
 			setTimeout(() => { uploadSuccess = ""; }, 3000);
 			return;
 		}
+
 		try {
-			const base64 = await compressImage(evidenceImageFile);
 			const result = await evidenceService.addEvidenceImage(selectedEvidenceId, {
-				data: base64,
-				filename: evidenceImageFile.name,
-				contentType: evidenceImageFile.type,
-				label: evidenceImageLabel.trim(),
+				data: url,
+				filename: sidebarImageLabelInput.trim() || "image",
+				contentType: "url",
+				label: sidebarImageLabelInput.trim(),
 			});
 			if (result?.success && result.url) {
 				if (selectedEvidence) {
@@ -356,19 +371,21 @@
 					selectedEvidence.images = [...selectedEvidence.images, {
 						id: result.id || Date.now(),
 						url: result.url,
-						label: evidenceImageLabel.trim(),
+						label: sidebarImageLabelInput.trim(),
 					}];
 				}
-				uploadSuccess = `Uploaded: ${evidenceImageFile.name}`;
+				uploadSuccess = "Image added successfully";
 			} else {
-				evidenceError = "Upload failed";
+				evidenceError = "Failed to add image";
 			}
 		} catch {
-			evidenceError = "Upload failed";
+			evidenceError = "Failed to add image";
 		}
-		evidenceImageFile = null;
-		evidenceImageLabel = "";
-		isUploading = false;
+
+		sidebarImageUrlInput = "";
+		sidebarImageLabelInput = "";
+		sidebarImageUrlModalOpen = false;
+		isSidebarUploading = false;
 		setTimeout(() => { uploadSuccess = ""; }, 3000);
 	}
 
@@ -400,6 +417,103 @@
 	});
 </script>
 
+<!-- ── Sidebar Image URL Modal ── -->
+{#if sidebarImageUrlModalOpen}
+	<!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
+	<div class="modal-backdrop" onclick={(e) => { if (e.target === e.currentTarget) sidebarImageUrlModalOpen = false; }}>
+		<div class="modal image-url-modal" role="dialog" aria-modal="true" onclick={(e) => e.stopPropagation()}>
+			<div class="modal-header">
+				<h3>Add Evidence Image</h3>
+				<button class="close-btn" onclick={() => sidebarImageUrlModalOpen = false}>
+					<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+				</button>
+			</div>
+			<div class="modal-body img-modal-body">
+				<div class="img-form-group">
+					<span class="img-label">Image URL</span>
+					<input
+						class="img-input"
+						type="url"
+						placeholder="https://example.com/photo.jpg"
+						bind:value={sidebarImageUrlInput}
+						onkeydown={(e) => { if (e.key === 'Enter') handleAddSidebarImageUrl(); if (e.key === 'Escape') sidebarImageUrlModalOpen = false; }}
+					/>
+				</div>
+				<div class="img-form-group">
+					<span class="img-label">Label <span class="img-label-optional">(optional)</span></span>
+					<input
+						class="img-input"
+						type="text"
+						placeholder="e.g. Crime scene photo"
+						bind:value={sidebarImageLabelInput}
+						onkeydown={(e) => { if (e.key === 'Enter') handleAddSidebarImageUrl(); }}
+					/>
+				</div>
+				<span class="url-hint">
+					<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+					Use <a href="https://fivemanage.com" target="_blank" rel="noopener noreferrer">FiveManage</a> to make sure your links persist forever.
+				</span>
+			</div>
+			<div class="modal-footer">
+				<button class="cancel-btn" onclick={() => sidebarImageUrlModalOpen = false} disabled={isSidebarUploading}>Cancel</button>
+				<button class="save-btn" onclick={handleAddSidebarImageUrl} disabled={isSidebarUploading || !sidebarImageUrlInput.trim()}>
+					{isSidebarUploading ? "Adding…" : "Add Image"}
+				</button>
+			</div>
+		</div>
+	</div>
+{/if}
+
+<!-- ── Create Image URL Modal ── -->
+{#if createImageUrlModalOpen}
+	<!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
+	<div class="modal-backdrop" onclick={(e) => { if (e.target === e.currentTarget) createImageUrlModalOpen = false; }}>
+		<div class="modal image-url-modal" role="dialog" aria-modal="true" onclick={(e) => e.stopPropagation()}>
+			<div class="modal-header">
+				<h3>Add Image URL</h3>
+				<button class="close-btn" onclick={() => createImageUrlModalOpen = false}>
+					<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+				</button>
+			</div>
+			<div class="modal-body img-modal-body">
+				<div class="img-form-group">
+					<span class="img-label">Image URL</span>
+					<input
+						class="img-input"
+						type="url"
+						placeholder="https://example.com/photo.jpg"
+						bind:value={createImageUrlInput}
+						onkeydown={(e) => {
+							if (e.key === 'Enter' && createImageUrlInput.trim()) {
+								createImageUrls = [...createImageUrls, { url: createImageUrlInput.trim(), label: "" }];
+								createImageUrlInput = "";
+								createImageUrlModalOpen = false;
+							}
+							if (e.key === 'Escape') createImageUrlModalOpen = false;
+						}}
+					/>
+				</div>
+				<span class="url-hint">
+					<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+					Use <a href="https://fivemanage.com" target="_blank" rel="noopener noreferrer">FiveManage</a> to make sure your links persist forever.
+				</span>
+			</div>
+			<div class="modal-footer">
+				<button class="cancel-btn" onclick={() => createImageUrlModalOpen = false}>Cancel</button>
+				<button class="save-btn" onclick={() => {
+					if (createImageUrlInput.trim()) {
+						createImageUrls = [...createImageUrls, { url: createImageUrlInput.trim(), label: "" }];
+						createImageUrlInput = "";
+						createImageUrlModalOpen = false;
+					}
+				}} disabled={!createImageUrlInput.trim()}>
+					Add URL
+				</button>
+			</div>
+		</div>
+	</div>
+{/if}
+
 <div class="evidence-page">
 	<!-- Topbar -->
 	<div class="topbar">
@@ -414,15 +528,12 @@
 				}}
 			/>
 		</div>
-		<button class="action-btn" onclick={() => loadEvidence(1)}>
-			Search
-		</button>
+		<button class="action-btn" onclick={() => loadEvidence(1)}>Search</button>
 		<button class="create-btn" onclick={() => {
 			resetCreateForm();
 			const nextNum = total + 1;
 			createForm.serial = `EVD-${String(nextNum).padStart(3, "0")}`;
 			createForm.stashId = `LOCKER-${String(nextNum).padStart(3, "0")}`;
-			// Auto-populate Case ID from most recent case in evidence list
 			const latestCaseId = items.reduce((max, item) => {
 				const id = item.case_id ? Number(item.case_id) : 0;
 				return id > max ? id : max;
@@ -500,31 +611,17 @@
 		<!-- Detail Sidebar (right) -->
 		<div class="detail-sidebar">
 			{#if selectedEvidenceId}
-				<!-- Custody Log -->
+				<!-- Link Evidence + Custody -->
 				<div class="section">
 					<div class="section-title">Link Evidence</div>
 					<div class="section-actions">
-						<input
-							class="form-input"
-							placeholder="Case ID or CASE-2026-..."
-							bind:value={linkCaseId}
-						/>
-						<button class="action-btn" onclick={handleLinkEvidenceCase}>
-							Link to Case
-						</button>
-						<button class="action-btn" onclick={handleCreateCaseFromEvidence}>
-							Create Case
-						</button>
+						<input class="form-input" placeholder="Case ID or CASE-2026-..." bind:value={linkCaseId} />
+						<button class="action-btn" onclick={handleLinkEvidenceCase}>Link to Case</button>
+						<button class="action-btn" onclick={handleCreateCaseFromEvidence}>Create Case</button>
 					</div>
 					<div class="section-actions">
-						<input
-							class="form-input"
-							placeholder="Report ID"
-							bind:value={linkReportId}
-						/>
-						<button class="action-btn" onclick={handleLinkEvidenceReport}>
-							Link to Report
-						</button>
+						<input class="form-input" placeholder="Report ID" bind:value={linkReportId} />
+						<button class="action-btn" onclick={handleLinkEvidenceReport}>Link to Report</button>
 					</div>
 					<div class="section-title" style="margin-top: 8px;">Custody Log</div>
 					{#if custodyEntries.length === 0}
@@ -561,39 +658,40 @@
 					<div class="transfer-row">
 						<input class="form-input" placeholder="Citizen ID" bind:value={transferCitizenId} />
 						<input class="form-input" placeholder="Transfer notes" bind:value={transferNotes} />
-						<button class="action-btn" onclick={handleTransferEvidence}>
-							Transfer
-						</button>
+						<button class="action-btn" onclick={handleTransferEvidence}>Transfer</button>
 					</div>
 				</div>
 
-				<!-- Upload Image -->
+				<!-- Add Image via URL -->
 				<div class="section">
-					<div class="section-title">Upload Evidence Image</div>
-					<div class="upload-row">
-						<input
-							type="file"
-							accept=".jpg,.jpeg,.png,.webp"
-							class="file-input"
-							onchange={(event) => {
-								const input = event.target as HTMLInputElement;
-								evidenceImageFile = input.files && input.files[0] ? input.files[0] : null;
-							}}
-						/>
-						<input class="form-input" placeholder="Image label" bind:value={evidenceImageLabel} />
-						<button class="create-btn" disabled={isUploading} onclick={handleUploadEvidenceImage}>
-							{isUploading ? "Uploading..." : "Upload"}
-						</button>
-					</div>
-					{#if isUploading}
-						<p class="uploading-text">Uploading image, please wait...</p>
-					{:else if evidenceImageFile}
-						<p class="muted-text" style="margin-top:6px;">
-							{evidenceImageFile.name} ({formatBytes(evidenceImageFile.size)})
-						</p>
-					{/if}
+					<div class="section-title">Evidence Images</div>
+					<button class="add-image-url-btn" onclick={() => {
+						sidebarImageUrlInput = "";
+						sidebarImageLabelInput = "";
+						sidebarImageUrlModalOpen = true;
+					}}>
+						<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+						Add Image URL
+					</button>
 					{#if uploadSuccess}
 						<p class="upload-success">{uploadSuccess}</p>
+					{/if}
+					{#if selectedEvidence?.images && selectedEvidence.images.length > 0}
+						<div class="image-gallery" style="margin-top: 8px;">
+							{#each selectedEvidence.images as img}
+								<div class="image-item">
+									<button class="image-btn" onclick={() => openLightbox(img.url, img.label || 'Evidence')}>
+										<img src={img.url} alt={img.label || 'Evidence'} class="evidence-thumb" />
+									</button>
+									<div class="image-info">
+										<span class="image-label">{img.label || 'No label'}</span>
+										<button class="remove-image-btn" onclick={() => handleRemoveImage(img.id)}>
+											<span class="material-icons" style="font-size:14px;">close</span>
+										</button>
+									</div>
+								</div>
+							{/each}
+						</div>
 					{/if}
 				</div>
 
@@ -610,28 +708,6 @@
 						</div>
 					</div>
 				{/if}
-
-				<!-- Uploaded Images -->
-				{#if selectedEvidence?.images && selectedEvidence.images.length > 0}
-					<div class="section">
-						<div class="section-title">Evidence Images</div>
-						<div class="image-gallery">
-							{#each selectedEvidence.images as img}
-								<div class="image-item">
-									<button class="image-btn" onclick={() => openLightbox(img.url, img.label || 'Evidence')}>
-										<img src={img.url} alt={img.label || 'Evidence'} class="evidence-thumb" />
-									</button>
-									<div class="image-info">
-										<span class="image-label">{img.label || 'No label'}</span>
-										<button class="remove-image-btn" onclick={() => handleRemoveImage(img.id)}>
-											<span class="material-icons" style="font-size:14px;">close</span>
-										</button>
-									</div>
-								</div>
-							{/each}
-						</div>
-					</div>
-				{/if}
 			{:else}
 				<div class="empty-detail">
 					<svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.25; margin-bottom:10px;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
@@ -642,6 +718,7 @@
 	</div>
 </div>
 
+<!-- ── Create Evidence Modal ── -->
 {#if showCreate}
 	<!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions a11y_no_noninteractive_element_interactions a11y_role_has_required_aria_props -->
 	<div class="modal-backdrop" role="button" tabindex="-1" onclick={() => (showCreate = false)}>
@@ -682,7 +759,7 @@
 					</div>
 				</div>
 
-				<!-- Row 2: Dynamic fields based on type -->
+				<!-- Row 2: Dynamic fields -->
 				<div class="form-grid">
 					{#if typeConfig.description}
 						<div class="form-group" style="grid-column: span 2;">
@@ -710,7 +787,7 @@
 					{/if}
 				</div>
 
-				<!-- Row 3: Location + conditional Stash -->
+				<!-- Row 3: Location + Stash -->
 				<div class="form-grid">
 					<div class="form-group" style={typeConfig.stash ? "" : "grid-column: span 3;"}>
 						<span class="form-label">Location</span>
@@ -730,37 +807,12 @@
 						<span>Evidence is stored / secured</span>
 					</label>
 				{/if}
+
 				<div class="form-group">
 					<span class="form-label">Notes</span>
 					<textarea rows="4" bind:value={createForm.notes} placeholder="Additional notes..." class="form-input"></textarea>
 				</div>
-				<div class="form-group">
-					<span class="form-label">Attach Images</span>
-					<input
-						type="file"
-						accept=".jpg,.jpeg,.png,.webp"
-						multiple
-						class="file-input"
-						onchange={(event) => {
-							const input = event.target as HTMLInputElement;
-							if (input.files) {
-								createImageFiles = [...createImageFiles, ...Array.from(input.files)];
-							}
-						}}
-					/>
-					{#if createImageFiles.length > 0}
-						<div class="create-image-list">
-							{#each createImageFiles as file, i}
-								<div class="create-image-item">
-									<span class="create-image-name">{file.name} ({formatBytes(file.size)})</span>
-									<button class="remove-image-btn" onclick={() => { createImageFiles = createImageFiles.filter((_, idx) => idx !== i); }}>
-										<span class="material-icons" style="font-size:14px;">close</span>
-									</button>
-								</div>
-							{/each}
-						</div>
-					{/if}
-				</div>
+
 			</div>
 			{#if evidenceError}
 				<p class="error-text">{evidenceError}</p>
@@ -773,6 +825,7 @@
 	</div>
 {/if}
 
+<!-- Lightbox -->
 {#if lightboxUrl}
 	<!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions a11y_no_noninteractive_element_interactions -->
 	<div class="lightbox-overlay" onclick={closeLightbox} onkeydown={(e) => { if (e.key === 'Escape') closeLightbox(); }}>
@@ -832,9 +885,7 @@
 		outline: none;
 	}
 
-	.search-box input::placeholder {
-		color: rgba(255, 255, 255, 0.2);
-	}
+	.search-box input::placeholder { color: rgba(255, 255, 255, 0.2); }
 
 	/* ── Main Grid ── */
 	.main-grid {
@@ -848,9 +899,7 @@
 	/* ── List Panel ── */
 	.list-panel {
 		background: transparent;
-		border: none;
 		border-right: 1px solid rgba(255, 255, 255, 0.04);
-		border-radius: 0;
 		display: flex;
 		flex-direction: column;
 		overflow: hidden;
@@ -887,46 +936,21 @@
 		width: 100%;
 	}
 
-	.table-row:hover {
-		background: rgba(255, 255, 255, 0.02);
-	}
-
+	.table-row:hover { background: rgba(255, 255, 255, 0.02); }
 	.table-row.selected {
 		background: rgba(var(--accent-rgb), 0.04);
 		border-left: 2px solid rgba(var(--accent-rgb), 0.4);
 	}
 
-	.table-row .col-title {
-		font-weight: 500;
-		white-space: nowrap;
-		overflow: hidden;
-		text-overflow: ellipsis;
-	}
-
-	.table-row .col-location {
-		color: rgba(255, 255, 255, 0.35);
-		white-space: nowrap;
-		overflow: hidden;
-		text-overflow: ellipsis;
-	}
-
+	.table-row .col-title { font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+	.table-row .col-location { color: rgba(255, 255, 255, 0.35); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 	.table-row .col-serial,
 	.table-row .col-case,
 	.table-row .col-report,
-	.table-row .col-date {
-		color: rgba(255, 255, 255, 0.35);
-	}
+	.table-row .col-date { color: rgba(255, 255, 255, 0.35); }
 
-	.nav-link {
-		color: rgba(var(--accent-rgb), 0.6);
-		cursor: pointer;
-		transition: all 0.1s;
-	}
-
-	.nav-link:hover {
-		color: rgba(var(--accent-rgb), 0.9);
-		text-decoration: underline;
-	}
+	.nav-link { color: rgba(var(--accent-rgb), 0.6); cursor: pointer; transition: all 0.1s; }
+	.nav-link:hover { color: rgba(var(--accent-rgb), 0.9); text-decoration: underline; }
 
 	.type-badge {
 		display: inline-block;
@@ -940,25 +964,9 @@
 		background: rgba(255, 255, 255, 0.02);
 	}
 
-	.col-stored {
-		display: flex;
-		align-items: center;
-		gap: 5px;
-		font-size: 10px;
-		color: rgba(255, 255, 255, 0.35);
-	}
-
-	.stored-dot {
-		width: 5px;
-		height: 5px;
-		border-radius: 50%;
-		background: rgba(239, 68, 68, 0.5);
-		flex-shrink: 0;
-	}
-
-	.stored-dot.stored {
-		background: rgba(16, 185, 129, 0.6);
-	}
+	.col-stored { display: flex; align-items: center; gap: 5px; font-size: 10px; color: rgba(255, 255, 255, 0.35); }
+	.stored-dot { width: 5px; height: 5px; border-radius: 50%; background: rgba(239, 68, 68, 0.5); flex-shrink: 0; }
+	.stored-dot.stored { background: rgba(16, 185, 129, 0.6); }
 
 	.empty-state {
 		display: flex;
@@ -971,24 +979,14 @@
 	}
 
 	/* ── Detail Sidebar ── */
-	.detail-sidebar {
-		display: flex;
-		flex-direction: column;
-		gap: 0;
-		overflow-y: auto;
-	}
+	.detail-sidebar { display: flex; flex-direction: column; gap: 0; overflow-y: auto; }
 
 	.section {
 		background: transparent;
-		border: none;
 		border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-		border-radius: 0;
 		padding: 12px 16px;
 	}
-
-	.section:last-child {
-		border-bottom: none;
-	}
+	.section:last-child { border-bottom: none; }
 
 	.section-title {
 		color: rgba(255, 255, 255, 0.35);
@@ -1006,16 +1004,9 @@
 		flex-wrap: wrap;
 		margin-bottom: 8px;
 	}
-
-	.section-actions .form-input {
-		flex: 1;
-		min-width: 70px;
-	}
+	.section-actions .form-input { flex: 1; min-width: 70px; }
 
 	.empty-detail {
-		background: transparent;
-		border: none;
-		border-radius: 0;
 		padding: 40px 16px;
 		display: flex;
 		flex-direction: column;
@@ -1026,18 +1017,10 @@
 		font-size: 11px;
 		flex: 1;
 	}
-
-	.empty-detail p {
-		margin: 0;
-	}
+	.empty-detail p { margin: 0; }
 
 	/* ── Custody ── */
-	.custody-list {
-		display: flex;
-		flex-direction: column;
-		gap: 0;
-	}
-
+	.custody-list { display: flex; flex-direction: column; gap: 0; }
 	.custody-item {
 		display: grid;
 		grid-template-columns: 70px 1fr auto;
@@ -1048,256 +1031,73 @@
 		align-items: center;
 	}
 
-	.custody-action {
-		color: rgba(255, 255, 255, 0.5);
-		font-weight: 600;
-		text-transform: uppercase;
-		font-size: 9px;
-		letter-spacing: 0.5px;
-	}
-
+	.custody-action { color: rgba(255, 255, 255, 0.5); font-weight: 600; text-transform: uppercase; font-size: 9px; letter-spacing: 0.5px; }
 	.custody-action.viewed { color: rgba(var(--accent-rgb), 0.6); }
 	.custody-action.collected { color: rgba(16, 185, 129, 0.6); }
 	.custody-action.transferred { color: rgba(251, 191, 36, 0.6); }
+	.custody-detail { color: rgba(255, 255, 255, 0.4); font-family: monospace; font-size: 10px; }
+	.custody-time { color: rgba(255, 255, 255, 0.2); font-size: 9px; white-space: nowrap; }
+	.custody-notes { grid-column: 1 / -1; color: rgba(255, 255, 255, 0.35); font-size: 10px; }
 
-	.custody-detail {
-		color: rgba(255, 255, 255, 0.4);
-		font-family: monospace;
-		font-size: 10px;
-	}
+	/* ── Transfer Row ── */
+	.transfer-row { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+	.transfer-row .form-input { flex: 1; min-width: 80px; }
 
-	.custody-time {
-		color: rgba(255, 255, 255, 0.2);
-		font-size: 9px;
-		white-space: nowrap;
-	}
-
-	.custody-notes {
-		grid-column: 1 / -1;
-		color: rgba(255, 255, 255, 0.35);
-		font-size: 10px;
-	}
-
-	/* ── Transfer / Upload Rows ── */
-	.transfer-row {
-		display: flex;
-		gap: 6px;
+	/* ── Add Image URL button ── */
+	.add-image-url-btn {
+		display: inline-flex;
 		align-items: center;
-		flex-wrap: wrap;
-	}
-
-	.transfer-row .form-input {
-		flex: 1;
-		min-width: 80px;
-	}
-
-	.upload-row {
-		display: flex;
-		gap: 6px;
-		align-items: center;
-		flex-wrap: wrap;
-	}
-
-	.upload-row .form-input {
-		flex: 1;
-		min-width: 80px;
-	}
-
-	.file-input {
-		font-size: 10px;
-		color: rgba(255, 255, 255, 0.35);
-		max-width: 170px;
-	}
-
-	.file-input::file-selector-button {
+		gap: 5px;
 		background: rgba(255, 255, 255, 0.03);
-		border: 1px solid rgba(255, 255, 255, 0.06);
-		border-radius: 3px;
-		padding: 3px 8px;
-		color: rgba(255, 255, 255, 0.5);
-		font-size: 10px;
-		cursor: pointer;
-		margin-right: 6px;
-	}
-
-	.muted-text {
-		color: rgba(255, 255, 255, 0.35);
-		font-size: 11px;
-		margin: 0;
-	}
-
-	.upload-success {
-		color: rgba(110, 231, 183, 0.8);
-		font-size: 10px;
-		margin: 4px 0 0 0;
-	}
-
-	.uploading-text {
-		color: rgba(251, 191, 36, 0.8);
-		font-size: 10px;
-		margin: 4px 0 0 0;
-		animation: pulse-text 1.5s ease-in-out infinite;
-	}
-
-	@keyframes pulse-text {
-		0%, 100% { opacity: 1; }
-		50% { opacity: 0.5; }
-	}
-
-	.create-btn:disabled {
-		opacity: 0.3;
-		cursor: not-allowed;
-	}
-
-	.image-gallery {
-		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-		gap: 6px;
-	}
-
-	.image-item {
-		background: rgba(255, 255, 255, 0.02);
-		border: 1px solid rgba(255, 255, 255, 0.04);
-		border-radius: 3px;
-		overflow: hidden;
-	}
-
-	.evidence-thumb {
-		width: 100%;
-		height: 70px;
-		object-fit: cover;
-		display: block;
-		cursor: pointer;
-	}
-
-	.image-info {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		padding: 3px 5px;
-	}
-
-	.image-label {
-		font-size: 9px;
 		color: rgba(255, 255, 255, 0.4);
-		overflow: hidden;
-		text-overflow: ellipsis;
+		border: 1px solid rgba(255, 255, 255, 0.07);
+		padding: 5px 10px;
+		border-radius: 3px;
+		font-size: 10px;
+		font-weight: 500;
+		cursor: pointer;
+		transition: all 0.1s;
 		white-space: nowrap;
-		flex: 1;
+	}
+	.add-image-url-btn:hover {
+		background: rgba(255, 255, 255, 0.05);
+		color: rgba(255, 255, 255, 0.7);
+		border-color: rgba(255, 255, 255, 0.12);
 	}
 
-	.remove-image-btn {
-		background: none;
-		border: none;
-		color: rgba(255, 255, 255, 0.2);
-		cursor: pointer;
-		padding: 2px;
-		display: flex;
-		align-items: center;
-		transition: color 0.1s;
-	}
+	.muted-text { color: rgba(255, 255, 255, 0.35); font-size: 11px; margin: 0; }
+	.upload-success { color: rgba(110, 231, 183, 0.8); font-size: 10px; margin: 4px 0 0 0; }
 
-	.remove-image-btn:hover {
-		color: rgba(239, 68, 68, 0.7);
-	}
-
-	.image-btn {
-		background: none;
-		border: none;
-		padding: 0;
-		cursor: pointer;
-		display: block;
-		width: 100%;
-	}
+	.image-gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 6px; }
+	.image-item { background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.04); border-radius: 3px; overflow: hidden; }
+	.evidence-thumb { width: 100%; height: 70px; object-fit: cover; display: block; cursor: pointer; }
+	.image-info { display: flex; align-items: center; justify-content: space-between; padding: 3px 5px; }
+	.image-label { font-size: 9px; color: rgba(255, 255, 255, 0.4); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
+	.remove-image-btn { background: none; border: none; color: rgba(255, 255, 255, 0.2); cursor: pointer; padding: 2px; display: flex; align-items: center; transition: color 0.1s; }
+	.remove-image-btn:hover { color: rgba(239, 68, 68, 0.7); }
+	.image-btn { background: none; border: none; padding: 0; cursor: pointer; display: block; width: 100%; }
 
 	/* ── Stash ── */
-	.stash-row {
-		display: flex;
-		align-items: center;
-		gap: 8px;
-	}
-
-	.stash-id {
-		font-size: 11px;
-		font-family: monospace;
-		color: rgba(255, 255, 255, 0.5);
-		background: rgba(255, 255, 255, 0.02);
-		padding: 4px 8px;
-		border-radius: 3px;
-		border: 1px solid rgba(255, 255, 255, 0.04);
-		flex: 1;
-	}
+	.stash-row { display: flex; align-items: center; gap: 8px; }
+	.stash-id { font-size: 11px; font-family: monospace; color: rgba(255, 255, 255, 0.5); background: rgba(255, 255, 255, 0.02); padding: 4px 8px; border-radius: 3px; border: 1px solid rgba(255, 255, 255, 0.04); flex: 1; }
 
 	/* ── Lightbox ── */
-	.lightbox-overlay {
-		position: fixed;
-		inset: 0;
-		background: rgba(0, 0, 0, 0.88);
-		backdrop-filter: blur(8px);
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		z-index: 200;
-	}
+	.lightbox-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.88); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 200; }
+	.lightbox-content { max-width: 90vw; max-height: 90vh; display: flex; flex-direction: column; background: var(--card-dark-bg); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 6px; overflow: hidden; }
+	.lightbox-header { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.06); }
+	.lightbox-label { font-size: 11px; color: rgba(255, 255, 255, 0.6); font-weight: 500; }
+	.lightbox-image { max-width: 85vw; max-height: 80vh; object-fit: contain; display: block; }
 
-	.lightbox-content {
-		max-width: 90vw;
-		max-height: 90vh;
-		display: flex;
-		flex-direction: column;
-		background: var(--card-dark-bg);
-		border: 1px solid rgba(255, 255, 255, 0.06);
-		border-radius: 6px;
-		overflow: hidden;
-	}
+	/* ── Create Image list ── */
+	.create-image-list { display: flex; flex-direction: column; gap: 2px; margin-top: 6px; }
+	.create-image-item { display: flex; align-items: center; gap: 6px; padding: 4px 6px; background: transparent; border-bottom: 1px solid rgba(255, 255, 255, 0.03); }
+	.create-image-thumb { width: 28px; height: 28px; object-fit: cover; border-radius: 2px; border: 1px solid rgba(255, 255, 255, 0.06); flex-shrink: 0; }
+	.create-image-name { font-size: 10px; color: rgba(255, 255, 255, 0.4); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; font-family: monospace; }
 
-	.lightbox-header {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		padding: 8px 12px;
-		border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-	}
-
-	.lightbox-label {
-		font-size: 11px;
-		color: rgba(255, 255, 255, 0.6);
-		font-weight: 500;
-	}
-
-	.lightbox-image {
-		max-width: 85vw;
-		max-height: 80vh;
-		object-fit: contain;
-		display: block;
-	}
-
-	/* ── Create Modal Image List ── */
-	.create-image-list {
-		display: flex;
-		flex-direction: column;
-		gap: 2px;
-		margin-top: 4px;
-	}
-
-	.create-image-item {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		padding: 3px 6px;
-		background: transparent;
-		border-bottom: 1px solid rgba(255, 255, 255, 0.03);
-		border-radius: 0;
-	}
-
-	.create-image-name {
-		font-size: 10px;
-		color: rgba(255, 255, 255, 0.5);
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-		flex: 1;
-	}
+	/* ── Status Toast ── */
+	.status-toast { padding: 5px 12px; border-radius: 3px; font-size: 10px; font-weight: 500; flex-shrink: 0; margin: 0 16px; }
+	.status-toast.success { background: rgba(16, 185, 129, 0.06); color: rgba(110, 231, 183, 0.8); border: 1px solid rgba(16, 185, 129, 0.1); }
+	.status-toast.error { background: rgba(239, 68, 68, 0.06); color: rgba(252, 165, 165, 0.8); border: 1px solid rgba(239, 68, 68, 0.1); }
 
 	/* ── Buttons ── */
 	.action-btn {
@@ -1315,11 +1115,7 @@
 		transition: all 0.1s;
 		white-space: nowrap;
 	}
-
-	.action-btn:hover {
-		background: rgba(var(--accent-rgb), 0.12);
-		color: rgba(var(--accent-text-rgb), 0.9);
-	}
+	.action-btn:hover { background: rgba(var(--accent-rgb), 0.12); color: rgba(var(--accent-text-rgb), 0.9); }
 
 	.create-btn {
 		display: inline-flex;
@@ -1336,11 +1132,7 @@
 		transition: all 0.1s;
 		white-space: nowrap;
 	}
-
-	.create-btn:hover {
-		background: rgba(16, 185, 129, 0.12);
-		color: rgba(110, 231, 183, 0.9);
-	}
+	.create-btn:hover { background: rgba(16, 185, 129, 0.12); color: rgba(110, 231, 183, 0.9); }
 
 	/* ── Form Inputs ── */
 	.form-input {
@@ -1353,44 +1145,60 @@
 		outline: none;
 		transition: border-color 0.1s;
 	}
+	.form-input:focus { border-color: rgba(255, 255, 255, 0.1); }
+	.form-input::placeholder { color: rgba(255, 255, 255, 0.2); }
+	textarea.form-input { resize: vertical; min-height: 60px; font-family: inherit; }
 
-	.form-input:focus {
-		border-color: rgba(255, 255, 255, 0.1);
+	/* ── Image URL Modal ── */
+	.image-url-modal { max-width: 380px; }
+
+	.img-modal-body {
+		padding: 14px 16px;
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
 	}
 
-	.form-input::placeholder {
-		color: rgba(255, 255, 255, 0.2);
-	}
+	.img-form-group { display: flex; flex-direction: column; gap: 4px; }
 
-	textarea.form-input {
-		resize: vertical;
-		min-height: 60px;
-		font-family: inherit;
+	.img-label {
+		font-size: 9px;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.6px;
+		color: rgba(255, 255, 255, 0.35);
 	}
+	.img-label-optional { font-weight: 400; text-transform: none; letter-spacing: 0; color: rgba(255, 255, 255, 0.2); }
 
-	/* ── Status Toast ── */
-	.status-toast {
-		padding: 5px 12px;
+	.img-input {
+		background: rgba(255, 255, 255, 0.03);
+		border: 1px solid rgba(255, 255, 255, 0.06);
 		border-radius: 3px;
+		padding: 6px 8px;
+		color: rgba(255, 255, 255, 0.8);
+		font-size: 11px;
+		outline: none;
+		transition: border-color 0.1s;
+		font-family: inherit;
+		width: 100%;
+		box-sizing: border-box;
+	}
+	.img-input:focus { border-color: rgba(255, 255, 255, 0.12); }
+	.img-input::placeholder { color: rgba(255, 255, 255, 0.2); }
+
+	.url-hint {
+		display: flex;
+		align-items: center;
+		gap: 5px;
 		font-size: 10px;
-		font-weight: 500;
-		flex-shrink: 0;
-		margin: 0 16px;
+		color: rgba(255, 255, 255, 0.25);
+		line-height: 1.4;
 	}
+	.url-hint svg { flex-shrink: 0; opacity: 0.45; }
+	.url-hint a { color: rgba(var(--accent-text-rgb), 0.5); text-decoration: none; transition: color 0.1s; }
+	.url-hint a:hover { color: rgba(var(--accent-text-rgb), 0.85); text-decoration: underline; }
 
-	.status-toast.success {
-		background: rgba(16, 185, 129, 0.06);
-		color: rgba(110, 231, 183, 0.8);
-		border: 1px solid rgba(16, 185, 129, 0.1);
-	}
-
-	.status-toast.error {
-		background: rgba(239, 68, 68, 0.06);
-		color: rgba(252, 165, 165, 0.8);
-		border: 1px solid rgba(239, 68, 68, 0.1);
-	}
-
-	/* ── Modal ── */
+	/* ── Modal shared ── */
 	.modal-backdrop {
 		position: fixed;
 		inset: 0;
@@ -1420,13 +1228,7 @@
 		padding: 10px 16px;
 		border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 	}
-
-	.modal-header h3 {
-		margin: 0;
-		font-size: 13px;
-		font-weight: 600;
-		color: rgba(255, 255, 255, 0.85);
-	}
+	.modal-header h3 { margin: 0; font-size: 13px; font-weight: 600; color: rgba(255, 255, 255, 0.85); }
 
 	.close-btn {
 		background: transparent;
@@ -1440,11 +1242,7 @@
 		justify-content: center;
 		transition: all 0.1s;
 	}
-
-	.close-btn:hover {
-		color: rgba(255, 255, 255, 0.7);
-		border-color: rgba(255, 255, 255, 0.1);
-	}
+	.close-btn:hover { color: rgba(255, 255, 255, 0.7); border-color: rgba(255, 255, 255, 0.1); }
 
 	.modal-body {
 		padding: 14px 16px;
@@ -1453,50 +1251,15 @@
 		gap: 12px;
 	}
 
-	.form-grid {
-		display: grid;
-		grid-template-columns: 1fr 1fr 1fr;
-		gap: 8px;
-	}
+	.form-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+	.form-grid-4 { grid-template-columns: 1fr 1fr 2fr 1fr; }
+	.mono-input { font-family: monospace; letter-spacing: 0.5px; }
 
-	.form-grid-4 {
-		grid-template-columns: 1fr 1fr 2fr 1fr;
-	}
+	.form-group { display: flex; flex-direction: column; gap: 3px; }
+	.form-label { font-size: 9px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: rgba(255, 255, 255, 0.35); }
 
-	.mono-input {
-		font-family: monospace;
-		letter-spacing: 0.5px;
-	}
-
-	.form-group {
-		display: flex;
-		flex-direction: column;
-		gap: 3px;
-	}
-
-	.form-label {
-		font-size: 9px;
-		font-weight: 600;
-		text-transform: uppercase;
-		letter-spacing: 0.5px;
-		color: rgba(255, 255, 255, 0.35);
-	}
-
-	.checkbox-label {
-		display: flex;
-		flex-direction: row;
-		align-items: center;
-		gap: 6px;
-		cursor: pointer;
-		font-size: 11px;
-		color: rgba(255, 255, 255, 0.5);
-	}
-
-	.checkbox-label input[type="checkbox"] {
-		accent-color: rgba(52, 211, 153, 0.8);
-		width: 13px;
-		height: 13px;
-	}
+	.checkbox-label { display: flex; flex-direction: row; align-items: center; gap: 6px; cursor: pointer; font-size: 11px; color: rgba(255, 255, 255, 0.5); }
+	.checkbox-label input[type="checkbox"] { accent-color: rgba(52, 211, 153, 0.8); width: 13px; height: 13px; }
 
 	.modal-footer {
 		display: flex;
@@ -1517,11 +1280,8 @@
 		cursor: pointer;
 		transition: all 0.1s;
 	}
-
-	.cancel-btn:hover {
-		color: rgba(255, 255, 255, 0.7);
-		border-color: rgba(255, 255, 255, 0.1);
-	}
+	.cancel-btn:hover:not(:disabled) { color: rgba(255, 255, 255, 0.7); border-color: rgba(255, 255, 255, 0.1); }
+	.cancel-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
 	.save-btn {
 		display: inline-flex;
@@ -1537,50 +1297,21 @@
 		cursor: pointer;
 		transition: all 0.1s;
 	}
+	.save-btn:hover:not(:disabled) { background: rgba(16, 185, 129, 0.12); color: rgba(110, 231, 183, 0.9); }
+	.save-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
-	.save-btn:hover {
-		background: rgba(16, 185, 129, 0.12);
-		color: rgba(110, 231, 183, 0.9);
-	}
-
-	.error-text {
-		color: rgba(252, 165, 165, 0.8);
-		font-size: 10px;
-		padding: 0 16px;
-		margin: 0;
-	}
+	.error-text { color: rgba(252, 165, 165, 0.8); font-size: 10px; padding: 0 16px; margin: 0; }
 
 	/* ── Scrollbar ── */
-	.detail-sidebar::-webkit-scrollbar {
-		width: 4px;
-	}
-
-	.detail-sidebar::-webkit-scrollbar-track {
-		background: transparent;
-	}
-
-	.detail-sidebar::-webkit-scrollbar-thumb {
-		background: rgba(255, 255, 255, 0.06);
-		border-radius: 2px;
-	}
+	.detail-sidebar::-webkit-scrollbar { width: 4px; }
+	.detail-sidebar::-webkit-scrollbar-track { background: transparent; }
+	.detail-sidebar::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.06); border-radius: 2px; }
 
 	/* ── Responsive ── */
 	@media (max-width: 1024px) {
-		.main-grid {
-			grid-template-columns: 1fr;
-		}
-
-		.list-panel {
-			border-right: none;
-			border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-		}
-
-		.topbar {
-			flex-wrap: wrap;
-		}
-
-		.search-box {
-			max-width: 100%;
-		}
+		.main-grid { grid-template-columns: 1fr; }
+		.list-panel { border-right: none; border-bottom: 1px solid rgba(255, 255, 255, 0.04); }
+		.topbar { flex-wrap: wrap; }
+		.search-box { max-width: 100%; }
 	}
 </style>
