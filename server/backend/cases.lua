@@ -562,19 +562,17 @@ ps.registerCallback(resourceName .. ':server:addEvidenceItem', function(source, 
         return { success = false, error = 'Invalid evidence: title is required' }
     end
 
-    -- Validiere caseId falls angegeben
     if caseId then
         local caseExists = MySQL.single.await('SELECT id FROM mdt_cases WHERE id = ?', { caseId })
         if not caseExists then
-            caseId = nil -- Setze auf nil wenn Case nicht existiert
+            caseId = nil
         end
     end
 
-    -- Validiere reportId falls angegeben — das ist der Hauptfehler!
     if reportId then
         local reportExists = MySQL.single.await('SELECT id FROM mdt_reports WHERE id = ?', { reportId })
         if not reportExists then
-            reportId = nil -- Setze auf nil wenn Report nicht existiert
+            reportId = nil
         end
     end
 
@@ -611,8 +609,6 @@ ps.registerCallback(resourceName .. ':server:addEvidenceItem', function(source, 
 
     return { success = true, id = evidenceId }
 end)
-
--- addEvidenceImage handler is in evidence.lua (not duplicated here)
 
 ps.registerCallback(resourceName .. ':server:removeEvidenceImage', function(source, imageId)
     local src = source

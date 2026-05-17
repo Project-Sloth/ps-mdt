@@ -374,7 +374,7 @@ ps.registerCallback(resourceName..':server:getReport', function(source, reportid
                 cidInfo[row.citizenid] = {
                     name = row.fullname,
                     image = row.image,
-                    fingerprint = (row.fingerprint and row.fingerprint ~= 'null') and row.fingerprint or nil  -- neu
+                    fingerprint = (row.fingerprint and row.fingerprint ~= 'null') and row.fingerprint or nil
                 }
             end
 

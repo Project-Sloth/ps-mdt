@@ -42,7 +42,6 @@ ps.registerCallback(resourceName .. ':server:getEvidenceItems', function(source,
         LIMIT ? OFFSET ?
     ]]):format(whereClause), listValues)
 
-    -- Images batch-laden
     if evidence and #evidence > 0 then
         local ids = {}
         local idLookup = {}
@@ -115,7 +114,6 @@ ps.registerCallback(resourceName .. ':server:searchEvidenceItems', function(sour
         LIMIT ? OFFSET ?
     ]], { likeQuery, likeQuery, likeQuery, likeQuery, likeQuery, limit, offset })
 
-    -- Images batch-laden
     if evidence and #evidence > 0 then
         local ids = {}
         local idLookup = {}
@@ -581,7 +579,7 @@ RegisterNetEvent(resourceName .. ':server:openEvidenceStash', function(stashId)
         return
     end
 
-    -- ox_inventory mit forceOpenInventory
+    -- ox_inventory with forceOpenInventory
     if GetResourceState('ox_inventory') == 'started' then
         
         exports.ox_inventory:RegisterStash(stashId, stashId , 500 , 4000000)
