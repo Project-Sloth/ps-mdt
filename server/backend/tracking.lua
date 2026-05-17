@@ -135,7 +135,6 @@ local function getVehicleTrackers()
         end
     end
 
-    print(json.encode(vehicles, {indent = true}))
     return vehicles
 end
 
