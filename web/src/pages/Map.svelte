@@ -55,27 +55,47 @@
 		kind: "officer" | "vehicle" | "bodycam",
 		coords: { x: number; y: number },
 		label: string,
+		heading?: number
 	) {
 		const config = getTrackConfig(kind);
 		const latLng = toMapLatLng(coords);
+
+		// Heading umrechnen: GTA heading → CSS rotation
+		// GTA: 0 = Nord, 90 = West — CSS: 0 = oben, dreht clockwise
+		const rotation = heading != null ? (360 - heading) : 0;
+		const hasHeading = heading != null;
+
 		if (iconStyle === "badge") {
-			return L.marker(latLng, {
+			return L.marker(latLng as any, {
 				icon: L.divIcon({
-					className: `tracking-icon tracking-${kind}`,
-					html: `<span>${config.label}</span>`,
-					iconSize: [24, 24],
-					iconAnchor: [12, 12],
+					className: "",
+					html: `
+						<div class="tracking-badge-wrap" style="transform: rotate(${rotation}deg)">
+							<div class="tracking-icon tracking-${kind}">
+								<span style="transform: rotate(-${rotation}deg)">${config.label}</span>
+							</div>
+							${hasHeading ? `<div class="tracking-arrow tracking-arrow-${kind}"></div>` : ""}
+						</div>
+					`,
+					iconSize: [28, 28],
+					iconAnchor: [14, 14],
 				}),
-			}).bindTooltip(label, { direction: "top", offset: [0, -10] });
+			}).bindTooltip(label, { direction: "top", offset: [0, -14] });
 		}
 
-		return L.circleMarker(latLng, {
-			radius: 6,
-			color: config.color,
-			weight: 2,
-			fillColor: config.fill,
-			fillOpacity: 0.9,
-		}).bindTooltip(label, { direction: "top", offset: [0, -6] });
+		return L.marker(latLng as any, {
+			icon: L.divIcon({
+				className: "",
+				html: `
+					<div class="tracking-dot-wrap" style="transform: rotate(${rotation}deg)">
+						<div class="tracking-dot" style="background:${config.fill}; border: 2px solid ${config.color}"></div>
+						${hasHeading ? `<div class="tracking-arrow tracking-arrow-${kind}"></div>` : ""}
+					</div>
+				`,
+				iconSize: [20, 20],
+				iconAnchor: [10, 10],
+			}),
+		}).bindTooltip(label, { direction: "top", offset: [0, -10] });
 	}
 
 	function normalizeCoords(raw: any) {
@@ -108,7 +128,7 @@
 					const coords = normalizeCoords((officer as any).coords);
 					if (!coords) continue;
 					const name = `${(officer as any).callsign ? (officer as any).callsign + " " : ""}${(officer as any).name}`;
-					createMarker("officer", coords, name).addTo(officerLayer);
+					createMarker("officer", coords, name, (officer as any).heading).addTo(officerLayer);
 				}
 			}
 
@@ -117,7 +137,7 @@
 					const coords = normalizeCoords((vehicle as any).coords);
 					if (!coords) continue;
 					const label = `Vehicle ${(vehicle as any).plate || ""}`.trim();
-					createMarker("vehicle", coords, label).addTo(vehicleLayer);
+					createMarker("vehicle", coords, label, (vehicle as any).heading).addTo(vehicleLayer);
 				}
 			}
 
@@ -126,7 +146,7 @@
 					const coords = normalizeCoords((bodycam as any).coords);
 					if (!coords) continue;
 					const label = `Bodycam ${(bodycam as any).callsign ? (bodycam as any).callsign + " " : ""}${(bodycam as any).name}`;
-					createMarker("bodycam", coords, label).addTo(bodycamLayer);
+					createMarker("bodycam", coords, label, (bodycam as any).heading).addTo(bodycamLayer);
 				}
 			}
 		} catch (error) {
@@ -230,7 +250,7 @@
 		bodycamLayer = L.layerGroup().addTo(map);
 		syncLayerVisibility();
 		refreshTracking();
-		refreshTimer = setInterval(refreshTracking, 5000);
+		refreshTimer = setInterval(refreshTracking, 2500);
 	}
 
 	onMount(() => {
@@ -529,4 +549,44 @@
 	:global(.tracking-bodycam) {
 		background: #a855f7;
 	}
+
+	:global(.tracking-dot-wrap),
+	:global(.tracking-badge-wrap) {
+		position: relative;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 100%;
+		height: 100%;
+	}
+
+	:global(.tracking-dot) {
+		width: 12px;
+		height: 12px;
+		border-radius: 50%;
+	}
+
+	:global(.tracking-arrow) {
+		position: absolute;
+		top: -7px;
+		left: 50%;
+		transform: translateX(-50%);
+		width: 0;
+		height: 0;
+		border-left: 4px solid transparent;
+		border-right: 4px solid transparent;
+	}
+
+	:global(.tracking-arrow-officer) {
+		border-bottom: 8px solid #38bdf8;
+	}
+
+	:global(.tracking-arrow-vehicle) {
+		border-bottom: 8px solid #f97316;
+	}
+
+	:global(.tracking-arrow-bodycam) {
+		border-bottom: 8px solid #a855f7;
+	}
+
 </style>
