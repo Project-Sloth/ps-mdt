@@ -299,6 +299,7 @@ export function createReportService() {
 					notes: entry?.notes || "",
 					warrantActive: entry?.warrantActive || false,
 					profileImage: entry?.image || undefined,
+					fingerprint: entry?.fingerprint || undefined,
 				});
 			}
 		}
