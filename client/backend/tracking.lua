@@ -18,8 +18,7 @@ RegisterNetEvent(resourceName .. ':client:checkVehicleClass', function(netId, pl
     local veh = NetworkGetEntityFromNetworkId(netId)
     if not veh or veh == 0 then return end
 
-    local vehClass = GetVehicleClass(veh)
-    if vehClass ~= 18 then     ps.error(plate.. ' is not a emergency vehicle') return end
+    if GetVehicleClass(veh) ~= 18 then return end
 
     TriggerServerEvent(resourceName .. ':server:cacheVehicle', plate, coords, heading)
 end)
