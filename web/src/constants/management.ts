@@ -206,7 +206,7 @@ export const TAB_VISIBILITY_KEYS = [
 	{ tabName: "PPR", key: "tab_hidden_ppr", label: "PPR" },
 	{ tabName: "FTO", key: "tab_hidden_fto", label: "Field Training" },
 	{ tabName: "SOP", key: "tab_hidden_sop", label: "SOP" },
-	{ tabName: "Bulletin Board", key: "tab_hidden_bulletin_board", label: "Bulletin BoardOP" },
+	{ tabName: "Bulletin Board", key: "tab_hidden_bulletin_board", label: "Bulletin Board" },
 ];
 
 /** Flat list of all permission keys */
