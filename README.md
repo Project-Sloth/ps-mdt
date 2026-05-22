@@ -8,6 +8,58 @@ ALTER TABLE `mdt_weapons` ADD COLUMN `flags` JSON DEFAULT NULL;
 
 ALTER TABLE player_vehicles 
 MODIFY COLUMN mdt_vehicle_status VARCHAR(500) DEFAULT 'valid';
+
+CREATE TABLE IF NOT EXISTS `mdt_bulletin_posts` (
+    `id`          INT UNSIGNED  NOT NULL AUTO_INCREMENT,
+    `title`       VARCHAR(255)  NOT NULL,
+    `content`     LONGTEXT      NOT NULL,
+    `author`      VARCHAR(100)  NOT NULL,
+    `author_rank` VARCHAR(100)  NOT NULL DEFAULT '',
+    `category`    ENUM(
+                    'announcement',
+                    'operations',
+                    'training',
+                    'general',
+                    'warrants'
+                  )             NOT NULL DEFAULT 'general',
+    `priority`    ENUM(
+                    'low',
+                    'normal',
+                    'high',
+                    'urgent'
+                  )             NOT NULL DEFAULT 'normal',
+    `pinned`      TINYINT(1)    NOT NULL DEFAULT 0,
+    `job`         VARCHAR(50)   NOT NULL DEFAULT '',
+    `created_by`  VARCHAR(60)   NOT NULL,
+    `created_at`  DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at`  DATETIME      NULL     DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+    `deleted_at`  DATETIME      NULL     DEFAULT NULL,
+    PRIMARY KEY (`id`),
+    KEY `idx_job`        (`job`),
+    KEY `idx_category`   (`category`),
+    KEY `idx_pinned`     (`pinned`),
+    KEY `idx_deleted_at` (`deleted_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+ 
+ CREATE TABLE IF NOT EXISTS `mdt_bulletin_settings` (
+    `key`        VARCHAR(64)  NOT NULL                              COMMENT 'Setting key, e.g., bulletin_categories',
+    `value`      LONGTEXT     NOT NULL                              COMMENT 'JSON-encoded value',
+    `updated_at` TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP
+                              ON UPDATE CURRENT_TIMESTAMP           COMMENT 'Last Change',
+    PRIMARY KEY (`key`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+  COMMENT='MDT – Key-Value-Store for Bulletin-Einstellungen';
+ 
+INSERT IGNORE INTO `mdt_bulletin_settings` (`key`, `value`)
+VALUES (
+    'bulletin_categories',
+    '[
+        {"value":"announcement","label":"Announcements","icon":"campaign"},
+        {"value":"operations",  "label":"Operations",   "icon":"local_police"},
+        {"value":"training",    "label":"Training",     "icon":"school"},
+        {"value":"general",     "label":"General",      "icon":"forum"}
+    ]'
+);
 ```
 
 # ps-mdt v3
