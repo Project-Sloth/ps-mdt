@@ -1,6 +1,15 @@
 
 local resourceName = tostring(GetCurrentResourceName())
 
+local DEFAULT_CATEGORIES = {
+    { value = 'announcement', label = 'Announcements', icon = 'campaign'     },
+    { value = 'operations',   label = 'Operations',    icon = 'local_police' },
+    { value = 'training',     label = 'Training',      icon = 'school'       },
+    { value = 'general',      label = 'General',       icon = 'forum'        },
+}
+ 
+local SETTINGS_KEY = 'bulletin_categories'
+
 local function getEffectiveJobType(src)
     local jobType = ps.getJobType(src)
     local jobName = ps.getJobName(src)
@@ -355,4 +364,100 @@ ps.registerCallback(resourceName .. ':server:getUsageMetrics', function(source)
             }
         }
     end)
+end)
+ 
+local function getSetting(key)
+    local rows = exports.oxmysql:executeSync(
+        'SELECT `value` FROM `mdt_bulletin_settings` WHERE `key` = ? LIMIT 1',
+        { key }
+    )
+    if rows and rows[1] then
+        return rows[1].value
+    end
+    return nil
+end
+ 
+local function setSetting(key, value)
+    exports.oxmysql:executeSync(
+        [[
+            INSERT INTO `mdt_bulletin_settings` (`key`, `value`)
+            VALUES (?, ?)
+            ON DUPLICATE KEY UPDATE `value` = VALUES(`value`), `updated_at` = CURRENT_TIMESTAMP
+        ]],
+        { key, value }
+    )
+end
+
+-- ── CALLBACK: getBulletinCategories ──────────────────────────────────────────
+ 
+lib.callback.register('mdt:server:getBulletinCategories', function(source)
+    local raw = getSetting(SETTINGS_KEY)
+ 
+    if not raw then
+        return DEFAULT_CATEGORIES
+    end
+ 
+    local ok, decoded = pcall(json.decode, raw)
+    if not ok or type(decoded) ~= 'table' or #decoded == 0 then
+        return DEFAULT_CATEGORIES
+    end
+ 
+    local sanitized = {}
+    for _, cat in ipairs(decoded) do
+        if type(cat.value) == 'string' and type(cat.label) == 'string' and type(cat.icon) == 'string' then
+            sanitized[#sanitized + 1] = {
+                value = cat.value,
+                label = cat.label,
+                icon  = cat.icon,
+            }
+        end
+    end
+ 
+    if #sanitized == 0 then
+        return DEFAULT_CATEGORIES
+    end
+ 
+    return sanitized
+end)
+ 
+-- ── CALLBACK: saveBulletinCategories ─────────────────────────────────────────
+ 
+lib.callback.register('mdt:server:saveBulletinCategories', function(source, categories)
+    if type(categories) ~= 'table' or #categories == 0 then
+        return { success = false, message = 'No categories provided' }
+    end
+ 
+    local ALLOWED_VALUES = { announcement = true, operations = true, training = true, general = true }
+ 
+    local clean = {}
+    for _, cat in ipairs(categories) do
+        if type(cat.value) ~= 'string' or not ALLOWED_VALUES[cat.value] then
+            return { success = false, message = ('Unknown category value: %s'):format(tostring(cat.value)) }
+        end
+        if type(cat.label) ~= 'string' or #cat.label == 0 or #cat.label > 32 then
+            return { success = false, message = 'Invalid label for category: ' .. tostring(cat.value) }
+        end
+        if type(cat.icon) ~= 'string' or #cat.icon == 0 or #cat.icon > 48 then
+            return { success = false, message = 'Invalid icon for category: ' .. tostring(cat.value) }
+        end
+        clean[#clean + 1] = {
+            value = cat.value,
+            label = cat.label,
+            icon  = cat.icon,
+        }
+    end
+ 
+    local ok, encoded = pcall(json.encode, clean)
+    if not ok then
+        return { success = false, message = 'JSON encode error' }
+    end
+ 
+    local saveOk, err = pcall(setSetting, SETTINGS_KEY, encoded)
+    if not saveOk then
+        ps.warn('^1[MDT] bulletin_settings save error: ' .. tostring(err) .. '^0')
+        return { success = false, message = 'Database error' }
+    end
+ 
+    ps.success(('[MDT] Bulletin categories updated by source %d'):format(source))
+    return { success = true }
 end)
