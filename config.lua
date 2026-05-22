@@ -257,6 +257,10 @@ Config.ManagementPermissions = {
     -- FTO
     'fto_view',
     'fto_manage',
+    -- BulletIn Board
+    'bulletin_view',
+    'bulletin_post',
+    'bulletin_pin',
     -- Management
     'management_permissions',
     'management_bulletins',
