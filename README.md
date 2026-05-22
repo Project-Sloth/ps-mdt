@@ -33,12 +33,10 @@ CREATE TABLE IF NOT EXISTS `mdt_bulletin_posts` (
     `created_by`  VARCHAR(60)   NOT NULL,
     `created_at`  DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `updated_at`  DATETIME      NULL     DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
-    `deleted_at`  DATETIME      NULL     DEFAULT NULL,
     PRIMARY KEY (`id`),
     KEY `idx_job`        (`job`),
     KEY `idx_category`   (`category`),
     KEY `idx_pinned`     (`pinned`),
-    KEY `idx_deleted_at` (`deleted_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
  
  CREATE TABLE IF NOT EXISTS `mdt_bulletin_settings` (
