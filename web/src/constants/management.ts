@@ -163,6 +163,16 @@ export const PERMISSION_CATEGORIES: PermissionCategory[] = [
 		],
 	},
 	{
+		key: "bulletin_board",
+		label: "Bulletin Board ( Creator or Manage Posts can Delete )",
+		icon: "forum",
+		permissions: [
+			{ key: "bulletin_view", label: "View BP", description: "View Bulletin Posts" },
+			{ key: "bulletin_post", label: "Manage Posts", description: "Create and Edit Bulletin Posts" },
+			{ key: "bulletin_pin", label: "Pin Posts", description: "Pin Bulletin Posts" },
+		],
+	},
+	{
 		key: "management",
 		label: "Management",
 		icon: "admin_panel_settings",
@@ -196,6 +206,7 @@ export const TAB_VISIBILITY_KEYS = [
 	{ tabName: "PPR", key: "tab_hidden_ppr", label: "PPR" },
 	{ tabName: "FTO", key: "tab_hidden_fto", label: "Field Training" },
 	{ tabName: "SOP", key: "tab_hidden_sop", label: "SOP" },
+	{ tabName: "Bulletin Board", key: "tab_hidden_bulletin_board", label: "Bulletin BoardOP" },
 ];
 
 /** Flat list of all permission keys */

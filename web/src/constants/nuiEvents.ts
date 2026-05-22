@@ -293,6 +293,15 @@ export const NUI_EVENTS = {
 		CHECK_SOP_AGREEMENT: "checkSOPAgreement",
 		ACKNOWLEDGE_SOP: "acknowledgesSOP",
 	},
+	BULLETIN: {
+		GET_POSTS:   "getBulletinPosts",
+		CREATE_POST: "createBulletinPost",
+		UPDATE_POST: "updateBulletinPost",
+		DELETE_POST: "deleteBulletinPost",
+		TOGGLE_PIN:  "toggleBulletinPin",
+		GET_CATEGORIES:  'getBulletinCategories',
+        SAVE_CATEGORIES: 'saveBulletinCategories',
+	},
 } as const;
 
 // Backwards compatibility exports (deprecated - use NUI_EVENTS instead)
@@ -338,6 +347,7 @@ export const ALL_NUI_EVENTS = [
 	...Object.values(NUI_EVENTS.COLLAB),
 	...Object.values(NUI_EVENTS.DOJ),
 	...Object.values(NUI_EVENTS.SOP),
+	...Object.values(NUI_EVENTS.BULLETIN),
 	"copyToClipboard",
 	"submitComplaint",
 	"closeComplaint",
