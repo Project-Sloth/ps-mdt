@@ -315,6 +315,11 @@ RegisterNUICallback('searchVehiclesForReport', function(data, cb)
     end
 
     local query = data and data.query or ''
+    if query == '' then
+        cb({})
+        return
+    end
+
     local result = ps.callback(resourceName .. ':server:searchVehiclesForReport', query)
     cb(result or {})
 end)
