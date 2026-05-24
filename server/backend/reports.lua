@@ -91,36 +91,51 @@ local function normalizeDateFilter(value)
 end
 
 local function buildReportFilterClause(filters)
-	local clauses = {}
-	local values = {}
-	if not filters then
-		return '', values
-	end
+    local clauses = {}
+    local values = {}
+    if not filters then
+        return '', values
+    end
 
-	local function hasValue(value)
-		if value == nil then
-			return false
-		end
-		if json and value == json.null then
-			return false
-		end
-		if type(value) == 'string' then
-			return value:gsub('%s+', '') ~= ''
-		end
-		return true
-	end
+    local function hasValue(value)
+        if value == nil then return false end
+        if json and value == json.null then return false end
+        if type(value) == 'string' then return value:gsub('%s+', '') ~= '' end
+        return true
+    end
 
-	if hasValue(filters.type) then
-		clauses[#clauses + 1] = 'mr.type = ?'
-		values[#values + 1] = filters.type
-	end
+    if hasValue(filters.search) then
+        local likeQuery = '%' .. tostring(filters.search) .. '%'
+        clauses[#clauses + 1] = [[
+            (
+                mr.title LIKE ?
+                OR CAST(mr.id AS CHAR) LIKE ?
+                OR mr.authorplaintext LIKE ?
+                OR mr.type LIKE ?
+                OR EXISTS (
+                    SELECT 1 FROM mdt_reports_tags mrt2
+                    WHERE mrt2.reportid = mr.id AND mrt2.tag LIKE ?
+                )
+            )
+        ]]
+        values[#values + 1] = likeQuery
+        values[#values + 1] = likeQuery
+        values[#values + 1] = likeQuery
+        values[#values + 1] = likeQuery
+        values[#values + 1] = likeQuery
+    end
 
-	if hasValue(filters.author) then
-		local likeQuery = '%' .. tostring(filters.author) .. '%'
-		clauses[#clauses + 1] = '(mr.authorplaintext LIKE ? OR mr.author LIKE ?)'
-		values[#values + 1] = likeQuery
-		values[#values + 1] = likeQuery
-	end
+    if hasValue(filters.type) then
+        clauses[#clauses + 1] = 'mr.type = ?'
+        values[#values + 1] = filters.type
+    end
+
+    if hasValue(filters.author) then
+        local likeQuery = '%' .. tostring(filters.author) .. '%'
+        clauses[#clauses + 1] = '(mr.authorplaintext LIKE ? OR mr.author LIKE ?)'
+        values[#values + 1] = likeQuery
+        values[#values + 1] = likeQuery
+    end
 
     local startDate = normalizeDateFilter(filters.startDate)
     if startDate then
@@ -204,54 +219,67 @@ end
 
 
 ps.registerCallback(resourceName .. ':server:getReports', function(source, page, filters)
-	local src = source
-	if not CheckAuth(src) then return end
+    local src = source
+    if not CheckAuth(src) then return end
 
     local identifier = ps.getIdentifier(src)
     local job = ps.getJobName(src)
     local jobType = getEffectiveJobType(src)
 
-	local pageNumber = tonumber(page) or 1
-	pageNumber = math.max(1, pageNumber)
-	local limit = 20
-	local offset = (pageNumber - 1) * limit
+    local pageNumber = tonumber(page) or 1
+    pageNumber = math.max(1, pageNumber)
+    local limit = math.min(tonumber(filters and filters.limit) or 20, 100)
+    local offset = (pageNumber - 1) * limit
 
-	local filterClause, filterValues = buildReportFilterClause(filters)
-	filterClause = filterClause or ''
+    local filterClause, filterValues = buildReportFilterClause(filters)
+    filterClause = filterClause or ''
 
-	local reportsQuery = ([[
-		SELECT
-			mr.id,
-			mr.id as reportId,
-			mr.title,
-			mr.type,
-			mr.contentyjs,
-			mr.contentplaintext,
-			mr.author,
-			mr.authorplaintext,
-			mr.datecreated,
-			mr.dateupdated,
-			(SELECT mrt.tag FROM mdt_reports_tags mrt WHERE mrt.reportid = mr.id LIMIT 1) as tag,
-			(SELECT COUNT(*) FROM mdt_reports_tags mrt WHERE mrt.reportid = mr.id) as tagCount
-		FROM
-			mdt_reports AS mr
-		LEFT JOIN
-			mdt_reports_restrictions AS mrr ON mr.id = mrr.reportid
-		WHERE
-			%s%s
-		GROUP BY
-			mr.id
-		ORDER BY
-			mr.id
-		LIMIT %d
-		OFFSET %d
-	]]):format(buildReportAccessClause(), filterClause, limit, offset)
-	local params = { jobType, jobType, jobType, identifier, job, jobType }
-	for _, value in ipairs(filterValues or {}) do
-		params[#params + 1] = value
-	end
-	local reports = MySQL.query.await(reportsQuery, params)
-	return reports
+    local accessClause = buildReportAccessClause()
+    local baseParams = { jobType, jobType, jobType, identifier, job, jobType }
+
+    local queryParams = {}
+    for _, v in ipairs(baseParams) do queryParams[#queryParams + 1] = v end
+    for _, v in ipairs(filterValues or {}) do queryParams[#queryParams + 1] = v end
+
+    local countQuery = ([[
+        SELECT COUNT(DISTINCT mr.id) AS total
+        FROM mdt_reports AS mr
+        LEFT JOIN mdt_reports_restrictions AS mrr ON mr.id = mrr.reportid
+        WHERE %s%s
+    ]]):format(accessClause, filterClause)
+
+    local countRow = MySQL.single.await(countQuery, queryParams)
+    local total = tonumber(countRow and countRow.total) or 0
+
+    local reportsQuery = ([[
+        SELECT
+            mr.id,
+            mr.id as reportId,
+            mr.title,
+            mr.type,
+            mr.contentyjs,
+            mr.contentplaintext,
+            mr.author,
+            mr.authorplaintext,
+            mr.datecreated,
+            mr.dateupdated,
+            (SELECT mrt.tag FROM mdt_reports_tags mrt WHERE mrt.reportid = mr.id LIMIT 1) as tag,
+            (SELECT COUNT(*) FROM mdt_reports_tags mrt WHERE mrt.reportid = mr.id) as tagCount
+        FROM mdt_reports AS mr
+        LEFT JOIN mdt_reports_restrictions AS mrr ON mr.id = mrr.reportid
+        WHERE %s%s
+        GROUP BY mr.id
+        ORDER BY mr.id DESC
+        LIMIT %d OFFSET %d
+    ]]):format(accessClause, filterClause, limit, offset)
+
+    local reportsParams = {}
+    for _, v in ipairs(baseParams) do reportsParams[#reportsParams + 1] = v end
+    for _, v in ipairs(filterValues or {}) do reportsParams[#reportsParams + 1] = v end
+
+    local reports = MySQL.query.await(reportsQuery, reportsParams)
+
+    return { reports = reports or {}, total = total }
 end)
 
 ps.registerCallback(resourceName..':server:getReport', function(source, reportid)
@@ -523,43 +551,52 @@ ps.registerCallback(resourceName .. ':server:searchVehiclesForReport', function(
         return {}
     end
 
-    local likeQuery = '%' .. query .. '%'
+    local vehicleShared = nil
+    local ok, core = pcall(function() return exports['qb-core']:GetCoreObject() end)
+    if ok and core and core.Shared and core.Shared.Vehicles then
+        vehicleShared = core.Shared.Vehicles
+    end
+
+    local likeQuery = '%' .. query:upper() .. '%'
+    local likeQueryRaw = '%' .. query .. '%'
 
     local rows = MySQL.query.await([[
         SELECT
             pv.plate,
             pv.vehicle,
             pv.citizenid,
-            CONCAT(
-                JSON_UNQUOTE(JSON_EXTRACT(p.charinfo, '$.firstname')),
-                ' ',
-                JSON_UNQUOTE(JSON_EXTRACT(p.charinfo, '$.lastname'))
+            COALESCE(
+                NULLIF(
+                    CONCAT(
+                        COALESCE(JSON_UNQUOTE(JSON_EXTRACT(p.charinfo, '$.firstname')), ''),
+                        ' ',
+                        COALESCE(JSON_UNQUOTE(JSON_EXTRACT(p.charinfo, '$.lastname')), '')
+                    ),
+                    ' '
+                ),
+                'Unknown'
             ) as owner_name
         FROM player_vehicles pv
         LEFT JOIN players p ON p.citizenid COLLATE utf8mb4_general_ci = pv.citizenid COLLATE utf8mb4_general_ci
         WHERE (
-            pv.plate LIKE ?
+            UPPER(REPLACE(pv.plate, ' ', '')) LIKE REPLACE(?, ' ', '')
+            OR UPPER(pv.plate) LIKE ?
             OR CONCAT(
-                JSON_UNQUOTE(JSON_EXTRACT(p.charinfo, '$.firstname')),
+                COALESCE(JSON_UNQUOTE(JSON_EXTRACT(p.charinfo, '$.firstname')), ''),
                 ' ',
-                JSON_UNQUOTE(JSON_EXTRACT(p.charinfo, '$.lastname'))
+                COALESCE(JSON_UNQUOTE(JSON_EXTRACT(p.charinfo, '$.lastname')), '')
             ) LIKE ?
+            OR p.citizenid LIKE ?
         )
+        ORDER BY pv.plate ASC
         LIMIT 25
-    ]], { likeQuery, likeQuery })
+    ]], { likeQuery, likeQuery, likeQueryRaw, likeQueryRaw })
 
     local results = {}
     for _, row in ipairs(rows or {}) do
-        local vehicleData = nil
-        local ok, core = pcall(function()
-            return exports['qb-core']:GetCoreObject()
-        end)
-        if ok and core and core.Shared and core.Shared.Vehicles then
-            vehicleData = core.Shared.Vehicles[row.vehicle]
-        end
-
+        local vehicleData = vehicleShared and vehicleShared[row.vehicle] or nil
         table.insert(results, {
-            plate = row.plate and string.upper(row.plate) or 'UNKNOWN',
+            plate = row.plate and string.upper(row.plate):gsub('%s+', '') or 'UNKNOWN',
             vehicle_label = vehicleData and vehicleData.name or row.vehicle or 'Unknown',
             owner_name = row.owner_name or 'Unknown',
             owner_citizenid = row.citizenid or nil,
