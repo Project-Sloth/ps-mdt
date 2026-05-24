@@ -40,7 +40,6 @@
 
 	async function performSearch(query: string) {
 		if (!query) return;
-		const normalizedQuery = query.toUpperCase().replace(/\s+/g, '');
 		isSearching = true;
 		try {
 			if (isEnvBrowser()) {
@@ -51,7 +50,7 @@
 			} else {
 				const results = await fetchNui<ReportVehicle[]>(
 					NUI_EVENTS.REPORT.SEARCH_VEHICLES_FOR_REPORT,
-					{ query: normalizedQuery },
+					{ query: query },
 					[],
 				);
 				searchResults = Array.isArray(results) ? results : [];
