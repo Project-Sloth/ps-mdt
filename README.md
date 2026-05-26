@@ -1,5 +1,13 @@
 THIS CHANGES NEEDS TO BE DONE:
 ```lua
+CREATE TABLE IF NOT EXISTS mdt_patrols (
+   id VARCHAR(64) PRIMARY KEY,
+   name VARCHAR(64) NOT NULL,
+   color VARCHAR(7) NOT NULL,
+   sort_order INT NOT NULL DEFAULT 0,
+   member_ids TEXT NOT NULL DEFAULT '[]'
+);
+
 ALTER TABLE mdt_reports_evidence
   ADD COLUMN title VARCHAR(255) NOT NULL DEFAULT '' AFTER reportid,
   ADD COLUMN images LONGTEXT NULL DEFAULT NULL AFTER stored;
