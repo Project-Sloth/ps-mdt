@@ -241,6 +241,9 @@ Config.ManagementPermissions = {
     'charges_view',
     'charges_edit',
     -- Dispatch
+    'map_patrols_view',
+    "map_patrols_manage",
+    "map_patrols_edit",
     'dispatch_attach',
     'dispatch_route',
     -- Cameras & Bodycams
