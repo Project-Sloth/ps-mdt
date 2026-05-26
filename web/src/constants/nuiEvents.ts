@@ -211,7 +211,15 @@ export const NUI_EVENTS = {
 		VIEW_BODYCAM: "viewBodycam",
 	},
 	MAP: {
-		GET_TRACKING: "getTracking",
+		GET_TRACKING:       "getTracking",
+		GET_PATROLS:        "getPatrols",
+        CREATE_PATROL:      "createPatrol",
+        DELETE_PATROL:      "deletePatrol",
+        RENAME_PATROL:      "renamePatrol",
+        ASSIGN_OFFICER:     "assignOfficer",
+        REMOVE_FROM_PATROL: "removeFromPatrol",
+		SAVE_UI_STATE: "saveMapUiState",
+		REORDER_PATROLS: "reorderPatrols",
 	},
 	MANAGEMENT: {
 		GET_PERMISSION_ROLES: "getPermissionRoles",

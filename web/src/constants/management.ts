@@ -140,6 +140,9 @@ export const PERMISSION_CATEGORIES: PermissionCategory[] = [
 		label: "Dispatch",
 		icon: "cell_tower",
 		permissions: [
+			{ key: "map_patrols_view",   label: "View Patrols",   description: "View patrol assignments on the map" },
+			{ key: "map_patrols_manage", label: "Manage Patrols", description: "Assign or remove officers from patrols" },
+			{ key: "map_patrols_edit",   label: "Edit Patrols",   description: "Create, rename, delete and reorder patrols" },
 			{ key: "dispatch_attach", label: "Attach to Calls", description: "Attach or detach from dispatch calls" },
 			{ key: "dispatch_route", label: "Route to Calls", description: "Set GPS route to dispatch calls" },
 		],
