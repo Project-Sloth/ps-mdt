@@ -147,7 +147,8 @@ function OpenMDT()
     MDTOpen = true
 
     SendNUI('setVisible', { visible = true, debugMode = Config.Debug })
-
+    SendMapUiState()
+    
     if isCivilian then
         -- Civilian mode: send auth with civilian flag
         local playerData = ps.getPlayerData()
