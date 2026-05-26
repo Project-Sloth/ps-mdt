@@ -208,7 +208,7 @@
 		{:else if activeComponent === "roster"}
 			<Roster {authService} {tabService} />
 		{:else if activeComponent === "map"}
-			<Map />
+			<Map {authService}/>
 		{:else if activeComponent === "vehicles"}
 			<Vehicles {tabService} />
 		{:else if activeComponent === "weapons"}
