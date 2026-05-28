@@ -83,8 +83,8 @@ RegisterNUICallback('saveReport', function(data, cb)
                 if victim.citizenid then
                     table.insert(involved, {
                         citizenid = victim.citizenid,
-                        type = 'victim',
-                        notes = ''
+                        type = victim.type or 'victim',
+                        notes = victim.notes or ''
                     })
                 end
             end
