@@ -355,7 +355,7 @@ CREATE TABLE IF NOT EXISTS `mdt_reports_involved` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `reportid` int(10) unsigned NOT NULL,
   `citizenid` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `type` varchar(7) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `type` varchar(15) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `notes` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `FK_mdt_reports_involved_mdt_reports` (`reportid`),
