@@ -262,19 +262,15 @@ export function createReportService() {
 
 	function normalizeInvolved(involved: any): Report["involved"] {
 		const parsed = parseJsonString(involved);
-		const list = Array.isArray(parsed)
-			? parsed
-			: Array.isArray(involved)
-				? involved
-				: [];
-		const normalized = {
-			officers: [],
-			suspects: [],
-			victims: [],
-		} as Report["involved"];
+		const list = Array.isArray(parsed) ? parsed : Array.isArray(involved) ? involved : [];
+
+		const normalized = { officers: [], suspects: [], victims: [] } as Report["involved"];
+
+		const VICTIM_TYPES = new Set(["victim", "primary", "secondary", "witness", "complainant"]);
 
 		for (const entry of list) {
 			const type = (entry?.type || "").toLowerCase();
+
 			if (type === "officer") {
 				normalized.officers.push({
 					id: crypto.randomUUID(),
@@ -284,12 +280,13 @@ export function createReportService() {
 					type: entry?.type || "Officer",
 					notes: entry?.notes || "",
 				});
-			} else if (type === "victim") {
+			} else if (VICTIM_TYPES.has(type)) {
 				normalized.victims.push({
 					id: entry?.citizenid || crypto.randomUUID(),
 					citizenid: entry?.citizenid || "",
 					fullName: entry?.name || entry?.fullname || "Unknown",
-					type: entry?.type || "Victim",
+					type: entry?.type || "victim",
+					notes: entry?.notes || "",
 				});
 			} else {
 				normalized.suspects.push({
@@ -521,8 +518,8 @@ export function createReportService() {
 			citizenid: victim.citizenid || "",
 			fullName: victim.fullName,
 			type: "Primary",
+			notes: "",   // ← fehlte
 		};
-
 		return {
 			...report,
 			involved: {
