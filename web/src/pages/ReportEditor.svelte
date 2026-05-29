@@ -1067,7 +1067,7 @@
 <!-- Suspect Search Modal -->
 <PersonSearchModal
 	show={reportEditorUI.state.showSuspectSearch}
-	title="Search Suspects"
+	title={_L("reportEditor.searchSuspects")}
 	searchResults={searchService.state.results}
 	onSearch={(query: string) => {
 		reportEditorUI.state.searchQuery = query;

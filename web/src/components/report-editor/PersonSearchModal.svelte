@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { SearchResult } from "../../interfaces/IReportEditor";
+	import { _L } from "@/utils/localization.svelte";
 
 	interface Props {
 		show: boolean;

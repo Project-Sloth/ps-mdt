@@ -854,6 +854,7 @@
             "officers": "Officers",
             "patients": "Patients",
             "victims": "Victims",
+            "searchSuspects": "Seacrh suspects",
             "retry": "Retry",
             "failedToLoadReport": "Failed to load report",
             "searchEMS": "Search EMS",
