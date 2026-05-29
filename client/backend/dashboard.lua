@@ -175,7 +175,7 @@ RegisterNUICallback('deleteBulletin', function(data, cb)
 end)
 
 RegisterNUICallback('getBulletinCategories', function(_, cb)
-    local result = lib.callback.await('mdt:server:getBulletinCategories', false)
+    local result = ps.callback(resourceName .. ':server:getBulletinCategories', false)
     cb(result or {})
 end)
 
@@ -196,7 +196,7 @@ RegisterNUICallback('saveBulletinCategories', function(data, cb)
         end
     end
  
-    local result = lib.callback.await('mdt:server:saveBulletinCategories', false, data.categories)
+    local result = ps.callback('mdt:server:saveBulletinCategories', false, data.categories)
     cb(result or { success = false, message = 'Server error' })
 end)
 
