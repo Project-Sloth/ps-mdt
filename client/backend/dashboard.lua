@@ -60,6 +60,9 @@ function NUIUpdateAuth()
             citizenid = playerData.citizenid,
             job = playerData.job,
             charinfo = playerData.charinfo,
+            metadata = type(playerData.metadata) == 'table' and {
+                callsign = playerData.metadata.callsign or '',
+            } or nil,
         } or nil,
         isLEO = isAuthorized,
         onDuty = ps.getJobDuty() or false,
