@@ -38,25 +38,19 @@ ps.registerCallback(resourceName .. ':server:setCallsign', function(source, payl
 
         return { success = true, message = 'Callsign updated to ' .. newCallsign }
     end
-    print("test bestanden 4")
     return { success = false, message = 'Player must be online to update callsign' }
 end)
 
 ps.registerCallback(resourceName .. ':server:getCallsign', function(source, payload)
-    print("test bestanden 1")
     if not CheckAuth(source) then return { callsign = '' } end
-    print("test bestanden 2")
     local cid = payload.citizenid
     if not cid then return { callsign = '' } end
-    print("test bestanden 3")
 
     if not QBCore then return { success = false, message = 'Core framework not available' } end
-    print("test bestanden 4")
     local Player = QBCore.Functions.GetPlayerByCitizenId(cid)
     if Player then
         return { callsign = Player.PlayerData.metadata.callsign or '' }
     end
-    print("test bestanden 5")
     local row = MySQL.single.await('SELECT callsign FROM mdt_profiles WHERE citizenid = ?', { cid })
     return { callsign = row and row.callsign or '' }
 end)
