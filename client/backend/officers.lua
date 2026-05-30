@@ -18,9 +18,7 @@ RegisterNUICallback('setCallsign', function(data, cb)
 end)
 
 RegisterNUICallback('getCallsign', function(data, cb)
-    print("test 1")
     if not MDTOpen then cb({ callsign = '' }) return end
-    print("test 2")
     local result = ps.callback(resourceName .. ':server:getCallsign', {
         citizenid = data.citizenid,
     })
