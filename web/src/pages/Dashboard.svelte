@@ -72,9 +72,9 @@
 	let warrantPage = $state(0);
 	let boloPage = $state(0);
 
-	let warrantTotalPages = $derived(Math.max(1, Math.ceil(dashboardService.activeWarrants.length / PAGE_SIZE)));
+	let warrantTotalPages = $derived(Math.max(1, Math.ceil((dashboardService.activeWarrants ?? []).length / PAGE_SIZE)));
 	let boloTotalPages = $derived(Math.max(1, Math.ceil((dashboardService.activeBolos || []).length / PAGE_SIZE)));
-	let pagedWarrants = $derived(dashboardService.activeWarrants.slice(warrantPage * PAGE_SIZE, (warrantPage + 1) * PAGE_SIZE));
+	let pagedWarrants = $derived((dashboardService.activeWarrants ?? []).slice(warrantPage * PAGE_SIZE, (warrantPage + 1) * PAGE_SIZE));
 	let pagedBolos = $derived((dashboardService.activeBolos || []).slice(boloPage * PAGE_SIZE, (boloPage + 1) * PAGE_SIZE));
 
 	// ── Callsign ──
