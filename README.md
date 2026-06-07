@@ -5,6 +5,7 @@ CREATE TABLE IF NOT EXISTS mdt_patrols (
    id VARCHAR(64) PRIMARY KEY,
    name VARCHAR(64) NOT NULL,
    color VARCHAR(7) NOT NULL,
+   zone_points LONGTEXT NULL DEFAULT NULL,
    sort_order INT NOT NULL DEFAULT 0,
    member_ids TEXT NOT NULL DEFAULT '[]'
 );
@@ -35,9 +36,6 @@ CREATE TABLE IF NOT EXISTS `mdt_bulletin_posts` (
     KEY `idx_deleted_at` (`deleted_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
  
-ALTER TABLE `mdt_bulletin_posts`
-    MODIFY COLUMN `category` VARCHAR(48) NOT NULL DEFAULT 'general';
- 
 CREATE TABLE IF NOT EXISTS `mdt_bulletin_categories` (
     `id`          INT UNSIGNED  NOT NULL AUTO_INCREMENT,
     `job`         VARCHAR(50)   NOT NULL,
@@ -50,7 +48,7 @@ CREATE TABLE IF NOT EXISTS `mdt_bulletin_categories` (
     PRIMARY KEY (`id`),
     UNIQUE KEY `uq_job_value`  (`job`, `value`),
     INDEX      `idx_job_order` (`job`, `sort_order`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=UTF8MB4_UNICODE_CI;
 ```
 
 # ps-mdt v3
