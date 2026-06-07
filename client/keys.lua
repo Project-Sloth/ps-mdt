@@ -147,6 +147,7 @@ function OpenMDT()
     MDTOpen = true
 
     SendNUI('setVisible', { visible = true, debugMode = Config.Debug })
+    SendMapCitizenId()
     SendMapUiState()
     
     if isCivilian then
