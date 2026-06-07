@@ -17,7 +17,7 @@ Config.CivilianAccess = {
 Config.DateTime = {
     GameTime = true, -- If set to true, the game time will be used instead of the server time (boolean)
     TimeFormat = '24', -- Format for displaying time ('24' or '12')
-    DateFormat = "MM-DD-YYYY" -- Format for displaying date (string: "MM-DD-YYYY", "DD-MM-YYYY", or "YYYY-MM-DD")
+    DateFormat = "DD-MM-YYYY" -- Format for displaying date (string: "MM-DD-YYYY", "DD-MM-YYYY", or "YYYY-MM-DD")
 }
 
 -- Department data sharing
@@ -100,7 +100,7 @@ Config.FingerprintAutoFilled = false -- Auto-populate fingerprints on citizen pr
 
 -- Fingerprint Scan Integration
 Config.FingerprintScan = {
-    enabled = false,                                         -- Enable fingerprint scan trigger from MDT
+    enabled = true,                                         -- Enable fingerprint scan trigger from MDT
     officerEvent = 'police:client:showFingerprint',          -- Client event triggered on the officer
     suspectEvent = 'police:client:showFingerprint',          -- Client event triggered on the suspect
 }
@@ -182,8 +182,8 @@ Config.CacheTTL = {
 
 -- Tablet Animation
 Config.Animation = {
-    Dict = 'amb@world_human_tourist_map@male@base',
-    Name = 'base',
+    Dict = 'amb@code_human_in_bus_passenger_idles@female@tablet@idle_a',
+    Name = 'idle_a',
 }
 
 -- Mugshot Camera
