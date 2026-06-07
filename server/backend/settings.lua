@@ -44,6 +44,16 @@ local ACTION_CATEGORIES = {
     icu_deleted = 'icu',
     camera_viewed = 'cameras',
     bodycam_viewed = 'bodycams',
+    -- ── Patrol management ────────────────────────────────────────────────────
+    patrol_created          = 'patrols',
+    patrol_deleted          = 'patrols',
+    patrol_renamed          = 'patrols',
+    patrol_zone_created     = 'patrols',
+    patrol_zone_updated     = 'patrols',
+    patrol_zone_cleared     = 'patrols',
+    patrol_officer_assigned = 'patrols',
+    patrol_officer_removed  = 'patrols',
+    patrols_reordered       = 'patrols',
 }
 
 -- Cache for tracking config (loaded once, updated on save)
@@ -67,6 +77,7 @@ local function getDefaultTracking()
         icu = true,
         cameras = true,
         bodycams = true,
+        patrols = true,   -- ← new
     }
 end
 
