@@ -146,7 +146,7 @@ export function createCollabService() {
 		{ added, updated, removed }: { added: number[]; updated: number[]; removed: number[] },
 		origin: any,
 	) {
-		if (origin === "remote") return; // kein Echo
+		if (origin === "remote") return;
 		if (!state.active || !state.reportId || !awareness) return;
 		const changed = added.concat(updated, removed);
 		const update = encodeAwarenessUpdate(awareness, changed);
