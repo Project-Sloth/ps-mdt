@@ -42,11 +42,13 @@ ps.registerCallback(resourceName .. ':server:processFine', function(source, payl
     local fine = tonumber(payload.fine)
     local reportId = payload.reportId
 
-    local jfConfig = GetJailFinesConfig and GetJailFinesConfig() or {}
-    local maxFine = jfConfig.maxFineAmount or (Config and Config.Fines and Config.Fines.MaxAmount) or 100000
-    if not citizenId or not fine or fine <= 0 then
+    if not citizenId or not fine or fine ~= fine or fine <= 0 then
         return { success = false, message = 'Missing citizen ID or invalid fine amount' }
     end
+    fine = math.floor(fine)
+
+    local jfConfig = GetJailFinesConfig and GetJailFinesConfig() or {}
+    local maxFine = jfConfig.maxFineAmount or (Config and Config.Fines and Config.Fines.MaxAmount) or 100000
     if fine > maxFine then
         return { success = false, message = 'Fine amount exceeds maximum of $' .. maxFine }
     end

@@ -69,17 +69,18 @@ ps.registerCallback(resourceName .. ':server:giveCitation', function(source, pay
 
     payload = payload or {}
     local citizenId = payload.citizenId
-    local fine = tonumber(payload.fine) or 0
+    local fine = tonumber(payload.fine)
     local reportId = payload.reportId
 
     if not citizenId then
         return { success = false, message = 'Missing citizen ID' }
     end
-    if fine <= 0 then
+    if not fine or fine ~= fine or fine <= 0 then
         return { success = false, message = 'Invalid fine amount' }
     end
+    fine = math.floor(fine)
 
-    local Player = ps.getPlayerByIdentifier(citizenId)
+    local Player
     if not Player then
         return { success = false, message = 'Player must be online to issue a fine' }
     end
