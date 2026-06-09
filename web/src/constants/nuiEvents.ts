@@ -64,6 +64,8 @@ export const NUI_EVENTS = {
 		UPLOAD_EVIDENCE_IMAGE: "uploadEvidenceImage",
 		GENERATE_REPORT_ID: "generateReportId",
 		SEARCH_VEHICLES_FOR_REPORT: "searchVehiclesForReport",
+		SYNC_AWARENESS: "syncAwareness",
+		POLL_AWARENESS: "pollAwareness",
 	},
 	CITIZEN: {
 		GET_CITIZENS: "getCitizens",
