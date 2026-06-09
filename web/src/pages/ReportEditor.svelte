@@ -934,6 +934,9 @@
 						onUpdate={handlers.handleContentUpdate}
 						ydoc={collabService.ydoc}
 						collabActive={collabService.isActive}
+						awareness={collabService.awareness}
+						userName={collabService.myName}
+						userColor={collabService.myColor}
 					/>
 				{:else}
 					<div style="padding: 16px; color: rgba(255,255,255,0.4); font-size: 13px;">
