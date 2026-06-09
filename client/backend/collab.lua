@@ -27,6 +27,31 @@ RegisterNUICallback('syncReportData', function(data, cb)
     TriggerServerEvent(resourceName .. ':server:collabSyncData', data.reportId, data.dataType, data.data)
 end)
 
+local awarenessIncomingBuffer = {}
+
+RegisterNUICallback('syncAwareness', function(data, cb)
+    TriggerServerEvent(resourceName .. ':server:collabSyncAwareness', data.reportId, data.update)
+    cb({ ok = true })
+end)
+
+RegisterNetEvent(resourceName .. ':client:awarenessBatch')
+AddEventHandler(resourceName .. ':client:awarenessBatch', function(payload)
+    if not payload or not payload.updates then return end
+    for _, u in ipairs(payload.updates) do
+        awarenessIncomingBuffer[#awarenessIncomingBuffer + 1] = u
+    end
+end)
+
+RegisterNUICallback('pollAwareness', function(data, cb)
+    if #awarenessIncomingBuffer == 0 then
+        cb({ updates = {} })
+        return
+    end
+    local batch = awarenessIncomingBuffer
+    awarenessIncomingBuffer = {}
+    cb({ updates = batch })
+end)
+
 -- Server push events -> forward to NUI
 RegisterNetEvent(resourceName .. ':client:reportEditorJoined', function(data)
     SendNUI('reportEditorJoined', data)
