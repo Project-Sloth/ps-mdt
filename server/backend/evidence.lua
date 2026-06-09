@@ -503,6 +503,7 @@ end)
 RegisterNetEvent(resourceName .. ':server:openEvidenceStash', function(stashId)
     local src = source
     if not CheckAuth(src) then return end
+    if not CheckPermission(src, 'evidence_view') then return end
 
     if not stashId or stashId == '' then return end
 
