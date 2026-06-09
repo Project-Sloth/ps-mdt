@@ -304,7 +304,6 @@
 		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
 		user-select: none;
 		pointer-events: none;
-		/* erscheint bei Bewegung, blendet dann sanft aus (Google-Docs-Style) */
 		opacity: 0;
 		animation: cursorLabelFade 2.6s ease forwards;
 	}
