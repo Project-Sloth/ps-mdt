@@ -221,6 +221,9 @@ end)
 ps.registerCallback(resourceName .. ':server:updatePermissionRole', function(source, payload)
     local src = source
     if not CheckAuth(src) then return { success = false, message = 'Unauthorized' } end
+    if not CheckPermission(src, 'management_permissions') then
+        return { success = false, message = 'Insufficient permissions' }
+    end
 
     payload = payload or {}
     if not payload.job or payload.grade == nil or type(payload.permissions) ~= 'table' then
@@ -460,6 +463,9 @@ end)
 ps.registerCallback(resourceName .. ':server:saveAward', function(source, payload)
     local src = source
     if not CheckAuth(src) then return { success = false, message = 'Unauthorized' } end
+    if not CheckPermission(src, 'management_permissions') then
+        return { success = false, message = 'Insufficient permissions' }
+    end
 
     payload = payload or {}
     local name = payload.name

@@ -141,6 +141,11 @@ end)
 
 -- Upload a profile photo for a suspect via base64 (from MDT UI)
 ps.registerCallback(resourceName .. ':server:uploadSuspectPhoto', function(source, citizenid, base64Image)
+    if not CheckAuth(source) then return { success = false, message = 'Unauthorized' } end
+    if not CheckPermission(source, 'evidence_upload') then
+        return { success = false, message = 'Insufficient permissions' }
+    end
+
     if not citizenid or not base64Image then
         return { success = false, message = 'Missing data' }
     end

@@ -6,6 +6,9 @@ if not ok then QBCore = nil end
 ps.registerCallback(resourceName .. ':server:sendToJail', function(source, payload)
     local src = source
     if not CheckAuth(src) then return { success = false, message = 'Unauthorized' } end
+    if not CheckPermission(src, 'charges_edit') then
+        return { success = false, message = 'Insufficient permissions' }
+    end
 
     payload = payload or {}
     local citizenId = payload.citizenId
@@ -13,6 +16,11 @@ ps.registerCallback(resourceName .. ':server:sendToJail', function(source, paylo
 
     if not citizenId or not sentence or sentence <= 0 then
         return { success = false, message = 'Missing citizen ID or invalid sentence' }
+    end
+
+    local maxSentence = (Config and Config.Fines and Config.Fines.MaxSentence) or 999
+    if sentence > maxSentence then
+        return { success = false, message = 'Sentence exceeds maximum of ' .. maxSentence .. ' months' }
     end
 
     local targetPlayer = ps.getPlayerByIdentifier(citizenId)
@@ -55,6 +63,9 @@ end)
 ps.registerCallback(resourceName .. ':server:giveCitation', function(source, payload)
     local src = source
     if not CheckAuth(src) then return { success = false, message = 'Unauthorized' } end
+    if not CheckPermission(src, 'charges_edit') then
+        return { success = false, message = 'Insufficient permissions' }
+    end
 
     payload = payload or {}
     local citizenId = payload.citizenId
