@@ -11,7 +11,7 @@
 	/** Individual permissions hidden for EMS within visible categories */
 	const EMS_HIDDEN_PERMISSIONS = ['cameras_view', 'management_tracking'];
 	const DOJ_VISIBLE_CATEGORIES = ['citizens', 'cases', 'evidence', 'charges', 'management'];
-	const DOJ_HIDDEN_PERMISSIONS = ['management_bulletins', 'management_activity', 'management_tags', 'management_tracking', 'management_settings', 'citizens_edit_licenses', 'weapons_add'];
+	const DOJ_HIDDEN_PERMISSIONS = ['management_bulletins', 'management_activity', 'management_tags', 'management_tracking', 'management_settings', 'citizens_edit_licenses'];
 
 	let visibleCategories = $derived(
 		jobType === 'ems'

@@ -31,16 +31,6 @@ local function formatLabel(value)
     return formatted
 end
 
-local function parseStatus(raw)
-    if not raw or raw == '' then return 'valid', '' end
-    local ok, decoded = pcall(function() return json.decode(raw) end)
-    if ok and type(decoded) == 'table' then
-        return decoded.status or 'valid', decoded.reason or ''
-    end
-    -- Fallback für alte plain-text Werte
-    return raw, ''
-end
-
 local function getVehicleShared(model)
     if not Core or not Core.Shared or not Core.Shared.Vehicles then
         return nil
@@ -128,8 +118,7 @@ ps.registerCallback(resourceName .. ':server:GetVehicles', function(source)
         local plate = v.plate and string.upper(v.plate) or 'UNKNOWN'
         local reportCount = countSetItems(reportIdsByPlate[plate])
         local hasActiveBolo = activeBoloByPlate[plate] == true or v.boloactive == 1
-        local statusName, statusReason = parseStatus(v.status)
-        local flags = buildVehicleFlags(v.stolen == 1, hasActiveBolo, statusName)
+        local flags = buildVehicleFlags(v.stolen == 1, hasActiveBolo, v.status)
 
         table.insert(vehicles, {
             id = v.id,
@@ -143,8 +132,7 @@ ps.registerCallback(resourceName .. ':server:GetVehicles', function(source)
             image = (v.image and v.image ~= '' and v.image) or ('https://docs.fivem.net/vehicles/' .. v.vehicle .. '.webp'),
             seenIn = reportCount,
             points = tonumber(v.points) or 0,
-            status = statusName,
-            reason = statusReason,
+            status = v.status or 'valid',
             core_state = tonumber(v.core_state) or 0,
         })
     end
@@ -205,21 +193,14 @@ ps.registerCallback(resourceName .. ':server:UpdateVehicle', function(source, pa
         values[#values + 1] = payload.information
     end
 
-    if payload.image ~= nil then
-        updates[#updates + 1] = 'mdt_vehicle_image = ?'
-        values[#values + 1] = payload.image
-    end
-
     if points ~= nil then
         updates[#updates + 1] = 'mdt_vehicle_points = ?'
         values[#values + 1] = points
     end
 
     if status ~= nil then
-        local reason = payload.reason or ''
-        local encoded = json.encode({ status = status, reason = reason })
         updates[#updates + 1] = 'mdt_vehicle_status = ?'
-        values[#values + 1] = encoded
+        values[#values + 1] = status
     end
 
     if #updates == 0 then
@@ -297,8 +278,7 @@ ps.registerCallback(resourceName .. ':server:GetVehicle', function(source, plate
     end
 
     local reportCount = countSetItems(reportIdSet)
-    local statusName, statusReason = parseStatus(row.status)
-    local flags = buildVehicleFlags(row.stolen == 1, hasActiveBolo or row.boloactive == 1, statusName)
+    local flags = buildVehicleFlags(row.stolen == 1, hasActiveBolo or row.boloactive == 1, row.status)
 
     return {
         success = true,
@@ -314,8 +294,7 @@ ps.registerCallback(resourceName .. ':server:GetVehicle', function(source, plate
             image = (row.image and row.image ~= '' and row.image) or ('https://docs.fivem.net/vehicles/' .. row.vehicle .. '.webp'),
             information = row.information or '',
             points = tonumber(row.points) or 0,
-            status = statusName,
-            reason = statusReason,
+            status = row.status or 'valid',
             core_state = tonumber(row.core_state) or 0,
             stolen = row.stolen == 1,
             boloactive = row.boloactive == 1,

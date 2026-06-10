@@ -47,7 +47,6 @@ export const SECURITY_CONFIG = {
 		"PPR",
 		"FTO",
 		"SOP",
-		"Bulletin Board",
 		"Court Cases",
 		"Warrant Review",
 		"Court Orders",

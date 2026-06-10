@@ -140,15 +140,15 @@ ps.registerCallback(resourceName .. ':server:triggerSuspectMugshot', function(so
 end)
 
 -- Upload a profile photo for a suspect via base64 (from MDT UI)
-ps.registerCallback(resourceName .. ':server:uploadSuspectPhoto', function(source, citizenid, imageUrl)
-    if not citizenid or not imageUrl then
+ps.registerCallback(resourceName .. ':server:uploadSuspectPhoto', function(source, citizenid, base64Image)
+    if not citizenid or not base64Image then
         return { success = false, message = 'Missing data' }
     end
 
-    -- local imageUrl, uploadError = FiveManageUpload(base64Image, 'suspect_' .. citizenid .. '.png')
-    -- if not imageUrl then
-    --     return { success = false, message = 'Upload failed: ' .. (uploadError or 'Unknown error') }
-    -- end
+    local imageUrl, uploadError = FiveManageUpload(base64Image, 'suspect_' .. citizenid .. '.png')
+    if not imageUrl then
+        return { success = false, message = 'Upload failed: ' .. (uploadError or 'Unknown error') }
+    end
 
     -- Ensure profile exists
     if not EnsureProfileExists(citizenid) then

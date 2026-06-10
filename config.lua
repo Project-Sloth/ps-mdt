@@ -17,7 +17,7 @@ Config.CivilianAccess = {
 Config.DateTime = {
     GameTime = true, -- If set to true, the game time will be used instead of the server time (boolean)
     TimeFormat = '24', -- Format for displaying time ('24' or '12')
-    DateFormat = "DD-MM-YYYY" -- Format for displaying date (string: "MM-DD-YYYY", "DD-MM-YYYY", or "YYYY-MM-DD")
+    DateFormat = "MM-DD-YYYY" -- Format for displaying date (string: "MM-DD-YYYY", "DD-MM-YYYY", or "YYYY-MM-DD")
 }
 
 -- Department data sharing
@@ -100,7 +100,7 @@ Config.FingerprintAutoFilled = false -- Auto-populate fingerprints on citizen pr
 
 -- Fingerprint Scan Integration
 Config.FingerprintScan = {
-    enabled = true,                                         -- Enable fingerprint scan trigger from MDT
+    enabled = false,                                         -- Enable fingerprint scan trigger from MDT
     officerEvent = 'police:client:showFingerprint',          -- Client event triggered on the officer
     suspectEvent = 'police:client:showFingerprint',          -- Client event triggered on the suspect
 }
@@ -182,8 +182,8 @@ Config.CacheTTL = {
 
 -- Tablet Animation
 Config.Animation = {
-    Dict = 'amb@code_human_in_bus_passenger_idles@female@tablet@idle_a',
-    Name = 'idle_a',
+    Dict = 'amb@world_human_tourist_map@male@base',
+    Name = 'base',
 }
 
 -- Mugshot Camera
@@ -218,7 +218,6 @@ Config.ManagementPermissions = {
     'vehicles_edit_dmv',
     -- Weapons
     'weapons_search',
-    'weapons_add',
     -- Cases
     'cases_view',
     'cases_create',
@@ -241,9 +240,6 @@ Config.ManagementPermissions = {
     'charges_view',
     'charges_edit',
     -- Dispatch
-    'map_patrols_view',
-    "map_patrols_manage",
-    "map_patrols_edit",
     'dispatch_attach',
     'dispatch_route',
     -- Cameras & Bodycams
@@ -260,10 +256,6 @@ Config.ManagementPermissions = {
     -- FTO
     'fto_view',
     'fto_manage',
-    -- BulletIn Board
-    'bulletin_view',
-    'bulletin_post',
-    'bulletin_pin',
     -- Management
     'management_permissions',
     'management_bulletins',
@@ -340,14 +332,4 @@ Config.CameraModels = {
     ['cctv_cam_07'] = 'prop_cctv_pole_03',
     ['cctv_cam_08'] = 'p_cctv_s',
     ['cctv_cam_09'] = 'hei_prop_bank_cctv_02',
-}
-
--- Which Weapons should be allowed to be registered manually
-Config.Weapons = {
-    { model = "weapon_heavypistol", label = "Heavy Pistol" },
-    { model = "weapon_sniperrifle", label = "Hunting Rifle" },
-    { model = "weapon_ceramicpistol", label = "Ceramic Pistol" },
-    { model = "weapon_doubleaction", label = "Double-Action Revolver" },
-    { model = "weapon_navyrevolver", label = "Navy Revolver" },
-    { model = "weapon_musket", label = "Musket" },
 }

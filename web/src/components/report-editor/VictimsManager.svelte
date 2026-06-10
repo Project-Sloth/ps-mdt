@@ -31,7 +31,6 @@
 			secondaryInfo={`ID: ${victim.citizenid}`}
 			type={victim.type}
 			typeOptions={VICTIM_TYPES}
-			notes={victim.notes}
 			{onRemove}
 			onUpdate={updateVictim}
 		/>

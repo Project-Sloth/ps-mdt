@@ -85,7 +85,6 @@ export function createReportService() {
 				...report,
 				id: report.id ?? report.reportId,
 			};
-
 			const response = await fetchNui<{ success: boolean; message?: string; error?: string; reportId?: string }>(
 				NUI_EVENTS.REPORT.SAVE_REPORT,
 				reportToSave,
@@ -262,15 +261,19 @@ export function createReportService() {
 
 	function normalizeInvolved(involved: any): Report["involved"] {
 		const parsed = parseJsonString(involved);
-		const list = Array.isArray(parsed) ? parsed : Array.isArray(involved) ? involved : [];
-
-		const normalized = { officers: [], suspects: [], victims: [] } as Report["involved"];
-
-		const VICTIM_TYPES = new Set(["victim", "primary", "secondary", "witness", "complainant"]);
+		const list = Array.isArray(parsed)
+			? parsed
+			: Array.isArray(involved)
+				? involved
+				: [];
+		const normalized = {
+			officers: [],
+			suspects: [],
+			victims: [],
+		} as Report["involved"];
 
 		for (const entry of list) {
 			const type = (entry?.type || "").toLowerCase();
-
 			if (type === "officer") {
 				normalized.officers.push({
 					id: crypto.randomUUID(),
@@ -280,13 +283,12 @@ export function createReportService() {
 					type: entry?.type || "Officer",
 					notes: entry?.notes || "",
 				});
-			} else if (VICTIM_TYPES.has(type)) {
+			} else if (type === "victim") {
 				normalized.victims.push({
 					id: entry?.citizenid || crypto.randomUUID(),
 					citizenid: entry?.citizenid || "",
 					fullName: entry?.name || entry?.fullname || "Unknown",
-					type: entry?.type || "victim",
-					notes: entry?.notes || "",
+					type: entry?.type || "Victim",
 				});
 			} else {
 				normalized.suspects.push({
@@ -296,7 +298,6 @@ export function createReportService() {
 					notes: entry?.notes || "",
 					warrantActive: entry?.warrantActive || false,
 					profileImage: entry?.image || undefined,
-					fingerprint: entry?.fingerprint || undefined,
 				});
 			}
 		}
@@ -518,8 +519,8 @@ export function createReportService() {
 			citizenid: victim.citizenid || "",
 			fullName: victim.fullName,
 			type: "Primary",
-			notes: "",   // ← fehlte
 		};
+
 		return {
 			...report,
 			involved: {

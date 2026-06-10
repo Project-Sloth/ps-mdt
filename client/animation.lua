@@ -1,7 +1,7 @@
 local tabletProp = nil
 local isPlayingTabletAnim = false
-local animDict = Config.Animation and Config.Animation.Dict or 'amb@code_human_in_bus_passenger_idles@female@tablet@idle_a'
-local animName = Config.Animation and Config.Animation.Name or 'idle_a'
+local animDict = Config.Animation and Config.Animation.Dict or 'amb@world_human_tourist_map@male@base'
+local animName = Config.Animation and Config.Animation.Name or 'base'
 local propModel = 'ps-mdt'
 
 -- Helper to always get current ped (never stale)
@@ -12,10 +12,10 @@ end
 -- Options ----------------------------------
 
 local propOptions = {
-    xPos = -0.050, -- X-axis offset from the center of entity2
-    yPos = 0.0, -- Y-axis offset from the center of entity2
+    xPos = 0.0, -- X-axis offset from the center of entity2
+    yPos = -0.03, -- Y-axis offset from the center of entity2
     zPos = 0.0, -- Z-axis offset from the center of entity2
-    xRot = 0.0, -- X-axis rotation
+    xRot = 20.0, -- X-axis rotation
     yRot = -90.0, -- Y-axis rotation
     zRot = 0.0, -- Z-axis rotation
     p9 = true, -- Unknown

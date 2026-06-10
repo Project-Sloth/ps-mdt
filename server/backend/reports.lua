@@ -91,51 +91,36 @@ local function normalizeDateFilter(value)
 end
 
 local function buildReportFilterClause(filters)
-    local clauses = {}
-    local values = {}
-    if not filters then
-        return '', values
-    end
+	local clauses = {}
+	local values = {}
+	if not filters then
+		return '', values
+	end
 
-    local function hasValue(value)
-        if value == nil then return false end
-        if json and value == json.null then return false end
-        if type(value) == 'string' then return value:gsub('%s+', '') ~= '' end
-        return true
-    end
+	local function hasValue(value)
+		if value == nil then
+			return false
+		end
+		if json and value == json.null then
+			return false
+		end
+		if type(value) == 'string' then
+			return value:gsub('%s+', '') ~= ''
+		end
+		return true
+	end
 
-    if hasValue(filters.search) then
-        local likeQuery = '%' .. tostring(filters.search) .. '%'
-        clauses[#clauses + 1] = [[
-            (
-                mr.title LIKE ?
-                OR CAST(mr.id AS CHAR) LIKE ?
-                OR mr.authorplaintext LIKE ?
-                OR mr.type LIKE ?
-                OR EXISTS (
-                    SELECT 1 FROM mdt_reports_tags mrt2
-                    WHERE mrt2.reportid = mr.id AND mrt2.tag LIKE ?
-                )
-            )
-        ]]
-        values[#values + 1] = likeQuery
-        values[#values + 1] = likeQuery
-        values[#values + 1] = likeQuery
-        values[#values + 1] = likeQuery
-        values[#values + 1] = likeQuery
-    end
+	if hasValue(filters.type) then
+		clauses[#clauses + 1] = 'mr.type = ?'
+		values[#values + 1] = filters.type
+	end
 
-    if hasValue(filters.type) then
-        clauses[#clauses + 1] = 'mr.type = ?'
-        values[#values + 1] = filters.type
-    end
-
-    if hasValue(filters.author) then
-        local likeQuery = '%' .. tostring(filters.author) .. '%'
-        clauses[#clauses + 1] = '(mr.authorplaintext LIKE ? OR mr.author LIKE ?)'
-        values[#values + 1] = likeQuery
-        values[#values + 1] = likeQuery
-    end
+	if hasValue(filters.author) then
+		local likeQuery = '%' .. tostring(filters.author) .. '%'
+		clauses[#clauses + 1] = '(mr.authorplaintext LIKE ? OR mr.author LIKE ?)'
+		values[#values + 1] = likeQuery
+		values[#values + 1] = likeQuery
+	end
 
     local startDate = normalizeDateFilter(filters.startDate)
     if startDate then
@@ -219,67 +204,54 @@ end
 
 
 ps.registerCallback(resourceName .. ':server:getReports', function(source, page, filters)
-    local src = source
-    if not CheckAuth(src) then return end
+	local src = source
+	if not CheckAuth(src) then return end
 
     local identifier = ps.getIdentifier(src)
     local job = ps.getJobName(src)
     local jobType = getEffectiveJobType(src)
 
-    local pageNumber = tonumber(page) or 1
-    pageNumber = math.max(1, pageNumber)
-    local limit = math.min(tonumber(filters and filters.limit) or 20, 100)
-    local offset = (pageNumber - 1) * limit
+	local pageNumber = tonumber(page) or 1
+	pageNumber = math.max(1, pageNumber)
+	local limit = 20
+	local offset = (pageNumber - 1) * limit
 
-    local filterClause, filterValues = buildReportFilterClause(filters)
-    filterClause = filterClause or ''
+	local filterClause, filterValues = buildReportFilterClause(filters)
+	filterClause = filterClause or ''
 
-    local accessClause = buildReportAccessClause()
-    local baseParams = { jobType, jobType, jobType, identifier, job, jobType }
-
-    local queryParams = {}
-    for _, v in ipairs(baseParams) do queryParams[#queryParams + 1] = v end
-    for _, v in ipairs(filterValues or {}) do queryParams[#queryParams + 1] = v end
-
-    local countQuery = ([[
-        SELECT COUNT(DISTINCT mr.id) AS total
-        FROM mdt_reports AS mr
-        LEFT JOIN mdt_reports_restrictions AS mrr ON mr.id = mrr.reportid
-        WHERE %s%s
-    ]]):format(accessClause, filterClause)
-
-    local countRow = MySQL.single.await(countQuery, queryParams)
-    local total = tonumber(countRow and countRow.total) or 0
-
-    local reportsQuery = ([[
-        SELECT
-            mr.id,
-            mr.id as reportId,
-            mr.title,
-            mr.type,
-            mr.contentyjs,
-            mr.contentplaintext,
-            mr.author,
-            mr.authorplaintext,
-            mr.datecreated,
-            mr.dateupdated,
-            (SELECT mrt.tag FROM mdt_reports_tags mrt WHERE mrt.reportid = mr.id LIMIT 1) as tag,
-            (SELECT COUNT(*) FROM mdt_reports_tags mrt WHERE mrt.reportid = mr.id) as tagCount
-        FROM mdt_reports AS mr
-        LEFT JOIN mdt_reports_restrictions AS mrr ON mr.id = mrr.reportid
-        WHERE %s%s
-        GROUP BY mr.id
-        ORDER BY mr.id DESC
-        LIMIT %d OFFSET %d
-    ]]):format(accessClause, filterClause, limit, offset)
-
-    local reportsParams = {}
-    for _, v in ipairs(baseParams) do reportsParams[#reportsParams + 1] = v end
-    for _, v in ipairs(filterValues or {}) do reportsParams[#reportsParams + 1] = v end
-
-    local reports = MySQL.query.await(reportsQuery, reportsParams)
-
-    return { reports = reports or {}, total = total }
+	local reportsQuery = ([[
+		SELECT
+			mr.id,
+			mr.id as reportId,
+			mr.title,
+			mr.type,
+			mr.contentyjs,
+			mr.contentplaintext,
+			mr.author,
+			mr.authorplaintext,
+			mr.datecreated,
+			mr.dateupdated,
+			(SELECT mrt.tag FROM mdt_reports_tags mrt WHERE mrt.reportid = mr.id LIMIT 1) as tag,
+			(SELECT COUNT(*) FROM mdt_reports_tags mrt WHERE mrt.reportid = mr.id) as tagCount
+		FROM
+			mdt_reports AS mr
+		LEFT JOIN
+			mdt_reports_restrictions AS mrr ON mr.id = mrr.reportid
+		WHERE
+			%s%s
+		GROUP BY
+			mr.id
+		ORDER BY
+			mr.datecreated DESC
+		LIMIT %d
+		OFFSET %d
+	]]):format(buildReportAccessClause(), filterClause, limit, offset)
+	local params = { jobType, jobType, jobType, identifier, job, jobType }
+	for _, value in ipairs(filterValues or {}) do
+		params[#params + 1] = value
+	end
+	local reports = MySQL.query.await(reportsQuery, params)
+	return reports
 end)
 
 ps.registerCallback(resourceName..':server:getReport', function(source, reportid)
@@ -318,16 +290,10 @@ ps.registerCallback(resourceName..':server:getReport', function(source, reportid
             ) FROM mdt_reports_charges mrc WHERE mrc.reportid = mr.id) as charges,
             (SELECT JSON_ARRAYAGG(
                 JSON_OBJECT(
-                    'title', mre.title,
                     'type', mre.type,
                     'content', mre.content,
                     'note', mre.note,
-                    'stored', mre.stored,
-                    'images', CASE
-                        WHEN mre.images IS NOT NULL AND mre.images != ''
-                        THEN JSON_EXTRACT(mre.images, '$')
-                        ELSE JSON_ARRAY()
-                    END
+                    'stored', mre.stored
                 )
             ) FROM mdt_reports_evidence mre WHERE mre.reportid = mr.id) as evidence,
             (SELECT JSON_ARRAYAGG(
@@ -389,8 +355,7 @@ ps.registerCallback(resourceName..':server:getReport', function(source, reportid
                         ' ',
                         JSON_UNQUOTE(JSON_EXTRACT(p.charinfo, '$.lastname'))
                     ) as fullname,
-                    mp.profilepicture as image,
-                    JSON_UNQUOTE(JSON_EXTRACT(p.metadata, '$.fingerprint')) as fingerprint
+                    mp.profilepicture as image
                 FROM players p
                 LEFT JOIN mdt_profiles mp ON mp.citizenid COLLATE utf8mb4_general_ci = p.citizenid COLLATE utf8mb4_general_ci
                 WHERE p.citizenid COLLATE utf8mb4_general_ci IN (%s)
@@ -398,12 +363,10 @@ ps.registerCallback(resourceName..':server:getReport', function(source, reportid
 
             local lookupRows = MySQL.query.await(lookupQuery, cidList)
             local cidInfo = {}
-            for _, row in ipairs(lookupRows) do
-                cidInfo[row.citizenid] = {
-                    name = row.fullname,
-                    image = row.image,
-                    fingerprint = (row.fingerprint and row.fingerprint ~= 'null') and row.fingerprint or nil
-                }
+            if lookupRows then
+                for _, row in ipairs(lookupRows) do
+                    cidInfo[row.citizenid] = { name = row.fullname, image = row.image }
+                end
             end
 
             for _, entry in ipairs(involved) do
@@ -411,7 +374,6 @@ ps.registerCallback(resourceName..':server:getReport', function(source, reportid
                     local info = cidInfo[entry.citizenid]
                     entry.name = info.name or entry.name
                     entry.image = info.image
-                    entry.fingerprint = info.fingerprint
                 end
             end
         end
@@ -551,52 +513,43 @@ ps.registerCallback(resourceName .. ':server:searchVehiclesForReport', function(
         return {}
     end
 
-    local vehicleShared = nil
-    local ok, core = pcall(function() return exports['qb-core']:GetCoreObject() end)
-    if ok and core and core.Shared and core.Shared.Vehicles then
-        vehicleShared = core.Shared.Vehicles
-    end
-
-    local likeQuery = '%' .. query:upper() .. '%'
-    local likeQueryRaw = '%' .. query .. '%'
+    local likeQuery = '%' .. query .. '%'
 
     local rows = MySQL.query.await([[
         SELECT
             pv.plate,
             pv.vehicle,
             pv.citizenid,
-            COALESCE(
-                NULLIF(
-                    CONCAT(
-                        COALESCE(JSON_UNQUOTE(JSON_EXTRACT(p.charinfo, '$.firstname')), ''),
-                        ' ',
-                        COALESCE(JSON_UNQUOTE(JSON_EXTRACT(p.charinfo, '$.lastname')), '')
-                    ),
-                    ' '
-                ),
-                'Unknown'
+            CONCAT(
+                JSON_UNQUOTE(JSON_EXTRACT(p.charinfo, '$.firstname')),
+                ' ',
+                JSON_UNQUOTE(JSON_EXTRACT(p.charinfo, '$.lastname'))
             ) as owner_name
         FROM player_vehicles pv
         LEFT JOIN players p ON p.citizenid COLLATE utf8mb4_general_ci = pv.citizenid COLLATE utf8mb4_general_ci
         WHERE (
-            UPPER(REPLACE(pv.plate, ' ', '')) LIKE REPLACE(?, ' ', '')
-            OR UPPER(pv.plate) LIKE ?
+            pv.plate LIKE ?
             OR CONCAT(
-                COALESCE(JSON_UNQUOTE(JSON_EXTRACT(p.charinfo, '$.firstname')), ''),
+                JSON_UNQUOTE(JSON_EXTRACT(p.charinfo, '$.firstname')),
                 ' ',
-                COALESCE(JSON_UNQUOTE(JSON_EXTRACT(p.charinfo, '$.lastname')), '')
+                JSON_UNQUOTE(JSON_EXTRACT(p.charinfo, '$.lastname'))
             ) LIKE ?
-            OR p.citizenid LIKE ?
         )
-        ORDER BY pv.plate ASC
         LIMIT 25
-    ]], { likeQuery, likeQuery, likeQueryRaw, likeQueryRaw })
+    ]], { likeQuery, likeQuery })
 
     local results = {}
     for _, row in ipairs(rows or {}) do
-        local vehicleData = vehicleShared and vehicleShared[row.vehicle] or nil
+        local vehicleData = nil
+        local ok, core = pcall(function()
+            return exports['qb-core']:GetCoreObject()
+        end)
+        if ok and core and core.Shared and core.Shared.Vehicles then
+            vehicleData = core.Shared.Vehicles[row.vehicle]
+        end
+
         table.insert(results, {
-            plate = row.plate and string.upper(row.plate):gsub('%s+', '') or 'UNKNOWN',
+            plate = row.plate and string.upper(row.plate) or 'UNKNOWN',
             vehicle_label = vehicleData and vehicleData.name or row.vehicle or 'Unknown',
             owner_name = row.owner_name or 'Unknown',
             owner_citizenid = row.citizenid or nil,
@@ -747,21 +700,10 @@ ps.registerCallback(resourceName..':server:saveReport', function(source, reportD
 
     if reportData.evidence and #reportData.evidence > 0 then
         for _, evidence in ipairs(reportData.evidence) do
-            local imagesJson = nil
-            if evidence.images and type(evidence.images) == 'table' and #evidence.images > 0 then
-                imagesJson = json.encode(evidence.images)
-            end
             table.insert(attachmentQueries, {
-                query = "INSERT INTO mdt_reports_evidence (reportid, title, type, content, note, stored, images) VALUES (?, ?, ?, ?, ?, ?, ?)",
-                values = {
-                    reportId,
-                    evidence.title or '',
-                    evidence.type or 'Physical',
-                    evidence.content or '',
-                    evidence.note or '',
-                    evidence.stored or 0,
-                    imagesJson
-                }
+                query =
+                "INSERT INTO mdt_reports_evidence (reportid, type, content, note, stored) VALUES (?, ?, ?, ?, ?)",
+                values = { reportId, evidence.type, evidence.content, evidence.note, evidence.stored or 0 }
             })
         end
     end

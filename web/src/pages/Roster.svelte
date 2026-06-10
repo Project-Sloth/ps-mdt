@@ -982,7 +982,7 @@
 					<button
 						class="btn-save"
 						onclick={saveCallsign}
-						disabled={isSavingBoss || editCallsign.length === 0}
+						disabled={isSavingBoss || !editCallsign.trim()}
 					>
 						{isSavingBoss ? "Saving..." : "Save Callsign"}
 					</button>

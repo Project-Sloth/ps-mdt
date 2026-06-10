@@ -14,12 +14,6 @@ RegisterNUICallback('getWeaponBolos', function(data, cb)
     cb(result)
 end)
 
-RegisterNUICallback('saveWeaponFlags', function(data, cb)
-    local flags = type(data.flags) == 'table' and data.flags or json.decode(data.flags) or {}
-    local result = ps.callback(resourceName .. ':server:saveWeaponFlags', data.serial, flags)
-    cb(result or { success = false })
-end)
-
 RegisterNUICallback('getWeaponOwnershipHistory', function(data, cb)
     if not MDTOpen then cb({}) return end
     if not data or not data.serial then

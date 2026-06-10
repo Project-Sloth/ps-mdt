@@ -2,7 +2,6 @@ local resourceName = tostring(GetCurrentResourceName())
 
 -- Get available camera models for camera creation
 ps.registerCallback(resourceName .. ':server:getCameraModels', function(source)
-    if not CheckAuth(source) then return {} end
     -- Import Camera models from main cameras.lua
     local Camera = _G.Camera or {}
     local models = {}
@@ -29,7 +28,6 @@ end)
 
 -- Validate camera model
 ps.registerCallback(resourceName .. ':server:validateCameraModel', function(source, modelKey)
-    if not CheckAuth(source) then return false end
     -- Import Camera models from main cameras.lua
     local Camera = _G.Camera or {}
     local isValid = (Camera.models or {})[modelKey] ~= nil

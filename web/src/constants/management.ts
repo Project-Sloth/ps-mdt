@@ -87,7 +87,6 @@ export const PERMISSION_CATEGORIES: PermissionCategory[] = [
 		icon: "security",
 		permissions: [
 			{ key: "weapons_search", label: "Search Weapons", description: "Search and view weapon records" },
-			{ key: "weapons_add", label: "Add Weapons", description: "Register a new gun manually" },
 		],
 	},
 	{
@@ -140,9 +139,6 @@ export const PERMISSION_CATEGORIES: PermissionCategory[] = [
 		label: "Dispatch",
 		icon: "cell_tower",
 		permissions: [
-			{ key: "map_patrols_view",   label: "View Patrols",   description: "View patrol assignments on the map" },
-			{ key: "map_patrols_manage", label: "Manage Patrols", description: "Assign or remove officers from patrols" },
-			{ key: "map_patrols_edit",   label: "Edit Patrols",   description: "Create, rename, delete and reorder patrols" },
 			{ key: "dispatch_attach", label: "Attach to Calls", description: "Attach or detach from dispatch calls" },
 			{ key: "dispatch_route", label: "Route to Calls", description: "Set GPS route to dispatch calls" },
 		],
@@ -163,16 +159,6 @@ export const PERMISSION_CATEGORIES: PermissionCategory[] = [
 		permissions: [
 			{ key: "sop_view", label: "View SOP", description: "View standard operating procedures" },
 			{ key: "sop_manage", label: "Manage SOP", description: "Create, edit, and publish standard operating procedures" },
-		],
-	},
-	{
-		key: "bulletin_board",
-		label: "Bulletin Board ( Creator or Manage Posts can Delete )",
-		icon: "forum",
-		permissions: [
-			{ key: "bulletin_view", label: "View BP", description: "View Bulletin Posts" },
-			{ key: "bulletin_post", label: "Manage Posts", description: "Create and Edit Bulletin Posts" },
-			{ key: "bulletin_pin", label: "Pin Posts", description: "Pin Bulletin Posts" },
 		],
 	},
 	{
@@ -209,7 +195,6 @@ export const TAB_VISIBILITY_KEYS = [
 	{ tabName: "PPR", key: "tab_hidden_ppr", label: "PPR" },
 	{ tabName: "FTO", key: "tab_hidden_fto", label: "Field Training" },
 	{ tabName: "SOP", key: "tab_hidden_sop", label: "SOP" },
-	{ tabName: "Bulletin Board", key: "tab_hidden_bulletin_board", label: "Bulletin Board" },
 ];
 
 /** Flat list of all permission keys */
