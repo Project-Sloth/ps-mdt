@@ -119,7 +119,7 @@ ps.registerCallback(resourceName .. ':server:joinReportSession', function(source
         myName = editorName,
         myCitizenId = citizenId,
         editors = getEditorsList(session, src),
-        yjsState = session.yjsState,
+        yjsUpdates = session.yjsUpdates or {},
         lastStructuredData = session.lastStructuredData,
     }
 end)
@@ -167,11 +167,6 @@ AddEventHandler(resourceName .. ':server:collabSyncYjs', function(reportId, upda
     -- Store for late joiners
     if not session.yjsUpdates then session.yjsUpdates = {} end
     session.yjsUpdates[#session.yjsUpdates + 1] = update
-    session.yjsState = update
-    if #session.yjsUpdates > 100 then
-        session.yjsState = update
-        session.yjsUpdates = { update }
-    end
 
     -- Queue for batched broadcast
     if not yjsPendingBroadcasts[reportId] then
@@ -223,6 +218,24 @@ AddEventHandler(resourceName .. ':server:collabSyncData', function(reportId, dat
         data = data,
         source = src,
     }, src)
+end)
+
+RegisterNetEvent(resourceName .. ':server:collabSyncAwareness')
+AddEventHandler(resourceName .. ':server:collabSyncAwareness', function(reportId, update)
+    local src = source
+    if not CheckAuth(src) then return end
+    reportId = tostring(reportId)
+    local session = activeReportSessions[reportId]
+    if not session or not session.editors[src] then return end
+
+    for editorSrc, _ in pairs(session.editors) do
+        if editorSrc ~= src then
+            TriggerClientEvent(resourceName .. ':client:awarenessBatch', editorSrc, {
+                reportId = reportId,
+                updates = { update },
+            })
+        end
+    end
 end)
 
 -- Cleanup on player disconnect

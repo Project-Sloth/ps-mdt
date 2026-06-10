@@ -147,7 +147,9 @@ function OpenMDT()
     MDTOpen = true
 
     SendNUI('setVisible', { visible = true, debugMode = Config.Debug })
-
+    SendMapCitizenId()
+    SendMapUiState()
+    
     if isCivilian then
         -- Civilian mode: send auth with civilian flag
         local playerData = ps.getPlayerData()
@@ -174,11 +176,14 @@ end
 -- Close MDT
 local closeControlsPending = false
 
-function CloseMDT()
+
+function CloseMDT(keepAnimation)
     if MDTOpen then
         MDTOpen = false
 
-        StopTabletAnimation()
+        if not keepAnimation then
+            StopTabletAnimation()
+        end
 
         SendNUI('setVisible', { visible = false })
         SetNuiFocus(false, false)

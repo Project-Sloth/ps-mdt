@@ -16,7 +16,6 @@
 	import type { createTabService } from "../services/tabService.svelte";
 	import type { MDTTab } from "../constants";
 	import Pagination from "../components/Pagination.svelte";
-
 	import type { JobType } from "../interfaces/IUser";
 
 	interface Props {
@@ -35,6 +34,7 @@
 			tabService.setInstanceTab(activeInstance.id, tab);
 		}
 	}
+
 	const reportService = createReportService();
 
 	interface Report {
@@ -42,6 +42,7 @@
 		title: string;
 		reportId: string;
 		author: string;
+		authorplaintext: string;
 		type: string;
 		datecreated: number;
 		dateupdated: number;
@@ -50,7 +51,6 @@
 	}
 
 	let reports: Report[] = $state([]);
-	let filteredReports: Report[] = $state([]);
 	let searchQuery = $state("");
 	let filterAuthor = $state("");
 	let filterType = $state("");
@@ -59,13 +59,11 @@
 	let analytics = $state({ incidents: 0, arrests: 0, warrants: 0 });
 	let isLoading = $state(false);
 	let currentPage = $state(1);
-	let reportsPerPage = $state(50);
+	let reportsPerPage = $state(25);
 	let totalReports = $state(0);
-
 	let showEditor = $state(false);
 	let editingReportId: string | null = $state(null);
 	let pendingOpenId = $state<string | null>(null);
-	let debouncedSearchQuery = $state("");
 	let searchDebounceTimer: ReturnType<typeof setTimeout> | null = null;
 
 	$effect(() => {
@@ -77,45 +75,29 @@
 		}
 	});
 
-	// Debounce search input (200ms)
-	$effect(() => {
-		const query = searchQuery;
+	function handleSearchInput(e: Event) {
+		searchQuery = (e.target as HTMLInputElement).value;
 		if (searchDebounceTimer) clearTimeout(searchDebounceTimer);
 		searchDebounceTimer = setTimeout(() => {
-			debouncedSearchQuery = query;
-		}, 200);
-	});
-
-	$effect(() => {
-		if (debouncedSearchQuery.trim() === "") {
-			filteredReports = reports;
-		} else {
-			const query = debouncedSearchQuery.toLowerCase();
-			filteredReports = reports.filter(
-				(report) =>
-					report.title.toLowerCase().includes(query) ||
-					report.reportId.toLowerCase().includes(query) ||
-					report.author.toLowerCase().includes(query) ||
-					report.type.toLowerCase().includes(query) ||
-					(report.tag && report.tag.toLowerCase().includes(query)),
-			);
-		}
-	});
+			currentPage = 1;
+			loadReports(1);
+		}, 300);
+	}
 
 	onMount(() => {
 		if (isEnvBrowser()) {
 			const now = Date.now();
 			reports = [
-				{ id: '1', title: 'Armed Robbery at Fleeca Bank', reportId: 'RPT-001', author: 'Ofc. Smith', type: 'Incident', datecreated: now - 86400000, dateupdated: now - 3600000, tag: 'Priority' },
-				{ id: '2', title: 'Traffic Stop - Suspended License', reportId: 'RPT-002', author: 'Ofc. Johnson', type: 'Citation', datecreated: now - 172800000, dateupdated: now - 86400000 },
-				{ id: '3', title: 'Drive-by Shooting on Vinewood Blvd', reportId: 'RPT-003', author: 'Det. Williams', type: 'Incident', datecreated: now - 259200000, dateupdated: now - 172800000, tag: 'Priority' },
-				{ id: '4', title: 'Arrest Report - David Chen', reportId: 'RPT-004', author: 'Sgt. Garcia', type: 'Arrest', datecreated: now - 345600000, dateupdated: now - 259200000 },
-				{ id: '5', title: 'Noise Complaint - Vespucci Beach', reportId: 'RPT-005', author: 'Ofc. Brown', type: 'Incident', datecreated: now - 432000000, dateupdated: now - 345600000 },
-				{ id: '6', title: 'Warrant Execution - Marcus Johnson', reportId: 'RPT-006', author: 'Det. Williams', type: 'Arrest', datecreated: now - 518400000, dateupdated: now - 432000000, tag: 'Warrant' },
-				{ id: '7', title: 'Hit and Run - Del Perro Pier', reportId: 'RPT-007', author: 'Ofc. Smith', type: 'Incident', datecreated: now - 604800000, dateupdated: now - 518400000 },
+				{ id: '1', title: 'Armed Robbery at Fleeca Bank', reportId: 'RPT-001', author: 'identifier_123', authorplaintext: 'Ofc. Smith', type: 'Incident', datecreated: now - 86400000, dateupdated: now - 3600000, tag: 'Priority' },
+				{ id: '2', title: 'Traffic Stop - Suspended License', reportId: 'RPT-002', author: 'identifier_123', authorplaintext: 'Ofc. Johnson', type: 'Citation', datecreated: now - 172800000, dateupdated: now - 86400000 },
+				{ id: '3', title: 'Drive-by Shooting on Vinewood Blvd', reportId: 'RPT-003', author: 'identifier_123', authorplaintext: 'Det. Williams', type: 'Incident', datecreated: now - 259200000, dateupdated: now - 172800000, tag: 'Priority' },
+				{ id: '4', title: 'Arrest Report - David Chen', reportId: 'RPT-004', author: 'identifier_123', authorplaintext: 'Sgt. Smith', type: 'Arrest', datecreated: now - 345600000, dateupdated: now - 259200000 },
+				{ id: '5', title: 'Noise Complaint - Vespucci Beach', reportId: 'RPT-005', author: 'identifier_123', authorplaintext: 'Ofc. Brown', type: 'Incident', datecreated: now - 432000000, dateupdated: now - 345600000 },
+				{ id: '6', title: 'Warrant Execution - Marcus Johnson', reportId: 'RPT-006', author: 'identifier_123', authorplaintext: 'Det. Williams', type: 'Arrest', datecreated: now - 518400000, dateupdated: now - 432000000, tag: 'Warrant' },
+				{ id: '7', title: 'Hit and Run - Del Perro Pier', reportId: 'RPT-007', author: 'identifier_123', authorplaintext: 'Ofc. Smith', type: 'Incident', datecreated: now - 604800000, dateupdated: now - 518400000 },
 			];
-			filteredReports = reports;
 			analytics = { incidents: 4, arrests: 2, warrants: 1 };
+			totalReports = 7;
 			isLoading = false;
 			return;
 		}
@@ -151,18 +133,21 @@
 		try {
 			isLoading = true;
 			const filters = {
+				search: searchQuery.trim() || undefined,
 				startDate: filterStartDate || undefined,
 				endDate: filterEndDate || undefined,
 				type: filterType || undefined,
 				author: filterAuthor.trim() || undefined,
+				limit: reportsPerPage,
 			};
 			const response = await fetchNui(
 				NUI_EVENTS.REPORT.GET_REPORTS,
 				{ page, limit: reportsPerPage, filters },
 			);
 
-			reports = response.reports || [];
-			totalReports = response.total ?? reports.length;
+			const data = response?.reports ?? response;
+			reports = data?.reports || [];
+			totalReports = data?.total ?? reports.length;
 			currentPage = page;
 		} catch (error) {
 			debugError("Failed to load reports:", error);
@@ -262,12 +247,16 @@
 	/>
 {:else}
 	<div class="reports-page">
-		<!-- Topbar -->
 		<div class="topbar">
 			<div class="topbar-left">
 				<div class="search-box">
 					<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-					<input type="text" bind:value={searchQuery} placeholder="Search by title, author, ID, type or tag..." />
+					<input
+						type="text"
+						value={searchQuery}
+						oninput={handleSearchInput}
+						placeholder="Search by title, author, ID, type or tag..."
+					/>
 				</div>
 			</div>
 			<div class="topbar-right">
@@ -312,11 +301,10 @@
 					}}
 					disabled={isLoading || !hasActiveFilters()}
 				>Clear</button>
-		<button class="topbar-btn btn-primary" onclick={createNewReport}>New Report</button>
+				<button class="topbar-btn btn-primary" onclick={createNewReport}>New Report</button>
 			</div>
 		</div>
 
-		<!-- Analytics Strip -->
 		<div class="analytics-strip">
 			<div class="stat-item">
 				<svg class="stat-icon stat-icon-blue" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
@@ -337,7 +325,6 @@
 			</div>
 		</div>
 
-		<!-- List Panel -->
 		<div class="list-panel">
 			<div class="list-header">
 				<span>Title</span>
@@ -354,7 +341,7 @@
 						<div class="loading-spinner"></div>
 						Loading reports...
 					</div>
-				{:else if filteredReports.length === 0}
+				{:else if reports.length === 0}
 					<div class="empty-state">
 						<div class="empty-content">
 							<svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="opacity: 0.3; margin-bottom: 12px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
@@ -372,11 +359,25 @@
 						</div>
 					</div>
 				{:else}
-					{#each filteredReports.slice().reverse() as report}
+					{#each reports as report}
 						<button class="report-row" onclick={() => viewReport(report.id)}>
 							<span class="col-title">{report.title}</span>
 							<span class="col-id mono">{report.reportId}</span>
-							<span class="col-author">{report.author}</span>
+							<span class="col-author">
+								{#if report.authorplaintext}
+									{#if report.authorplaintext.startsWith('NO CALLSIGN')}
+										<span class="author-badge no-callsign">NO CS</span>
+										<span>{report.authorplaintext.replace('NO CALLSIGN', '').trim()}</span>
+									{:else if report.authorplaintext.includes(' ')}
+										<span class="author-badge">{report.authorplaintext.split(' ')[0]}</span>
+										<span>{report.authorplaintext.split(' ').slice(1).join(' ')}</span>
+									{:else}
+										{report.authorplaintext}
+									{/if}
+								{:else}
+									{report.author}
+								{/if}
+							</span>
 							<span class="col-type">
 								<span class={getTypePillClass(report.type)}>{report.type}</span>
 							</span>
@@ -409,7 +410,6 @@
 {/if}
 
 <style>
-	/* ===== Page ===== */
 	.reports-page {
 		height: 100%;
 		display: flex;
@@ -418,7 +418,6 @@
 		overflow: hidden;
 	}
 
-	/* ===== Topbar ===== */
 	.topbar {
 		display: flex;
 		align-items: center;
@@ -532,7 +531,6 @@
 		color: #93c5fd;
 	}
 
-	/* ===== Analytics Strip ===== */
 	.analytics-strip {
 		display: flex;
 		align-items: center;
@@ -584,7 +582,6 @@
 		flex-shrink: 0;
 	}
 
-	/* ===== List Panel ===== */
 	.list-panel {
 		background: transparent;
 		border: none;
@@ -622,7 +619,6 @@
 	.list-body::-webkit-scrollbar-track { background: transparent; }
 	.list-body::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.08); border-radius: 2px; }
 
-	/* ===== Report Row ===== */
 	.report-row {
 		display: grid;
 		grid-template-columns: 2fr 0.8fr 1fr 0.8fr 0.8fr 0.8fr 0.8fr;
@@ -659,11 +655,31 @@
 	}
 
 	.col-author {
+		display: flex;
 		color: rgba(255, 255, 255, 0.4);
 		font-size: 11px;
-		white-space: nowrap;
+		align-items: center;
+		gap: 5px;
 		overflow: hidden;
-		text-overflow: ellipsis;
+	}
+
+	.author-badge {
+		background: rgba(var(--accent-rgb), 0.1);
+		border: 1px solid rgba(var(--accent-rgb), 0.2);
+		color: rgba(var(--accent-text-rgb), 0.8);
+		font-size: 9px;
+		font-weight: 600;
+		padding: 1px 5px;
+		border-radius: 3px;
+		letter-spacing: 0.3px;
+		white-space: nowrap;
+		flex-shrink: 0;
+	}
+
+	.author-badge.no-callsign {
+		background: rgba(255, 255, 255, 0.03);
+		border-color: rgba(255, 255, 255, 0.06);
+		color: rgba(255, 255, 255, 0.35);
 	}
 
 	.col-type {
@@ -686,7 +702,6 @@
 		letter-spacing: 0.5px;
 	}
 
-	/* ===== Pills ===== */
 	.pill {
 		padding: 2px 7px;
 		border-radius: 3px;
@@ -733,7 +748,6 @@
 		white-space: nowrap;
 	}
 
-	/* ===== Empty / Loading ===== */
 	.empty-state {
 		display: flex;
 		align-items: center;

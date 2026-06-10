@@ -4,6 +4,7 @@ import { useNuiEvent } from "../utils/useNuiEvent";
 import { NUI_EVENTS } from "../constants/nuiEvents";
 import { GetParentResourceName } from "../utils/fivem";
 import { isEnvBrowser } from "../utils/misc";
+import { Awareness, encodeAwarenessUpdate, applyAwarenessUpdate, removeAwarenessStates } from "y-protocols/awareness";
 
 export interface CollabEditor {
 	source: number;
@@ -58,6 +59,7 @@ export function createCollabService() {
 
 	let myCitizenId: string = "";
 	let ydoc: Y.Doc | null = null;
+	let awareness: Awareness | null = null;
 	let isDestroyed = false;
 	let yjsPollerInterval: ReturnType<typeof setInterval> | null = null;
 
@@ -85,6 +87,8 @@ export function createCollabService() {
 		stopYjsPoller();
 		yjsPollerInterval = setInterval(async () => {
 			if (!ydoc || isDestroyed || !state.active) return;
+
+			// --- Yjs document updates ---
 			try {
 				const resp = await fetchNui<{ updates: any[] }>(
 					"pollYjsUpdates" as any,
@@ -92,30 +96,64 @@ export function createCollabService() {
 					{ updates: [] },
 					2000,
 				);
-				if (!resp?.updates || resp.updates.length === 0) return;
-				if (!ydoc || isDestroyed) return;
-
-				const allDecoded: Uint8Array[] = [];
-				for (const batch of resp.updates) {
-					if (batch.updates && Array.isArray(batch.updates)) {
-						for (const item of batch.updates) {
-							const b64 = typeof item === "string" ? item : item.update;
-							if (b64) allDecoded.push(base64ToUint8(b64));
+				if (resp?.updates && resp.updates.length > 0 && ydoc && !isDestroyed) {
+					const allDecoded: Uint8Array[] = [];
+					for (const batch of resp.updates) {
+						if (batch.updates && Array.isArray(batch.updates)) {
+							for (const item of batch.updates) {
+								const b64 = typeof item === "string" ? item : item.update;
+								if (b64) allDecoded.push(base64ToUint8(b64));
+							}
+						} else if (batch.update) {
+							allDecoded.push(base64ToUint8(batch.update));
 						}
-					} else if (batch.update) {
-						allDecoded.push(base64ToUint8(batch.update));
+					}
+					if (allDecoded.length > 0) {
+						const merged = allDecoded.length === 1
+							? allDecoded[0]
+							: Y.mergeUpdates(allDecoded);
+						Y.applyUpdate(ydoc, merged, "remote");
 					}
 				}
-				if (allDecoded.length === 0) return;
+			} catch {
+				// Ignore poll errors
+			}
 
-				const merged = allDecoded.length === 1
-					? allDecoded[0]
-					: Y.mergeUpdates(allDecoded);
-				Y.applyUpdate(ydoc, merged, "remote");
+			// --- Awareness (live cursors / presence) ---
+			try {
+				const aResp = await fetchNui<{ updates: string[] }>(
+					NUI_EVENTS.REPORT.POLL_AWARENESS,
+					{},
+					{ updates: [] },
+					2000,
+				);
+				if (aResp?.updates?.length && awareness && !isDestroyed) {
+					for (const b64 of aResp.updates) {
+						try {
+							applyAwarenessUpdate(awareness, base64ToUint8(b64), "remote");
+						} catch {
+							// ignore single bad update
+						}
+					}
+				}
 			} catch {
 				// Ignore poll errors
 			}
 		}, 100);
+	}
+
+	function onAwarenessUpdate(
+		{ added, updated, removed }: { added: number[]; updated: number[]; removed: number[] },
+		origin: any,
+	) {
+		if (origin === "remote") return;
+		if (!state.active || !state.reportId || !awareness) return;
+		const changed = added.concat(updated, removed);
+		const update = encodeAwarenessUpdate(awareness, changed);
+		fireNui(NUI_EVENTS.REPORT.SYNC_AWARENESS, {
+			reportId: state.reportId,
+			update: uint8ToBase64(update),
+		});
 	}
 
 	function stopYjsPoller() {
@@ -149,6 +187,15 @@ export function createCollabService() {
 				}
 			}
 			onEditorsChanged?.(state.editors);
+
+			// Announce our own cursor so the new joiner sees it immediately
+			if (awareness && state.active && state.reportId) {
+				const update = encodeAwarenessUpdate(awareness, [awareness.clientID]);
+				fireNui(NUI_EVENTS.REPORT.SYNC_AWARENESS, {
+					reportId: state.reportId,
+					update: uint8ToBase64(update),
+				});
+			}
 		});
 
 		useNuiEvent<any>("reportEditorLeft", (data) => {
@@ -180,8 +227,10 @@ export function createCollabService() {
 		lastStructuredData?: Record<string, any>;
 	}> {
 		ydoc = new Y.Doc();
+		awareness = new Awareness(ydoc);
 		isDestroyed = false;
 		ydoc.on("update", onYjsUpdate);
+		awareness.on("update", onAwarenessUpdate);
 
 		const result = await fetchNui<{
 			success: boolean;
@@ -191,7 +240,7 @@ export function createCollabService() {
 			lastContent?: string;
 			lastStructuredData?: Record<string, any>;
 			version?: number;
-			yjsState?: string;
+			yjsUpdates?: string[];
 		}>(
 			NUI_EVENTS.COLLAB.JOIN_REPORT_SESSION,
 			{ reportId },
@@ -215,12 +264,17 @@ export function createCollabService() {
 			lastSentStructuredData = {};
 			onEditorsChanged?.(state.editors);
 
-			if ((result as any).yjsState && ydoc) {
+			// Hydrate from the full update history (server returns all accumulated updates)
+			const updates = (result as any).yjsUpdates as string[] | undefined;
+			if (updates && updates.length > 0 && ydoc) {
 				try {
-					const serverState = base64ToUint8((result as any).yjsState);
-					Y.applyUpdate(ydoc, serverState, "remote");
+					const decoded = updates.map(base64ToUint8);
+					const merged = decoded.length === 1
+						? decoded[0]
+						: Y.mergeUpdates(decoded);
+					Y.applyUpdate(ydoc, merged, "remote");
 				} catch {
-					// Ignore state apply errors
+					// ignore
 				}
 			}
 		}
@@ -242,6 +296,14 @@ export function createCollabService() {
 			{ reportId: state.reportId },
 			{ success: true },
 		);
+
+		if (awareness) {
+			// broadcast removal so others drop our cursor instantly
+			removeAwarenessStates(awareness, [awareness.clientID], "local");
+			awareness.off("update", onAwarenessUpdate);
+			awareness.destroy();
+			awareness = null;
+		}
 
 		if (ydoc) {
 			ydoc.off("update", onYjsUpdate);
@@ -285,6 +347,9 @@ export function createCollabService() {
 		},
 		get ydoc() {
 			return ydoc;
+		},
+		get awareness() {
+			return awareness;
 		},
 		get myCitizenId() {
 			return myCitizenId;

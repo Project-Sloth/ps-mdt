@@ -6,17 +6,23 @@ RegisterNUICallback('setCallsign', function(data, cb)
         cb({ success = false, message = 'MDT is not open' })
         return
     end
-
     if type(data) ~= 'table' or (not data.cid and not data.citizenid) or (not data.newcallsign and not data.callsign) then
         cb({ success = false, message = 'Missing citizen ID or callsign' })
         return
     end
-
     local result = ps.callback(resourceName .. ':server:setCallsign', {
         citizenid = data.cid or data.citizenid,
         callsign = data.newcallsign or data.callsign,
     })
     cb(result or { success = false, message = 'Failed to set callsign' })
+end)
+
+RegisterNUICallback('getCallsign', function(data, cb)
+    if not MDTOpen then cb({ callsign = '' }) return end
+    local result = ps.callback(resourceName .. ':server:getCallsign', {
+        citizenid = data.citizenid,
+    })
+    cb(result or { callsign = '' })
 end)
 
 -- Set Radio Frequency

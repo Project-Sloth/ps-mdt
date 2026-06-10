@@ -15,7 +15,6 @@
 	import VehiclesManager from "../components/report-editor/VehiclesManager.svelte";
 	import ReportTextEditor from "../components/report-editor/ReportTextEditor.svelte";
 	import PersonSearchModal from "../components/report-editor/PersonSearchModal.svelte";
-	import ImageUploadModal from "../components/report-editor/ImageUploadModal.svelte";
 
 	// Import services
 	import { createReportService } from "../services/reportService.svelte";
@@ -249,7 +248,11 @@
 			...r,
 			evidence: r.evidence.map((e) => ({
 				...e,
-				images: e.images.filter((img) => !img.startsWith("data:")),
+				images: e.images.filter((img) =>
+					typeof img === "string"
+						? !img.startsWith("data:")
+						: !img.url?.startsWith("data:")
+				),
 			})),
 		};
 	}
@@ -408,7 +411,16 @@
 
 		// Initialize report
 		const initializedReport =
-			await reportService.initializeReport(reportId);
+		await reportService.initializeReport(reportId);
+
+		initializedReport.evidence = (initializedReport.evidence ?? []).map((e: any) => ({
+			...e,
+			title: e.title ?? '',
+			images: (e.images ?? []).map((img: any) =>
+				typeof img === 'string' ? img : (img.url ?? '')
+			)
+		}));
+
 		report = initializedReport;
 
 		// Load persisted data for this instance after base initialization
@@ -702,7 +714,6 @@
 	let photoUploadInput: HTMLInputElement | undefined = $state();
 	let photoUploadCitizenId: string = $state("");
 	let isUploadingPhoto: boolean = $state(false);
-	let isUploadingEvidence: boolean = $state(false);
 
 	function openPhotoUpload(suspect: Report["involved"]["suspects"][number]) {
 		if (!suspect.citizenid) return;
@@ -751,41 +762,6 @@
 
 		// Reset input so same file can be selected again
 		input.value = "";
-	}
-
-	async function uploadImageHandler(file: File, evidenceId: string) {
-		if (isUploadingEvidence) return;
-		isUploadingEvidence = true;
-
-		try {
-			const numericId = Number(evidenceId);
-			if (numericId && !isNaN(numericId)) {
-				// Evidence already saved to DB - upload directly
-				const imageUrl = await evidenceService.uploadImage(file, evidenceId);
-				const evidenceIndex = report.evidence.findIndex((e) => e.id === evidenceId);
-				if (evidenceIndex !== -1) {
-					report.evidence[evidenceIndex] = evidenceService.addImageToEvidence(
-						report.evidence[evidenceIndex],
-						imageUrl,
-					);
-				}
-			} else {
-				// Evidence is in-memory (not yet saved) - compress and store as data URL
-				const dataUrl = await compressImage(file);
-				const evidenceIndex = report.evidence.findIndex((e) => e.id === evidenceId);
-				if (evidenceIndex !== -1) {
-					report.evidence[evidenceIndex] = evidenceService.addImageToEvidence(
-						report.evidence[evidenceIndex],
-						dataUrl,
-					);
-				}
-			}
-			reportEditorUI.closeImageUpload();
-		} catch (error: any) {
-			showStatus(error?.message || "Failed to upload image", "error");
-		} finally {
-			isUploadingEvidence = false;
-		}
 	}
 
 	async function linkEvidenceToCase(evidenceId: string, caseId: string) {
@@ -846,7 +822,17 @@
 			isPersistenceEnabled = false;
 			persistence.cancelDebouncedSave();
 
-			await reportService.saveReport(report);
+			const reportToSave = {
+				...report,
+				evidence: report.evidence.map(e => ({
+					...e,
+					images: (e.images ?? []).map((img: any) => ({
+						url: typeof img === 'string' ? img : (img.url ?? ''),
+					}))
+				}))
+			} as unknown as Report;
+
+			await reportService.saveReport(reportToSave);
 
 			// Clear persisted data
 			persistence.clearPersistedData();
@@ -948,6 +934,9 @@
 						onUpdate={handlers.handleContentUpdate}
 						ydoc={collabService.ydoc}
 						collabActive={collabService.isActive}
+						awareness={collabService.awareness}
+						userName={collabService.myName}
+						userColor={collabService.myColor}
 					/>
 				{:else}
 					<div style="padding: 16px; color: rgba(255,255,255,0.4); font-size: 13px;">
@@ -1022,8 +1011,6 @@
 					onAddEvidence={handlers.handleAddEvidence}
 					onRemoveEvidence={handlers.handleRemoveEvidence}
 					onUpdateEvidence={handlers.handleUpdateEvidence}
-					onOpenImageUpload={(evidenceId) =>
-						reportEditorUI.openImageUpload(evidenceId)}
 					onRemoveImage={(evidenceId, imageIndex) => {
 						report = reportService.removeImageFromEvidence(
 							report,
@@ -1089,17 +1076,6 @@
 	}}
 	onSelect={handlers.selectVictim}
 	onClose={() => reportEditorUI.closeVictimSearch()}
-/>
-
-<ImageUploadModal
-	show={reportEditorUI.state.showImageUpload}
-	uploading={isUploadingEvidence}
-	onUpload={(file: File) => {
-		if (reportEditorUI.state.selectedEvidenceId) {
-			uploadImageHandler(file, reportEditorUI.state.selectedEvidenceId);
-		}
-	}}
-	onClose={() => reportEditorUI.closeImageUpload()}
 />
 
 <!-- Hidden file input for suspect photo upload -->

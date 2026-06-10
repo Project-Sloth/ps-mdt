@@ -35,6 +35,7 @@
 	import LegalDocuments from "../pages/doj/LegalDocuments.svelte";
 	import type { createInstanceStateService } from "../services/instanceStateService.svelte";
 	import type { createTabService } from "../services/tabService.svelte";
+	import BulletInBoard from "@/pages/BulletInBoard.svelte";
 
 	interface Props {
 		authService: AuthService;
@@ -109,7 +110,7 @@
 		citizens: ["citizens_search"],
 		bolos: ["bolos_view", "bolos_create"],
 		vehicles: ["vehicles_search"],
-		weapons: ["weapons_search"],
+		weapons: ["weapons_search", "weapons_add"],
 		cases: ["cases_view", "cases_create"],
 		evidence: ["evidence_view", "evidence_create"],
 		reports: ["reports_view", "reports_create"],
@@ -119,6 +120,7 @@
 		bodycams: ["bodycams_view"],
 		ia: ["ia_view"],
 		sop: ["sop_view", "sop_manage"],
+		bulletin_board: ["bulletin_view"],
 		management: ["management_settings", "management_bulletins", "management_activity", "management_permissions", "management_tracking"],
 		settings: ["management_settings"],
 	};
@@ -147,6 +149,8 @@
 			cameras: "Cameras",
 			bodycams: "Bodycams",
 			management: "Settings",
+			sop: "SOP",
+			bulletin_board: "Bulletin Board",
 			settings: "Preferences",
 		};
 		return labels[pageId] || pageId;
@@ -204,11 +208,11 @@
 		{:else if activeComponent === "roster"}
 			<Roster {authService} {tabService} />
 		{:else if activeComponent === "map"}
-			<Map />
+			<Map {authService}/>
 		{:else if activeComponent === "vehicles"}
 			<Vehicles {tabService} />
 		{:else if activeComponent === "weapons"}
-			<Weapons />
+			<Weapons {tabService} {authService} />
 		{:else if activeComponent === "cases"}
 			<Cases {tabService} />
 		{:else if String(activeComponent) === "evidence"}
@@ -225,6 +229,8 @@
 			<FTO {tabService} {authService} />
 		{:else if activeComponent === "sop"}
 			<SOP {authService} />
+		{:else if activeComponent === "bulletin_board"}
+			<BulletInBoard {authService} />
 		{:else if activeComponent === "management"}
 			<Management {authService} />
 		{:else if activeComponent === "settings"}

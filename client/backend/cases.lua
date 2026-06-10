@@ -190,12 +190,22 @@ RegisterNUICallback('addEvidenceItem', function(data, cb)
         return
     end
 
-    local result = ps.callback(
-        resourceName .. ':server:addEvidenceItem',
-        data.caseId,
-        data.evidence
-    )
-    cb(result or { success = false })
+    local payload = data or {}
+    
+    if payload.evidence then
+        local result = ps.callback(
+            resourceName .. ':server:addEvidenceItem',
+            payload
+        )
+        cb(result or { success = false })
+    else
+        local result = ps.callback(
+            resourceName .. ':server:addEvidenceItem',
+            data.caseId,
+            data.evidence
+        )
+        cb(result or { success = false })
+    end
 end)
 
 RegisterNUICallback('updateEvidenceItem', function(data, cb)

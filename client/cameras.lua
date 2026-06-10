@@ -50,6 +50,7 @@ local function stopCameraView(notifyServer)
         ClearTimecycleModifier()
 
         ps.debug('Clearing focus area')
+        StopTabletAnimation()
         ClearFocus()
 
         DoScreenFadeIn(250)
@@ -195,22 +196,19 @@ updateCameraControls = function()
     if currentCameraData and currentCameraData.isBodycam and currentCameraData.targetSource then
         local targetPed = GetPlayerPed(GetPlayerFromServerId(currentCameraData.targetSource))
         if targetPed and targetPed ~= 0 and DoesEntityExist(targetPed) then
-            -- SKEL_Head bone index = 31086
-            local boneIndex = GetPedBoneIndex(targetPed, 31086)
-            local boneCoords = GetPedBoneCoords(targetPed, boneIndex, 0.0, 0.0, 0.0)
-            -- Offset slightly forward and up from the head to simulate chest/shoulder bodycam
             local forward = GetEntityForwardVector(targetPed)
-            local camX = boneCoords.x + forward.x * 0.1
-            local camY = boneCoords.y + forward.y * 0.1
-            local camZ = boneCoords.z + 0.05
+            local pedCoords = GetEntityCoords(targetPed)
+
+            local camX = pedCoords.x + forward.x * 0.3
+            local camY = pedCoords.y + forward.y * 0.3
+            local camZ = pedCoords.z + 0.4
+
             SetCamCoord(currentCamera, camX, camY, camZ)
 
-            -- Point camera in the direction the ped is facing
             local heading = GetEntityHeading(targetPed)
-            local currentRot = GetCamRot(currentCamera, 2)
-            SetCamRot(currentCamera, currentRot.x, currentRot.y, -heading, 2)
+            local camZ_rot = heading
 
-            -- Update focus area so world streams around the target
+            SetCamRot(currentCamera, -10.0, 0.0, camZ_rot, 2)
             SetFocusPosAndVel(camX, camY, camZ, 0, 0, 0)
         end
     end

@@ -113,19 +113,36 @@ exports('registerWeapon', registerWeapon)
 
 ps.registerCallback('ps-mdt:server:getWeapons', function(source)
     if not CheckAuth(source) then return {} end
-    local weapons = MySQL.query.await('SELECT * FROM mdt_weapons')
+    local weapons = MySQL.query.await('SELECT * FROM mdt_weapons') or {}
     local newData = {}
     local weaponBolo = {}
+
+    -- Batch-resolve owner names in a single query to avoid an N+1 lookup per weapon
+    local nameByOwner = {}
+    do
+        local owners, seen = {}, {}
+        for _, v in pairs(weapons) do
+            if v.owner and v.owner ~= '' and not seen[v.owner] then
+                seen[v.owner] = true
+                owners[#owners + 1] = v.owner
+            end
+        end
+        if #owners > 0 then
+            local placeholders = string.rep('?,', #owners - 1) .. '?'
+            local profiles = MySQL.query.await('SELECT citizenid, fullname FROM mdt_profiles WHERE citizenid IN (' .. placeholders .. ')', owners) or {}
+            for _, p in ipairs(profiles) do
+                if p.fullname and p.fullname ~= '' then
+                    nameByOwner[p.citizenid] = p.fullname
+                end
+            end
+        end
+    end
+
     for k, v in pairs(weapons) do
-        -- Resolve owner name: try mdt_profiles first, then ps_lib lookup
+        -- Resolve owner name: batched mdt_profiles lookup first, then ps_lib fallback
         local ownerName = 'Unknown'
         if v.owner and v.owner ~= '' then
-            local profile = MySQL.single.await('SELECT fullname FROM mdt_profiles WHERE citizenid = ?', { v.owner })
-            if profile and profile.fullname and profile.fullname ~= '' then
-                ownerName = profile.fullname
-            else
-                ownerName = ps.getPlayerNameByIdentifier(v.owner) or 'Unknown'
-            end
+            ownerName = nameByOwner[v.owner] or ps.getPlayerNameByIdentifier(v.owner) or 'Unknown'
         end
 
         -- Normalize weapon model to lowercase for class table lookup
@@ -141,6 +158,7 @@ ps.registerCallback('ps-mdt:server:getWeapons', function(source)
             name = (QBCore and QBCore.Shared and QBCore.Shared.Weapons and QBCore.Shared.Weapons[GetHashKey(v.weaponModel)] and QBCore.Shared.Weapons[GetHashKey(v.weaponModel)].label) or v.weaponModel,
             image = 'https://docs.fivem.net/weapons/' .. v.weaponModel:upper() .. '.png',
             type = class[modelLower] and class[modelLower].type or 'unknown',
+            flags = v.flags and json.decode(v.flags) or {},
         }
         table.insert(newData, weaponInfo)
     end
@@ -160,18 +178,54 @@ ps.registerCallback('ps-mdt:server:getWeapons', function(source)
     return { weapons = newData, bolos = weaponBolo }
 end)
 
-ps.registerCallback(resourceName .. ':server:getWeaponOwnershipHistory', function(source, serial)
+ps.registerCallback(resourceName .. ':server:getWeaponOwnershipHistory', function(source, payload)
     local src = source
-    if not CheckAuth(src) then return end
+    if not CheckAuth(src) then return {} end
+
+    local serial = payload
+
     if not serial or serial == '' then return {} end
 
     local rows = MySQL.query.await([[
-        SELECT id, serial, owner, weapon_model, weapon_class, information, changed_by, reason, created_at
-        FROM mdt_weapon_ownership_history
-        WHERE serial = ?
-        ORDER BY created_at DESC
+        SELECT h.id, h.serial, h.owner, h.weapon_model, h.weapon_class, h.information, h.changed_by, h.reason, h.created_at,
+               p.fullname AS owner_name,
+               cb.fullname AS changed_by_name
+        FROM mdt_weapon_ownership_history h
+        LEFT JOIN mdt_profiles p ON p.citizenid = h.owner
+        LEFT JOIN mdt_profiles cb ON cb.citizenid = h.changed_by
+        WHERE h.serial = ?
+        ORDER BY h.created_at DESC
     ]], { serial })
+
     return rows or {}
+end)
+
+ps.registerCallback(resourceName .. ':server:getWeaponConfig', function(source)
+    return { weapons = Config.Weapons }
+end)
+
+ps.registerCallback(resourceName .. ':server:saveWeaponFlags', function(source, serial, flags)
+    local src = source
+    if not CheckAuth(src) then return { success = false } end
+    if not serial or serial == '' then return { success = false } end
+
+    local decoded
+    if type(flags) == 'table' then
+        decoded = flags
+    elseif type(flags) == 'string' then
+        decoded = json.decode(flags) or {}
+    else
+        decoded = {}
+    end
+
+    local encoded = json.encode(decoded)
+    local affected = MySQL.update.await('UPDATE mdt_weapons SET flags = ? WHERE serial = ?', { encoded, serial })
+
+    if affected and affected > 0 then
+        return { success = true }
+    else
+        return { success = false, message = 'Database error' }
+    end
 end)
 
 -- Save/Edit Weapon Info (from NUI)
@@ -191,6 +245,11 @@ ps.registerCallback(resourceName .. ':server:saveWeaponInfo', function(source, p
         return { success = false, message = 'Missing serial number' }
     end
 
+    -- Ensure profile exists before insert/update to avoid FK constraint error
+    -- if owner and owner ~= '' then
+    --     EnsureProfileExists(owner)
+    -- end
+
     local existing = MySQL.single.await('SELECT id FROM mdt_weapons WHERE serial = ? LIMIT 1', { serial })
 
     if existing then
@@ -199,6 +258,11 @@ ps.registerCallback(resourceName .. ':server:saveWeaponInfo', function(source, p
             SET information = ?, owner = ?, weaponClass = ?, weaponModel = ?
             WHERE serial = ?
         ]], { notes, owner, weapClass, weapModel, serial })
+
+        MySQL.insert.await([[
+            INSERT INTO mdt_weapon_ownership_history (serial, owner, weapon_model, weapon_class, information, changed_by, reason)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        ]], { serial, owner, weapModel, weapClass, notes, ps.getIdentifier(src), 'ownership_transfer' })
     else
         MySQL.insert.await([[
             INSERT INTO mdt_weapons (serial, scratched, owner, information, weaponClass, weaponModel)

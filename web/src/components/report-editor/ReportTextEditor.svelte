@@ -8,7 +8,10 @@
 	import TextStyle from "@tiptap/extension-text-style";
 	import Color from "@tiptap/extension-color";
 	import Collaboration from "@tiptap/extension-collaboration";
+	// TipTap v2. On v3 use: import CollaborationCaret from "@tiptap/extension-collaboration-caret";
+	import CollaborationCursor from "@tiptap/extension-collaboration-cursor";
 	import * as Y from "yjs";
+	import type { Awareness } from "y-protocols/awareness";
 	import ReportEditorToolbar from "./ReportEditorToolbar.svelte";
 
 	interface Props {
@@ -16,6 +19,9 @@
 		onUpdate: (content: string) => void;
 		ydoc?: Y.Doc | null;
 		collabActive?: boolean;
+		awareness?: Awareness | null;
+		userName?: string;
+		userColor?: string;
 	}
 
 	let {
@@ -23,6 +29,9 @@
 		onUpdate,
 		ydoc = null,
 		collabActive = false,
+		awareness = null,
+		userName = "",
+		userColor = "#3B82F6",
 	}: Props = $props();
 
 	let editor = $state<Editor | null>(null);
@@ -67,6 +76,19 @@
 					document: ydoc,
 				}),
 			);
+			// Live cursors + name labels for other editors
+			if (awareness) {
+				extensions.push(
+					CollaborationCursor.configure({
+						// minimal provider: the extension only reads .awareness
+						provider: { awareness },
+						user: {
+							name: userName || "Editor",
+							color: userColor || "#3B82F6",
+						},
+					}),
+				);
+			}
 		} else {
 			extensions.unshift(StarterKit);
 		}
@@ -245,4 +267,51 @@
 		background: rgba(255, 255, 255, 0.1);
 	}
 
+	/* ---- Collaboration cursors (live carets + name labels) ---- */
+	/* Covers both v2 (.collaboration-cursor__*) and v3 (.collaboration-caret__*) */
+
+	/* Single clean caret line in the user's color.
+	   The user color comes from the inline `border-color` the extension sets,
+	   so we only touch width/style here and explicitly kill the right border. */
+	:global(.collaboration-cursor__caret),
+	:global(.collaboration-caret__caret) {
+		position: relative;
+		margin-left: -1px;
+		margin-right: -1px;
+		border: none;
+		border-left-width: 2px;
+		border-left-style: solid;
+		border-radius: 2px;
+		box-sizing: border-box;
+		pointer-events: none;
+		word-break: normal;
+	}
+
+	/* Name pill above the caret. background-color is set inline by the extension. */
+	:global(.collaboration-cursor__label),
+	:global(.collaboration-caret__label) {
+		position: absolute;
+		top: -1.55em;
+		left: -2px;
+		white-space: nowrap;
+		color: #fff;
+		font-size: 10px;
+		font-weight: 600;
+		line-height: 1;
+		letter-spacing: 0.2px;
+		padding: 3px 6px;
+		border-radius: 5px 5px 5px 1px;
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+		user-select: none;
+		pointer-events: none;
+		opacity: 0;
+		animation: cursorLabelFade 2.6s ease forwards;
+	}
+
+	@keyframes cursorLabelFade {
+		0% { opacity: 0; transform: translateY(3px); }
+		12% { opacity: 1; transform: translateY(0); }
+		65% { opacity: 1; transform: translateY(0); }
+		100% { opacity: 0; transform: translateY(-2px); }
+	}
 </style>

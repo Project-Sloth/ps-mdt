@@ -1,3 +1,56 @@
+DONT FORGET TO BUILT IT
+THIS CHANGES NEEDS TO BE DONE:
+```lua
+CREATE TABLE IF NOT EXISTS mdt_patrols (
+   id VARCHAR(64) PRIMARY KEY,
+   name VARCHAR(64) NOT NULL,
+   color VARCHAR(7) NOT NULL,
+   zone_points LONGTEXT NULL DEFAULT NULL,
+   sort_order INT NOT NULL DEFAULT 0,
+   member_ids TEXT NOT NULL DEFAULT '[]'
+);
+
+CREATE TABLE IF NOT EXISTS `mdt_bulletin_posts` (
+    `id`          INT UNSIGNED  NOT NULL AUTO_INCREMENT,
+    `title`       VARCHAR(255)  NOT NULL,
+    `content`     LONGTEXT      NOT NULL,
+    `author`      VARCHAR(100)  NOT NULL,
+    `author_rank` VARCHAR(100)  NOT NULL DEFAULT '',
+    `category`    VARCHAR(48)   NOT NULL DEFAULT 'general',
+    `priority`    ENUM(
+                    'low',
+                    'normal',
+                    'high',
+                    'urgent'
+                  )             NOT NULL DEFAULT 'normal',
+    `pinned`      TINYINT(1)    NOT NULL DEFAULT 0,
+    `job`         VARCHAR(50)   NOT NULL DEFAULT '',
+    `created_by`  VARCHAR(60)   NOT NULL,
+    `created_at`  DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at`  DATETIME      NULL     DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+    `deleted_at`  DATETIME      NULL     DEFAULT NULL,
+    PRIMARY KEY (`id`),
+    KEY `idx_job`        (`job`),
+    KEY `idx_category`   (`category`),
+    KEY `idx_pinned`     (`pinned`),
+    KEY `idx_deleted_at` (`deleted_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+ 
+CREATE TABLE IF NOT EXISTS `mdt_bulletin_categories` (
+    `id`          INT UNSIGNED  NOT NULL AUTO_INCREMENT,
+    `job`         VARCHAR(50)   NOT NULL,
+    `value`       VARCHAR(48)   NOT NULL,
+    `label`       VARCHAR(48)   NOT NULL,
+    `icon`        VARCHAR(48)   NOT NULL DEFAULT 'label',
+    `color`       VARCHAR(7)    NOT NULL DEFAULT '#6B7280',
+    `sort_order`  SMALLINT      NOT NULL DEFAULT 0,
+    `is_default`  TINYINT(1)    NOT NULL DEFAULT 0,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uq_job_value`  (`job`, `value`),
+    INDEX      `idx_job_order` (`job`, `sort_order`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=UTF8MB4_UNICODE_CI;
+```
+
 # ps-mdt v3
 
 Police MDT (Mobile Data Terminal) for FiveM. Built with Svelte 5 and Lua. Works on QBCore and QBX through the ps_lib abstraction layer.

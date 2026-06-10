@@ -22,7 +22,7 @@ RegisterNUICallback('viewCamera', function(data, cb)
     local result = ps.callback(resourceName .. ':server:viewCamera', cameraId)
 
     if result and result.success then
-        CloseMDT()
+        CloseMDT(true)
         cb({ success = true })
     else
         cb({ success = false, message = result and result.error or 'Failed to view camera' })

@@ -36,9 +36,9 @@ export function createManagementService() {
 			permissions = [...ALL_PERMISSION_KEYS];
 			// Dev mock: roles with escalating permissions (labels match whatever the job grades are)
 			const basicPerms = ["citizens_search", "bolos_view", "vehicles_search", "weapons_search", "reports_view", "warrants_view", "charges_view"];
-			const midPerms = [...basicPerms, "reports_create", "cases_view", "evidence_view", "bolos_create", "dispatch_attach", "dispatch_route"];
-			const seniorPerms = [...midPerms, "cases_create", "cases_edit", "evidence_create", "evidence_transfer", "reports_delete", "warrants_issue", "cameras_view", "bodycams_view", "citizens_edit_licenses", "vehicles_edit_dmv"];
-			const commandPerms = [...seniorPerms, "cases_delete", "evidence_upload", "warrants_close", "charges_edit", "management_activity", "management_bulletins", "roster_manage_officers", "roster_manage_certifications"];
+			const midPerms = [...basicPerms, "reports_create", "cases_view", "evidence_view", "bolos_create", "dispatch_attach", "dispatch_route", "map_patrols_view"];
+			const seniorPerms = [...midPerms, "cases_create", "cases_edit", "evidence_create", "evidence_transfer", "reports_delete", "warrants_issue", "cameras_view", "bodycams_view", "citizens_edit_licenses", "vehicles_edit_dmv", "weapons_add", "map_patrols_manage",];
+			const commandPerms = [...seniorPerms, "cases_delete", "evidence_upload", "warrants_close", "charges_edit", "management_activity", "management_bulletins", "roster_manage_officers", "roster_manage_certifications", "map_patrols_edit"];
 			roles = [
 				{ key: "0", label: "Grade 0", permissions: basicPerms, isBoss: false },
 				{ key: "1", label: "Grade 1", permissions: midPerms, isBoss: false },

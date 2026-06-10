@@ -355,7 +355,7 @@ CREATE TABLE IF NOT EXISTS `mdt_reports_involved` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `reportid` int(10) unsigned NOT NULL,
   `citizenid` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `type` varchar(7) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `type` varchar(15) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `notes` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `FK_mdt_reports_involved_mdt_reports` (`reportid`),
@@ -553,7 +553,7 @@ CREATE TABLE IF NOT EXISTS `mdt_audit_logs` (
 ALTER TABLE `player_vehicles`
   ADD COLUMN IF NOT EXISTS `mdt_vehicle_information` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   ADD COLUMN IF NOT EXISTS `mdt_vehicle_points` int(11) NOT NULL DEFAULT 0,
-  ADD COLUMN IF NOT EXISTS `mdt_vehicle_status` enum('valid','suspended','expired','impounded') NOT NULL DEFAULT 'valid',
+  ADD COLUMN IF NOT EXISTS `mdt_vehicle_status` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'valid',
   ADD COLUMN IF NOT EXISTS `mdt_vehicle_stolen` tinyint(1) NOT NULL DEFAULT 0,
   ADD COLUMN IF NOT EXISTS `mdt_vehicle_boloactive` tinyint(1) NOT NULL DEFAULT 0,
   ADD COLUMN IF NOT EXISTS `mdt_vehicle_image` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL;
@@ -566,6 +566,7 @@ CREATE TABLE IF NOT EXISTS `mdt_weapons` (
   `information` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `weaponClass` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `weaponModel` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `flags` JSON DEFAULT NULL,
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE KEY `unique_serial` (`serial`),
   KEY `FK_mdt_weapons_mdt_profiles` (`owner`),
@@ -1324,3 +1325,10 @@ CREATE TABLE IF NOT EXISTS `mdt_warrant_reviews` (
 
 -- Add lawyer_requested column to mdt_reports
 ALTER TABLE `mdt_reports` ADD COLUMN IF NOT EXISTS `lawyer_requested` tinyint(1) NOT NULL DEFAULT 0;
+-- Update mdt_reports_evidence with new columns
+ALTER TABLE mdt_reports_evidence
+  ADD COLUMN IF NOT EXISTS title VARCHAR(255) NOT NULL DEFAULT '' AFTER reportid,
+  ADD COLUMN IF NOT EXISTS images LONGTEXT NULL DEFAULT NULL AFTER stored;
+
+-- Add flags column to mdt_weapons
+ALTER TABLE `mdt_weapons` ADD COLUMN IF NOT EXISTS `flags` JSON DEFAULT NULL;

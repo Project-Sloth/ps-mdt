@@ -14,11 +14,40 @@
 	let showVehicles = $state(true);
 	let showBodycams = $state(false);
 
+	// Patrol
+	let patrolZoneNotifications = $state(true);
+
 	let saveStatus: string | null = $state(null);
 	let saveTimeout: ReturnType<typeof setTimeout> | null = null;
 
 	onMount(() => {
 		loadPreferences();
+
+		// Respond to Lua client asking for the patrol zone notification preference.
+		// Fires on resource start so the client has the correct value immediately.
+		function handleNuiMessage(event: MessageEvent) {
+			if (event.data?.type === "requestPatrolZonePref") {
+				const saved = localStorage.getItem(STORAGE_KEY);
+				let enabled = true; // default
+				try {
+					if (saved) {
+						const data = JSON.parse(saved);
+						if (data.patrolZoneNotifications !== undefined) {
+							enabled = data.patrolZoneNotifications;
+						}
+					}
+				} catch { /* ignore */ }
+				// Send back to Lua via NUI callback
+				fetch(`https://${(window as any).GetParentResourceName?.() ?? "ps-mdt"}/patrolZonePref`, {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({ enabled }),
+				}).catch(() => {});
+			}
+		}
+
+		window.addEventListener("message", handleNuiMessage);
+		return () => window.removeEventListener("message", handleNuiMessage);
 	});
 
 	function loadPreferences() {
@@ -33,6 +62,7 @@
 			if (data.showOfficers !== undefined) showOfficers = data.showOfficers;
 			if (data.showVehicles !== undefined) showVehicles = data.showVehicles;
 			if (data.showBodycams !== undefined) showBodycams = data.showBodycams;
+			if (data.patrolZoneNotifications !== undefined) patrolZoneNotifications = data.patrolZoneNotifications;
 		} catch {
 			// Ignore parse errors
 		}
@@ -48,8 +78,17 @@
 				showOfficers,
 				showVehicles,
 				showBodycams,
+				patrolZoneNotifications,
 			};
 			localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+
+			// Immediately sync patrol zone pref to Lua client
+			fetch(`https://${(window as any).GetParentResourceName?.() ?? "ps-mdt"}/patrolZonePref`, {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ enabled: patrolZoneNotifications }),
+			}).catch(() => {});
+
 			showSaveStatus("Preferences saved");
 		} catch {
 			showSaveStatus("Failed to save");
@@ -171,6 +210,19 @@
 			</div>
 		</div>
 
+		<div class="settings-card settings-card--full">
+			<span class="card-label">Patrol</span>
+			<div class="setting-row">
+				<div class="setting-info">
+					<span class="setting-label">Zone Notifications</span>
+					<span class="setting-desc">Notify when you enter or leave your assigned patrol zone</span>
+				</div>
+				<label class="toggle">
+					<input type="checkbox" bind:checked={patrolZoneNotifications} />
+					<span class="toggle-slider"></span>
+				</label>
+			</div>
+		</div>
 	</div>
 
 	<div class="save-bar">
@@ -194,18 +246,9 @@
 		overflow-y: auto;
 	}
 
-	.settings-page::-webkit-scrollbar {
-		width: 4px;
-	}
-
-	.settings-page::-webkit-scrollbar-track {
-		background: transparent;
-	}
-
-	.settings-page::-webkit-scrollbar-thumb {
-		background: rgba(255, 255, 255, 0.06);
-		border-radius: 2px;
-	}
+	.settings-page::-webkit-scrollbar { width: 4px; }
+	.settings-page::-webkit-scrollbar-track { background: transparent; }
+	.settings-page::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.06); border-radius: 2px; }
 
 	.save-bar {
 		display: flex;
@@ -236,15 +279,11 @@
 		cursor: pointer;
 		transition: all 0.1s;
 	}
-
 	.btn-save:hover {
 		background: rgba(var(--accent-rgb), 0.12);
 		color: rgba(var(--accent-text-rgb), 0.9);
 	}
-
-	.btn-save-icon {
-		font-size: 13px;
-	}
+	.btn-save-icon { font-size: 13px; }
 
 	.settings-grid {
 		display: grid;
@@ -262,6 +301,12 @@
 
 	.settings-card:first-child {
 		border-right: 1px solid rgba(255, 255, 255, 0.06);
+	}
+
+	/* Full-width card spanning both columns */
+	.settings-card--full {
+		grid-column: 1 / -1;
+		border-top: 1px solid rgba(255, 255, 255, 0.06);
 	}
 
 	.card-label {
@@ -283,28 +328,11 @@
 		padding: 7px 0;
 		border-bottom: 1px solid rgba(255, 255, 255, 0.03);
 	}
+	.setting-row:last-child { border-bottom: none; padding-bottom: 0; }
 
-	.setting-row:last-child {
-		border-bottom: none;
-		padding-bottom: 0;
-	}
-
-	.setting-info {
-		display: flex;
-		flex-direction: column;
-		gap: 1px;
-	}
-
-	.setting-label {
-		color: rgba(255, 255, 255, 0.8);
-		font-size: 11px;
-		font-weight: 500;
-	}
-
-	.setting-desc {
-		color: rgba(255, 255, 255, 0.35);
-		font-size: 10px;
-	}
+	.setting-info { display: flex; flex-direction: column; gap: 1px; }
+	.setting-label { color: rgba(255, 255, 255, 0.8); font-size: 11px; font-weight: 500; }
+	.setting-desc  { color: rgba(255, 255, 255, 0.35); font-size: 10px; }
 
 	.setting-select {
 		padding: 3px 24px 3px 8px;
@@ -328,25 +356,11 @@
 		outline: none;
 		transition: border-color 0.1s;
 	}
-
-	.setting-input:focus {
-		border-color: rgba(255, 255, 255, 0.12);
-	}
-
-	/* Hide number input spinners */
+	.setting-input:focus { border-color: rgba(255, 255, 255, 0.12); }
 	.setting-input::-webkit-outer-spin-button,
-	.setting-input::-webkit-inner-spin-button {
-		-webkit-appearance: none;
-		margin: 0;
-	}
+	.setting-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 
-	/* Zoom control */
-	.zoom-control {
-		display: flex;
-		align-items: center;
-		gap: 8px;
-	}
-
+	.zoom-control { display: flex; align-items: center; gap: 8px; }
 	.zoom-slider {
 		-webkit-appearance: none;
 		appearance: none;
@@ -357,7 +371,6 @@
 		outline: none;
 		cursor: pointer;
 	}
-
 	.zoom-slider::-webkit-slider-thumb {
 		-webkit-appearance: none;
 		appearance: none;
@@ -368,11 +381,7 @@
 		cursor: pointer;
 		transition: background 0.1s;
 	}
-
-	.zoom-slider::-webkit-slider-thumb:hover {
-		background: rgba(var(--accent-text-rgb), 0.9);
-	}
-
+	.zoom-slider::-webkit-slider-thumb:hover { background: rgba(var(--accent-text-rgb), 0.9); }
 	.zoom-value {
 		font-size: 10px;
 		font-weight: 600;
@@ -381,7 +390,6 @@
 		text-align: center;
 		font-variant-numeric: tabular-nums;
 	}
-
 	.zoom-reset {
 		background: transparent;
 		border: 1px solid rgba(255, 255, 255, 0.06);
@@ -393,13 +401,8 @@
 		cursor: pointer;
 		transition: all 0.1s;
 	}
+	.zoom-reset:hover { background: rgba(255, 255, 255, 0.04); color: rgba(255, 255, 255, 0.6); }
 
-	.zoom-reset:hover {
-		background: rgba(255, 255, 255, 0.04);
-		color: rgba(255, 255, 255, 0.6);
-	}
-
-	/* Toggle switch */
 	.toggle {
 		position: relative;
 		display: inline-block;
@@ -407,25 +410,15 @@
 		height: 18px;
 		flex-shrink: 0;
 	}
-
-	.toggle input {
-		opacity: 0;
-		width: 0;
-		height: 0;
-	}
-
+	.toggle input { opacity: 0; width: 0; height: 0; }
 	.toggle-slider {
 		position: absolute;
 		cursor: pointer;
-		top: 0;
-		left: 0;
-		right: 0;
-		bottom: 0;
+		top: 0; left: 0; right: 0; bottom: 0;
 		background: rgba(255, 255, 255, 0.06);
 		border-radius: 18px;
 		transition: background 0.2s ease;
 	}
-
 	.toggle-slider::before {
 		content: "";
 		position: absolute;
@@ -437,29 +430,20 @@
 		border-radius: 50%;
 		transition: transform 0.2s ease;
 	}
-
-	.toggle input:checked + .toggle-slider {
-		background: rgba(var(--accent-rgb), 0.35);
-	}
-
+	.toggle input:checked + .toggle-slider { background: rgba(var(--accent-rgb), 0.35); }
 	.toggle input:checked + .toggle-slider::before {
 		transform: translateX(14px);
 		background: rgba(255, 255, 255, 0.85);
 	}
 
 	@keyframes fadeIn {
-		0% { opacity: 0; }
+		0%   { opacity: 0; }
 		100% { opacity: 1; }
 	}
 
 	@media (max-width: 900px) {
-		.settings-grid {
-			grid-template-columns: 1fr;
-		}
-
-		.settings-card:first-child {
-			border-right: none;
-			border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-		}
+		.settings-grid { grid-template-columns: 1fr; }
+		.settings-card:first-child { border-right: none; border-bottom: 1px solid rgba(255, 255, 255, 0.06); }
+		.settings-card--full { grid-column: 1; }
 	}
 </style>

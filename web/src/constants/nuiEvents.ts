@@ -23,6 +23,8 @@ export const NUI_EVENTS = {
 		UPDATE_ACTIVE_UNITS: "updateActiveUnits",
 		UPDATE_RECENT_DISPATCHES: "updateRecentDispatches",
 		UPDATE_USAGE_METRICS: "updateUsageMetrics",
+		SET_CALLSIGN: "setCallsign",
+		GET_CALLSIGN: "getCallsign"
 	},
 	DISPATCH: {
 		ATTACH_TO_DISPATCH: "attachToDispatch",
@@ -62,9 +64,13 @@ export const NUI_EVENTS = {
 		UPLOAD_EVIDENCE_IMAGE: "uploadEvidenceImage",
 		GENERATE_REPORT_ID: "generateReportId",
 		SEARCH_VEHICLES_FOR_REPORT: "searchVehiclesForReport",
+		SYNC_AWARENESS: "syncAwareness",
+		POLL_AWARENESS: "pollAwareness",
 	},
 	CITIZEN: {
 		GET_CITIZENS: "getCitizens",
+		GET_PROPERTY: "getProperty",
+		SET_WAYPOINT: "setWaypoint",
 		SEARCH_CITIZENS: "searchCitizens",
 		GET_CITIZEN: "getCitizen",
 		UPDATE_CITIZEN: "updateCitizen",
@@ -83,6 +89,8 @@ export const NUI_EVENTS = {
 		ADD_SUSPECT_FINGERPRINT: "addSuspectFingerprint",
 		UPDATE_CITIZEN_DNA: "updateCitizenDNA",
 		UPDATE_CITIZEN_FINGERPRINT: "updateCitizenFingerprint",
+		ADD_CITIZEN_GALLERY: 'addCitizenGallery',
+		REMOVE_CITIZEN_GALLERY: 'removeCitizenGallery',
 	},
 	VEHICLE: {
 		GET_VEHICLES: "getVehicles",
@@ -96,7 +104,10 @@ export const NUI_EVENTS = {
 		SEARCH_WEAPONS: "searchWeapons",
 		GET_WEAPON: "getWeapon",
 		GET_WEAPON_HISTORY: "getWeaponOwnershipHistory",
+		SAVE_WEAPON_INFO: 'saveWeaponInfo',
 		UPDATE_WEAPON: "updateWeapon",
+		GET_WEAPON_CONFIG: "getWeaponConfig",
+		SAVE_WEAPON_FLAGS: "saveWeaponFlags",
 	},
 	CHARGE: {
 		GET_CHARGES: "getCharges",
@@ -204,7 +215,16 @@ export const NUI_EVENTS = {
 		VIEW_BODYCAM: "viewBodycam",
 	},
 	MAP: {
-		GET_TRACKING: "getTracking",
+		GET_TRACKING:       "getTracking",
+		GET_PATROLS:        "getPatrols",
+        CREATE_PATROL:      "createPatrol",
+        DELETE_PATROL:      "deletePatrol",
+        RENAME_PATROL:      "renamePatrol",
+        ASSIGN_OFFICER:     "assignOfficer",
+        REMOVE_FROM_PATROL: "removeFromPatrol",
+		SAVE_UI_STATE: "saveMapUiState",
+		REORDER_PATROLS: "reorderPatrols",
+		SET_PATROL_ZONE: "setPatrolZone",
 	},
 	MANAGEMENT: {
 		GET_PERMISSION_ROLES: "getPermissionRoles",
@@ -286,6 +306,19 @@ export const NUI_EVENTS = {
 		CHECK_SOP_AGREEMENT: "checkSOPAgreement",
 		ACKNOWLEDGE_SOP: "acknowledgesSOP",
 	},
+	BULLETIN: {
+        GET_POSTS:           'getBulletinPosts',
+        CREATE_POST:         'createBulletinPost',
+        UPDATE_POST:         'updateBulletinPost',
+        DELETE_POST:         'deleteBulletinPost',
+        TOGGLE_PIN:          'toggleBulletinPin',
+        GET_CATEGORIES:      'getBulletinCategories',
+        ADD_CATEGORY:        'addBulletinCategory',
+        UPDATE_CATEGORY:     'updateBulletinCategory',
+        REMOVE_CATEGORY:     'removeBulletinCategory',
+        REORDER_CATEGORIES:  'reorderBulletinCategories',
+        SAVE_CATEGORIES:     'updateBulletinCategory',
+	},
 } as const;
 
 // Backwards compatibility exports (deprecated - use NUI_EVENTS instead)
@@ -331,6 +364,7 @@ export const ALL_NUI_EVENTS = [
 	...Object.values(NUI_EVENTS.COLLAB),
 	...Object.values(NUI_EVENTS.DOJ),
 	...Object.values(NUI_EVENTS.SOP),
+	...Object.values(NUI_EVENTS.BULLETIN),
 	"copyToClipboard",
 	"submitComplaint",
 	"closeComplaint",

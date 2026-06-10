@@ -168,7 +168,7 @@ export function createDashboardService() {
 		useNuiEvent<DashboardData["activeWarrants"]>(
 			NUI_EVENTS.DASHBOARD.UPDATE_ACTIVE_WARRANTS,
 			(data) => {
-				activeWarrants = data || activeWarrants;
+				activeWarrants = Array.isArray(data) ? data : activeWarrants;
 			},
 		);
 
@@ -251,8 +251,7 @@ export function createDashboardService() {
 			{
 				key: NUI_EVENTS.DASHBOARD.GET_ACTIVE_WARRANTS,
 				setter: (value) => {
-					activeWarrants =
-						(value as typeof activeWarrants) || activeWarrants;
+					activeWarrants = Array.isArray(value) ? value : activeWarrants;
 				},
 				errorMsg: "Failed to fetch active warrants",
 			},

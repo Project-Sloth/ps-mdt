@@ -19,6 +19,7 @@ export const MDT_TABS = [
 	{ name: "PPR", icon: "rate_review" },
 	{ name: "FTO", icon: "school" },
 	{ name: "SOP", icon: "menu_book" },
+	{ name: "Bulletin Board", icon: "forum" },
 	{ name: "Court Cases", icon: "gavel" },
 	{ name: "Warrant Review", icon: "policy" },
 	{ name: "Court Orders", icon: "assignment_late" },
@@ -33,6 +34,7 @@ export const EMS_TABS: readonly (typeof MDT_TABS)[number]["name"][] = [
 	"Citizens",
 	"Reports",
 	"Roster",
+	"Bulletin Board",
 	"Map",
 	"Bodycams",
 	"Preferences",
@@ -49,6 +51,7 @@ export const DOJ_TABS: readonly string[] = [
 	"Cases",
 	"Evidence",
 	"Court Orders",
+	"Bulletin Board",
 	"Legal Documents",
 	"Charges",
 	"Settings",
@@ -73,7 +76,7 @@ export interface NavGroup {
 }
 
 export const NAV_GROUPS: NavGroup[] = [
-	{ id: "dashboard", tabs: ["Dashboard"] },
+	{ id: "dashboard", tabs: ["Dashboard", "Bulletin Board"] },
 	{ id: "operations", label: "Operations", icon: "assignment", tabs: ["Reports", "Cases", "Evidence", "BOLOs", "Warrants"] },
 	{ id: "records", label: "Records", icon: "folder_open", tabs: ["Citizens", "Vehicles", "Weapons", "Charges"] },
 	{ id: "personnel", label: "Personnel", icon: "badge", tabs: ["Roster", "Awards", "IA", "PPR", "FTO", "SOP"] },
@@ -143,6 +146,7 @@ export type ComponentId =
 	| "ppr"
 	| "fto"
 	| "sop"
+	| "bulletin_board"
 	| "court_cases"
 	| "warrant_review"
 	| "court_orders"
@@ -171,6 +175,7 @@ export const TAB_TO_COMPONENT_MAP: Record<MDTTab, ComponentId> = {
 	PPR: "ppr",
 	FTO: "fto",
 	SOP: "sop",
+	"Bulletin Board": "bulletin_board",
 	"Court Cases": "court_cases",
 	"Warrant Review": "warrant_review",
 	"Court Orders": "court_orders",
@@ -185,7 +190,7 @@ export const DEFAULT_DATE = "03.15.2024";
 /** App version and branding per job type */
 export const APP_INFO = {
 	leo: {
-		version: "LSPD MDT System v2.0",
+		version: "LSPD MDT System v3.0",
 		title: "Los Santos Police Department",
 		subtitle: "Mobile Data Terminal",
 		footerSubtext: "Authorized Personnel Only",
@@ -247,6 +252,7 @@ export const COMPONENT_DISPLAY_NAMES: Record<ComponentId, string> = {
 	ppr: "Performance Reviews",
 	fto: "Field Training",
 	sop: "Standard Operating Procedures",
+	bulletin_board: "Bulletin Board",
 	court_cases: "Court Cases",
 	warrant_review: "Warrant Review",
 	court_orders: "Court Orders",

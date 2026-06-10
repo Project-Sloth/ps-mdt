@@ -31,7 +31,7 @@
 		const value = (e.target as HTMLInputElement).value;
 		searchQuery = value;
 		if (searchTimeout) clearTimeout(searchTimeout);
-		if (!value.trim()) {
+		if (value.trim().length < 2) {
 			searchResults = [];
 			return;
 		}
@@ -50,7 +50,7 @@
 			} else {
 				const results = await fetchNui<ReportVehicle[]>(
 					NUI_EVENTS.REPORT.SEARCH_VEHICLES_FOR_REPORT,
-					{ query },
+					{ query: query },
 					[],
 				);
 				searchResults = Array.isArray(results) ? results : [];
