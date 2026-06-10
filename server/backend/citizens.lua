@@ -1075,9 +1075,14 @@ ps.registerCallback(resourceName .. ':server:getMyProfile', function(source)
         if rid and not reportIdSet[rid] then reportIdSet[rid] = true end
     end
 
-    for rid, _ in pairs(reportIdSet) do
-        local rOk, report = pcall(MySQL.single.await, 'SELECT id, title, type FROM mdt_reports WHERE id = ?', { rid })
-        if rOk and report then
+    local reportIds = {}
+    for rid in pairs(reportIdSet) do reportIds[#reportIds + 1] = rid end
+    if #reportIds > 0 then
+        local placeholders = string.rep('?,', #reportIds - 1) .. '?'
+        local lrOk, reports = pcall(MySQL.query.await,
+            'SELECT id, title, type FROM mdt_reports WHERE id IN (' .. placeholders .. ')',
+            reportIds)
+        for _, report in ipairs(lrOk and reports or {}) do
             linkedReports[#linkedReports + 1] = { id = report.id, title = report.title, type = report.type }
         end
     end

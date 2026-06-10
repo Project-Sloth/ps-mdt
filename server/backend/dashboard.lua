@@ -15,6 +15,7 @@ end
 ps.registerCallback(resourceName .. ':server:getJobData', function(source)
     local src = source
     assert(src, 'Player ID cannot be nil')
+    if not CheckAuth(src) then return {} end
     local response = {
         rank    = ps.getJobGradeName(src) or 'Officer',
         payRate = '$' .. (ps.getJobGradePay(src) or 300) .. '/hr',
@@ -25,6 +26,7 @@ end)
 ps.registerCallback(resourceName .. ':server:getReportStatistics', function(source)
     local src = source
     assert(src, 'Player ID cannot be nil')
+    if not CheckAuth(src) then return {} end
 
     return Cache.getOrSet('dashboard:reportStats', Config.CacheTTL and Config.CacheTTL.ReportStats or 30, function()
         local response = MySQL.query.await([[
@@ -45,6 +47,7 @@ end)
 ps.registerCallback(resourceName .. ':server:getTimeStatistics', function(source)
     local src = source
     assert(src, 'Player ID cannot be nil')
+    if not CheckAuth(src) then return {} end
     local citizenid = ps.getIdentifier(src)
     if not citizenid then return {} end
 
@@ -128,6 +131,7 @@ end)
 ps.registerCallback(resourceName .. ':server:getRecentReports', function(source, page, limit)
     local src      = source
     assert(src, 'Player ID cannot be nil')
+    if not CheckAuth(src) then return {} end
     local pageNumber = math.max(1, tonumber(page) or 1)
     local pageSize   = math.min(50, math.max(1, tonumber(limit) or 10))
 
@@ -181,6 +185,7 @@ end)
 ps.registerCallback(resourceName .. ':server:getActiveUnits', function(source)
     local src = source
     assert(src, 'Player ID cannot be nil')
+    if not CheckAuth(src) then return { count = 0 } end
     return Cache.getOrSet('dashboard:activeUnits', Config.CacheTTL and Config.CacheTTL.ActiveUnits or 10, function()
         return { count = ps.getJobTypeCount('leo') }
     end)
@@ -239,6 +244,7 @@ end
 ps.registerCallback(resourceName .. ':server:getRecentDispatches', function(source)
     local src = source
     assert(src, 'Player ID cannot be nil')
+    if not CheckAuth(src) then return {} end
     local dispatchResource = Config and Config.Dispatch and Config.Dispatch.Resource or 'ps-dispatch'
     local ok, recentDispatches = pcall(function()
         return exports[dispatchResource] and exports[dispatchResource]:GetDispatchCalls() or {}

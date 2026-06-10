@@ -113,19 +113,36 @@ exports('registerWeapon', registerWeapon)
 
 ps.registerCallback('ps-mdt:server:getWeapons', function(source)
     if not CheckAuth(source) then return {} end
-    local weapons = MySQL.query.await('SELECT * FROM mdt_weapons')
+    local weapons = MySQL.query.await('SELECT * FROM mdt_weapons') or {}
     local newData = {}
     local weaponBolo = {}
+
+    -- Batch-resolve owner names in a single query to avoid an N+1 lookup per weapon
+    local nameByOwner = {}
+    do
+        local owners, seen = {}, {}
+        for _, v in pairs(weapons) do
+            if v.owner and v.owner ~= '' and not seen[v.owner] then
+                seen[v.owner] = true
+                owners[#owners + 1] = v.owner
+            end
+        end
+        if #owners > 0 then
+            local placeholders = string.rep('?,', #owners - 1) .. '?'
+            local profiles = MySQL.query.await('SELECT citizenid, fullname FROM mdt_profiles WHERE citizenid IN (' .. placeholders .. ')', owners) or {}
+            for _, p in ipairs(profiles) do
+                if p.fullname and p.fullname ~= '' then
+                    nameByOwner[p.citizenid] = p.fullname
+                end
+            end
+        end
+    end
+
     for k, v in pairs(weapons) do
-        -- Resolve owner name: try mdt_profiles first, then ps_lib lookup
+        -- Resolve owner name: batched mdt_profiles lookup first, then ps_lib fallback
         local ownerName = 'Unknown'
         if v.owner and v.owner ~= '' then
-            local profile = MySQL.single.await('SELECT fullname FROM mdt_profiles WHERE citizenid = ?', { v.owner })
-            if profile and profile.fullname and profile.fullname ~= '' then
-                ownerName = profile.fullname
-            else
-                ownerName = ps.getPlayerNameByIdentifier(v.owner) or 'Unknown'
-            end
+            ownerName = nameByOwner[v.owner] or ps.getPlayerNameByIdentifier(v.owner) or 'Unknown'
         end
 
         -- Normalize weapon model to lowercase for class table lookup
