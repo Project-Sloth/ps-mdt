@@ -80,9 +80,9 @@
 	// ── Callsign ──
 	const EMPTY_CALLSIGN_VALUES = new Set(['', 'NIL', 'NO CALLSIGN', 'NONE', 'NULL']);
 
-	function isValidCallsign(cs: string | null | undefined): boolean {
-		if (!cs) return false;
-		const upper = cs.trim().toUpperCase();
+	function isValidCallsign(cs: unknown): boolean {
+		if (cs == null || cs === '') return false;
+		const upper = String(cs).trim().toUpperCase();
 		if (EMPTY_CALLSIGN_VALUES.has(upper)) return false;
 		if (!upper.startsWith('PD-')) return false;
 		return upper.length > 3;
@@ -101,7 +101,7 @@
 			{ citizenid: playerData?.citizenid },
 			{ callsign: '' }
 		);
-		const cs = result?.callsign?.trim() ?? "";
+		const cs = result?.callsign != null ? String(result.callsign).trim() : "";
 		if (isValidCallsign(cs)) {
 			localCallsign = cs;
 		}
@@ -755,7 +755,6 @@
 	.cs-modal { background: var(--card-dark-bg); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 6px; width: min(320px, 92vw); display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5); }
 	.cs-modal-header { display: flex; align-items: center; gap: 8px; padding: 10px 16px; border-bottom: 1px solid rgba(255, 255, 255, 0.06); flex-shrink: 0; }
 	.cs-modal-title { font-size: 12px; font-weight: 600; color: rgba(255, 255, 255, 0.85); }
-	.cs-modal-current { font-size: 9px; color: rgba(255, 255, 255, 0.25); flex: 1; }
 	.cs-modal-close { display: flex; align-items: center; justify-content: center; background: transparent; color: rgba(255, 255, 255, 0.3); border: 1px solid rgba(255, 255, 255, 0.06); padding: 4px; border-radius: 3px; cursor: pointer; transition: all 0.1s; margin-left: auto; }
 	.cs-modal-close:hover { color: rgba(255, 255, 255, 0.7); border-color: rgba(255, 255, 255, 0.1); }
 	.cs-modal-body { padding: 14px 16px; display: flex; flex-direction: column; gap: 3px; }

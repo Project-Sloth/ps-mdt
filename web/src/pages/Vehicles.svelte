@@ -233,7 +233,6 @@
 
 		try {
 			const response = await fetchNui(NUI_EVENTS.VEHICLE.GET_VEHICLE, { plate });
-			console.log(response.vehicle)
 			if (response?.vehicle) {
 				selectedVehicle = response.vehicle;
 				vehicleForm.points = response.vehicle.points ?? 0;
