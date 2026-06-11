@@ -58,12 +58,20 @@ RegisterNUICallback('removeHearingAttendee', function(data, cb)
     cb(result or { success = false })
 end)
 
+RegisterNUICallback('getMissedHearings', function(data, cb)
+    if not MDTOpen then cb({}) return end
+    local result = ps.callback(resourceName .. ':server:getMissedHearings', {})
+    cb(result or {})
+end)
+
 -- ============================================================================
 --  Server -> NUI live reminder push
 -- ============================================================================
 
 RegisterNetEvent(resourceName .. ':client:courtReminder', function(data)
     if MDTOpen then
+        if PlayMDTSound then PlayMDTSound('reminder') end
+        -- Push to the NUI (any tab) when the MDT is open so the toast shows everywhere
         SendNUI('courtReminder', data)
     end
 end)
