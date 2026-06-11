@@ -22,11 +22,11 @@ export function createSettingsService() {
 		if (config.accentText)
 			root.style.setProperty("--accent-text-rgb", config.accentText);
 		if (config.background)
-			root.style.setProperty("-dark-bg", config.background);
+			root.style.setProperty("--dark-bg", `rgb(${config.background})`);
 		if (config.cardBackground)
-			root.style.setProperty("--card-dark-bg", config.cardBackground);
+			root.style.setProperty("--card-dark-bg", `rgb(${config.cardBackground})`);
 		if (config.buttonPrimary)
-			root.style.setProperty("--btn-primary", config.buttonPrimary);
+			root.style.setProperty("--btn-primary", `rgb(${config.buttonPrimary})`);
 	}
 
 	async function loadColorConfig(): Promise<void> {
