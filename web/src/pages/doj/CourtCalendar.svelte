@@ -167,9 +167,8 @@
 	});
 
 	onMount(() => {
-		// live push when an officer is reminded of a hearing
-		useNuiEvent<{ title?: string }>("courtReminder", (data) => {
-			globalNotifications.info(`Gerichtstermin: ${data?.title ?? "Anhörung"}`);
+		// Global toast/sound is handled in MDT.svelte; here we just refresh the view.
+		useNuiEvent<{ title?: string }>("courtReminder", () => {
 			court.refresh();
 		});
 	});
