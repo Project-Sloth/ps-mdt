@@ -1,238 +1,111 @@
-/**
- * Security configuration and content validation utilities
- */
+import type { MDTTab } from "../constants";
 
+/** Security limits and validation rules */
 export const SECURITY_CONFIG = {
-	MAX_NUI_MESSAGE_SIZE: 1024 * 1024, // 1MB
-	MAX_DATA_SIZE: 1024 * 1024, // 1MB
-	// Text length limits
-	MAX_INSTANCE_NAME_LENGTH: 50,
-	MAX_REPORT_TITLE_LENGTH: 200,
-	MAX_SEARCH_QUERY_LENGTH: 100,
-	MAX_NOTES_LENGTH: 2000,
-	MAX_SERIAL_NUMBER_LENGTH: 50,
+	// Instance Management
+	MAX_INSTANCES: 10, // Prevent memory exhaustion attacks
+	MAX_INSTANCE_NAME_LENGTH: 50, // Prevent oversized names
 
-	// Content limits
-	MAX_EVIDENCE_ITEMS: 20,
-	MAX_INVOLVED_PERSONS: 50,
-	MAX_TAGS_PER_REPORT: 10,
+	// Data Storage
+	MAX_DATA_SIZE: 2048000, // Prevent large payloads (2MB per instance)
+	MAX_UPLOAD_SIZE: 8000000, // Allow uploads up to ~8MB (base64 overhead)
+	MAX_TOTAL_STORAGE_SIZE: 2000000, // Total localStorage limit (2MB)
 
-	// File size limits
-	MAX_IMAGE_SIZE: 5 * 1024 * 1024, // 5MB
-	MAX_PERSISTENCE_SIZE: 5 * 1024 * 1024, // 5MB
+	// Input Validation
+	ALLOWED_ID_PATTERN: /^[a-zA-Z0-9_-]{1,32}$/, // Alphanumeric, underscore, dash only
+	FORBIDDEN_NAME_CHARS: ["<", ">", "&", '"', "'"], // Prevent HTML/XSS injection
+
+	// Content Security
+	FORBIDDEN_CONTENT_PATTERNS: [
+		"eval(",
+		"javascript:",
+		"<script",
+		"</script>",
+		"onclick=",
+		"onerror=",
+		"onload=",
+	], // Prevent code injection
+
+	// Whitelisted tabs (must match MDT_TABS from constants)
+	ALLOWED_TABS: [
+		"Dashboard",
+		"Citizens",
+		"BOLOs",
+		"Vehicles",
+		"Weapons",
+		"Cases",
+		"Evidence",
+		"Reports",
+		"Warrants",
+		"Charges",
+		"Awards",
+		"Roster",
+		"Map",
+		"Cameras",
+		"Bodycams",
+		"IA",
+		"PPR",
+		"FTO",
+		"SOP",
+		"Bulletin Board",
+		"Court Cases",
+		"Calendar",
+		"Warrant Review",
+		"Court Orders",
+		"Legal Documents",
+		"Settings",
+		"Preferences",
+	] as const satisfies readonly MDTTab[],
 } as const;
 
 /**
- * List of forbidden characters for names and identifiers
+ * Security error messages for consistent logging
  */
-const FORBIDDEN_NAME_CHARS = [
-	"<",
-	">",
-	'"',
-	"'",
-	"&",
-	"\0",
-	"\r",
-	"\n",
-	"\t",
-	"script",
-	"javascript:",
-	"vbscript:",
-	"onload",
-	"onerror",
-	"data:",
-	"blob:",
-	"file:",
-	"ftp:",
-	"javascript",
-];
+export const SECURITY_MESSAGES = {
+	INVALID_ID_FORMAT:
+		"MDT: Invalid ID format - must be alphanumeric with dashes/underscores only",
+	INVALID_NAME_FORMAT:
+		"MDT: Invalid name - contains forbidden characters or too long",
+	INVALID_TAB: "MDT: Invalid tab name - not in allowed list",
+	DATA_TOO_LARGE: "MDT: Data too large - exceeds size limit",
+	SUSPICIOUS_CONTENT:
+		"MDT: Suspicious content detected - potential code injection",
+	TOO_MANY_INSTANCES: "MDT: Too many instances - limiting to maximum allowed",
+	STORAGE_TOO_LARGE: "MDT: Storage data too large - potential attack",
+	INVALID_BOOLEAN: "MDT: Invalid boolean value",
+	NOT_SERIALIZABLE: "MDT: Data not serializable",
+} as const;
 
 /**
- * List of suspicious content patterns
+ * Type helpers for security validation
  */
-const FORBIDDEN_CONTENT_PATTERNS = [
-	// Script injection attempts
-	/<script\b/i,
-	/<\/script>/i,
-	/javascript:/i,
-	/vbscript:/i,
-	/onload\s*=/i,
-	/onerror\s*=/i,
-	/onclick\s*=/i,
-	/onmouseover\s*=/i,
-
-	// HTML injection
-	/<iframe\b/i,
-	/<object\b/i,
-	/<embed\b/i,
-	/<form\b/i,
-	/<input\b/i,
-
-	// SQL injection patterns
-	/union\s+select/i,
-	/drop\s+table/i,
-	/delete\s+from/i,
-	/insert\s+into/i,
-	/update\s+set/i,
-
-	// Path traversal
-	/\.\.\//,
-	/\.\.[/\\]/,
-
-	// Command injection
-	/\\\|\s*[a-zA-Z]/,
-	/;\s*[a-zA-Z]/,
-	/&&\s*[a-zA-Z]/,
-	/\$\(/,
-	/`[^`]*`/,
-] as const;
+export type SecurityValidationResult = {
+	isValid: boolean;
+	message?: string;
+};
 
 /**
- * Checks if text contains forbidden characters for names/identifiers
+ * Get the maximum allowed storage size for instances
  */
-export function containsForbiddenNameChars(text: string): boolean {
-	if (!text || typeof text !== "string") {
-		return false;
-	}
+export function getMaxInstanceStorageSize(): number {
+	return SECURITY_CONFIG.MAX_DATA_SIZE * SECURITY_CONFIG.MAX_INSTANCES;
+}
 
-	const lowerText = text.toLowerCase();
-
-	return FORBIDDEN_NAME_CHARS.some((char) =>
-		lowerText.includes(char.toLowerCase()),
+/**
+ * Check if a string contains any forbidden content patterns
+ */
+export function containsForbiddenContent(content: string): boolean {
+	const lowerContent = content.toLowerCase();
+	return SECURITY_CONFIG.FORBIDDEN_CONTENT_PATTERNS.some((pattern) =>
+		lowerContent.includes(pattern.toLowerCase()),
 	);
 }
 
 /**
- * Checks if text contains forbidden content patterns
+ * Check if a string contains forbidden name characters
  */
-export function containsForbiddenContent(text: string): boolean {
-	if (!text || typeof text !== "string") {
-		return false;
-	}
-
-	// Check for forbidden patterns
-	return FORBIDDEN_CONTENT_PATTERNS.some((pattern) => {
-		if (pattern instanceof RegExp) {
-			return pattern.test(text);
-		}
-		return false;
-	});
-}
-
-/**
- * Sanitizes text by removing or escaping dangerous content
- */
-export function sanitizeText(text: string): string {
-	if (!text || typeof text !== "string") {
-		return "";
-	}
-
-	return text
-		.replace(/&/g, "&amp;")
-		.replace(/</g, "&lt;")
-		.replace(/>/g, "&gt;")
-		.replace(/"/g, "&quot;")
-		.replace(/'/g, "&#x27;")
-		.replace(/\0/g, "")
-		.replace(/\r\n/g, "\n")
-		.replace(/\r/g, "\n")
-		.trim();
-}
-
-/**
- * Validates that a string is within acceptable length limits
- */
-export function isWithinLengthLimit(text: string, maxLength: number): boolean {
-	return !text || text.length <= maxLength;
-}
-
-/**
- * Truncates text to specified length while preserving word boundaries
- */
-export function truncateText(text: string, maxLength: number): string {
-	if (!text || text.length <= maxLength) {
-		return text || "";
-	}
-
-	const truncated = text.substring(0, maxLength);
-	const lastSpace = truncated.lastIndexOf(" ");
-
-	// If we can break at a word boundary, do so
-	if (lastSpace > maxLength * 0.8) {
-		return truncated.substring(0, lastSpace) + "...";
-	}
-
-	// Otherwise, hard truncate
-	return truncated + "...";
-}
-
-/**
- * Comprehensive content validation
- */
-export function validateContent(
-	content: string,
-	options: {
-		maxLength?: number;
-		allowEmpty?: boolean;
-		checkForbiddenChars?: boolean;
-		checkForbiddenContent?: boolean;
-	} = {},
-): {
-	isValid: boolean;
-	sanitized: string;
-	message?: string;
-} {
-	const {
-		maxLength = Infinity,
-		allowEmpty = true,
-		checkForbiddenChars = true,
-		checkForbiddenContent = true,
-	} = options;
-
-	if (!content || typeof content !== "string") {
-		if (!allowEmpty) {
-			return {
-				isValid: false,
-				sanitized: "",
-				message: "Content is required",
-			};
-		}
-		return { isValid: true, sanitized: "" };
-	}
-
-	const trimmed = content.trim();
-
-	if (!allowEmpty && trimmed.length === 0) {
-		return {
-			isValid: false,
-			sanitized: "",
-			message: "Content is required",
-		};
-	}
-
-	if (!isWithinLengthLimit(trimmed, maxLength)) {
-		return {
-			isValid: false,
-			sanitized: truncateText(trimmed, maxLength),
-			message: `Content exceeds maximum length of ${maxLength} characters`,
-		};
-	}
-
-	if (checkForbiddenChars && containsForbiddenNameChars(trimmed)) {
-		return {
-			isValid: false,
-			sanitized: sanitizeText(trimmed),
-			message: "Content contains forbidden characters",
-		};
-	}
-
-	if (checkForbiddenContent && containsForbiddenContent(trimmed)) {
-		return {
-			isValid: false,
-			sanitized: sanitizeText(trimmed),
-			message: "Content contains suspicious patterns",
-		};
-	}
-
-	return { isValid: true, sanitized: trimmed };
+export function containsForbiddenNameChars(name: string): boolean {
+	return SECURITY_CONFIG.FORBIDDEN_NAME_CHARS.some((char) =>
+		name.includes(char),
+	);
 }
