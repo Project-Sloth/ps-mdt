@@ -30,6 +30,7 @@
 	import Management from "@/pages/Management.svelte";
 	import Settings from "../pages/Settings.svelte";
 	import CourtCases from "../pages/doj/CourtCases.svelte";
+	import CourtCalendar from "../pages/doj/CourtCalendar.svelte";
 	import WarrantReview from "../pages/doj/WarrantReview.svelte";
 	import CourtOrders from "../pages/doj/CourtOrders.svelte";
 	import LegalDocuments from "../pages/doj/LegalDocuments.svelte";
@@ -121,6 +122,7 @@
 		ia: ["ia_view"],
 		sop: ["sop_view", "sop_manage"],
 		bulletin_board: ["bulletin_view"],
+		calendar: ["court_view", "training_view"],
 		management: ["management_settings", "management_bulletins", "management_activity", "management_permissions", "management_tracking"],
 		settings: ["management_settings"],
 	};
@@ -147,6 +149,7 @@
 			charges: "Charges",
 			awards: "Awards",
 			cameras: "Cameras",
+			calendar: "Calendar",
 			bodycams: "Bodycams",
 			management: "Settings",
 			sop: "SOP",
@@ -237,6 +240,8 @@
 			<Settings />
 		{:else if activeComponent === "court_cases"}
 			<CourtCases {tabService} {authService} />
+		{:else if activeComponent === "calendar"}
+			<CourtCalendar {tabService} {authService} />
 		{:else if activeComponent === "warrant_review"}
 			<WarrantReview {tabService} {authService} />
 		{:else if activeComponent === "court_orders"}
