@@ -12,6 +12,10 @@ local MDTSounds = {
         audioName = 'SELECT',
         audioRef = 'HUD_FRONTEND_DEFAULT_SOUNDSET'
     },
+    reminder = {
+        audioName = 'Text_Arrive_Tone',
+        audioRef = 'Phone_SoundSet_Default'
+    },
 }
 
 -- Play sound based on input
