@@ -29,8 +29,8 @@
 		if (!query) return warrants;
 		return warrants.filter((warrant) =>
 			[warrant.name, warrant.citizenid, String(warrant.reportid)].some(
-				(value) => String(value).toLowerCase().includes(query),
-			),
+				(value) => String(value).toLowerCase().includes(query)
+			)
 		);
 	});
 
