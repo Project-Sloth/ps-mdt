@@ -89,11 +89,10 @@ ps.registerCallback(resourceName .. ':server:getCitizens', function(source, page
     local src = source
     if not CheckAuth(src) then return {} end
     local startTime = os.clock()
-    page = page or 1 -- Default to page 1 if not provided
-    local limit = Config.Pagination and Config.Pagination.Citizens or 20
-    local offset = (page - 1) * limit
-
-    -- Main query with pagination
+    page = page or 1
+    -- The Citizens UI filters AND paginates client-side over the full set
+    -- (allFilteredCitizens -> slice). A server LIMIT would cap the list at the
+    -- first page and make search only see those rows, so return everything here.
     local query = [[
         SELECT mp.id, p.citizenid, JSON_UNQUOTE(JSON_EXTRACT(p.charinfo, '$.firstname')) AS firstname,
         JSON_UNQUOTE(JSON_EXTRACT(p.charinfo, '$.lastname')) AS lastname,
@@ -106,9 +105,8 @@ ps.registerCallback(resourceName .. ':server:getCitizens', function(source, page
         FROM players AS p
         LEFT JOIN mdt_profiles AS mp
         ON CONVERT(p.citizenid USING utf8mb4) COLLATE utf8mb4_general_ci = CONVERT(mp.citizenid USING utf8mb4) COLLATE utf8mb4_general_ci
-        LIMIT ? OFFSET ?
     ]]
-    local result = safeQuery(query, { limit, offset })
+    local result = safeQuery(query, {})
     if not result or #result == 0 then return {} end
 
     local citizenids = {}
@@ -243,9 +241,11 @@ ps.registerCallback(resourceName .. ':server:searchCitizens', function(source, q
         LIMIT ?
     ]]
 
+    local searchLimit = (Config.Pagination and Config.Pagination.Citizens) or 25
     local result = safeQuery(sqlQuery, {
         searchTerm, searchTerm, searchTerm, searchTerm,
-        searchTerm, searchTerm, searchTerm, searchTerm
+        searchTerm, searchTerm, searchTerm, searchTerm,
+        searchLimit
     })
     if not result or #result == 0 then return {} end
 
@@ -1021,7 +1021,7 @@ ps.registerCallback(resourceName .. ':server:getMyProfile', function(source)
 
     -- Profile picture from mdt_profiles
     local prOk, profileRow = pcall(MySQL.single.await,
-        'SELECT profilepicture, notes FROM mdt_profiles WHERE citizenid COLLATE utf8mb4_general_ci = ? LIMIT 1',
+        'SELECT profilepicture, notes FROM mdt_profiles WHERE citizenid = ? LIMIT 1',
         { citizenid })
     profileRow = prOk and profileRow or nil
     local image = (profileRow and profileRow.profilepicture and profileRow.profilepicture ~= '') and profileRow.profilepicture or nil
@@ -1032,7 +1032,7 @@ ps.registerCallback(resourceName .. ':server:getMyProfile', function(source)
     local activeWarrants = {}
     if civConfig.showWarrants ~= false then
         local wOk, wResult = pcall(MySQL.query.await,
-            'SELECT reportid, expirydate FROM mdt_reports_warrants WHERE citizenid COLLATE utf8mb4_general_ci = ? AND expirydate >= NOW() ORDER BY expirydate ASC',
+            'SELECT reportid, expirydate FROM mdt_reports_warrants WHERE citizenid = ? AND expirydate >= NOW() ORDER BY expirydate ASC',
             { citizenid })
         activeWarrants = wOk and wResult or {}
     end
@@ -1041,7 +1041,7 @@ ps.registerCallback(resourceName .. ':server:getMyProfile', function(source)
     local activeBolos = {}
     if civConfig.showBolos ~= false then
         local bOk, bResult = pcall(MySQL.query.await,
-            'SELECT id, reportId, type, notes FROM mdt_bolos WHERE status = ? AND subject_id COLLATE utf8mb4_general_ci = ? ORDER BY id DESC',
+            'SELECT id, reportId, type, notes FROM mdt_bolos WHERE status = ? AND subject_id = ? ORDER BY id DESC',
             { 'active', citizenid })
         activeBolos = bOk and bResult or {}
     end
@@ -1060,7 +1060,7 @@ ps.registerCallback(resourceName .. ':server:getMyProfile', function(source)
     local linkedReports = {}
 
     local riOk, involvedReports = pcall(MySQL.query.await,
-        'SELECT reportid FROM mdt_reports_involved WHERE citizenid COLLATE utf8mb4_general_ci = ?',
+        'SELECT reportid FROM mdt_reports_involved WHERE citizenid = ?',
         { citizenid })
     for _, row in ipairs(riOk and involvedReports or {}) do
         local rid = tonumber(row.reportid)
@@ -1068,7 +1068,7 @@ ps.registerCallback(resourceName .. ':server:getMyProfile', function(source)
     end
 
     local rcOk, chargedReports = pcall(MySQL.query.await,
-        'SELECT reportid FROM mdt_reports_charges WHERE citizenid COLLATE utf8mb4_general_ci = ?',
+        'SELECT reportid FROM mdt_reports_charges WHERE citizenid = ?',
         { citizenid })
     for _, row in ipairs(rcOk and chargedReports or {}) do
         local rid = tonumber(row.reportid)
@@ -1089,19 +1089,19 @@ ps.registerCallback(resourceName .. ':server:getMyProfile', function(source)
 
     -- Vehicles
     local vOk, vehicles = pcall(MySQL.query.await,
-        'SELECT plate, vehicle FROM player_vehicles WHERE citizenid COLLATE utf8mb4_general_ci = ?',
+        'SELECT plate, vehicle FROM player_vehicles WHERE citizenid = ?',
         { citizenid })
     vehicles = vOk and vehicles or {}
 
     -- Weapons
     local wpOk, weapons = pcall(MySQL.query.await,
-        'SELECT id, serial, scratched, weaponModel FROM mdt_weapons WHERE owner COLLATE utf8mb4_general_ci = ?',
+        'SELECT id, serial, scratched, weaponModel FROM mdt_weapons WHERE owner = ?',
         { citizenid })
     weapons = wpOk and weapons or {}
 
     -- Custom licenses
     local clOk, customLicenses = pcall(MySQL.query.await,
-        'SELECT cl.id, cl.name, cl.description, COALESCE(cil.active, 0) as active FROM mdt_custom_licenses cl LEFT JOIN mdt_citizen_licenses cil ON cil.license_id = cl.id AND cil.citizenid COLLATE utf8mb4_general_ci = ? ORDER BY cl.id ASC',
+        'SELECT cl.id, cl.name, cl.description, COALESCE(cil.active, 0) as active FROM mdt_custom_licenses cl LEFT JOIN mdt_citizen_licenses cil ON cil.license_id = cl.id AND cil.citizenid = ? ORDER BY cl.id ASC',
         { citizenid })
     customLicenses = clOk and customLicenses or {}
 
