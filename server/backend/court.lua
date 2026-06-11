@@ -1,4 +1,6 @@
 local resourceName = tostring(GetCurrentResourceName())
+local ok, QBCore = pcall(function() return exports['qb-core']:GetCoreObject() end)
+if not ok then QBCore = nil end
 
 -- ============================================================================
 --  Helpers
@@ -42,6 +44,16 @@ end
 -- A user may view the calendar if they can view either domain.
 local function canViewCalendar(src)
     return CheckPermission(src, 'court_view') or CheckPermission(src, 'training_view')
+end
+
+-- Validate an optional case_id against mdt_cases to avoid FK insert errors.
+-- Returns: resolvedId (number or nil), ok (false only when a non-empty id was given but not found)
+local function resolveCaseId(rawCaseId)
+    local caseId = tonumber(rawCaseId)
+    if not caseId then return nil, true end
+    local row = MySQL.single.await('SELECT id FROM mdt_cases WHERE id = ?', { caseId })
+    if not row then return nil, false end
+    return caseId, true
 end
 
 local function normalizeStatus(s)
@@ -131,6 +143,38 @@ ps.registerCallback(resourceName .. ':server:getHearing', function(source, paylo
     return { success = true, data = { hearing = hearing, attendees = attendees } }
 end)
 
+-- Hearings whose reminder fired while this officer was offline (missed),
+-- surfaced once on the next MDT open. Marks them delivered so they show once.
+ps.registerCallback(resourceName .. ':server:getMissedHearings', function(source)
+    local src = source
+    if not CheckAuth(src) then return {} end
+    if not canViewCalendar(src) then return {} end
+
+    local cid = ps.getIdentifier(src)
+    if not cid then return {} end
+
+    local rows = MySQL.query.await([[
+        SELECT h.id AS hearing_id, h.title, h.category, h.location,
+               DATE_FORMAT(h.scheduled_at, '%Y-%m-%d %H:%i') AS scheduled_at
+        FROM mdt_court_attendees a
+        JOIN mdt_court_hearings h ON h.id = a.hearing_id
+        WHERE a.citizenid = ?
+          AND a.notified_at IS NOT NULL
+          AND a.delivered_at IS NULL
+        ORDER BY h.scheduled_at DESC
+        LIMIT 15
+    ]], { cid }) or {}
+
+    if #rows > 0 then
+        MySQL.update.await([[
+            UPDATE mdt_court_attendees SET delivered_at = NOW()
+            WHERE citizenid = ? AND notified_at IS NOT NULL AND delivered_at IS NULL
+        ]], { cid })
+    end
+
+    return rows
+end)
+
 -- ============================================================================
 --  Create
 -- ============================================================================
@@ -154,6 +198,9 @@ ps.registerCallback(resourceName .. ':server:createHearing', function(source, pa
     local citizenid = ps.getIdentifier(src)
     if not citizenid then return { success = false, error = 'Missing citizen id' } end
 
+    local caseId, caseOk = resolveCaseId(payload.case_id)
+    if not caseOk then return { success = false, error = 'Case ID does not exist' } end
+
     local hearingId = MySQL.insert.await([[
         INSERT INTO mdt_court_hearings
             (title, category, hearing_type, case_id, warrant_reportid, defendant_cid, defendant_name,
@@ -164,7 +211,7 @@ ps.registerCallback(resourceName .. ':server:createHearing', function(source, pa
         payload.title,
         category,
         normalizeType(payload.hearing_type),
-        tonumber(payload.case_id) or nil,
+        caseId,
         tonumber(payload.warrant_reportid) or nil,
         payload.defendant_cid,
         payload.defendant_name,
@@ -238,7 +285,11 @@ ps.registerCallback(resourceName .. ':server:updateHearing', function(source, pa
     if data.title ~= nil then add('title', data.title) end
     if data.category ~= nil then add('category', normalizeCategory(data.category)) end
     if data.hearing_type ~= nil then add('hearing_type', normalizeType(data.hearing_type)) end
-    if data.case_id ~= nil then add('case_id', tonumber(data.case_id) or nil) end
+    if data.case_id ~= nil then
+        local caseId, caseOk = resolveCaseId(data.case_id)
+        if not caseOk then return { success = false, error = 'Case ID does not exist' } end
+        add('case_id', caseId)
+    end
     if data.warrant_reportid ~= nil then add('warrant_reportid', tonumber(data.warrant_reportid) or nil) end
     if data.defendant_cid ~= nil then add('defendant_cid', data.defendant_cid) end
     if data.defendant_name ~= nil then add('defendant_name', data.defendant_name) end
@@ -365,9 +416,9 @@ end)
 -- ============================================================================
 
 CreateThread(function()
-    -- small initial delay so the DB / framework are ready
-    Wait(15000)
     while true do
+        -- small initial delay so the DB / framework are ready
+        Wait(15000)
         local lead = (Config and Config.Court and Config.Court.ReminderLeadMinutes) or 15
         local ok, due = pcall(MySQL.query.await, [[
             SELECT a.id AS attendee_id, a.citizenid, h.id AS hearing_id, h.title,
@@ -379,7 +430,6 @@ CreateThread(function()
               AND h.scheduled_at >= NOW()
               AND h.scheduled_at <= DATE_ADD(NOW(), INTERVAL ? MINUTE)
         ]], { lead })
-
         if ok and type(due) == 'table' then
             for _, row in ipairs(due) do
                 local notified = false
@@ -387,8 +437,8 @@ CreateThread(function()
                     local Player = QBCore.Functions.GetPlayerByCitizenId(row.citizenid)
                     if Player and Player.PlayerData and Player.PlayerData.source then
                         local tsrc = Player.PlayerData.source
-                        ps.notify(tsrc, ('Court: "%s" in ~%d min @ %s'):format(
-                            row.title, lead, row.location or 'TBA'), 'primary')
+
+                        print(lead, row.title, row.location or 'TBA')
                         TriggerClientEvent(resourceName .. ':client:courtReminder', tsrc, {
                             hearing_id = row.hearing_id,
                             title = row.title,
@@ -406,6 +456,6 @@ CreateThread(function()
             end
         end
 
-        Wait(60000) -- 1x per minute
+        Wait(180000) -- 3x per minute
     end
 end)
