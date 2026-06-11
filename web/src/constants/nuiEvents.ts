@@ -26,6 +26,16 @@ export const NUI_EVENTS = {
 		SET_CALLSIGN: "setCallsign",
 		GET_CALLSIGN: "getCallsign"
 	},
+	COURT: {
+		GET_HEARINGS: "getHearings",
+		GET_HEARING: "getHearing",
+		CREATE_HEARING: "createHearing",
+		UPDATE_HEARING: "updateHearing",
+		DELETE_HEARING: "deleteHearing",
+		ADD_ATTENDEE: "addHearingAttendee",
+		REMOVE_ATTENDEE: "removeHearingAttendee",
+		GET_MISSED: "getMissedHearings",
+	},
 	DISPATCH: {
 		ATTACH_TO_DISPATCH: "attachToDispatch",
 		DETACH_FROM_DISPATCH: "detachFromDispatch",
@@ -337,6 +347,7 @@ export const DOJ_EVENTS = NUI_EVENTS.DOJ;
 // All events combined for type checking
 export const ALL_NUI_EVENTS = [
 	...Object.values(NUI_EVENTS.DASHBOARD),
+	...Object.values(NUI_EVENTS.COURT),
 	...Object.values(NUI_EVENTS.DISPATCH),
 	...Object.values(NUI_EVENTS.NAVIGATION),
 	...Object.values(NUI_EVENTS.AUTH),
@@ -371,6 +382,7 @@ export const ALL_NUI_EVENTS = [
 	"reportEditorJoined",
 	"reportEditorLeft",
 	"reportDataUpdate",
+	"courtReminder",
 	"syncYjsUpdate",
 	"yjsUpdate",
 	"yjsBatch",
