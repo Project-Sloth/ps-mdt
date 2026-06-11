@@ -176,6 +176,21 @@ export const PERMISSION_CATEGORIES: PermissionCategory[] = [
 		],
 	},
 	{
+		key: "calendar",
+		label: "Calendar",
+		icon: "calendar_month",
+		permissions: [
+			{ key: "court_view", label: "View Court Events", description: "See court hearings on the calendar" },
+			{ key: "court_create", label: "Create Court Events", description: "Schedule court hearings" },
+			{ key: "court_edit", label: "Edit Court Events", description: "Edit court hearings, status, and attendees" },
+			{ key: "court_delete", label: "Delete Court Events", description: "Delete court hearings" },
+			{ key: "training_view", label: "View Training/Meetings", description: "See training, education, and meeting events" },
+			{ key: "training_create", label: "Create Training/Meetings", description: "Schedule trainings, weiterbildungen, and meetings" },
+			{ key: "training_edit", label: "Edit Training/Meetings", description: "Edit training/meeting events and attendees" },
+			{ key: "training_delete", label: "Delete Training/Meetings", description: "Delete training/meeting events" },
+		],
+	},
+	{
 		key: "management",
 		label: "Management",
 		icon: "admin_panel_settings",
@@ -210,6 +225,7 @@ export const TAB_VISIBILITY_KEYS = [
 	{ tabName: "FTO", key: "tab_hidden_fto", label: "Field Training" },
 	{ tabName: "SOP", key: "tab_hidden_sop", label: "SOP" },
 	{ tabName: "Bulletin Board", key: "tab_hidden_bulletin_board", label: "Bulletin Board" },
+	{ tabName: "Calendar", key: "tab_hidden_calendar", label: "Calendar" },
 ];
 
 /** Flat list of all permission keys */
