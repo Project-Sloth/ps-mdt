@@ -7,6 +7,8 @@
     import {settingsService} from "../services/settingsService.svelte";
     import {createInstanceStateService} from "../services/instanceStateService.svelte";
     import {NUI_EVENTS} from "@/constants/nuiEvents";
+    import {fetchNui} from "@/utils/fetchNui";
+    import {globalNotifications} from "../services/notificationService.svelte";
     import TopBar from "../components/TopBar.svelte";
     import NavigationPills from "../components/NavigationPills.svelte";
     import InstanceTabs from "../components/InstanceTabs.svelte";
@@ -27,7 +29,56 @@
         authService.checkAuth();
         settingsService.loadColorConfig();
         setupInstanceCoordination();
+        loadMissedHearings();
     });
+
+    // Global court reminder toast — shows on any tab, not just the calendar
+    useNuiEvent<{ title?: string; scheduled_at?: string | number; location?: string }>(
+        "courtReminder",
+        (data) => {
+            const raw = data?.scheduled_at;
+
+            const num = Number(raw);
+
+            const date = raw
+                ? new Date(num < 1e12 ? num * 1000 : num)
+                : null;
+
+            const when =
+                date && !isNaN(date.getTime())
+                    ? ` (${date.toLocaleString("de-DE", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                    })})`
+                    : "";
+
+            const where = data?.location
+                ? ` — ${data.location}`
+                : "";
+
+            globalNotifications.info(
+                `Appointment: ${data?.title ?? "Anhörung"}${when}${where}`
+            );
+        }
+    );
+
+    // On first MDT open, surface hearings whose reminder fired while offline
+    async function loadMissedHearings(): Promise<void> {
+        try {
+            const missed = await fetchNui<Array<{ title: string; scheduled_at?: string }>>(
+                NUI_EVENTS.COURT.GET_MISSED,
+                {},
+                [],
+            );
+            if (Array.isArray(missed) && missed.length > 0) {
+                const titles = missed.slice(0, 3).map((m) => m.title).join(", ");
+                const extra = missed.length > 3 ? ` +${missed.length - 3}` : "";
+                globalNotifications.info(`Missed Appointment: ${titles}${extra}`);
+            }
+        } catch {
+            /* ignore */
+        }
+    }
 
     function setupInstanceCoordination(): void {
         $effect(() => {
