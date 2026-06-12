@@ -41,9 +41,28 @@
 		return authService.hasAnyPermission(`${permPrefix(cat)}_delete`);
 	}
 
-	const ALL_CATEGORIES: EventCategory[] = ["court", "training", "meeting", "other"];
-	const creatableCategories = $derived(ALL_CATEGORIES.filter(canCreateCat));
+	const isEms = $derived(authService.jobType === "ems");
+	const allCategories = $derived<EventCategory[]>(
+		isEms ? ["training", "meeting", "other"] : ["court", "training", "meeting", "other"],
+	);
+	const creatableCategories = $derived(allCategories.filter(canCreateCat));
 	const canCreateAny = $derived(creatableCategories.length > 0);
+
+	// Attendee roles offered in the add-dropdown depend on the department.
+	// EMS has no court roles (prosecution/defense/judge/officer).
+	const availableRoles = $derived<AttendeeRole[]>(
+		isEms
+			? ["instructor", "trainee", "attendee"]
+			: ["prosecutor", "defense", "officer", "witness", "judge", "trainee", "instructor", "attendee"],
+	);
+
+	// Title / location placeholders, department-appropriate.
+	const titlePlaceholder = $derived(
+		isEms ? "e.g. CPR training / Team meeting" : "e.g. Firearms training / Hearing Smith",
+	);
+	const locationPlaceholder = $derived(
+		isEms ? "e.g. Pillbox HQ / Training room" : "e.g. Courtroom 1 / Range",
+	);
 
 	// When viewing an existing event the officer can't edit, the modal is read-only.
 	let formReadOnly = $state(false);
@@ -62,12 +81,29 @@
 	};
 
 	const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-	const HOURS = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, "0"));
-	const MINUTES = Array.from({ length: 60 }, (_, i) => String(i).padStart(2, "0"));
-	function timeHour() { return (form.time || "12:00").split(":")[0] ?? "12"; }
-	function timeMin() { return (form.time || "12:00").split(":")[1] ?? "00"; }
-	function setHour(h: string) { form.time = `${h}:${timeMin()}`; }
-	function setMin(m: string) { form.time = `${timeHour()}:${m}`; }
+
+	// Single masked 24h time field (HH:MM). Digits only, colon auto-inserted,
+	// normalised to a valid 24h value on blur. No AM/PM, ever.
+	function onTimeInput(e: Event & { currentTarget: HTMLInputElement }) {
+		let v = e.currentTarget.value.replace(/[^0-9]/g, "").slice(0, 4);
+		if (v.length >= 3) v = v.slice(0, 2) + ":" + v.slice(2);
+		form.time = v;
+		e.currentTarget.value = v;
+	}
+	function normalizeTime() {
+		const m = /^(\d{1,2}):?(\d{0,2})$/.exec(form.time || "");
+		let h = 12, mi = 0;
+		if (m) {
+			h = Math.min(23, parseInt(m[1] || "0", 10) || 0);
+			mi = Math.min(59, parseInt(m[2] || "0", 10) || 0);
+		}
+		form.time = `${String(h).padStart(2, "0")}:${String(mi).padStart(2, "0")}`;
+	}
+	function nudgeTime(deltaMin: number) {
+		const [h, mi] = (form.time || "12:00").split(":").map((x) => parseInt(x, 10) || 0);
+		let total = ((h * 60 + mi + deltaMin) % 1440 + 1440) % 1440;
+		form.time = `${String(Math.floor(total / 60)).padStart(2, "0")}:${String(total % 60).padStart(2, "0")}`;
+	}
 	const MONTHS = [
 		"January", "February", "March", "April", "May", "June",
 		"July", "August", "September", "October", "November", "December",
@@ -100,7 +136,13 @@
 	};
 
 	// Which categories are currently shown (filter chips)
-	let activeCategories = $state<EventCategory[]>([...ALL_CATEGORIES]);
+	let activeCategories = $state<EventCategory[]>(["court", "training", "meeting", "other"]);
+	// Keep the active filters within the categories this job is allowed to see.
+	$effect(() => {
+		const allowed = new Set(allCategories);
+		const pruned = activeCategories.filter((c) => allowed.has(c));
+		if (pruned.length !== activeCategories.length) activeCategories = pruned;
+	});
 	function toggleCategory(cat: EventCategory) {
 		activeCategories = activeCategories.includes(cat)
 			? activeCategories.filter((c) => c !== cat)
@@ -149,13 +191,17 @@
 		const end = new Date(start);
 		end.setDate(start.getDate() + 41);
 		end.setHours(23, 59, 59, 0);
-		const cats = activeCategories.length === ALL_CATEGORIES.length ? null : activeCategories;
+		const cats = activeCategories.length === allCategories.length ? null : activeCategories;
 		await court.loadRange(toMysqlDateTime(start), toMysqlDateTime(end), cats);
 	}
 
 	function prevMonth() { viewDate = new Date(viewDate.getFullYear(), viewDate.getMonth() - 1, 1); }
 	function nextMonth() { viewDate = new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 1); }
-	function goToday() { viewDate = new Date(); }
+	function goToday() {
+		const now = new Date();
+		viewDate = now;
+		selectedDayKey = dayKey(now);
+	}
 
 	// reload whenever the visible month changes
 	let loadedKey = $state("");
@@ -210,7 +256,7 @@
 		return {
 			id: null,
 			title: "",
-			category: creatableCategories[0] ?? "court",
+			category: creatableCategories[0] ?? (isEms ? "training" : "court"),
 			hearing_type: "trial",
 			date: prefillDate || dayKey(new Date()),
 			time: "12:00",
@@ -274,6 +320,7 @@
 	}
 
 	async function saveHearing() {
+		normalizeTime(); // guarantee a valid 24h HH:MM even without a blur
 		if (!form.title.trim()) { globalNotifications.error("Title is required"); return; }
 		if (!form.date || !form.time) { globalNotifications.error("Date/time is required"); return; }
 		saving = true;
@@ -341,6 +388,10 @@
 	let showAttendeeSearch = $state(false);
 	let searchResults = $state<SearchResult[]>([]);
 	let attendeeRole = $state<AttendeeRole>("officer");
+	// If the current role isn't valid for this department (e.g. EMS), reset it.
+	$effect(() => {
+		if (!availableRoles.includes(attendeeRole)) attendeeRole = availableRoles[0];
+	});
 
 	// ── Quick-add groups (Rookies / All Officers / All DOJ / ...) ────────────
 	let attendeeGroups = $state<AttendeeGroup[]>([]);
@@ -501,7 +552,7 @@
 	</div>
 
 	<div class="filter-row">
-		{#each ALL_CATEGORIES as cat}
+		{#each allCategories as cat}
 			<button
 				class="cat-filter cat-{cat}"
 				class:active={activeCategories.includes(cat)}
@@ -610,14 +661,14 @@
 
 				<label class="field">
 					<span>Title *</span>
-					<input type="text" bind:value={form.title} placeholder="e.g. Firearms training / Hearing Smith" readonly={formReadOnly} />
+					<input type="text" bind:value={form.title} placeholder={titlePlaceholder} readonly={formReadOnly} />
 				</label>
 
 				<div class="field-row">
 					<label class="field">
 						<span>Category</span>
 						<select bind:value={form.category} disabled={formReadOnly}>
-							{#each ALL_CATEGORIES as c}
+							{#each allCategories as c}
 								{#if canCreateCat(c) || c === form.category}
 									<option value={c}>{CATEGORY_LABELS[c]}</option>
 								{/if}
@@ -670,13 +721,23 @@
 					<label class="field">
 						<span>Time *</span>
 						<div class="time-pick">
-							<select value={timeHour()} onchange={(e) => setHour(e.currentTarget.value)} disabled={formReadOnly}>
-								{#each HOURS as h}<option value={h}>{h}</option>{/each}
-							</select>
-							<span class="time-colon">:</span>
-							<select value={timeMin()} onchange={(e) => setMin(e.currentTarget.value)} disabled={formReadOnly}>
-								{#each MINUTES as m}<option value={m}>{m}</option>{/each}
-							</select>
+							<button type="button" class="time-step" disabled={formReadOnly} title="-15 min" onclick={() => nudgeTime(-15)}>
+								<span class="material-icons">remove</span>
+							</button>
+							<input
+								class="time-input"
+								type="text"
+								inputmode="numeric"
+								maxlength="5"
+								placeholder="HH:MM"
+								value={form.time}
+								oninput={onTimeInput}
+								onblur={normalizeTime}
+								readonly={formReadOnly}
+							/>
+							<button type="button" class="time-step" disabled={formReadOnly} title="+15 min" onclick={() => nudgeTime(15)}>
+								<span class="material-icons">add</span>
+							</button>
 						</div>
 					</label>
 					<label class="field">
@@ -688,7 +749,7 @@
 				<div class="field-row">
 					<label class="field">
 						<span>Location</span>
-						<input type="text" bind:value={form.location} placeholder="e.g. Courtroom 1 / Range" readonly={formReadOnly} />
+						<input type="text" bind:value={form.location} placeholder={locationPlaceholder} readonly={formReadOnly} />
 					</label>
 					{#if form.category === "court"}
 						<label class="field">
@@ -743,8 +804,8 @@
 						{#if !formReadOnly}
 							<div class="attendee-add">
 								<select bind:value={attendeeRole}>
-									{#each Object.keys(ROLE_LABELS) as r}
-										<option value={r}>{ROLE_LABELS[r as AttendeeRole]}</option>
+									{#each availableRoles as r}
+										<option value={r}>{ROLE_LABELS[r]}</option>
 									{/each}
 								</select>
 								<button class="ghost-btn" onclick={() => { searchResults = []; showAttendeeSearch = true; }}>
@@ -955,8 +1016,32 @@
 	}
 	.cell:hover { border-color: rgba(255, 255, 255, 0.12); }
 	.cell.dim { opacity: 0.35; }
-	.cell.today .cell-date { color: var(--accent); }
-	.cell.selected { background: var(--accent-10); border-color: var(--accent-30); }
+	/* TODAY: recognised by the filled date badge + a thin accent outline only. */
+	.cell.today {
+		border-color: var(--accent-30);
+	}
+	.cell.today .cell-date {
+		color: #fff;
+		background: var(--accent);
+		min-width: 18px;
+		height: 18px;
+		padding: 0 5px;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		align-self: flex-start;
+		border-radius: 9px;
+		font-weight: 700;
+	}
+	/* SELECTED: the actively picked day — filled tint + solid accent ring. */
+	.cell.selected {
+		background: var(--accent-10);
+		border-color: var(--accent);
+		box-shadow: inset 0 0 0 1.5px var(--accent);
+	}
+	.cell.selected .cell-date { color: #fff; }
+	/* When today IS the selected day, keep the badge and add the selected ring. */
+	.cell.today.selected { border-color: var(--accent); }
 	.cell-date { font-size: 11px; font-weight: 600; color: rgba(255, 255, 255, 0.6); }
 	.chips { display: flex; flex-direction: column; gap: 2px; overflow: hidden; }
 	.chip {
@@ -1095,9 +1180,31 @@
 	.attendee-add { display: flex; gap: 6px; align-items: center; }
 	.attendee-add select { width: auto; }
 	.empty-hint { font-size: 10px; color: rgba(255, 255, 255, 0.3); }
-	.time-pick { display: flex; align-items: center; gap: 4px; }
-	.time-pick select { width: auto; }
-	.time-colon { color: rgba(255, 255, 255, 0.4); }
+	.time-pick { display: flex; align-items: center; gap: 6px; }
+	.time-input {
+		width: 64px;
+		text-align: center;
+		font-variant-numeric: tabular-nums;
+		letter-spacing: 1px;
+		font-weight: 600;
+	}
+	.time-step {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 26px;
+		height: 26px;
+		flex-shrink: 0;
+		background: transparent;
+		border: 1px solid rgba(255, 255, 255, 0.1);
+		border-radius: 3px;
+		color: rgba(255, 255, 255, 0.55);
+		cursor: pointer;
+		transition: all 0.1s;
+	}
+	.time-step:hover:not(:disabled) { color: #fff; border-color: rgba(255, 255, 255, 0.25); }
+	.time-step:disabled { opacity: 0.4; cursor: default; }
+	.time-step .material-icons { font-size: 14px; }
 
 	/* ===== Confirm dialog ===== */
 	.confirm {
