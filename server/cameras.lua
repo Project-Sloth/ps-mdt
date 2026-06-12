@@ -618,7 +618,8 @@ end
 RegisterNetEvent(resourceName .. ':server:createStaticCamera', function(cameraData)
     local playerId = source
     if not CheckAuth(playerId) then return end
-
+    if not CheckPermission(playerId, 'cameras_view') then return end
+    
     ps.debug('Creating static camera for player:', playerId)
     ps.debug('Received camera data:')
     ps.debug('  camId: ' .. tostring(cameraData.camId))
@@ -832,6 +833,7 @@ end)
 RegisterNetEvent(resourceName .. ':server:deleteCamera', function(camId)
     local playerId = source
     if not CheckAuth(playerId) then return end
+    if not CheckPermission(playerId, 'cameras_view') then return end
     ps.debug('Deleting camera for player:', playerId, 'Camera ID:', camId)
 
     local camera = spawnedCameras[camId]
