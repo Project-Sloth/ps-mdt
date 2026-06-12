@@ -398,16 +398,23 @@ Config.Court = {
     -- id:         stable identifier
     -- label:      button text
     -- role:       attendee role the bulk-added people get (see VALID_ROLES)
+    -- domain:     'police' (police + DOJ share a calendar) or 'ems' (separate)
     -- jobType:    match against the framework job.type (leo / doj / ems ...)
     -- jobs:       optional explicit job-name whitelist (overrides jobType)
     -- maxGrade:   optional grade-level ceiling (e.g. rookies = grade 0-1)
     -- onlyOnDuty: only include players currently on duty
     Groups = {
-        { id = 'all_officers', label = 'All Officers',  role = 'officer',  jobType = Config.PoliceJobType },
-        { id = 'rookies',      label = 'Rookies',       role = 'officer',  jobType = Config.PoliceJobType, maxGrade = 1 },
-        { id = 'on_duty',      label = 'On-Duty Units', role = 'officer',  jobType = Config.PoliceJobType, onlyOnDuty = true },
-        { id = 'all_doj',      label = 'All DOJ',       role = 'attendee', jobType = Config.DojJobType },
-        { id = 'judges',       label = 'Judges',        role = 'judge',    jobs = { 'judge' } },
-        { id = 'lawyers',      label = 'Lawyers',       role = 'attendee', jobs = { 'lawyer' } },
+        -- Police / DOJ domain
+        { id = 'all_officers', label = 'All Officers',  role = 'officer',  domain = 'police', jobType = Config.PoliceJobType },
+        { id = 'rookies',      label = 'Rookies',       role = 'officer',  domain = 'police', jobType = Config.PoliceJobType, maxGrade = 1 },
+        { id = 'on_duty',      label = 'On-Duty Units', role = 'officer',  domain = 'police', jobType = Config.PoliceJobType, onlyOnDuty = true },
+        { id = 'all_doj',      label = 'All DOJ',       role = 'attendee', domain = 'police', jobType = Config.DojJobType },
+        { id = 'judges',       label = 'Judges',        role = 'judge',    domain = 'police', jobs = { 'judge' } },
+        { id = 'lawyers',      label = 'Lawyers',       role = 'attendee', domain = 'police', jobs = { 'lawyer' } },
+
+        -- EMS domain (separate calendar)
+        { id = 'all_ems',       label = 'All EMS',        role = 'attendee', domain = 'ems', jobType = Config.MedicalJobType },
+        { id = 'ems_rookies',   label = 'EMS Rookies',    role = 'trainee',  domain = 'ems', jobType = Config.MedicalJobType, maxGrade = 1 },
+        { id = 'ems_on_duty',   label = 'On-Duty EMS',    role = 'attendee', domain = 'ems', jobType = Config.MedicalJobType, onlyOnDuty = true },
     },
 }
