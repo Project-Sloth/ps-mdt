@@ -58,6 +58,22 @@ local function permForCategory(category, action)
     return 'training_' .. action
 end
 
+-- The calendar "domain" the caller belongs to. Police and DOJ share the
+-- 'police' domain so their calendar stays in sync; EMS is its own 'ems'
+-- domain with a completely separate set of events.
+local function callerCalendarDomain(src)
+    if GetMdtDomain then return GetMdtDomain(src) end
+    return 'police'
+end
+
+-- EMS never deals with court cases, so the 'court' category is police-only.
+local function categoryAllowedForDomain(category, domain)
+    if domain == 'ems' and normalizeCategory(category) == 'court' then
+        return false
+    end
+    return true
+end
+
 -- A user may view the calendar if they can view either domain.
 local function canViewCalendar(src)
     return CheckPermission(src, 'court_view') or CheckPermission(src, 'training_view')
@@ -249,6 +265,7 @@ ps.registerCallback(resourceName .. ':server:getHearings', function(source, payl
     payload = payload or {}
     local fromDate = payload.from or os.date('%Y-%m-01 00:00:00')
     local toDate   = payload.to   or os.date('%Y-%m-%d 23:59:59')
+    local domain   = callerCalendarDomain(src)
 
     -- Optional category filter (array of category names)
     local catClause, catValues = '', {}
@@ -261,7 +278,7 @@ ps.registerCallback(resourceName .. ':server:getHearings', function(source, payl
         catClause = ' AND h.category IN (' .. table.concat(placeholders, ',') .. ')'
     end
 
-    local args = { fromDate, toDate }
+    local args = { domain, fromDate, toDate }
     for _, v in ipairs(catValues) do args[#args + 1] = v end
 
     local rows = MySQL.query.await(([[
@@ -269,7 +286,7 @@ ps.registerCallback(resourceName .. ':server:getHearings', function(source, payl
                c.case_number AS case_number, c.title AS case_title
         FROM mdt_court_hearings h
         LEFT JOIN mdt_cases c ON c.id = h.case_id
-        WHERE h.scheduled_at BETWEEN ? AND ?%s
+        WHERE h.job_type = ? AND h.scheduled_at BETWEEN ? AND ?%s
         ORDER BY h.scheduled_at ASC
     ]]):format(catClause), args) or {}
 
@@ -295,6 +312,10 @@ ps.registerCallback(resourceName .. ':server:getHearing', function(source, paylo
     ]], { hearingId })
 
     if not hearing then return { success = false, error = 'Hearing not found' } end
+    -- Don't leak events from the other domain (police/DOJ <-> EMS).
+    if hearing.job_type and hearing.job_type ~= callerCalendarDomain(src) then
+        return { success = false, error = 'Hearing not found' }
+    end
 
     local attendees = MySQL.query.await([[
         SELECT id, citizenid, display_name, role, notified_at
@@ -346,6 +367,10 @@ ps.registerCallback(resourceName .. ':server:createHearing', function(source, pa
 
     payload = payload or {}
     local category = normalizeCategory(payload.category)
+    local domain = callerCalendarDomain(src)
+    if not categoryAllowedForDomain(category, domain) then
+        return { success = false, error = 'Category not allowed for this department' }
+    end
     if not CheckPermission(src, permForCategory(category, 'create')) then
         return { success = false, error = 'No permission' }
     end
@@ -366,8 +391,8 @@ ps.registerCallback(resourceName .. ':server:createHearing', function(source, pa
         INSERT INTO mdt_court_hearings
             (title, category, hearing_type, case_id, warrant_reportid, defendant_cid, defendant_name,
              scheduled_at, duration_minutes, location, judge_cid, judge_name, status, notes,
-             created_by, created_by_name)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+             created_by, created_by_name, job_type)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ]], {
         payload.title,
         category,
@@ -385,6 +410,7 @@ ps.registerCallback(resourceName .. ':server:createHearing', function(source, pa
         payload.notes,
         citizenid,
         getOfficerDisplayName(src),
+        domain,
     })
 
     if not hearingId then return { success = false, error = 'Failed to create hearing' } end
@@ -648,9 +674,10 @@ ps.registerCallback(resourceName .. ':server:getAttendeeGroups', function(source
     if not CheckAuth(src) then return {} end
     if not canViewCalendar(src) then return {} end
 
+    local domain = callerCalendarDomain(src)
     local out = {}
     for _, g in ipairs(courtCfg().Groups or {}) do
-        if g and g.id then
+        if g and g.id and (g.domain or 'police') == domain then
             out[#out + 1] = { id = tostring(g.id), label = g.label or tostring(g.id), role = normalizeRole(g.role) }
         end
     end
@@ -665,10 +692,11 @@ ps.registerCallback(resourceName .. ':server:getGroupMembers', function(source, 
 
     payload = payload or {}
     local gid = payload.groupId and tostring(payload.groupId) or nil
+    local domain = callerCalendarDomain(src)
 
     local group
     for _, g in ipairs(courtCfg().Groups or {}) do
-        if g and tostring(g.id) == gid then group = g break end
+        if g and tostring(g.id) == gid and (g.domain or 'police') == domain then group = g break end
     end
     if not group then return { success = false, error = 'Unknown group' } end
 

@@ -39,7 +39,10 @@ local vehicleCache = {}             -- [plate] = { plate, coords, heading, _ts }
 local cacheVehicleCooldowns = {}    -- [src]   = os.time() of last cacheVehicle event
 local patrols = {}                  -- [id]    = patrol
 local patrolOrder = {}              -- ordered list of patrol ids
-local trackingCache = { vehicles = {}, bodycams = {}, ts = 0 }
+local trackingCache = {
+    police = { vehicles = {}, bodycams = {}, ts = 0 },
+    ems    = { vehicles = {}, bodycams = {}, ts = 0 },
+}
 
 -- ─── Tiny helpers ─────────────────────────────────────────────────────────
 
@@ -72,6 +75,13 @@ local function isValidName(name)
 end
 local function isValidCitizenId(cid)
     return type(cid) == "string" and #cid > 0 and #cid <= 64
+end
+
+-- A caller may only touch patrols that belong to their own domain
+-- (police/DOJ on one side, EMS on the other).
+local function patrolDomainOK(src, patrol)
+    if not patrol then return false end
+    return (patrol.domain or 'police') == GetMdtDomain(src)
 end
 
 -- Validate zone_points: array of {x, y} pairs, max 64 points
@@ -151,9 +161,9 @@ end
 local function savePatrolNow(patrol)
     if not patrol then return end
     MySQL.insert(
-        "INSERT INTO mdt_patrols (id, name, color, member_ids, sort_order, zone_points) VALUES (?, ?, ?, ?, ?, ?) " ..
+        "INSERT INTO mdt_patrols (id, name, color, member_ids, sort_order, zone_points, job_type) VALUES (?, ?, ?, ?, ?, ?, ?) " ..
         "ON DUPLICATE KEY UPDATE name = VALUES(name), color = VALUES(color), " ..
-        "member_ids = VALUES(member_ids), sort_order = VALUES(sort_order), zone_points = VALUES(zone_points)",
+        "member_ids = VALUES(member_ids), sort_order = VALUES(sort_order), zone_points = VALUES(zone_points), job_type = VALUES(job_type)",
         {
             patrol.id,
             patrol.name,
@@ -161,6 +171,7 @@ local function savePatrolNow(patrol)
             json.encode(patrol.memberIds),
             patrol.sortOrder or 0,
             patrol.zonePoints and json.encode(patrol.zonePoints) or nil,
+            patrol.domain or 'police',
         }
     )
 end
@@ -204,14 +215,53 @@ end
 
 -- ─── Broadcast ──────────────────────────────────────────────────────────────
 
-local function doBroadcast(action, citizenid)
-    local ordered = {}
-    for _, id in ipairs(patrolOrder) do
-        if patrols[id] then
-            ordered[#ordered + 1] = patrols[id]
+-- Online player sources belonging to a given MDT domain (police/DOJ vs ems).
+local function playersInDomain(domain)
+    local out = {}
+    local QBCore = getQBCore()
+    if QBCore then
+        for _, player in pairs(QBCore.Functions.GetQBPlayers() or {}) do
+            local d = player.PlayerData
+            if d and d.job and d.source then
+                if GetDomainForJob(d.job.name, d.job.type) == domain then
+                    out[#out + 1] = d.source
+                end
+            end
+        end
+    elseif ps and ps.getAllPlayers then
+        for _, pid in pairs(ps.getAllPlayers() or {}) do
+            local jobName = ps.getJobName and ps.getJobName(pid) or nil
+            local jobType = ps.getJobType and ps.getJobType(pid) or nil
+            if GetDomainForJob(jobName, jobType) == domain then
+                out[#out + 1] = pid
+            end
         end
     end
-    TriggerClientEvent(resourceName .. ":client:syncPatrols", -1, ordered, action, citizenid)
+    return out
+end
+
+-- Ordered patrol list filtered to a single domain.
+local function orderedPatrolsForDomain(domain)
+    local ordered = {}
+    for _, id in ipairs(patrolOrder) do
+        local p = patrols[id]
+        if p and (p.domain or 'police') == domain then
+            ordered[#ordered + 1] = p
+        end
+    end
+    return ordered
+end
+
+local function doBroadcast(action, citizenid)
+    -- Each domain only receives its own patrols, so EMS never sees police
+    -- patrols/zones and vice versa.
+    for _, domain in ipairs({ 'police', 'ems' }) do
+        local ordered = orderedPatrolsForDomain(domain)
+        local targets = playersInDomain(domain)
+        for _, src in ipairs(targets) do
+            TriggerClientEvent(resourceName .. ":client:syncPatrols", src, ordered, action, citizenid)
+        end
+    end
 end
 
 -- Plain broadcasts (create/delete/rename/reorder/zone/disconnect) are coalesced
@@ -234,9 +284,11 @@ end
 
 -- ─── Tracking ─────────────────────────────────────────────────────────────
 
--- HEAVY: scans all on-duty police players + their vehicles. Do not call this
--- per client request — it's wrapped by getTrackingSnapshot() which caches it.
-local function getAllTrackers()
+-- HEAVY: scans all on-duty players of the given domain + their vehicles. Do not
+-- call this per client request — it's wrapped by getTrackingSnapshot() which caches it.
+local function getAllTrackers(matchFn, domain)
+    matchFn = matchFn or IsPoliceJob
+    domain = domain or 'police'
     local vehicles = {}
     local bodycams = {}
     local seenVehicles = {}
@@ -249,7 +301,7 @@ local function getAllTrackers()
         for _, player in pairs(players) do
             local data = player.PlayerData
             if not data or not data.job or not data.job.onduty then goto continue end
-            if not IsPoliceJob(data.job.name, data.job.type) then goto continue end
+            if not matchFn(data.job.name, data.job.type) then goto continue end
 
             local src = data.source
             local ped = GetPlayerPed(src)
@@ -285,7 +337,7 @@ local function getAllTrackers()
             if not (ps.getJobDuty and ps.getJobDuty(playerId)) then goto continue end
             local jobName = ps.getJobName and ps.getJobName(playerId) or nil
             local jobType = ps.getJobType and ps.getJobType(playerId) or nil
-            if not IsPoliceJob(jobName, jobType) then goto continue end
+            if not matchFn(jobName, jobType) then goto continue end
 
             local ped = GetPlayerPed(playerId)
             if not ped or ped == 0 then goto continue end
@@ -316,47 +368,57 @@ local function getAllTrackers()
     end
 
     -- Merge in cached (parked / recently-left) police vehicles that weren't
-    -- seen live this pass. Stale entries are pruned here so ghost markers vanish
-    -- after VEHICLE_CACHE_TTL even if 'entityRemoved' never fires. These carry
+    -- seen live this pass. The vehicle cache is police-only (populated by the
+    -- police-gated cacheVehicle event), so EMS snapshots skip it entirely.
+    -- Stale entries are pruned here so ghost markers vanish after
+    -- VEHICLE_CACHE_TTL even if 'entityRemoved' never fires. These carry
     -- `cached = true` so the NUI can render them dimmed ("last known position").
-    local seenPlates = {}
-    for _, v in ipairs(vehicles) do seenPlates[v.plate] = true end
-    for plate, cacheData in pairs(vehicleCache) do
-        if (now - (cacheData._ts or 0)) > VEHICLE_CACHE_TTL then
-            vehicleCache[plate] = nil
-        elseif not seenPlates[plate] then
-            vehicles[#vehicles + 1] = {
-                plate   = cacheData.plate,
-                coords  = cacheData.coords,
-                heading = cacheData.heading,
-                cached  = true,
-            }
-            seenPlates[plate] = true
+    if domain == 'police' then
+        local seenPlates = {}
+        for _, v in ipairs(vehicles) do seenPlates[v.plate] = true end
+        for plate, cacheData in pairs(vehicleCache) do
+            if (now - (cacheData._ts or 0)) > VEHICLE_CACHE_TTL then
+                vehicleCache[plate] = nil
+            elseif not seenPlates[plate] then
+                vehicles[#vehicles + 1] = {
+                    plate   = cacheData.plate,
+                    coords  = cacheData.coords,
+                    heading = cacheData.heading,
+                    cached  = true,
+                }
+                seenPlates[plate] = true
+            end
         end
     end
 
     return vehicles, bodycams
 end
 
--- Returns a shared, throttled snapshot. With N MDTs open the expensive scan
--- runs at most once per TRACKING_CACHE_TTL instead of N times per poll cycle.
-local function getTrackingSnapshot()
+-- Returns a shared, throttled snapshot for one domain. With N MDTs open the
+-- expensive scan runs at most once per TRACKING_CACHE_TTL per domain instead of
+-- N times per poll cycle.
+local function getTrackingSnapshot(domain)
+    domain = (domain == 'ems') and 'ems' or 'police'
+    local cache = trackingCache[domain]
     local now = GetGameTimer()
-    if trackingCache.ts ~= 0 and (now - trackingCache.ts) < TRACKING_CACHE_TTL then
-        return trackingCache
+    if cache.ts ~= 0 and (now - cache.ts) < TRACKING_CACHE_TTL then
+        return cache
     end
-    local vehicles, bodycams = getAllTrackers()
-    trackingCache.vehicles = vehicles
-    trackingCache.bodycams = bodycams
-    trackingCache.ts = now
-    return trackingCache
+    local matchFn = (domain == 'ems') and IsEmsJob or IsPoliceJob
+    local vehicles, bodycams = getAllTrackers(matchFn, domain)
+    cache.vehicles = vehicles
+    cache.bodycams = bodycams
+    cache.ts = now
+    return cache
 end
 
 ps.registerCallback(resourceName .. ':server:getTracking', function(source)
     if not CheckAuth(source) then
         return { vehicles = {}, bodycams = {} }
     end
-    local snap = getTrackingSnapshot()
+    -- EMS see EMS units; police/DOJ see police units.
+    local domain = GetMdtDomain(source)
+    local snap = getTrackingSnapshot(domain)
     return { vehicles = snap.vehicles, bodycams = snap.bodycams }
 end)
 
@@ -421,10 +483,12 @@ end)
 ps.registerCallback(resourceName .. ":server:getPatrols", function(source)
     local src = source
     if not CheckAuth(src) then return {} end
+    local domain = GetMdtDomain(src)
     local ordered = {}
     for _, id in ipairs(patrolOrder) do
-        if patrols[id] then
-            ordered[#ordered + 1] = patrols[id]
+        local p = patrols[id]
+        if p and (p.domain or 'police') == domain then
+            ordered[#ordered + 1] = p
         end
     end
     return ordered
@@ -437,7 +501,7 @@ RegisterNetEvent(resourceName .. ":server:createPatrol", function(id, name, colo
     if patrols[id] then return end
 
     local sortOrder = #patrolOrder + 1
-    patrols[id] = { id = id, name = name, color = color, memberIds = {}, zonePoints = nil, sortOrder = sortOrder }
+    patrols[id] = { id = id, name = name, color = color, memberIds = {}, zonePoints = nil, sortOrder = sortOrder, domain = GetMdtDomain(src) }
     patrolOrder[#patrolOrder + 1] = id
     broadcastPatrols()
     savePatrolNow(patrols[id]) -- structural change → write immediately
@@ -454,6 +518,7 @@ RegisterNetEvent(resourceName .. ":server:deletePatrol", function(id)
     if not CheckAuth(src) then return end
     if not isValidPatrolId(id) then return end
     if not patrols[id] then return end
+    if not patrolDomainOK(src, patrols[id]) then return end
 
     -- Capture the name BEFORE removing the entry (previous code read it after
     -- nil-ing patrols[id], so the audit log always showed the raw id).
@@ -482,6 +547,7 @@ RegisterNetEvent(resourceName .. ":server:renamePatrol", function(id, newName)
     if not CheckAuth(src) then return end
     if not isValidPatrolId(id) or not isValidName(newName) then return end
     if not patrols[id] then return end
+    if not patrolDomainOK(src, patrols[id]) then return end
 
     local oldName = patrols[id].name
     patrols[id].name = newName
@@ -503,6 +569,7 @@ RegisterNetEvent(resourceName .. ":server:setPatrolZone", function(id, points)
     if not CheckAuth(src) then return end
     if not isValidPatrolId(id) then return end
     if not patrols[id] then return end
+    if not patrolDomainOK(src, patrols[id]) then return end
     if not isValidZonePoints(points) then return end
 
     -- nil clears the zone; fewer than 3 points also clears it
@@ -535,7 +602,7 @@ RegisterNetEvent(resourceName .. ":server:reorderPatrols", function(ids)
     local seen = {}
     local newOrder = {}
     for _, id in ipairs(ids) do
-        if isValidPatrolId(id) and patrols[id] and not seen[id] then
+        if isValidPatrolId(id) and patrols[id] and patrolDomainOK(src, patrols[id]) and not seen[id] then
             seen[id] = true
             newOrder[#newOrder + 1] = id
         end
@@ -567,11 +634,15 @@ RegisterNetEvent(resourceName .. ":server:assignOfficer", function(patrolId, cit
     if not CheckAuth(src) then return end
     if not isValidPatrolId(patrolId) or not isValidCitizenId(citizenId) then return end
     if not patrols[patrolId] then return end
+    if not patrolDomainOK(src, patrols[patrolId]) then return end
 
+    -- Remove from any other patrol in the same domain before re-assigning.
     for _, patrol in pairs(patrols) do
-        for i = #patrol.memberIds, 1, -1 do
-            if patrol.memberIds[i] == citizenId then
-                table.remove(patrol.memberIds, i)
+        if patrolDomainOK(src, patrol) then
+            for i = #patrol.memberIds, 1, -1 do
+                if patrol.memberIds[i] == citizenId then
+                    table.remove(patrol.memberIds, i)
+                end
             end
         end
     end
@@ -597,15 +668,19 @@ RegisterNetEvent(resourceName .. ":server:removeFromPatrol", function(citizenId)
     -- Find which patrol the officer belongs to BEFORE removal (for the audit log)
     local removedFromPatrol = 'unknown'
     for _, patrol in pairs(patrols) do
-        for _, mid in ipairs(patrol.memberIds) do
-            if mid == citizenId then removedFromPatrol = patrol.name; break end
+        if patrolDomainOK(src, patrol) then
+            for _, mid in ipairs(patrol.memberIds) do
+                if mid == citizenId then removedFromPatrol = patrol.name; break end
+            end
         end
     end
     for _, patrol in pairs(patrols) do
-        for i = #patrol.memberIds, 1, -1 do
-            if patrol.memberIds[i] == citizenId then
-                table.remove(patrol.memberIds, i)
-                savePatrol(patrol) -- frequent mutation → debounced
+        if patrolDomainOK(src, patrol) then
+            for i = #patrol.memberIds, 1, -1 do
+                if patrol.memberIds[i] == citizenId then
+                    table.remove(patrol.memberIds, i)
+                    savePatrol(patrol) -- frequent mutation → debounced
+                end
             end
         end
     end
@@ -712,6 +787,7 @@ AddEventHandler("onResourceStart", function(res)
             memberIds = {},
             zonePoints = zonePoints,
             sortOrder = row.sort_order or 0,
+            domain = (row.job_type == 'ems') and 'ems' or 'police',
         }
         patrolOrder[#patrolOrder + 1] = row.id
     end
