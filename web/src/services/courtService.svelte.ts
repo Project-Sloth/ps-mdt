@@ -5,6 +5,10 @@ import type {
 	HearingDetail,
 	CreateHearingPayload,
 	AttendeeRole,
+	AttendeeInput,
+	AttendeeGroup,
+	GroupMembersResult,
+	HearingStatus,
 } from "../interfaces/ICourt";
 
 export interface CourtServiceState {
@@ -191,6 +195,69 @@ export function createCourtService() {
 		}
 	}
 
+	/** Bulk-add attendees to an existing hearing (used by group quick-add). */
+	async function addAttendeesBulk(hearingId: number, attendees: AttendeeInput[]) {
+		try {
+			const response = await fetchNui<{ success: boolean; added?: Array<{ id: number; citizenid: string; display_name?: string; role: AttendeeRole }> }>(
+				NUI_EVENTS.COURT.ADD_ATTENDEES_BULK,
+				{ hearingId, attendees },
+				{ success: false },
+			);
+			return response;
+		} catch (error) {
+			console.error("Failed to bulk-add attendees:", error);
+			return { success: false };
+		}
+	}
+
+	/** List the configured attendee quick-add groups. */
+	async function getAttendeeGroups(): Promise<AttendeeGroup[]> {
+		try {
+			const response = await fetchNui<AttendeeGroup[]>(
+				NUI_EVENTS.COURT.GET_ATTENDEE_GROUPS,
+				{},
+				[],
+			);
+			return Array.isArray(response) ? response : [];
+		} catch (error) {
+			console.error("Failed to load attendee groups:", error);
+			return [];
+		}
+	}
+
+	/** Resolve the members of a quick-add group. */
+	async function getGroupMembers(groupId: string): Promise<GroupMembersResult> {
+		try {
+			const response = await fetchNui<GroupMembersResult>(
+				NUI_EVENTS.COURT.GET_GROUP_MEMBERS,
+				{ groupId },
+				{ success: false, members: [], role: "attendee" },
+			);
+			return response.success
+				? response
+				: { success: false, members: [], role: "attendee", error: response.error };
+		} catch (error) {
+			console.error("Failed to load group members:", error);
+			return { success: false, members: [], role: "attendee" };
+		}
+	}
+
+	/** Advance a hearing's status (start / complete / cancel / adjourn / reopen). */
+	async function setStatus(hearingId: number, status: HearingStatus) {
+		try {
+			const response = await fetchNui<{ success: boolean; status?: HearingStatus; deleted?: boolean; error?: string }>(
+				NUI_EVENTS.COURT.SET_STATUS,
+				{ hearingId, status },
+				{ success: false },
+			);
+			if (response.success) await refresh();
+			return response;
+		} catch (error) {
+			console.error("Failed to set hearing status:", error);
+			return { success: false };
+		}
+	}
+
 	return {
 		get state() {
 			return state;
@@ -203,6 +270,10 @@ export function createCourtService() {
 		deleteHearing,
 		addAttendee,
 		removeAttendee,
+		addAttendeesBulk,
+		getAttendeeGroups,
+		getGroupMembers,
+		setStatus,
 	};
 }
 
