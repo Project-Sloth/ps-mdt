@@ -34,6 +34,10 @@ export const NUI_EVENTS = {
 		DELETE_HEARING: "deleteHearing",
 		ADD_ATTENDEE: "addHearingAttendee",
 		REMOVE_ATTENDEE: "removeHearingAttendee",
+		ADD_ATTENDEES_BULK: "addHearingAttendeesBulk",
+		SET_STATUS: "setHearingStatus",
+		GET_ATTENDEE_GROUPS: "getAttendeeGroups",
+		GET_GROUP_MEMBERS: "getGroupMembers",
 		GET_MISSED: "getMissedHearings",
 	},
 	DISPATCH: {
