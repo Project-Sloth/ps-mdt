@@ -46,7 +46,7 @@
 
             const when =
                 date && !isNaN(date.getTime())
-                    ? ` (${date.toLocaleString("de-DE", {
+                    ? ` (${date.toLocaleString("en-US", {
                         hour: "2-digit",
                         minute: "2-digit",
                     })})`
@@ -57,7 +57,7 @@
                 : "";
 
             globalNotifications.info(
-                `Appointment: ${data?.title ?? "Anhörung"}${when}${where}`
+                `Appointment: ${data?.title ?? "Hearing"}${when}${where}`
             );
         }
     );
