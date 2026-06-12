@@ -66,12 +66,19 @@ local function getAllPermissions()
         'reports_view', 'reports_create', 'reports_delete',
         'warrants_view', 'warrants_issue', 'warrants_close',
         'charges_view', 'charges_edit',
-        'map_patrols_view', 'map_patrols_manage', 'map_patrols_edit', 'dispatch_attach', 'dispatch_route', 
+        'map_patrols_view', 'map_patrols_manage', 'map_patrols_edit', 'dispatch_attach', 'dispatch_route',
         'cameras_view', 'bodycams_view',
+        'notes_edit_department',
         'roster_manage_certifications', 'roster_manage_officers',
+        'ppr_view', 'ppr_manage',
+        'fto_view', 'fto_manage',
+        'bulletin_view', 'bulletin_post', 'bulletin_pin',
+        'court_view', 'court_create', 'court_edit', 'court_delete',
+        'training_view', 'training_create', 'training_edit', 'training_delete',
+        'ia_view', 'ia_manage',
+        'sop_view', 'sop_manage',
         'management_permissions', 'management_bulletins', 'management_activity',
         'management_tags', 'management_tracking', 'management_settings',
-        'ia_view', 'ia_manage',
     }
 end
 
