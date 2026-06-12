@@ -22,6 +22,23 @@ local VALID_ROLES = {
     judge = true, trainee = true, instructor = true, attendee = true,
 }
 
+-- Allowed status lifecycle transitions (enforced by setHearingStatus).
+-- scheduled -> in_session (live) | cancelled | adjourned
+-- in_session -> completed (which deletes the hearing, see Config.Court.AutoStatus)
+-- cancelled / adjourned -> scheduled (reopen)
+local ALLOWED_TRANSITIONS = {
+    scheduled  = { in_session = true, cancelled = true, adjourned = true },
+    in_session = { completed = true },
+    cancelled  = { scheduled = true },
+    adjourned  = { scheduled = true },
+    completed  = {},
+}
+
+-- A hearing that is live or finished can no longer be edited.
+local function isLockedStatus(status)
+    return status == 'in_session' or status == 'completed'
+end
+
 local function normalizeType(t)
     t = t and tostring(t):lower() or 'trial'
     return VALID_TYPES[t] and t or 'trial'
@@ -73,6 +90,150 @@ local function getOfficerDisplayName(src)
         return tostring(callsign) .. ' ' .. name
     end
     return name
+end
+
+-- ============================================================================
+--  lb-phone integration (reminder SMS + invite e-mails)
+-- ============================================================================
+
+local function courtCfg()
+    return (Config and Config.Court) or {}
+end
+
+-- Returns the configured phone resource name only if it is actually running.
+local function phoneResource()
+    local cfg = courtCfg().Phone
+    local res = cfg and cfg.Resource
+    if not res or res == '' then return nil end
+    if GetResourceState(res) ~= 'started' then return nil end
+    return res
+end
+
+-- Resolve a player's equipped phone number from their citizenid (works offline).
+local function getPhoneNumberFor(citizenid)
+    local res = phoneResource()
+    if not res or not citizenid then return nil, res end
+    local ok, num = pcall(function()
+        return exports[res]:GetEquippedPhoneNumber(citizenid)
+    end)
+    if ok and num and tostring(num) ~= '' then return num, res end
+    return nil, res
+end
+
+-- Format a "YYYY-MM-DD HH:MM:SS" timestamp according to Config.DateTime.
+local function formatScheduled(scheduled_at)
+    local s = tostring(scheduled_at or '')
+    local y, mo, da, hh, mi = s:match('(%d+)%-(%d+)%-(%d+)%s+(%d+):(%d+)')
+    if not y then return s end
+    local dt = (Config and Config.DateTime) or {}
+    local fmt = dt.DateFormat or 'YYYY-MM-DD'
+    local datePart
+    if fmt == 'MM-DD-YYYY' then datePart = ('%s/%s/%s'):format(mo, da, y)
+    elseif fmt == 'DD-MM-YYYY' then datePart = ('%s.%s.%s'):format(da, mo, y)
+    else datePart = ('%s-%s-%s'):format(y, mo, da) end
+
+    local timePart = hh .. ':' .. mi
+    if dt.TimeFormat == '12' then
+        local h = tonumber(hh) or 0
+        local suffix = h >= 12 and 'PM' or 'AM'
+        local h12 = h % 12
+        if h12 == 0 then h12 = 12 end
+        timePart = ('%d:%s %s'):format(h12, mi, suffix)
+    end
+    return datePart .. ' ' .. timePart
+end
+
+-- Send a reminder SMS from the configured court number to one attendee.
+local function sendHearingSms(citizenid, body)
+    local cfg = courtCfg()
+    if not (cfg.Sms and cfg.Sms.enabled) then return false end
+    local to, res = getPhoneNumberFor(citizenid)
+    if not to then return false end
+    local from = (cfg.Phone and cfg.Phone.SmsSenderNumber) or 'COURT'
+    local ok = pcall(function()
+        exports[res]:SendMessage(from, to, body)
+    end)
+    return ok and true or false
+end
+
+-- Send an invite e-mail to one attendee (resolves their mail address via lb-phone).
+local function sendHearingMail(citizenid, subject, message)
+    local cfg = courtCfg()
+    if not (cfg.Email and cfg.Email.enabled) then return false end
+    local number, res = getPhoneNumberFor(citizenid)
+    if not number then return false end
+    local mok, email = pcall(function() return exports[res]:GetEmailAddress(number) end)
+    if not mok or not email or tostring(email) == '' then return false end
+    local sender = (cfg.Phone and cfg.Phone.MailSender) or 'Court'
+    local sok = pcall(function()
+        exports[res]:SendMail({
+            to = email,
+            sender = sender,
+            subject = subject,
+            message = message,
+        })
+    end)
+    return sok and true or false
+end
+
+-- Body for the lead-time reminder SMS.
+local function buildReminderSms(row, lead)
+    local lines = {}
+    lines[#lines + 1] = ('Reminder: "%s" starts in ~%d min.'):format(row.title or 'Hearing', lead)
+    lines[#lines + 1] = 'When: ' .. formatScheduled(row.scheduled_at)
+    if row.location and tostring(row.location) ~= '' then
+        lines[#lines + 1] = 'Where: ' .. row.location
+    end
+    return table.concat(lines, '\n')
+end
+
+-- Body for the "you have been added" invite e-mail.
+local function buildHearingMailBody(h)
+    local lines = {}
+    lines[#lines + 1] = ('You have been added to: %s'):format(h.title or 'an event')
+    lines[#lines + 1] = ''
+    lines[#lines + 1] = 'When: ' .. formatScheduled(h.scheduled_at)
+    if h.duration_minutes then lines[#lines + 1] = ('Duration: %d min'):format(tonumber(h.duration_minutes) or 30) end
+    if h.location and tostring(h.location) ~= '' then lines[#lines + 1] = 'Where: ' .. h.location end
+    if h.judge_name and tostring(h.judge_name) ~= '' then lines[#lines + 1] = 'Lead / Judge: ' .. h.judge_name end
+    if h.notes and tostring(h.notes) ~= '' then
+        lines[#lines + 1] = ''
+        lines[#lines + 1] = 'Notes: ' .. h.notes
+    end
+    lines[#lines + 1] = ''
+    lines[#lines + 1] = 'You will receive a reminder shortly before it starts.'
+    return table.concat(lines, '\n')
+end
+
+-- Fire invite e-mails for a freshly created hearing, off the request thread.
+-- Skips entirely when the invite list is larger than the configured cap so a
+-- huge meeting never blocks/lags the server (those people still get the SMS).
+local function dispatchCreateEmails(hearing, targets)
+    local cfg = courtCfg()
+    if not (cfg.Email and cfg.Email.enabled) then return end
+    if type(targets) ~= 'table' or #targets == 0 then return end
+
+    local maxR = tonumber(cfg.Email.MaxRecipients) or 25
+    if #targets > maxR then
+        if ps.debug then
+            ps.debug(('[court] %d invitees > Email.MaxRecipients (%d); skipping invite e-mails, reminder SMS will still fire')
+                :format(#targets, maxR))
+        end
+        return
+    end
+
+    local subject = ('Invitation: %s'):format(hearing.title or 'Event')
+    local body = buildHearingMailBody(hearing)
+    local delay = tonumber(cfg.Email.SendDelayMs) or 50
+
+    CreateThread(function()
+        for _, t in ipairs(targets) do
+            if t.citizenid and tostring(t.citizenid) ~= '' then
+                sendHearingMail(t.citizenid, subject, body)
+                if delay > 0 then Wait(delay) end
+            end
+        end
+    end)
 end
 
 -- ============================================================================
@@ -229,6 +390,7 @@ ps.registerCallback(resourceName .. ':server:createHearing', function(source, pa
     if not hearingId then return { success = false, error = 'Failed to create hearing' } end
 
     -- Optional initial attendees in the same call
+    local inviteTargets = {}
     if type(payload.attendees) == 'table' then
         for _, a in ipairs(payload.attendees) do
             if a.citizenid and tostring(a.citizenid) ~= '' then
@@ -237,9 +399,20 @@ ps.registerCallback(resourceName .. ':server:createHearing', function(source, pa
                     VALUES (?, ?, ?, ?)
                     ON DUPLICATE KEY UPDATE display_name = VALUES(display_name), role = VALUES(role)
                 ]], { hearingId, a.citizenid, a.display_name, normalizeRole(a.role) })
+                inviteTargets[#inviteTargets + 1] = { citizenid = a.citizenid, display_name = a.display_name }
             end
         end
     end
+
+    -- Feature: e-mail every invited person on creation (capped to avoid lag).
+    dispatchCreateEmails({
+        title = payload.title,
+        scheduled_at = payload.scheduled_at,
+        duration_minutes = tonumber(payload.duration_minutes) or 30,
+        location = payload.location,
+        judge_name = payload.judge_name,
+        notes = payload.notes,
+    }, inviteTargets)
 
     if ps.auditLog then
         ps.auditLog(src, 'court_hearing_created', 'court_hearing', hearingId, {
@@ -264,10 +437,14 @@ ps.registerCallback(resourceName .. ':server:updateHearing', function(source, pa
     local data = payload.data or {}
 
     -- Gate by the hearing's CURRENT category
-    local existing = MySQL.single.await('SELECT category FROM mdt_court_hearings WHERE id = ?', { hearingId })
+    local existing = MySQL.single.await('SELECT category, status FROM mdt_court_hearings WHERE id = ?', { hearingId })
     if not existing then return { success = false, error = 'Hearing not found' } end
     if not CheckPermission(src, permForCategory(existing.category, 'edit')) then
         return { success = false, error = 'No permission' }
+    end
+    -- A live or completed hearing is locked — only status actions are allowed.
+    if isLockedStatus(existing.status) then
+        return { success = false, error = 'Hearing is locked and can no longer be edited' }
     end
     -- If moving it to a different category, require rights for the target too
     if data.category ~= nil and normalizeCategory(data.category) ~= existing.category then
@@ -365,8 +542,11 @@ ps.registerCallback(resourceName .. ':server:addHearingAttendee', function(sourc
         return { success = false, error = 'Missing data' }
     end
 
-    local existing = MySQL.single.await('SELECT category FROM mdt_court_hearings WHERE id = ?', { hearingId })
+    local existing = MySQL.single.await('SELECT category, status FROM mdt_court_hearings WHERE id = ?', { hearingId })
     if not existing then return { success = false, error = 'Hearing not found' } end
+    if isLockedStatus(existing.status) then
+        return { success = false, error = 'Hearing is locked' }
+    end
     if not CheckPermission(src, permForCategory(existing.category, 'edit')) then
         return { success = false, error = 'No permission' }
     end
@@ -409,53 +589,264 @@ ps.registerCallback(resourceName .. ':server:removeHearingAttendee', function(so
 end)
 
 -- ============================================================================
---  Reminder scheduler
---  Scans once per minute for hearings starting within the lead window whose
---  attendees have not yet been notified. notified_at acts as an idempotency
---  marker so reminders never double-fire and survive resource restarts.
+--  Status lifecycle (manual start / complete / cancel / adjourn / reopen)
+--  Completing a hearing deletes it (configurable via Config.Court.AutoStatus).
 -- ============================================================================
 
-CreateThread(function()
-    while true do
-        -- small initial delay so the DB / framework are ready
-        Wait(15000)
-        local lead = (Config and Config.Court and Config.Court.ReminderLeadMinutes) or 15
-        local ok, due = pcall(MySQL.query.await, [[
-            SELECT a.id AS attendee_id, a.citizenid, h.id AS hearing_id, h.title,
-                   h.scheduled_at, h.location, h.hearing_type
-            FROM mdt_court_attendees a
-            JOIN mdt_court_hearings h ON h.id = a.hearing_id
-            WHERE a.notified_at IS NULL
-              AND h.status = 'scheduled'
-              AND h.scheduled_at >= NOW()
-              AND h.scheduled_at <= DATE_ADD(NOW(), INTERVAL ? MINUTE)
-        ]], { lead })
-        if ok and type(due) == 'table' then
-            for _, row in ipairs(due) do
-                local notified = false
-                if QBCore then
-                    local Player = QBCore.Functions.GetPlayerByCitizenId(row.citizenid)
-                    if Player and Player.PlayerData and Player.PlayerData.source then
-                        local tsrc = Player.PlayerData.source
+ps.registerCallback(resourceName .. ':server:setHearingStatus', function(source, payload)
+    local src = source
+    if not CheckAuth(src) then return { success = false, error = 'Unauthorized' } end
 
-                        print(lead, row.title, row.location or 'TBA')
-                        TriggerClientEvent(resourceName .. ':client:courtReminder', tsrc, {
-                            hearing_id = row.hearing_id,
-                            title = row.title,
-                            scheduled_at = tostring(row.scheduled_at),
-                            location = row.location,
-                            hearing_type = row.hearing_type,
-                        })
-                        notified = true
-                    end
+    payload = payload or {}
+    local hearingId = tonumber(payload.hearingId)
+    local target = payload.status and normalizeStatus(payload.status) or nil
+    if not hearingId or not target then return { success = false, error = 'Missing data' } end
+
+    local existing = MySQL.single.await('SELECT category, status FROM mdt_court_hearings WHERE id = ?', { hearingId })
+    if not existing then return { success = false, error = 'Hearing not found' } end
+    if not CheckPermission(src, permForCategory(existing.category, 'edit')) then
+        return { success = false, error = 'No permission' }
+    end
+
+    local allowed = ALLOWED_TRANSITIONS[existing.status] or {}
+    if not allowed[target] then return { success = false, error = 'Invalid status transition' } end
+
+    -- in_session -> completed: per design, a finished hearing is removed.
+    if target == 'completed' then
+        local auto = courtCfg().AutoStatus or {}
+        if auto.DeleteOnComplete == false then
+            MySQL.update.await('UPDATE mdt_court_hearings SET status = ? WHERE id = ?', { 'completed', hearingId })
+            if ps.auditLog then ps.auditLog(src, 'court_hearing_completed', 'court_hearing', hearingId, {}) end
+            return { success = true, status = 'completed', deleted = false }
+        end
+        MySQL.update.await('DELETE FROM mdt_court_hearings WHERE id = ?', { hearingId })
+        if ps.auditLog then ps.auditLog(src, 'court_hearing_completed', 'court_hearing', hearingId, { deleted = true }) end
+        return { success = true, status = 'completed', deleted = true }
+    end
+
+    -- Starting it fresh again clears reminder flags so a re-scheduled run re-notifies.
+    if target == 'scheduled' then
+        MySQL.update.await('UPDATE mdt_court_attendees SET notified_at = NULL, delivered_at = NULL WHERE hearing_id = ?', { hearingId })
+    end
+
+    local ok = MySQL.update.await('UPDATE mdt_court_hearings SET status = ? WHERE id = ?', { target, hearingId })
+    if not ok then return { success = false, error = 'Failed to update status' } end
+
+    if ps.auditLog then
+        ps.auditLog(src, 'court_hearing_status', 'court_hearing', hearingId, { from = existing.status, to = target })
+    end
+    return { success = true, status = target }
+end)
+
+-- ============================================================================
+--  Attendee quick-add groups (Rookies / All Officers / All DOJ / ...)
+-- ============================================================================
+
+-- List the configured groups (id + label + the role members get).
+ps.registerCallback(resourceName .. ':server:getAttendeeGroups', function(source)
+    local src = source
+    if not CheckAuth(src) then return {} end
+    if not canViewCalendar(src) then return {} end
+
+    local out = {}
+    for _, g in ipairs(courtCfg().Groups or {}) do
+        if g and g.id then
+            out[#out + 1] = { id = tostring(g.id), label = g.label or tostring(g.id), role = normalizeRole(g.role) }
+        end
+    end
+    return out
+end)
+
+-- Resolve the members of one group into a list of stageable attendees.
+ps.registerCallback(resourceName .. ':server:getGroupMembers', function(source, payload)
+    local src = source
+    if not CheckAuth(src) then return { success = false } end
+    if not canViewCalendar(src) then return { success = false, error = 'No permission' } end
+
+    payload = payload or {}
+    local gid = payload.groupId and tostring(payload.groupId) or nil
+
+    local group
+    for _, g in ipairs(courtCfg().Groups or {}) do
+        if g and tostring(g.id) == gid then group = g break end
+    end
+    if not group then return { success = false, error = 'Unknown group' } end
+
+    -- Optional explicit job-name whitelist (takes precedence over jobType).
+    local jobSet
+    if type(group.jobs) == 'table' and #group.jobs > 0 then
+        jobSet = {}
+        for _, j in ipairs(group.jobs) do jobSet[tostring(j)] = true end
+    end
+
+    local role = normalizeRole(group.role)
+    local maxGrade = group.maxGrade ~= nil and tonumber(group.maxGrade) or nil
+    local members, seen = {}, {}
+
+    local rows = MySQL.query.await('SELECT citizenid, charinfo, job, metadata FROM players', {}) or {}
+    for _, row in ipairs(rows) do
+        local cid = row.citizenid
+        if cid and not seen[cid] then
+            local job = row.job and json.decode(row.job) or {}
+            local jobName = job.name and tostring(job.name) or nil
+            local jobType = job.type and tostring(job.type) or nil
+
+            local match
+            if jobSet then
+                match = jobName ~= nil and jobSet[jobName] == true
+            elseif group.jobType then
+                match = jobType == tostring(group.jobType)
+            else
+                match = false
+            end
+
+            if match and maxGrade ~= nil then
+                local lvl = (job.grade and tonumber(job.grade.level)) or 0
+                if lvl > maxGrade then match = false end
+            end
+            if match and group.onlyOnDuty then
+                if not job.onduty then match = false end
+            end
+
+            if match then
+                local ci = row.charinfo and json.decode(row.charinfo) or {}
+                local md = row.metadata and json.decode(row.metadata) or {}
+                local name = ((ci.firstname or '') .. ' ' .. (ci.lastname or ''))
+                name = name:gsub('^%s+', ''):gsub('%s+$', '')
+                if name == '' then name = cid end
+                local callsign = md.callsign
+                if callsign and tostring(callsign) ~= '' and callsign ~= 'NO CALLSIGN' then
+                    name = tostring(callsign) .. ' ' .. name
                 end
-                -- Mark as handled regardless of online state so we don't retry forever.
-                -- (Offline officers can see a "missed" indicator when they next open the MDT.)
-                MySQL.update.await('UPDATE mdt_court_attendees SET notified_at = NOW() WHERE id = ?', { row.attendee_id })
-                if notified then ps.debug(('[court] reminder sent to %s for hearing %s'):format(row.citizenid, row.hearing_id)) end
+                seen[cid] = true
+                members[#members + 1] = { citizenid = cid, display_name = name, role = role }
             end
         end
+    end
 
-        Wait(180000) -- 3x per minute
+    return { success = true, members = members, role = role }
+end)
+
+-- Bulk-add attendees to an existing hearing (used by group quick-add in edit mode).
+ps.registerCallback(resourceName .. ':server:addHearingAttendeesBulk', function(source, payload)
+    local src = source
+    if not CheckAuth(src) then return { success = false, error = 'Unauthorized' } end
+
+    payload = payload or {}
+    local hearingId = tonumber(payload.hearingId)
+    local list = payload.attendees
+    if not hearingId or type(list) ~= 'table' then return { success = false, error = 'Missing data' } end
+
+    local existing = MySQL.single.await('SELECT category, status FROM mdt_court_hearings WHERE id = ?', { hearingId })
+    if not existing then return { success = false, error = 'Hearing not found' } end
+    if isLockedStatus(existing.status) then return { success = false, error = 'Hearing is locked' } end
+    if not CheckPermission(src, permForCategory(existing.category, 'edit')) then
+        return { success = false, error = 'No permission' }
+    end
+
+    local added = {}
+    for _, a in ipairs(list) do
+        if a.citizenid and tostring(a.citizenid) ~= '' then
+            local id = MySQL.insert.await([[
+                INSERT INTO mdt_court_attendees (hearing_id, citizenid, display_name, role)
+                VALUES (?, ?, ?, ?)
+                ON DUPLICATE KEY UPDATE display_name = VALUES(display_name), role = VALUES(role)
+            ]], { hearingId, a.citizenid, a.display_name, normalizeRole(a.role) })
+            added[#added + 1] = {
+                id = id, citizenid = a.citizenid,
+                display_name = a.display_name, role = normalizeRole(a.role),
+            }
+        end
+    end
+
+    if ps.auditLog then
+        ps.auditLog(src, 'court_attendees_bulk_added', 'court_hearing', hearingId, { count = #added })
+    end
+    return { success = true, added = added }
+end)
+
+-- ============================================================================
+--  Scheduler
+--  Runs once a minute and does two jobs:
+--    1) Auto status lifecycle: scheduled -> in_session -> completed(-> delete).
+--    2) Reminder SMS: lb-phone SMS to attendees inside the lead window.
+--  notified_at is an idempotency marker so reminders never double-fire and
+--  survive resource restarts. SMS reaches offline players too (lb-phone stores
+--  it), so we mark both notified_at and delivered_at when a reminder is sent.
+-- ============================================================================
+
+-- Step 1 — drive the status lifecycle purely off the clock.
+local function runStatusTransitions()
+    local auto = courtCfg().AutoStatus
+    if not (auto and auto.enabled) then return end
+
+    local grace = tonumber(auto.CompleteGraceMinutes) or 0
+    -- end = scheduled_at + duration + grace
+    local endExpr = 'DATE_ADD(scheduled_at, INTERVAL (COALESCE(duration_minutes, 30) + ?) MINUTE)'
+
+    -- 1a) Anything whose end time has passed is finished -> complete/remove.
+    --     Covers in_session hearings and any scheduled ones that were fully missed.
+    if auto.DeleteOnComplete == false then
+        pcall(MySQL.update.await, ([[
+            UPDATE mdt_court_hearings SET status = 'completed'
+            WHERE status IN ('scheduled','in_session') AND %s <= NOW()
+        ]]):format(endExpr), { grace })
+    else
+        pcall(MySQL.update.await, ([[
+            DELETE FROM mdt_court_hearings
+            WHERE status IN ('scheduled','in_session') AND %s <= NOW()
+        ]]):format(endExpr), { grace })
+    end
+
+    -- 1b) Scheduled hearings that have started (but not yet ended) go live.
+    pcall(MySQL.update.await, ([[
+        UPDATE mdt_court_hearings SET status = 'in_session'
+        WHERE status = 'scheduled'
+          AND scheduled_at <= NOW()
+          AND %s > NOW()
+    ]]):format(endExpr), { grace })
+end
+
+-- Step 2 — send reminder SMS to attendees inside the lead window.
+local function runReminders()
+    local cfg = courtCfg()
+    if not (cfg.Sms and cfg.Sms.enabled) then return end
+    if not phoneResource() then return end
+
+    local lead = tonumber(cfg.ReminderLeadMinutes) or 15
+    local ok, due = pcall(MySQL.query.await, [[
+        SELECT a.id AS attendee_id, a.citizenid, h.id AS hearing_id, h.title,
+               DATE_FORMAT(h.scheduled_at, '%Y-%m-%d %H:%i:%s') AS scheduled_at,
+               h.location, h.hearing_type
+        FROM mdt_court_attendees a
+        JOIN mdt_court_hearings h ON h.id = a.hearing_id
+        WHERE a.notified_at IS NULL
+          AND h.status = 'scheduled'
+          AND h.scheduled_at >= NOW()
+          AND h.scheduled_at <= DATE_ADD(NOW(), INTERVAL ? MINUTE)
+    ]], { lead })
+    if not ok or type(due) ~= 'table' then return end
+
+    local delay = tonumber(cfg.Sms.SendDelayMs) or 25
+    for _, row in ipairs(due) do
+        local sent = sendHearingSms(row.citizenid, buildReminderSms(row, lead))
+        -- Mark handled regardless of send outcome so we never retry forever.
+        MySQL.update.await(
+            'UPDATE mdt_court_attendees SET notified_at = NOW(), delivered_at = NOW() WHERE id = ?',
+            { row.attendee_id }
+        )
+        if sent and ps.debug then
+            ps.debug(('[court] reminder SMS sent to %s for hearing %s'):format(row.citizenid, row.hearing_id))
+        end
+        if delay > 0 then Wait(delay) end
+    end
+end
+
+CreateThread(function()
+    Wait(15000) -- let the DB / framework settle on boot
+    while true do
+        pcall(runStatusTransitions)
+        pcall(runReminders)
+        Wait(60000) -- once per minute
     end
 end)
