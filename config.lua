@@ -351,3 +351,63 @@ Config.Weapons = {
     { model = "weapon_navyrevolver", label = "Navy Revolver" },
     { model = "weapon_musket", label = "Musket" },
 }
+-- ============================================================================
+--  Court / Calendar (hearings, meetings, trainings)
+--  Drives the DOJ calendar: reminder SMS, invite e-mails, automatic status
+--  lifecycle and the attendee quick-add groups.
+-- ============================================================================
+Config.Court = {
+    -- How many minutes before a hearing the reminder SMS goes out.
+    ReminderLeadMinutes = 15,
+
+    -- ---- lb-phone integration -------------------------------------------
+    Phone = {
+        Resource = 'lb-phone',                       -- set '' to disable all phone messaging
+        SmsSenderNumber = 'SA-COURT',                -- "from" number shown on reminder SMS (any string lb-phone accepts)
+        MailSender = 'San Andreas Judicial System',  -- sender shown in the recipient's inbox
+    },
+
+    -- ---- Reminder SMS (replaces the old MDT notify) ----------------------
+    Sms = {
+        enabled = true,
+        SendDelayMs = 25,    -- ms between each send so big invite lists don't spike the frame
+    },
+
+    -- ---- Invite e-mail on create -----------------------------------------
+    Email = {
+        enabled = true,
+        -- If a hearing is created with MORE attendees than this, the per-person
+        -- e-mails are skipped entirely (they still get the reminder SMS). This
+        -- prevents lag spikes on huge invite lists.
+        MaxRecipients = 25,
+        SendDelayMs = 50,    -- ms between each mail send
+    },
+
+    -- ---- Automatic status lifecycle --------------------------------------
+    AutoStatus = {
+        enabled = true,
+        -- scheduled  -> in_session  once scheduled_at is reached
+        -- in_session -> completed   once scheduled_at + duration + grace passed
+        CompleteGraceMinutes = 5,
+        -- true  = a completed hearing is deleted (calendar self-cleans)
+        -- false = a completed hearing is kept with status 'completed'
+        DeleteOnComplete = true,
+    },
+
+    -- ---- Attendee quick-add groups (buttons in the create/edit modal) ----
+    -- id:         stable identifier
+    -- label:      button text
+    -- role:       attendee role the bulk-added people get (see VALID_ROLES)
+    -- jobType:    match against the framework job.type (leo / doj / ems ...)
+    -- jobs:       optional explicit job-name whitelist (overrides jobType)
+    -- maxGrade:   optional grade-level ceiling (e.g. rookies = grade 0-1)
+    -- onlyOnDuty: only include players currently on duty
+    Groups = {
+        { id = 'all_officers', label = 'All Officers',  role = 'officer',  jobType = Config.PoliceJobType },
+        { id = 'rookies',      label = 'Rookies',       role = 'officer',  jobType = Config.PoliceJobType, maxGrade = 1 },
+        { id = 'on_duty',      label = 'On-Duty Units', role = 'officer',  jobType = Config.PoliceJobType, onlyOnDuty = true },
+        { id = 'all_doj',      label = 'All DOJ',       role = 'attendee', jobType = Config.DojJobType },
+        { id = 'judges',       label = 'Judges',        role = 'judge',    jobs = { 'judge' } },
+        { id = 'lawyers',      label = 'Lawyers',       role = 'attendee', jobs = { 'lawyer' } },
+    },
+}
