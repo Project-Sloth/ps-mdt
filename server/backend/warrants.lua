@@ -85,6 +85,9 @@ end)
 ps.registerCallback(resourceName .. ':server:issueWarrant', function(source, data)
     local src = source
     if not CheckAuth(src) then return { success = false, error = 'Unauthorized' } end
+    if not CheckPermission(src, 'warrants_issue') then
+        return { success = false, error = 'Insufficient permissions' }
+    end
 
     data = data or {}
     local reportId = tonumber(data.reportId)
@@ -123,6 +126,9 @@ end)
 ps.registerCallback(resourceName .. ':server:closeWarrant', function(source, data)
     local src = source
     if not CheckAuth(src) then return { success = false, error = 'Unauthorized' } end
+    if not CheckPermission(src, 'warrants_close') then
+        return { success = false, error = 'Insufficient permissions' }
+    end
 
     data = data or {}
     local reportId = tonumber(data.reportId)

@@ -491,10 +491,15 @@ end
 RegisterNetEvent(resourceName .. ':server:selfRegisterWeapon')
 AddEventHandler(resourceName .. ':server:selfRegisterWeapon', function(serial, imageurl, notes, owner, weapClass, weapModel)
     local src = source
+    if not CheckAuth(src) then return end
     if not serial then return end
 
+    -- Derive owner server-side from player data instead of trusting client
+    local Player = QBCore and QBCore.Functions.GetPlayer(src)
+    local serverOwner = Player and Player.PlayerData.citizenid or ps.getIdentifier(src)
+
     local success, err = pcall(function()
-        exports[resourceName]:registerWeapon(owner or ps.getIdentifier(src), weapModel or 'unknown', serial, notes or 'Self Registered')
+        exports[resourceName]:registerWeapon(serverOwner, weapModel or 'unknown', serial, notes or 'Self Registered')
     end)
 
     if success then

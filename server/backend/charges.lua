@@ -32,7 +32,7 @@ end)
 
 -- Process a fine - deduct money from citizen's bank account
 -- Ported from ps-mdt v1 (mdt:server:removeMoney)
-local fineAntiSpam = false
+local fineCooldowns = {}
 ps.registerCallback(resourceName .. ':server:processFine', function(source, payload)
     local src = source
     if not CheckAuth(src) then return { success = false, message = 'Unauthorized' } end
@@ -42,16 +42,21 @@ ps.registerCallback(resourceName .. ':server:processFine', function(source, payl
     local fine = tonumber(payload.fine)
     local reportId = payload.reportId
 
-    local jfConfig = GetJailFinesConfig and GetJailFinesConfig() or {}
-    local maxFine = jfConfig.maxFineAmount or (Config and Config.Fines and Config.Fines.MaxAmount) or 100000
-    if not citizenId or not fine or fine <= 0 then
+    if not citizenId or not fine or fine ~= fine or fine <= 0 then
         return { success = false, message = 'Missing citizen ID or invalid fine amount' }
     end
+
+    fine = math.floor(fine)
+
+    local jfConfig = GetJailFinesConfig and GetJailFinesConfig() or {}
+    local maxFine = jfConfig.maxFineAmount or (Config and Config.Fines and Config.Fines.MaxAmount) or 100000
     if fine > maxFine then
         return { success = false, message = 'Fine amount exceeds maximum of $' .. maxFine }
     end
 
-    if fineAntiSpam then
+    local now = os.time() * 1000
+    local cooldownMs = (Config and Config.Fines and Config.Fines.CooldownMs) or 30000
+    if fineCooldowns[src] and (now - fineCooldowns[src]) < cooldownMs then
         return { success = false, message = 'Fine processing on cooldown' }
     end
 
@@ -67,11 +72,7 @@ ps.registerCallback(resourceName .. ':server:processFine', function(source, payl
         ps.notify(Player.source or Player.PlayerData.source, '$' .. fine .. ' fine deducted from your bank account', 'error')
 
         -- Anti-spam cooldown
-        fineAntiSpam = true
-        local cooldown = (Config and Config.Fines and Config.Fines.CooldownMs) or 30000
-        SetTimeout(cooldown, function()
-            fineAntiSpam = false
-        end)
+        fineCooldowns[src] = os.time() * 1000
 
         if ps.auditLog then
             local officerName = ps.getPlayerName(src) or 'Unknown Officer'
