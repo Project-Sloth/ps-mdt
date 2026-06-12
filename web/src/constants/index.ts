@@ -37,7 +37,7 @@ export const EMS_TABS: readonly (typeof MDT_TABS)[number]["name"][] = [
 	"Roster",
 	"Bulletin Board",
 	"Map",
-	"Bodycams",
+	"Calendar",
 	"Preferences",
 	"Settings",
 ] as const;
