@@ -58,6 +58,38 @@ RegisterNUICallback('removeHearingAttendee', function(data, cb)
     cb(result or { success = false })
 end)
 
+RegisterNUICallback('setHearingStatus', function(data, cb)
+    if not MDTOpen then cb({ success = false, error = 'MDT is not open' }) return end
+    local result = ps.callback(resourceName .. ':server:setHearingStatus', {
+        hearingId = data and data.hearingId,
+        status    = data and data.status,
+    })
+    cb(result or { success = false, error = 'Failed to set status' })
+end)
+
+RegisterNUICallback('getAttendeeGroups', function(data, cb)
+    if not MDTOpen then cb({}) return end
+    local result = ps.callback(resourceName .. ':server:getAttendeeGroups', {})
+    cb(result or {})
+end)
+
+RegisterNUICallback('getGroupMembers', function(data, cb)
+    if not MDTOpen then cb({ success = false }) return end
+    local result = ps.callback(resourceName .. ':server:getGroupMembers', {
+        groupId = data and data.groupId,
+    })
+    cb(result or { success = false })
+end)
+
+RegisterNUICallback('addHearingAttendeesBulk', function(data, cb)
+    if not MDTOpen then cb({ success = false }) return end
+    local result = ps.callback(resourceName .. ':server:addHearingAttendeesBulk', {
+        hearingId = data and data.hearingId,
+        attendees = data and data.attendees,
+    })
+    cb(result or { success = false })
+end)
+
 RegisterNUICallback('getMissedHearings', function(data, cb)
     if not MDTOpen then cb({}) return end
     local result = ps.callback(resourceName .. ':server:getMissedHearings', {})
@@ -65,13 +97,6 @@ RegisterNUICallback('getMissedHearings', function(data, cb)
 end)
 
 -- ============================================================================
---  Server -> NUI live reminder push
+--  Reminders are now delivered as lb-phone SMS from the server (see
+--  server/backend/court.lua). No in-MDT reminder push is needed anymore.
 -- ============================================================================
-
-RegisterNetEvent(resourceName .. ':client:courtReminder', function(data)
-    if MDTOpen then
-        if PlayMDTSound then PlayMDTSound('reminder') end
-        -- Push to the NUI (any tab) when the MDT is open so the toast shows everywhere
-        SendNUI('courtReminder', data)
-    end
-end)
