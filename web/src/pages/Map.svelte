@@ -16,6 +16,8 @@
     let canViewPatrols   = $derived(authService ? (authService.hasPermission("map_patrols_view")   ?? true) : true);
     let canManagePatrols = $derived(authService ? (authService.hasPermission("map_patrols_manage") ?? true) : true);
     let canEditPatrols   = $derived(authService ? (authService.hasPermission("map_patrols_edit")   ?? true) : true);
+    // EMS see their own units/zones; the live-position layer isn't bodycam-based for them.
+    let isEms            = $derived(authService?.jobType === "ems");
 
     let mapContainer: HTMLDivElement | null = null;
     let map: L.Map | null = null;
@@ -1086,7 +1088,7 @@
                 </label>
                 <label class="control-toggle">
                     <input type="checkbox" bind:checked={showBodycams} onchange={() => localStorage.setItem("mdt_map_bodycams", String(showBodycams))} />
-                    <span class="toggle-label">Bodycams</span>
+                    <span class="toggle-label">{isEms ? "Live Units" : "Bodycams"}</span>
                 </label>
                 <label class="control-toggle">
                     <input type="checkbox" bind:checked={showPatrols} onchange={() => localStorage.setItem("mdt_map_patrols_layer", String(showPatrols))} />
