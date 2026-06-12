@@ -264,10 +264,28 @@ Config.ManagementPermissions = {
     'bulletin_view',
     'bulletin_post',
     'bulletin_pin',
+    -- Calendar (court hearings are court_*; trainings/meetings/other are training_*)
+    'court_view',
+    'court_create',
+    'court_edit',
+    'court_delete',
+    'training_view',
+    'training_create',
+    'training_edit',
+    'training_delete',
+    -- Internal Affairs
+    'ia_view',
+    'ia_manage',
+    -- SOP
+    'sop_view',
+    'sop_manage',
     -- Management
     'management_permissions',
     'management_bulletins',
     'management_activity',
+    'management_tags',
+    'management_tracking',
+    'management_settings',
 }
 
 -- Bodycam Settings (override defaults if needed, remove to use built-in defaults)
