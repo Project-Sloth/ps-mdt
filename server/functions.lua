@@ -21,6 +21,45 @@ function IsPoliceJob(jobName, jobType)
     return false
 end
 
+--- Check if a job is a medical/EMS job based on Config.MedicalJobs and Config.MedicalJobType
+---@param jobName string|nil
+---@param jobType string|nil
+---@return boolean
+function IsEmsJob(jobName, jobType)
+    if jobType and Config and Config.MedicalJobType and tostring(jobType) == tostring(Config.MedicalJobType) then
+        return true
+    end
+    if jobName and Config and Config.MedicalJobs then
+        local check = tostring(jobName)
+        for _, job in ipairs(Config.MedicalJobs) do
+            if tostring(job) == check then
+                return true
+            end
+        end
+    end
+    return false
+end
+
+--- The MDT "domain" a job belongs to. Police and DOJ share the 'police' domain
+--- (so their calendar / map data stays together); EMS is its own 'ems' domain.
+---@param jobName string|nil
+---@param jobType string|nil
+---@return "police"|"ems"
+function GetDomainForJob(jobName, jobType)
+    if IsEmsJob(jobName, jobType) then return 'ems' end
+    return 'police'
+end
+
+--- The MDT domain for an online player source.
+---@param src number
+---@return "police"|"ems"
+function GetMdtDomain(src)
+    local jobName = ps.getJobName and ps.getJobName(src) or nil
+    local jobType = ps.getJobType and ps.getJobType(src) or nil
+    return GetDomainForJob(jobName, jobType)
+end
+
+
 --- Ensure an MDT profile exists for a citizen. Resolves name from online player or DB if offline.
 ---@param citizenid string -- The citizen ID to ensure a profile for
 ---@return boolean -- true if profile exists or was created, false on failure
