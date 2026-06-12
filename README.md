@@ -50,55 +50,111 @@ CREATE TABLE IF NOT EXISTS `mdt_bulletin_categories` (
     INDEX      `idx_job_order` (`job`, `sort_order`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=UTF8MB4_UNICODE_CI;
 
--- ============================================================================
---  ps-mdt | Calendar (Court + Training/Education + Meetings)
---  Hearing/event scheduling with case/warrant links + attendee reminders.
---  Safe to run multiple times. Collation matches mdt_* tables.
--- ============================================================================
+CREATE TABLE IF NOT EXISTS `mdt_patrols` (
+    `id`          VARCHAR(64)  NOT NULL,
+    `name`        VARCHAR(64)  NOT NULL,
+    `color`       VARCHAR(16)  NOT NULL DEFAULT '#38bdf8',
+    `member_ids`  LONGTEXT              DEFAULT NULL,
+    `sort_order`  INT(11)      NOT NULL DEFAULT 0,
+    `zone_points` LONGTEXT              DEFAULT NULL,
+    `job_type`    VARCHAR(16)  NOT NULL DEFAULT 'police',
+    PRIMARY KEY (`id`),
+    KEY `idx_patrols_jobtype` (`job_type`)
+) ENGINE=InnoDB DEFAULT CHARSET=UTF8MB4;
 
+CREATE TABLE IF NOT EXISTS `mdt_bulletin_posts` (
+    `id`          INT UNSIGNED  NOT NULL AUTO_INCREMENT,
+    `title`       VARCHAR(255)  NOT NULL,
+    `content`     LONGTEXT      NOT NULL,
+    `author`      VARCHAR(100)  NOT NULL,
+    `author_rank` VARCHAR(100)  NOT NULL DEFAULT '',
+    `category`    VARCHAR(48)   NOT NULL DEFAULT 'general',
+    `priority`    ENUM(
+                    'low',
+                    'normal',
+                    'high',
+                    'urgent'
+                  )             NOT NULL DEFAULT 'normal',
+    `pinned`      TINYINT(1)    NOT NULL DEFAULT 0,
+    `job`         VARCHAR(50)   NOT NULL DEFAULT '',
+    `created_by`  VARCHAR(60)   NOT NULL,
+    `created_at`  DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at`  DATETIME      NULL     DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+    `deleted_at`  DATETIME      NULL     DEFAULT NULL,
+    PRIMARY KEY (`id`),
+    KEY `idx_job`        (`job`),
+    KEY `idx_category`   (`category`),
+    KEY `idx_pinned`     (`pinned`),
+    KEY `idx_deleted_at` (`deleted_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+ 
+CREATE TABLE IF NOT EXISTS `mdt_bulletin_categories` (
+    `id`          INT UNSIGNED  NOT NULL AUTO_INCREMENT,
+    `job`         VARCHAR(50)   NOT NULL,
+    `value`       VARCHAR(48)   NOT NULL,
+    `label`       VARCHAR(48)   NOT NULL,
+    `icon`        VARCHAR(48)   NOT NULL DEFAULT 'label',
+    `color`       VARCHAR(7)    NOT NULL DEFAULT '#6B7280',
+    `sort_order`  SMALLINT      NOT NULL DEFAULT 0,
+    `is_default`  TINYINT(1)    NOT NULL DEFAULT 0,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uq_job_value`  (`job`, `value`),
+    INDEX      `idx_job_order` (`job`, `sort_order`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=UTF8MB4_UNICODE_CI;
+
+-- ============================================================================
+--  ps-mdt — Court / Calendar tables
+--  Run this once if mdt_court_hearings / mdt_court_attendees don't exist yet.
+--  Safe to run repeatedly (IF NOT EXISTS).
+--
+--  The attendee table needs the UNIQUE (hearing_id, citizenid) key so the
+--  "ON DUPLICATE KEY UPDATE" upserts used by the backend work, and the
+--  notified_at / delivered_at columns back the reminder-SMS idempotency.
+-- ============================================================================
+ 
 CREATE TABLE IF NOT EXISTS `mdt_court_hearings` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `title` varchar(150) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `category` enum('court','training','meeting','other') NOT NULL DEFAULT 'court',
-  `hearing_type` enum('arraignment','trial','sentencing','appeal','motion','hearing','other') NOT NULL DEFAULT 'trial',
-  `case_id` int(10) unsigned DEFAULT NULL,
-  `warrant_reportid` int(10) unsigned DEFAULT NULL,
-  `defendant_cid` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `defendant_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `scheduled_at` datetime NOT NULL,
-  `duration_minutes` int(10) unsigned NOT NULL DEFAULT 30,
-  `location` varchar(120) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `judge_cid` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `judge_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `status` enum('scheduled','in_session','completed','adjourned','cancelled') NOT NULL DEFAULT 'scheduled',
-  `notes` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `created_by` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `created_by_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-  PRIMARY KEY (`id`),
-  KEY `idx_scheduled_at` (`scheduled_at`),
-  KEY `idx_status` (`status`),
-  KEY `idx_category` (`category`),
-  KEY `case_id` (`case_id`),
-  KEY `idx_defendant` (`defendant_cid`),
-  CONSTRAINT `FK_hearing_case` FOREIGN KEY (`case_id`) REFERENCES `mdt_cases` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
+    `id`               INT(11)      NOT NULL AUTO_INCREMENT,
+    `title`            VARCHAR(255) NOT NULL,
+    `category`         VARCHAR(32)  NOT NULL DEFAULT 'court',
+    `hearing_type`     VARCHAR(32)  NOT NULL DEFAULT 'trial',
+    `case_id`          INT(11)               DEFAULT NULL,
+    `warrant_reportid` INT(11)               DEFAULT NULL,
+    `defendant_cid`    VARCHAR(64)           DEFAULT NULL,
+    `defendant_name`   VARCHAR(128)          DEFAULT NULL,
+    `scheduled_at`     DATETIME     NOT NULL,
+    `duration_minutes` INT(11)      NOT NULL DEFAULT 30,
+    `location`         VARCHAR(255)          DEFAULT NULL,
+    `judge_cid`        VARCHAR(64)           DEFAULT NULL,
+    `judge_name`       VARCHAR(128)          DEFAULT NULL,
+    `status`           VARCHAR(32)  NOT NULL DEFAULT 'scheduled',
+    `notes`            TEXT                  DEFAULT NULL,
+    `created_by`       VARCHAR(64)           DEFAULT NULL,
+    `created_by_name`  VARCHAR(128)          DEFAULT NULL,
+    `job_type`         VARCHAR(16)  NOT NULL DEFAULT 'police',
+    `created_at`       TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    KEY `idx_hearings_scheduled` (`scheduled_at`),
+    KEY `idx_hearings_status`    (`status`),
+    KEY `idx_hearings_category`  (`category`),
+    KEY `idx_hearings_jobtype`   (`job_type`),
+    KEY `idx_hearings_case`      (`case_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+ 
 CREATE TABLE IF NOT EXISTS `mdt_court_attendees` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `hearing_id` int(10) unsigned NOT NULL,
-  `citizenid` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `display_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `role` enum('prosecutor','defense','officer','witness','judge','trainee','instructor','attendee') NOT NULL DEFAULT 'officer',
-  `notified_at` datetime DEFAULT NULL,
-  `delivered_at` datetime DEFAULT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `uq_hearing_cid` (`hearing_id`, `citizenid`),
-  KEY `idx_attendee_cid` (`citizenid`),
-  CONSTRAINT `FK_attendee_hearing` FOREIGN KEY (`hearing_id`) REFERENCES `mdt_court_hearings` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=UTF8MB4_GENERAL_CI;
+    `id`           INT(11)     NOT NULL AUTO_INCREMENT,
+    `hearing_id`   INT(11)     NOT NULL,
+    `citizenid`    VARCHAR(64) NOT NULL,
+    `display_name` VARCHAR(128)         DEFAULT NULL,
+    `role`         VARCHAR(32) NOT NULL DEFAULT 'officer',
+    `notified_at`  DATETIME             DEFAULT NULL,
+    `delivered_at` DATETIME             DEFAULT NULL,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uniq_hearing_citizen` (`hearing_id`, `citizenid`),
+    KEY `idx_attendees_citizen` (`citizenid`),
+    CONSTRAINT `fk_attendees_hearing`
+        FOREIGN KEY (`hearing_id`) REFERENCES `mdt_court_hearings` (`id`)
+        ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=UTF8MB4;
 ```
 
 # ps-mdt v3
