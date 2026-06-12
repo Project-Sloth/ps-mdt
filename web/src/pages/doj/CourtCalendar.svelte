@@ -14,6 +14,7 @@
 		HearingType,
 		HearingStatus,
 		AttendeeRole,
+		AttendeeGroup,
 		EventCategory,
 	} from "../../interfaces/ICourt";
 	import PersonSearchModal from "../../components/report-editor/PersonSearchModal.svelte";
@@ -48,10 +49,10 @@
 	let formReadOnly = $state(false);
 
 	const CATEGORY_LABELS: Record<EventCategory, string> = {
-		court: "Gericht",
-		training: "Ausbildung",
+		court: "Court",
+		training: "Training",
 		meeting: "Meeting",
-		other: "Sonstiges",
+		other: "Other",
 	};
 	const CATEGORY_ICONS: Record<EventCategory, string> = {
 		court: "gavel",
@@ -60,7 +61,7 @@
 		other: "event",
 	};
 
-	const WEEKDAYS = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"];
+	const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 	const HOURS = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, "0"));
 	const MINUTES = Array.from({ length: 60 }, (_, i) => String(i).padStart(2, "0"));
 	function timeHour() { return (form.time || "12:00").split(":")[0] ?? "12"; }
@@ -68,34 +69,34 @@
 	function setHour(h: string) { form.time = `${h}:${timeMin()}`; }
 	function setMin(m: string) { form.time = `${timeHour()}:${m}`; }
 	const MONTHS = [
-		"Januar", "Februar", "März", "April", "Mai", "Juni",
-		"Juli", "August", "September", "Oktober", "November", "Dezember",
+		"January", "February", "March", "April", "May", "June",
+		"July", "August", "September", "October", "November", "December",
 	];
 	const TYPE_LABELS: Record<HearingType, string> = {
-		arraignment: "Anklageverlesung",
-		trial: "Verhandlung",
-		sentencing: "Urteilsverkündung",
-		appeal: "Berufung",
-		motion: "Antrag",
-		hearing: "Anhörung",
-		other: "Sonstiges",
+		arraignment: "Arraignment",
+		trial: "Trial",
+		sentencing: "Sentencing",
+		appeal: "Appeal",
+		motion: "Motion",
+		hearing: "Hearing",
+		other: "Other",
 	};
 	const STATUS_LABELS: Record<HearingStatus, string> = {
-		scheduled: "Geplant",
-		in_session: "Läuft",
-		completed: "Abgeschlossen",
-		adjourned: "Vertagt",
-		cancelled: "Abgesagt",
+		scheduled: "Scheduled",
+		in_session: "In session",
+		completed: "Completed",
+		adjourned: "Adjourned",
+		cancelled: "Cancelled",
 	};
 	const ROLE_LABELS: Record<AttendeeRole, string> = {
-		prosecutor: "Anklage",
-		defense: "Verteidigung",
+		prosecutor: "Prosecution",
+		defense: "Defense",
 		officer: "Officer",
-		witness: "Zeuge",
-		judge: "Richter",
-		trainee: "Teilnehmer",
-		instructor: "Ausbilder",
-		attendee: "Gast",
+		witness: "Witness",
+		judge: "Judge",
+		trainee: "Trainee",
+		instructor: "Instructor",
+		attendee: "Guest",
 	};
 
 	// Which categories are currently shown (filter chips)
@@ -167,7 +168,9 @@
 	});
 
 	onMount(() => {
-		// Global toast/sound is handled in MDT.svelte; here we just refresh the view.
+		loadGroups();
+		// Reminders are delivered as phone SMS now; just keep the view fresh
+		// if a refresh signal ever arrives.
 		useNuiEvent<{ title?: string }>("courtReminder", () => {
 			court.refresh();
 		});
@@ -254,7 +257,10 @@
 			notes: h.notes ?? "",
 		};
 		modalAttendees = detail?.attendees ?? [];
-		formReadOnly = !canEditCat(h.category ?? "court");
+		formReadOnly =
+			!canEditCat(h.category ?? "court") ||
+			h.status === "in_session" ||
+			h.status === "completed";
 		showModal = true;
 	}
 
@@ -268,8 +274,8 @@
 	}
 
 	async function saveHearing() {
-		if (!form.title.trim()) { globalNotifications.error("Titel ist erforderlich"); return; }
-		if (!form.date || !form.time) { globalNotifications.error("Datum/Uhrzeit erforderlich"); return; }
+		if (!form.title.trim()) { globalNotifications.error("Title is required"); return; }
+		if (!form.date || !form.time) { globalNotifications.error("Date/time is required"); return; }
 		saving = true;
 
 		const base = {
@@ -298,18 +304,18 @@
 					})),
 				});
 				if (res.success) {
-					globalNotifications.success("Termin angelegt");
+					globalNotifications.success("Event created");
 					closeModal();
 				} else {
-					globalNotifications.error(court.state.lastError || "Anlegen fehlgeschlagen");
+					globalNotifications.error(court.state.lastError || "Failed to create event");
 				}
 			} else {
 				const res = await court.updateHearing(form.id, base);
 				if (res.success) {
-					globalNotifications.success("Termin aktualisiert");
+					globalNotifications.success("Event updated");
 					closeModal();
 				} else {
-					globalNotifications.error("Aktualisieren fehlgeschlagen");
+					globalNotifications.error((res as { error?: string }).error || "Failed to update event");
 				}
 			}
 		} finally {
@@ -322,10 +328,10 @@
 		if (confirmDeleteId == null) return;
 		const ok = await court.deleteHearing(confirmDeleteId);
 		if (ok) {
-			globalNotifications.success("Termin gelöscht");
+			globalNotifications.success("Event deleted");
 			if (showModal) closeModal();
 		} else {
-			globalNotifications.error("Löschen fehlgeschlagen");
+			globalNotifications.error("Failed to delete event");
 		}
 		confirmDeleteId = null;
 	}
@@ -335,6 +341,66 @@
 	let showAttendeeSearch = $state(false);
 	let searchResults = $state<SearchResult[]>([]);
 	let attendeeRole = $state<AttendeeRole>("officer");
+
+	// ── Quick-add groups (Rookies / All Officers / All DOJ / ...) ────────────
+	let attendeeGroups = $state<AttendeeGroup[]>([]);
+	let groupBusy = $state<string | null>(null);
+
+	async function loadGroups() {
+		attendeeGroups = await court.getAttendeeGroups();
+	}
+
+	async function addGroup(group: AttendeeGroup) {
+		if (groupBusy) return;
+		groupBusy = group.id;
+		try {
+			const res = await court.getGroupMembers(group.id);
+			if (!res.success) {
+				globalNotifications.error(res.error || "Could not resolve group");
+				return;
+			}
+			// Only people not already on the list.
+			const existing = new Set(modalAttendees.map((a) => a.citizenid));
+			const fresh = res.members.filter((m) => !existing.has(m.citizenid));
+			if (fresh.length === 0) {
+				globalNotifications.info(`${group.label}: everyone is already added`);
+				return;
+			}
+
+			if (form.id != null) {
+				// Existing hearing → persist immediately in one call.
+				const bulk = await court.addAttendeesBulk(form.id, fresh);
+				if (bulk.success && Array.isArray(bulk.added)) {
+					modalAttendees = [
+						...modalAttendees,
+						...bulk.added.map((a) => ({
+							id: a.id,
+							citizenid: a.citizenid,
+							display_name: a.display_name ?? null,
+							role: a.role,
+						})),
+					];
+					globalNotifications.success(`${group.label}: ${bulk.added.length} added`);
+				} else {
+					globalNotifications.error("Bulk add failed");
+				}
+			} else {
+				// New hearing → stage locally, persisted on save.
+				modalAttendees = [
+					...modalAttendees,
+					...fresh.map((m) => ({
+						id: Date.now() + Math.floor(Math.random() * 100000),
+						citizenid: m.citizenid,
+						display_name: m.display_name ?? null,
+						role: m.role,
+					})),
+				];
+				globalNotifications.success(`${group.label}: ${fresh.length} added`);
+			}
+		} finally {
+			groupBusy = null;
+		}
+	}
 
 	async function runSearch(query: string) {
 		if (query.length < 2) { searchResults = []; return; }
@@ -379,6 +445,34 @@
 		modalAttendees = modalAttendees.filter((x) => x.citizenid !== a.citizenid);
 	}
 
+	// ── Status lifecycle ─────────────────────────────────────────────────────
+	// A live or completed hearing is locked and can no longer be edited.
+	const isLocked = $derived(form.status === "in_session" || form.status === "completed");
+	const canManageStatus = $derived(form.id != null && canEditCat(form.category));
+
+	let statusBusy = $state(false);
+	async function changeStatus(target: HearingStatus) {
+		if (form.id == null || statusBusy) return;
+		statusBusy = true;
+		try {
+			const res = await court.setStatus(form.id, target);
+			if (res.success) {
+				if (res.deleted) {
+					globalNotifications.success("Hearing completed and removed");
+					closeModal();
+				} else {
+					form.status = res.status ?? target;
+					formReadOnly = !canEditCat(form.category) || form.status === "in_session" || form.status === "completed";
+					globalNotifications.success(`Status: ${STATUS_LABELS[res.status ?? target]}`);
+				}
+			} else {
+				globalNotifications.error(res.error || "Could not change status");
+			}
+		} finally {
+			statusBusy = false;
+		}
+	}
+
 	const isToday = (d: Date) => dayKey(d) === dayKey(new Date());
 	const inViewMonth = (d: Date) => d.getMonth() === viewDate.getMonth();
 </script>
@@ -387,20 +481,20 @@
 	<div class="header">
 		<div class="title-row">
 			<span class="material-icons">calendar_month</span>
-			<h1>Kalender</h1>
+			<h1>Calendar</h1>
 		</div>
 		<div class="controls">
-			<button class="nav-btn" onclick={prevMonth} aria-label="Vorheriger Monat">
+			<button class="nav-btn" onclick={prevMonth} aria-label="Previous month">
 				<span class="material-icons">chevron_left</span>
 			</button>
-			<button class="today-btn" onclick={goToday}>Heute</button>
+			<button class="today-btn" onclick={goToday}>Today</button>
 			<span class="month-label">{MONTHS[viewDate.getMonth()]} {viewDate.getFullYear()}</span>
-			<button class="nav-btn" onclick={nextMonth} aria-label="Nächster Monat">
+			<button class="nav-btn" onclick={nextMonth} aria-label="Next month">
 				<span class="material-icons">chevron_right</span>
 			</button>
 			{#if canCreateAny}
 				<button class="primary-btn" onclick={() => openCreate()}>
-					<span class="material-icons">add</span> Termin
+					<span class="material-icons">add</span> Event
 				</button>
 			{/if}
 		</div>
@@ -444,7 +538,7 @@
 								</span>
 							{/each}
 							{#if dayHearings.length > 3}
-								<span class="chip more">+{dayHearings.length - 3} weitere</span>
+								<span class="chip more">+{dayHearings.length - 3} more</span>
 							{/if}
 						</div>
 					</button>
@@ -454,11 +548,11 @@
 
 		<aside class="side">
 			{#if court.state.isLoading}
-				<div class="side-empty">Lade Termine…</div>
+				<div class="side-empty">Loading events…</div>
 			{:else if !selectedDayKey}
 				<div class="side-empty">
 					<span class="material-icons">event</span>
-					<p>Wähle einen Tag, um Termine zu sehen.</p>
+					<p>Select a day to see events.</p>
 				</div>
 			{:else}
 				<div class="side-head">
@@ -470,7 +564,7 @@
 					{/if}
 				</div>
 				{#if selectedDayHearings.length === 0}
-					<div class="side-empty"><p>Keine Termine an diesem Tag.</p></div>
+					<div class="side-empty"><p>No events on this day.</p></div>
 				{:else}
 					<div class="day-list">
 						{#each selectedDayHearings as h}
@@ -502,19 +596,26 @@
 	<div class="overlay" onclick={closeModal} role="presentation">
 		<div class="modal" onclick={(e) => e.stopPropagation()} role="dialog" tabindex="-1">
 			<div class="modal-head">
-				<h2>{form.id == null ? "Neuer Termin" : (formReadOnly ? "Termin ansehen" : "Termin bearbeiten")}</h2>
+				<h2>{form.id == null ? "New event" : (formReadOnly ? "View event" : "Edit event")}</h2>
 				<button class="icon-btn" onclick={closeModal}><span class="material-icons">close</span></button>
 			</div>
 
 			<div class="modal-body">
+				{#if form.id != null && form.status === "in_session"}
+					<div class="lock-banner">
+						<span class="material-icons">lock</span>
+						This hearing is in session and locked. Mark it completed when it's over.
+					</div>
+				{/if}
+
 				<label class="field">
-					<span>Titel *</span>
-					<input type="text" bind:value={form.title} placeholder="z.B. Schießtraining / Anhörung Schmidt" readonly={formReadOnly} />
+					<span>Title *</span>
+					<input type="text" bind:value={form.title} placeholder="e.g. Firearms training / Hearing Smith" readonly={formReadOnly} />
 				</label>
 
 				<div class="field-row">
 					<label class="field">
-						<span>Kategorie</span>
+						<span>Category</span>
 						<select bind:value={form.category} disabled={formReadOnly}>
 							{#each ALL_CATEGORIES as c}
 								{#if canCreateCat(c) || c === form.category}
@@ -525,7 +626,7 @@
 					</label>
 					{#if form.category === "court"}
 						<label class="field">
-							<span>Typ</span>
+							<span>Type</span>
 							<select bind:value={form.hearing_type} disabled={formReadOnly}>
 								{#each Object.keys(TYPE_LABELS) as t}
 									<option value={t}>{TYPE_LABELS[t as HearingType]}</option>
@@ -533,23 +634,41 @@
 							</select>
 						</label>
 					{/if}
-					<label class="field">
-						<span>Status</span>
-						<select bind:value={form.status} disabled={formReadOnly}>
-							{#each Object.keys(STATUS_LABELS) as s}
-								<option value={s}>{STATUS_LABELS[s as HearingStatus]}</option>
-							{/each}
-						</select>
-					</label>
+					{#if form.id != null}
+						<div class="field">
+							<span>Status</span>
+							<div class="status-row">
+								<span class="status-badge status-{form.status}">{STATUS_LABELS[form.status]}</span>
+								{#if canManageStatus}
+									{#if form.status === "scheduled"}
+										<button class="mini-btn start" disabled={statusBusy} onclick={() => changeStatus("in_session")}>
+											<span class="material-icons">play_arrow</span> Start
+										</button>
+										<button class="mini-btn" disabled={statusBusy} onclick={() => changeStatus("adjourned")}>Adjourn</button>
+										<button class="mini-btn" disabled={statusBusy} onclick={() => changeStatus("cancelled")}>Cancel</button>
+									{:else if form.status === "in_session"}
+										<button class="mini-btn done" disabled={statusBusy}
+											onclick={() => changeStatus("completed")}>
+											<span class="material-icons">check</span> Complete &amp; remove
+										</button>
+									{:else if form.status === "cancelled" || form.status === "adjourned"}
+										<button class="mini-btn" disabled={statusBusy} onclick={() => changeStatus("scheduled")}>
+											<span class="material-icons">undo</span> Reopen
+										</button>
+									{/if}
+								{/if}
+							</div>
+						</div>
+					{/if}
 				</div>
 
 				<div class="field-row">
 					<label class="field">
-						<span>Datum *</span>
+						<span>Date *</span>
 						<input type="date" bind:value={form.date} readonly={formReadOnly} />
 					</label>
 					<label class="field">
-						<span>Uhrzeit *</span>
+						<span>Time *</span>
 						<div class="time-pick">
 							<select value={timeHour()} onchange={(e) => setHour(e.currentTarget.value)} disabled={formReadOnly}>
 								{#each HOURS as h}<option value={h}>{h}</option>{/each}
@@ -561,38 +680,38 @@
 						</div>
 					</label>
 					<label class="field">
-						<span>Dauer (Min)</span>
+						<span>Duration (min)</span>
 						<input type="number" min="5" step="5" bind:value={form.duration_minutes} readonly={formReadOnly} />
 					</label>
 				</div>
 
 				<div class="field-row">
 					<label class="field">
-						<span>Ort</span>
-						<input type="text" bind:value={form.location} placeholder="z.B. Saal 1 / Range" readonly={formReadOnly} />
+						<span>Location</span>
+						<input type="text" bind:value={form.location} placeholder="e.g. Courtroom 1 / Range" readonly={formReadOnly} />
 					</label>
 					{#if form.category === "court"}
 						<label class="field">
-							<span>Richter</span>
+							<span>Judge</span>
 							<input type="text" bind:value={form.judge_name} placeholder="Name" readonly={formReadOnly} />
 						</label>
 						<label class="field">
-							<span>Case-ID</span>
+							<span>Case ID</span>
 							<input type="number" bind:value={form.case_id} placeholder="optional" readonly={formReadOnly} />
 						</label>
 					{:else}
 						<label class="field">
-							<span>Leitung</span>
-							<input type="text" bind:value={form.judge_name} placeholder="Ausbilder / Organisator" readonly={formReadOnly} />
+							<span>Lead</span>
+							<input type="text" bind:value={form.judge_name} placeholder="Instructor / Organizer" readonly={formReadOnly} />
 						</label>
 					{/if}
 				</div>
 
 				{#if form.category === "court"}
 					<div class="field">
-						<span>Angeklagte/r</span>
+						<span>Defendant</span>
 						<div class="person-pick">
-							<input type="text" readonly value={form.defendant_name} placeholder="Keine Person gewählt" />
+							<input type="text" readonly value={form.defendant_name} placeholder="No person selected" />
 							{#if !formReadOnly}
 								<button class="ghost-btn" onclick={() => { searchResults = []; showDefendantSearch = true; }}>
 									<span class="material-icons">person_search</span>
@@ -608,14 +727,14 @@
 				{/if}
 
 				<div class="field">
-					<span>{form.category === "court" ? "Geladene Personen" : "Teilnehmer"}</span>
+					<span>{form.category === "court" ? "Summoned people" : "Attendees"}</span>
 					<div class="attendees">
 						{#each modalAttendees as a}
 							<span class="attendee-chip role-{a.role}">
 								{a.display_name || a.citizenid}
 								<small>{ROLE_LABELS[a.role]}</small>
 								{#if !formReadOnly}
-									<button class="chip-x" onclick={() => removeAttendee(a)} aria-label="Entfernen">
+									<button class="chip-x" onclick={() => removeAttendee(a)} aria-label="Remove">
 										<span class="material-icons">close</span>
 									</button>
 								{/if}
@@ -629,32 +748,51 @@
 									{/each}
 								</select>
 								<button class="ghost-btn" onclick={() => { searchResults = []; showAttendeeSearch = true; }}>
-									<span class="material-icons">group_add</span> Hinzufügen
+									<span class="material-icons">group_add</span> Add
 								</button>
 							</div>
 						{:else if modalAttendees.length === 0}
-							<span class="empty-hint">Keine Teilnehmer</span>
+							<span class="empty-hint">No attendees</span>
 						{/if}
 					</div>
+					{#if !formReadOnly && attendeeGroups.length > 0}
+						<div class="group-add">
+							<span class="group-add-label">Quick add:</span>
+							{#each attendeeGroups as g}
+								<button
+									class="group-chip"
+									disabled={groupBusy !== null}
+									onclick={() => addGroup(g)}
+								>
+									{#if groupBusy === g.id}
+										<span class="material-icons spin">progress_activity</span>
+									{:else}
+										<span class="material-icons">group</span>
+									{/if}
+									{g.label}
+								</button>
+							{/each}
+						</div>
+					{/if}
 				</div>
 
 				<label class="field">
-					<span>Notizen</span>
-					<textarea rows="3" bind:value={form.notes} placeholder="Optionale Notizen…" readonly={formReadOnly}></textarea>
+					<span>Notes</span>
+					<textarea rows="3" bind:value={form.notes} placeholder="Optional notes…" readonly={formReadOnly}></textarea>
 				</label>
 			</div>
 
 			<div class="modal-foot">
 				{#if form.id != null && canDeleteCat(form.category)}
 					<button class="danger-btn" onclick={() => (confirmDeleteId = form.id)}>
-						<span class="material-icons">delete</span> Löschen
+						<span class="material-icons">delete</span> Delete
 					</button>
 				{/if}
 				<div class="spacer"></div>
-				<button class="ghost-btn" onclick={closeModal}>{formReadOnly ? "Schließen" : "Abbrechen"}</button>
-				{#if (form.id == null && canCreateCat(form.category)) || (form.id != null && canEditCat(form.category))}
+				<button class="ghost-btn" onclick={closeModal}>{formReadOnly ? "Close" : "Cancel"}</button>
+				{#if (form.id == null && canCreateCat(form.category)) || (form.id != null && !formReadOnly && canEditCat(form.category))}
 					<button class="primary-btn" onclick={saveHearing} disabled={saving}>
-						{saving ? "Speichern…" : "Speichern"}
+						{saving ? "Saving…" : "Save"}
 					</button>
 				{/if}
 			</div>
@@ -666,10 +804,10 @@
 	<div class="overlay" onclick={() => (confirmDeleteId = null)} role="presentation">
 		<div class="confirm" onclick={(e) => e.stopPropagation()} role="dialog" tabindex="-1">
 			<span class="material-icons warn">warning</span>
-			<p>Diesen Termin wirklich löschen?</p>
+			<p>Really delete this event?</p>
 			<div class="confirm-actions">
-				<button class="ghost-btn" onclick={() => (confirmDeleteId = null)}>Abbrechen</button>
-				<button class="danger-btn" onclick={confirmDelete}>Löschen</button>
+				<button class="ghost-btn" onclick={() => (confirmDeleteId = null)}>Cancel</button>
+				<button class="danger-btn" onclick={confirmDelete}>Delete</button>
 			</div>
 		</div>
 	</div>
@@ -677,7 +815,7 @@
 
 <PersonSearchModal
 	show={showDefendantSearch}
-	title="Angeklagte/n suchen"
+	title="Search defendant"
 	searchResults={searchResults}
 	onClose={() => { showDefendantSearch = false; searchResults = []; }}
 	onSearch={runSearch}
@@ -686,7 +824,7 @@
 
 <PersonSearchModal
 	show={showAttendeeSearch}
-	title="Person laden"
+	title="Summon person"
 	searchResults={searchResults}
 	onClose={() => { showAttendeeSearch = false; searchResults = []; }}
 	onSearch={runSearch}
@@ -972,6 +1110,91 @@
 	.confirm p { margin: 0; font-size: 12px; color: rgba(255, 255, 255, 0.8); }
 	.confirm .warn { color: rgba(251, 191, 36, 0.9); font-size: 32px; }
 	.confirm-actions { display: flex; gap: 8px; }
+
+	/* ===== Status lifecycle ===== */
+	.lock-banner {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		padding: 8px 10px;
+		border: 1px solid rgba(251, 191, 36, 0.25);
+		background: rgba(251, 191, 36, 0.08);
+		color: rgba(251, 191, 36, 0.95);
+		border-radius: 4px;
+		font-size: 10px;
+		line-height: 1.4;
+	}
+	.lock-banner .material-icons { font-size: 14px; }
+
+	.status-row { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; }
+	.status-badge {
+		display: inline-flex;
+		align-items: center;
+		padding: 3px 8px;
+		border-radius: 3px;
+		font-size: 10px;
+		font-weight: 600;
+		border: 1px solid rgba(255, 255, 255, 0.1);
+		color: rgba(255, 255, 255, 0.8);
+	}
+	.status-badge.status-scheduled  { background: rgba(96, 165, 250, 0.12); color: rgba(96, 165, 250, 0.95); }
+	.status-badge.status-in_session { background: rgba(251, 191, 36, 0.14); color: rgba(251, 191, 36, 0.95); }
+	.status-badge.status-completed  { background: rgba(74, 222, 128, 0.12); color: rgba(74, 222, 128, 0.95); }
+	.status-badge.status-adjourned  { background: rgba(168, 162, 158, 0.14); color: rgba(214, 211, 209, 0.95); }
+	.status-badge.status-cancelled  { background: rgba(248, 113, 113, 0.12); color: rgba(248, 113, 113, 0.95); }
+
+	.mini-btn {
+		display: inline-flex;
+		align-items: center;
+		gap: 4px;
+		background: transparent;
+		border: 1px solid rgba(255, 255, 255, 0.12);
+		border-radius: 3px;
+		padding: 3px 8px;
+		color: rgba(255, 255, 255, 0.65);
+		font-size: 10px;
+		font-weight: 500;
+		font-family: inherit;
+		cursor: pointer;
+		transition: all 0.1s;
+	}
+	.mini-btn:hover:not(:disabled) { color: #fff; border-color: rgba(255, 255, 255, 0.25); }
+	.mini-btn:disabled { opacity: 0.5; cursor: default; }
+	.mini-btn .material-icons { font-size: 13px; }
+	.mini-btn.start { color: rgba(96, 165, 250, 0.95); border-color: rgba(96, 165, 250, 0.3); }
+	.mini-btn.done  { color: rgba(74, 222, 128, 0.95); border-color: rgba(74, 222, 128, 0.3); }
+
+	/* ===== Quick-add groups ===== */
+	.group-add {
+		display: flex;
+		align-items: center;
+		flex-wrap: wrap;
+		gap: 6px;
+		margin-top: 8px;
+		padding-top: 8px;
+		border-top: 1px solid rgba(255, 255, 255, 0.06);
+	}
+	.group-add-label { font-size: 10px; color: rgba(255, 255, 255, 0.35); }
+	.group-chip {
+		display: inline-flex;
+		align-items: center;
+		gap: 4px;
+		background: rgba(255, 255, 255, 0.03);
+		border: 1px solid rgba(255, 255, 255, 0.1);
+		border-radius: 3px;
+		padding: 4px 9px;
+		color: rgba(255, 255, 255, 0.7);
+		font-size: 10px;
+		font-weight: 500;
+		font-family: inherit;
+		cursor: pointer;
+		transition: all 0.1s;
+	}
+	.group-chip:hover:not(:disabled) { color: #fff; border-color: rgba(255, 255, 255, 0.28); background: rgba(255, 255, 255, 0.06); }
+	.group-chip:disabled { opacity: 0.5; cursor: default; }
+	.group-chip .material-icons { font-size: 13px; }
+	.group-chip .spin { animation: court-spin 0.8s linear infinite; }
+	@keyframes court-spin { to { transform: rotate(360deg); } }
 
 	.material-icons { font-size: 16px; line-height: 1; }
 </style>
