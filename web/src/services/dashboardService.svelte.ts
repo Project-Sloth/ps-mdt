@@ -220,96 +220,48 @@ export function createDashboardService() {
 
 	// Load initial data
 	async function loadInitialData() {
-		// Define data fetch configurations
-		const dataFetchers: Array<{
-			key: string;
-			setter: (value: unknown) => void;
-			errorMsg: string;
-		}> = [
-			{
-				key: NUI_EVENTS.DASHBOARD.GET_JOB_DATA,
-				setter: (value) => {
-					jobInfo = (value as typeof jobInfo) || jobInfo;
-				},
-				errorMsg: "Failed to fetch job data",
-			},
-			{
-				key: NUI_EVENTS.DASHBOARD.GET_REPORT_STATISTICS,
-				setter: (value) => {
-					reportsInfo = (value as typeof reportsInfo) || reportsInfo;
-				},
-				errorMsg: "Failed to fetch report statistics",
-			},
-			{
-				key: NUI_EVENTS.DASHBOARD.GET_TIME_STATISTICS,
-				setter: (value) => {
-					weeklyTimeData =
-						(value as typeof weeklyTimeData) || weeklyTimeData;
-				},
-				errorMsg: "Failed to fetch weekly time data",
-			},
-			{
-				key: NUI_EVENTS.DASHBOARD.GET_ACTIVE_WARRANTS,
-				setter: (value) => {
-					activeWarrants = Array.isArray(value) ? value : activeWarrants;
-				},
-				errorMsg: "Failed to fetch active warrants",
-			},
-			{
-				key: NUI_EVENTS.DASHBOARD.GET_BULLETINS,
-				setter: (value) => {
-					bulletins = (value as typeof bulletins) || bulletins;
+		// Single aggregated round-trip for the whole dashboard. Previously this
+		// fired ~9 separate NUI callbacks (one per widget) on open — each a
+		// server round-trip + cb() serialisation the client had to process,
+		// which was the bulk of the on-open ps-mdt spike. Now it's one call.
+		type DashboardPayload = {
+			jobData?: typeof jobInfo;
+			reportStatistics?: typeof reportsInfo;
+			timeStatistics?: typeof weeklyTimeData;
+			activeWarrants?: typeof activeWarrants;
+			bulletins?: typeof bulletins;
+			activeBolos?: typeof activeBolos;
+			activeUnits?: typeof activeUnits;
+			recentDispatches?: typeof recentDispatches;
+			usageMetrics?: typeof usageMetrics;
+		};
+
+		try {
+			const data = await fetchNui<DashboardPayload>(
+				NUI_EVENTS.DASHBOARD.GET_DASHBOARD,
+				{},
+				{},
+			);
+
+			if (data && typeof data === "object") {
+				jobInfo = data.jobData || jobInfo;
+				reportsInfo = data.reportStatistics || reportsInfo;
+				weeklyTimeData = data.timeStatistics || weeklyTimeData;
+				activeWarrants = Array.isArray(data.activeWarrants)
+					? data.activeWarrants
+					: activeWarrants;
+				if (data.bulletins) {
+					bulletins = data.bulletins;
 					checkAndStartCarousel();
-				},
-				errorMsg: "Failed to fetch bulletins",
-			},
-			{
-				key: NUI_EVENTS.DASHBOARD.GET_ACTIVE_BOLOS,
-				setter: (value) => {
-					activeBolos = (value as typeof activeBolos) || activeBolos;
-				},
-				errorMsg: "Failed to fetch active BOLOs",
-			},
-			{
-				key: NUI_EVENTS.DASHBOARD.GET_ACTIVE_UNITS,
-				setter: (value) => {
-					activeUnits = (value as typeof activeUnits) || activeUnits;
-				},
-				errorMsg: "Failed to fetch active units",
-			},
-			{
-				key: NUI_EVENTS.DASHBOARD.GET_RECENT_DISPATCHES,
-				setter: (value) => {
-					recentDispatches =
-						(value as typeof recentDispatches) || recentDispatches;
-				},
-				errorMsg: "Failed to fetch recent dispatches",
-			},
-			{
-				key: NUI_EVENTS.DASHBOARD.GET_USAGE_METRICS,
-				setter: (value) => {
-					usageMetrics =
-						(value as typeof usageMetrics) || usageMetrics;
-				},
-				errorMsg: "Failed to fetch usage metrics",
-			},
-		];
-
-		// Fetch all data concurrently
-		const results = await Promise.allSettled(
-			dataFetchers.map(({ key }) => fetchNui(key)),
-		);
-
-		// Process results
-		results.forEach((result, index) => {
-			const { setter, errorMsg } = dataFetchers[index];
-
-			if (result.status === "fulfilled") {
-				setter(result.value);
-			} else {
-				debugError(`${errorMsg}:`, result.reason);
+				}
+				activeBolos = data.activeBolos || activeBolos;
+				activeUnits = data.activeUnits || activeUnits;
+				recentDispatches = data.recentDispatches || recentDispatches;
+				usageMetrics = data.usageMetrics || usageMetrics;
 			}
-		});
+		} catch (error) {
+			debugError("Failed to fetch dashboard data:", error);
+		}
 
 		await loadRecentReports(1, true);
 	}
