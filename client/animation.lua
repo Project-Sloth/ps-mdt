@@ -146,6 +146,16 @@ function PlayTabletAnimation()
         return
     end
 
+    -- Yield once so the expensive entity work (CreateObject/AttachEntity above)
+    -- and TaskPlayAnim below don't land on the same frame. Bail if the MDT was
+    -- closed during the wait so we don't animate after close.
+    Wait(0)
+    if not MDTOpen then
+        RemoveAnimDict(animDict)
+        DestroyTabletProp()
+        return
+    end
+
     TaskPlayAnim(
         ped,
         animOptions.animDict,
