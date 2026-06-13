@@ -7,6 +7,15 @@ RegisterNUICallback('getWeapons', function(data, cb)
     cb(weaponList)
 end)
 
+-- Weapon config (model -> label list). The frontend requests this on mount
+-- alongside getWeapons; without this bridge the NUI call 404s and the Weapons
+-- tab throws "Failed to load weapons #1".
+RegisterNUICallback('getWeaponConfig', function(data, cb)
+    if not MDTOpen then cb({ weapons = {} }) return end
+    local config = ps.callback(resourceName .. ':server:getWeaponConfig')
+    cb(config or { weapons = {} })
+end)
+
 RegisterNUICallback('getWeaponBolos', function(data, cb)
     if not MDTOpen then cb({}) return end
     local result = ps.callback(resourceName..':server:getBOLO', 'weapon')

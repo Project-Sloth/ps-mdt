@@ -92,9 +92,20 @@ RegisterNUICallback('toggleDuty', function(_, cb)
     TriggerServerEvent('ps_lib:server:toggleDuty')
 end)
 
+-- DASHBOARD (aggregate) -----------------------------------
+-- One round-trip that returns every dashboard widget's data at once, so
+-- opening the MDT fires a single NUI callback instead of ~9.
+RegisterNUICallback('getDashboard', function(_, cb)
+    if not MDTOpen then
+        cb({})
+        return
+    end
+    local data = ps.callback(resourceName .. ':server:getDashboard')
+    cb(data or {})
+end)
+
 -- JOB DATA -----------------------------------------------
 RegisterNUICallback('getJobData', function(_, cb)
-
     local jobData = ps.callback(resourceName .. ':server:getJobData')
      ps.debug('[getJobData] Triggered NUI callback on client', jobData)
     cb(jobData or {})

@@ -1,21 +1,8 @@
 local _SendNUIMessage = SendNUIMessage
 
--- Send a message to the NUI
--- @param action string
--- @param data any
-local function sanitizeNuiData(action, data)
-    if data == nil then
-        return nil
-    end
-
-    local ok, encoded = pcall(json.encode, data)
-    if ok and encoded then
-        local okDecode, decoded = pcall(json.decode, encoded)
-        if okDecode then
-            return decoded
-        end
-    end
-
+-- Minimal, guaranteed-serialisable fallback used only if the real payload
+-- can't be sent (non-encodable data). Plain data tables never hit this path.
+local function safeFallback(action, data)
     if action == 'updateAuth' and type(data) == 'table' then
         local playerData = data.playerData
         return {
@@ -30,25 +17,25 @@ local function sanitizeNuiData(action, data)
             } or nil,
         }
     end
-
     return {}
 end
 
+-- Send a message to the NUI.
+-- @param action string
+-- @param data any
 function SendNUI(action, data)
-    local safeData = sanitizeNuiData(action, data)
-    if safeData ~= nil then
-        _SendNUIMessage({
-            action = action,
-            data = safeData
-        })
-    else
-        _SendNUIMessage({
-            action = action
-        })
+    -- Happy path: hand the table straight to SendNUIMessage, which encodes it
+    -- once. The previous implementation did a json.encode + json.decode
+    -- round-trip to "sanitise" every payload AND a third json.encode for the
+    -- debug log that ran even with debug off — i.e. up to 3 encodes per message.
+    -- Now it's a single encode, with a sanitised fallback only if the send fails.
+    if not pcall(_SendNUIMessage, { action = action, data = data }) then
+        _SendNUIMessage({ action = action, data = safeFallback(action, data) })
     end
-    if safeData then
-        ps.debug(('NUI Message Sent: %s with data: %s'):format(action, json.encode(safeData)))
-    else
-        ps.debug(('NUI Message Sent: %s'):format(action))
+
+    -- Only pay the encode/format cost for logging when debug is actually on.
+    if Config and Config.Debug then
+        local ok, encoded = pcall(json.encode, data)
+        ps.debug(('NUI Message Sent: %s%s'):format(action, (ok and encoded) and (' with data: ' .. encoded) or ''))
     end
 end
