@@ -237,8 +237,8 @@
 				fetchNui(NUI_EVENTS.WEAPON.GET_WEAPONS),
 				fetchNui<{ weapons: { model: string; label: string }[] }>(NUI_EVENTS.WEAPON.GET_WEAPON_CONFIG, {}, { weapons: [] }),
 			]);
-			weapons = Array.isArray(weaponsRes.weapons) ? weaponsRes.weapons : [];
-			weaponOptions = configRes.weapons ?? [];
+			weapons = Array.isArray(weaponsRes?.weapons) ? weaponsRes.weapons : [];
+			weaponOptions = configRes?.weapons ?? [];
 		} catch (error) {
 			globalNotifications.error("Failed to load weapons #1");
 			weapons = [];
@@ -251,7 +251,7 @@
 		loading = true;
 		try {
 			const response = await fetchNui(NUI_EVENTS.WEAPON.GET_WEAPONS);
-			weapons = Array.isArray(response.weapons) ? response.weapons : [];
+			weapons = Array.isArray(response?.weapons) ? response.weapons : [];
 		} catch (error) {
 			globalNotifications.error("Failed to load weapons #2");
 			weapons = [];
