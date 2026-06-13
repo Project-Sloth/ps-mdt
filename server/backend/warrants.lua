@@ -42,10 +42,9 @@ local function getExpiryDate(value)
     return nil
 end
 
-ps.registerCallback(resourceName .. ':server:getActiveWarrants', function(source)
-    local src = source
-    if not CheckAuth(src) then return {} end
-
+-- Exposed as a global so the dashboard aggregate (server/backend/dashboard.lua)
+-- can reuse it without a second round-trip.
+function GetActiveWarrantsData(src)
     local rows = MySQL.query.await([[
         SELECT
             w.reportid,
@@ -80,6 +79,12 @@ ps.registerCallback(resourceName .. ':server:getActiveWarrants', function(source
     end
 
     return results
+end
+
+ps.registerCallback(resourceName .. ':server:getActiveWarrants', function(source)
+    local src = source
+    if not CheckAuth(src) then return {} end
+    return GetActiveWarrantsData(src)
 end)
 
 ps.registerCallback(resourceName .. ':server:issueWarrant', function(source, data)

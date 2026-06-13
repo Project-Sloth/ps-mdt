@@ -12,22 +12,21 @@ local function getEffectiveJobType(src)
     return jobType
 end
 
+local function computeJobData(src)
+    return {
+        rank    = ps.getJobGradeName(src) or 'Officer',
+        payRate = '$' .. (ps.getJobGradePay(src) or 300) .. '/hr',
+    }
+end
+
 ps.registerCallback(resourceName .. ':server:getJobData', function(source)
     local src = source
     assert(src, 'Player ID cannot be nil')
     if not CheckAuth(src) then return {} end
-    local response = {
-        rank    = ps.getJobGradeName(src) or 'Officer',
-        payRate = '$' .. (ps.getJobGradePay(src) or 300) .. '/hr',
-    }
-    return response
+    return computeJobData(src)
 end)
 
-ps.registerCallback(resourceName .. ':server:getReportStatistics', function(source)
-    local src = source
-    assert(src, 'Player ID cannot be nil')
-    if not CheckAuth(src) then return {} end
-
+local function computeReportStatistics()
     return Cache.getOrSet('dashboard:reportStats', Config.CacheTTL and Config.CacheTTL.ReportStats or 30, function()
         local response = MySQL.query.await([[
             SELECT
@@ -42,12 +41,16 @@ ps.registerCallback(resourceName .. ':server:getReportStatistics', function(sour
             changeFromLastWeek = (tonumber(row.totalThisWeek) or 0) - (tonumber(row.totalLastWeek) or 0),
         }
     end)
-end)
+end
 
-ps.registerCallback(resourceName .. ':server:getTimeStatistics', function(source)
+ps.registerCallback(resourceName .. ':server:getReportStatistics', function(source)
     local src = source
     assert(src, 'Player ID cannot be nil')
     if not CheckAuth(src) then return {} end
+    return computeReportStatistics()
+end)
+
+local function computeTimeStatistics(src)
     local citizenid = ps.getIdentifier(src)
     if not citizenid then return {} end
 
@@ -77,19 +80,30 @@ ps.registerCallback(resourceName .. ':server:getTimeStatistics', function(source
         }
     end
     return result
+end
+
+ps.registerCallback(resourceName .. ':server:getTimeStatistics', function(source)
+    local src = source
+    assert(src, 'Player ID cannot be nil')
+    if not CheckAuth(src) then return {} end
+    return computeTimeStatistics(src)
 end)
 
 -- Active warrants handled in server/backend/warrants.lua
 
-ps.registerCallback(resourceName .. ':server:getBulletins', function(source)
-    local src = source
-    assert(src, 'Player ID cannot be nil')
-    if not CheckAuth(src) then return {} end
+local function computeBulletins()
     local rows = MySQL.query.await('SELECT id, content FROM mdt_bulletins ORDER BY id DESC')
     if not rows or #rows == 0 then
         return { { content = 'No bulletins found..' } }
     end
     return rows
+end
+
+ps.registerCallback(resourceName .. ':server:getBulletins', function(source)
+    local src = source
+    assert(src, 'Player ID cannot be nil')
+    if not CheckAuth(src) then return {} end
+    return computeBulletins()
 end)
 
 ps.registerCallback(resourceName .. ':server:createBulletin', function(source, payload)
@@ -162,10 +176,7 @@ ps.registerCallback(resourceName .. ':server:getRecentReports', function(source,
     return rows or {}
 end)
 
-ps.registerCallback(resourceName .. ':server:getActiveBolos', function(source)
-    local src = source
-    assert(src, 'Player ID cannot be nil')
-    if not CheckAuth(src) then return {} end
+local function computeActiveBolos(src)
     local BOLOS = MySQL.query.await('SELECT * FROM mdt_bolos WHERE status = ? ORDER BY id DESC', { 'active' })
     local result = {}
     for _, v in pairs(BOLOS or {}) do
@@ -178,17 +189,27 @@ ps.registerCallback(resourceName .. ':server:getActiveBolos', function(source)
             status   = v.status,
         }
     end
-    ps.debug('Fetched ' .. #result .. ' active BOLOs from database for source ' .. src, result)
     return result
+end
+
+ps.registerCallback(resourceName .. ':server:getActiveBolos', function(source)
+    local src = source
+    assert(src, 'Player ID cannot be nil')
+    if not CheckAuth(src) then return {} end
+    return computeActiveBolos(src)
 end)
+
+local function computeActiveUnits()
+    return Cache.getOrSet('dashboard:activeUnits', Config.CacheTTL and Config.CacheTTL.ActiveUnits or 10, function()
+        return { count = ps.getJobTypeCount('leo') }
+    end)
+end
 
 ps.registerCallback(resourceName .. ':server:getActiveUnits', function(source)
     local src = source
     assert(src, 'Player ID cannot be nil')
     if not CheckAuth(src) then return { count = 0 } end
-    return Cache.getOrSet('dashboard:activeUnits', Config.CacheTTL and Config.CacheTTL.ActiveUnits or 10, function()
-        return { count = ps.getJobTypeCount('leo') }
-    end)
+    return computeActiveUnits()
 end)
 
 local function sanitizeDispatch(call)
@@ -241,10 +262,7 @@ local function sanitizeDispatch(call)
     return sanitized
 end
 
-ps.registerCallback(resourceName .. ':server:getRecentDispatches', function(source)
-    local src = source
-    assert(src, 'Player ID cannot be nil')
-    if not CheckAuth(src) then return {} end
+local function computeRecentDispatches(src)
     local dispatchResource = Config and Config.Dispatch and Config.Dispatch.Resource or 'ps-dispatch'
     local ok, recentDispatches = pcall(function()
         return exports[dispatchResource] and exports[dispatchResource]:GetDispatchCalls() or {}
@@ -280,12 +298,16 @@ ps.registerCallback(resourceName .. ':server:getRecentDispatches', function(sour
         if sanitized then result[#result + 1] = sanitized end
     end
     return result
+end
+
+ps.registerCallback(resourceName .. ':server:getRecentDispatches', function(source)
+    local src = source
+    assert(src, 'Player ID cannot be nil')
+    if not CheckAuth(src) then return {} end
+    return computeRecentDispatches(src)
 end)
 
-ps.registerCallback(resourceName .. ':server:getUsageMetrics', function(source)
-    local src = source
-    if not CheckAuth(src) then return {} end
-
+local function computeUsageMetrics()
     return Cache.getOrSet('dashboard:usageMetrics', Config.CacheTTL and Config.CacheTTL.UsageMetrics or 60, function()
         local function safeCount(query, params)
             local ok, result = pcall(MySQL.scalar.await, query, params or {})
@@ -305,4 +327,33 @@ ps.registerCallback(resourceName .. ':server:getUsageMetrics', function(source)
             },
         }
     end)
+end
+
+ps.registerCallback(resourceName .. ':server:getUsageMetrics', function(source)
+    local src = source
+    if not CheckAuth(src) then return {} end
+    return computeUsageMetrics()
+end)
+
+-- ============================================================================
+--  Aggregate: one round-trip for the whole dashboard.
+--  The frontend previously fired ~9 separate NUI callbacks on open (one per
+--  widget). This bundles them into a single callback so opening the MDT does
+--  one server round-trip + one cb() serialisation instead of nine, which is
+--  the bulk of the on-open client spike.
+-- ============================================================================
+ps.registerCallback(resourceName .. ':server:getDashboard', function(source)
+    local src = source
+    if not CheckAuth(src) then return {} end
+    return {
+        jobData          = computeJobData(src),
+        reportStatistics = computeReportStatistics(),
+        timeStatistics   = computeTimeStatistics(src),
+        activeWarrants   = (GetActiveWarrantsData and GetActiveWarrantsData(src)) or {},
+        bulletins        = computeBulletins(),
+        activeBolos      = computeActiveBolos(src),
+        activeUnits      = computeActiveUnits(),
+        recentDispatches = computeRecentDispatches(src),
+        usageMetrics     = computeUsageMetrics(),
+    }
 end)
