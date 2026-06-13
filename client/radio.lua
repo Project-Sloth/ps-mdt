@@ -79,7 +79,6 @@ local function resolveSystem()
         for _, entry in ipairs(cfg.AutoDetect or {}) do
             if GetResourceState(entry.resource) == 'started' then
                 systemKey = entry.system
-                ps.info(entry.system.. ' script was set as Radio Script!')
                 break
             end
         end
