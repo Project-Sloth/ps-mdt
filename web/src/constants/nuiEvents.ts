@@ -1,6 +1,11 @@
 /** NUI event constants organized by domain */
 export const NUI_EVENTS = {
+	RADIO: {
+		PTT: "radioPTT",
+		CONFIG: "radioConfig",
+	},
 	DASHBOARD: {
+		GET_DASHBOARD: "getDashboard",
 		GET_JOB_DATA: "getJobData",
 		GET_REPORT_STATISTICS: "getReportStatistics",
 		GET_TIME_STATISTICS: "getTimeStatistics",
@@ -350,6 +355,7 @@ export const DOJ_EVENTS = NUI_EVENTS.DOJ;
 
 // All events combined for type checking
 export const ALL_NUI_EVENTS = [
+	...Object.values(NUI_EVENTS.RADIO),
 	...Object.values(NUI_EVENTS.DASHBOARD),
 	...Object.values(NUI_EVENTS.COURT),
 	...Object.values(NUI_EVENTS.DISPATCH),
