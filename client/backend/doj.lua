@@ -88,12 +88,12 @@ end)
 
 RegisterNUICallback('reviewWarrantRequest', function(data, cb)
     if not MDTOpen then
-        cb({ success = false, message = 'MDT is not open' })
+        cb({ success = false, error = 'MDT is not open' })
         return
     end
 
     if not data or not data.request_id or not data.decision then
-        cb({ success = false, message = 'Missing request_id or decision' })
+        cb({ success = false, error = 'Missing request_id or decision' })
         return
     end
 
