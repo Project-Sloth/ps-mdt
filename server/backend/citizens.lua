@@ -155,12 +155,10 @@ ps.registerCallback(resourceName .. ':server:getCitizens', function(source, page
             end
         end
 
-        local propRows = safeQuery(
-            ('SELECT owner, COUNT(*) AS cnt FROM properties WHERE owner IN (%s) GROUP BY owner'):format(inClause),
-            citizenids
-        )
-        for _, row in ipairs(propRows) do
-            propCounts[row.owner] = tonumber(row.cnt) or 0
+        -- Property counts come from the configured housing system (Config.Housing).
+        local propCountRows = Housing.GetCountsByOwners(citizenids)
+        for cid, cnt in pairs(propCountRows) do
+            propCounts[cid] = cnt
         end
 
         local vehRows = safeQuery(
@@ -309,12 +307,10 @@ ps.registerCallback(resourceName .. ':server:searchCitizens', function(source, q
             end
         end
 
-        local propRows = safeQuery(
-            ('SELECT owner, COUNT(*) AS cnt FROM properties WHERE owner IN (%s) GROUP BY owner'):format(inClause),
-            citizenids
-        )
-        for _, row in ipairs(propRows) do
-            propCounts[row.owner] = tonumber(row.cnt) or 0
+        -- Property counts come from the configured housing system (Config.Housing).
+        local propCountRows = Housing.GetCountsByOwners(citizenids)
+        for cid, cnt in pairs(propCountRows) do
+            propCounts[cid] = cnt
         end
 
         local vehRows = safeQuery(
@@ -455,7 +451,8 @@ ps.registerCallback(resourceName .. ':server:getCitizenProfile', function(source
     local flags = collectCitizenFlags({ citizenid })
     local vehicles = MySQL.query.await('SELECT plate, vehicle FROM player_vehicles WHERE citizenid = ?', { citizenid }) or {}
     local vehiclesCount = #vehicles
-    local properties = MySQL.query.await('SELECT id, property_name, coords, keyholders FROM properties WHERE owner = ?', { citizenid }) or {}
+    -- Owned properties come from the configured housing system (Config.Housing).
+    local properties = Housing.GetByOwner(citizenid)
     local propertiesCount = #properties
     local arrestsCount = MySQL.scalar.await('SELECT COUNT(*) FROM mdt_arrests WHERE citizenid = ?', { citizenid }) or 0
     local activeWarrants = MySQL.query.await([[
@@ -1170,12 +1167,8 @@ ps.registerCallback(resourceName .. ':server:getProperty', function(source, prop
         return { success = false, message = 'Missing property id' }
     end
 
-    local propRow = MySQL.single.await([[
-        SELECT id, property_name, coords, owner, keyholders
-        FROM properties
-        WHERE id = ?
-        LIMIT 1
-    ]], { propertyId })
+    -- Look the property up via the configured housing system (Config.Housing).
+    local propRow = Housing.GetById(propertyId)
  
     if not propRow then
         return { success = false, message = 'Property not found' }
