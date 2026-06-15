@@ -110,6 +110,9 @@ export const NUI_EVENTS = {
 		UPDATE_CITIZEN_FINGERPRINT: "updateCitizenFingerprint",
 		ADD_CITIZEN_GALLERY: 'addCitizenGallery',
 		REMOVE_CITIZEN_GALLERY: 'removeCitizenGallery',
+		GET_CITIZEN_TAGS: 'getCitizenTags',
+		ADD_CITIZEN_TAG: 'addCitizenTag',
+		REMOVE_CITIZEN_TAG: 'removeCitizenTag',
 	},
 	VEHICLE: {
 		GET_VEHICLES: "getVehicles",
