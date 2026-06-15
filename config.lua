@@ -108,6 +108,100 @@ Config.FingerprintScan = {
 -- Fuel Resource Name
 Config.Fuel = 'LegacyFuel' -- Fuel resource name for vehicle fuel management
 
+
+-- Housing / Properties Integration
+-- The MDT shows the properties a citizen owns on their profile. Every housing
+-- resource stores this in a different table with different column names, so
+-- pick the system you run below — or define a fully custom mapping.
+--
+-- To switch systems you normally ONLY change `Config.Housing.system`.
+Config.Housing = {
+    enabled = true,             -- false = hide the properties feature entirely (no housing DB queries are run)
+    system  = 'qbx_properties', -- which preset below to use, or 'custom'
+
+    -- Presets: ready-made schema mappings for popular housing resources.
+    -- `columns` maps the MDT's internal fields to your table's real columns:
+    --   owner      = column holding the owner's citizenid          (required)
+    --   id         = column holding the property's unique id       (needed to open a single property)
+    --   name       = column shown as the property name/label
+    --   coords     = column holding coords as JSON (used for the "set waypoint" button; optional)
+    --   keyholders = column holding keyholders as JSON array/object (optional)
+    -- Set a column to nil if your system doesn't have it.
+    --
+    -- For TWO-TABLE systems (e.g. qb-houses), where the property definition and
+    -- the ownership live in separate tables, add a `join` (see the qb_houses
+    -- preset below for a complete example).
+    Presets = {
+        -- Qbox properties (default). This matches the table the MDT used before
+        -- this option existed, so leaving it selected keeps the old behaviour.
+        qbx_properties = {
+            table = 'properties',
+            columns = {
+                owner      = 'owner',
+                id         = 'id',
+                name       = 'property_name',
+                coords     = 'coords',
+                keyholders = 'keyholders',
+            },
+        },
+
+        -- Project Sloth Housing (ps-housing).
+        -- ps-housing has no single coords column (it uses door_data), and the
+        -- display name comes from `street`.
+        ps_housing = {
+            table = 'properties',
+            columns = {
+                owner      = 'owner_citizenid',
+                id         = 'property_id',
+                name       = 'street',
+                coords     = 'door_data',
+                keyholders = 'has_access',
+            },
+        },
+
+        -- qb-houses (legacy QBCore). Two-table system: ownership lives in
+        -- `player_houses`, the property definition (label + coords) lives in
+        -- `houselocations`, linked by player_houses.house = houselocations.name.
+        qb_houses = {
+            table = 'player_houses',   -- ownership table
+            columns = {
+                owner      = 'citizenid',
+                id         = 'id',
+                name       = nil,      -- taken from the joined table (label)
+                coords     = nil,      -- taken from the joined table (coords)
+                keyholders = 'keyholders',
+            },
+            join = {
+                table = 'houselocations',                 -- definitions table
+                on    = { left = 'house', right = 'name' }, -- player_houses.house = houselocations.name
+                columns = {                                -- pull these fields from the joined table instead
+                    name   = 'label',
+                    coords = 'coords',
+                },
+            },
+        },
+
+        -- Fully custom mapping. Set Config.Housing.system = 'custom' and edit
+        -- the values below to match your housing resource's database.
+        custom = {
+            table = 'properties',
+            columns = {
+                owner      = 'owner',
+                id         = 'id',
+                name       = 'property_name',
+                coords     = 'coords',
+                keyholders = 'keyholders',
+            },
+            -- Uncomment and adjust for a two-table system:
+            -- join = {
+            --     table   = 'other_table',
+            --     on      = { left = 'local_col', right = 'other_col' },
+            --     columns = { name = 'label', coords = 'coords' },
+            -- },
+        },
+    },
+}
+
 -- Weapon Registration
 Config.RegisterWeaponsAutomatically = true -- Auto-register weapons on purchase (ox_inventory and qb-inventory/qb-weapons)
 Config.RegisterCreatedWeapons = false -- Also auto-register weapons on item creation (ox_inventory only)
