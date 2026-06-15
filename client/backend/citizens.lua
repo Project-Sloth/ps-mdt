@@ -188,6 +188,15 @@ RegisterNUICallback('addCitizenTag', function(data, cb)
     cb(result or { success = false })
 end)
 
+-- Available citizen tags for the profile picker, scoped to the viewer's domain.
+RegisterNUICallback('getCitizenTags', function(_, cb)
+    if not MDTOpen then cb({ success = false, data = {} }) return end
+    local jobType = ps.getJobType()
+    local mdtJobType = jobType == Config.MedicalJobType and 'ems' or 'leo'
+    local tags = ps.callback(resourceName .. ':server:getCitizenTags', mdtJobType)
+    cb({ success = true, data = tags or {} })
+end)
+
 RegisterNUICallback('removeCitizenTag', function(data, cb)
     if not MDTOpen then cb({ success = false }) return end
     if not data or not data.citizenid or not data.tag then
