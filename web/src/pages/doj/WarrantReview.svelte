@@ -188,8 +188,8 @@
 			const result = await fetchNui<{ success: boolean; error?: string }>(
 				NUI_EVENTS.DOJ.REVIEW_WARRANT_REQUEST,
 				{
-					id: selectedRequest.id,
-					status: action,
+					request_id: selectedRequest.id,
+					decision: action,
 					reason: reviewReason.trim(),
 				},
 				{ success: true },
