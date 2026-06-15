@@ -18,9 +18,10 @@
 	interface Tag {
 		id: number;
 		name: string;
-		type: "officer" | "report" | "both";
+		type: "report" | "officer" | "citizen";
 		color: string;
 		job_type: JobTypeFilter;
+		description?: string;
 		usage_count?: number;
 		created_at?: string;
 	}
@@ -37,14 +38,11 @@
 		{ value: "#6b7280", label: "Gray" },
 	];
 
-	let TAG_TYPES = $derived(isEMS ? [
-		{ value: "officer", label: "Personnel" },
+	// Three clear targets: where the tag attaches. Officers are "Personnel" for EMS.
+	let TAG_TYPES = $derived([
 		{ value: "report", label: "Report" },
-		{ value: "both", label: "Both" },
-	] : [
-		{ value: "officer", label: "Officer" },
-		{ value: "report", label: "Report" },
-		{ value: "both", label: "Both" },
+		{ value: "officer", label: isEMS ? "Personnel" : "Officer" },
+		{ value: "citizen", label: "Citizen" },
 	]);
 
 	const JOB_TYPES = [
@@ -55,18 +53,20 @@
 
 	let tags: Tag[] = $state([]);
 	let newTagName: string = $state("");
-	let newTagType: "officer" | "report" | "both" = $state("officer");
+	let newTagType: "report" | "officer" | "citizen" = $state("citizen");
 	let newTagColor: string = $state("#3b82f6");
+	let newTagDescription: string = $state("");
 	let newTagJobType: JobTypeFilter = $state(jobType as JobTypeFilter);
 	let isLoading = $state(false);
 	let isSubmitting = $state(false);
 	let statusMessage: { text: string; type: "success" | "error" } | null = $state(null);
 	let editingTag: Tag | null = $state(null);
 	let editName: string = $state("");
-	let editType: "officer" | "report" | "both" = $state("officer");
+	let editType: "report" | "officer" | "citizen" = $state("citizen");
 	let editColor: string = $state("#3b82f6");
 	let editJobType: JobTypeFilter = $state("all");
-	let filterType: "all" | "officer" | "report" | "both" = $state("all");
+	let editDescription: string = $state("");
+	let filterType: "all" | "report" | "officer" | "citizen" = $state("all");
 	let filterJobType: "all" | "leo" | "ems" = $state("all");
 	let searchQuery: string = $state("");
 
@@ -107,8 +107,9 @@
 		}
 
 		if (isEnvBrowser()) {
-			tags = [...tags, { id: Date.now(), name, type: newTagType, color: newTagColor, job_type: newTagJobType, usage_count: 0 }];
+			tags = [...tags, { id: Date.now(), name, type: newTagType, color: newTagColor, job_type: newTagJobType, description: newTagDescription.trim() || undefined, usage_count: 0 }];
 			newTagName = "";
+			newTagDescription = "";
 			return;
 		}
 
@@ -116,7 +117,7 @@
 			isSubmitting = true;
 			const result = await fetchNui<{ success: boolean; message?: string; id?: number }>(
 				NUI_EVENTS.MANAGEMENT.CREATE_TAG,
-				{ name, type: newTagType, color: newTagColor, job_type: newTagJobType },
+				{ name, type: newTagType, color: newTagColor, job_type: newTagJobType, description: newTagDescription.trim() || undefined },
 				{ success: false },
 			);
 			if (result?.success) {
@@ -144,7 +145,7 @@
 		}
 
 		if (isEnvBrowser()) {
-			tags = tags.map((t) => t.id === editingTag!.id ? { ...t, name, type: editType, color: editColor, job_type: editJobType } : t);
+			tags = tags.map((t) => t.id === editingTag!.id ? { ...t, name, type: editType, color: editColor, job_type: editJobType, description: editDescription.trim() || undefined } : t);
 			editingTag = null;
 			return;
 		}
@@ -153,7 +154,7 @@
 			isSubmitting = true;
 			const result = await fetchNui<{ success: boolean; message?: string }>(
 				NUI_EVENTS.MANAGEMENT.UPDATE_TAG,
-				{ id: editingTag.id, name, type: editType, color: editColor, job_type: editJobType },
+				{ id: editingTag.id, name, type: editType, color: editColor, job_type: editJobType, description: editDescription.trim() || undefined },
 				{ success: false },
 			);
 			if (result?.success) {
@@ -202,6 +203,7 @@
 		editType = tag.type;
 		editColor = tag.color || "#3b82f6";
 		editJobType = isEMS ? (jobType as JobTypeFilter) : (tag.job_type || "all");
+		editDescription = tag.description || "";
 	}
 
 	function cancelEdit() {
@@ -220,12 +222,13 @@
 		if (isEnvBrowser()) {
 			tags = [
 				{ id: 1, name: "SWAT", type: "officer", color: "#3b82f6", job_type: "leo", usage_count: 3 },
-				{ id: 2, name: "FTO", type: "officer", color: "#10b981", job_type: "leo", usage_count: 5 },
-				{ id: 3, name: "Detective", type: "officer", color: "#8b5cf6", job_type: "leo", usage_count: 2 },
-				{ id: 4, name: "Paramedic", type: "officer", color: "#ef4444", job_type: "ems", usage_count: 1 },
-				{ id: 5, name: "Cardiac", type: "report", color: "#ef4444", job_type: "ems", usage_count: 4 },
-				{ id: 6, name: "Gang Related", type: "report", color: "#ef4444", job_type: "leo", usage_count: 8 },
-				{ id: 7, name: "High Priority", type: "both", color: "#f59e0b", job_type: "all", usage_count: 12 },
+				{ id: 2, name: "Detective", type: "officer", color: "#8b5cf6", job_type: "leo", usage_count: 2 },
+				{ id: 3, name: "Paramedic", type: "officer", color: "#ef4444", job_type: "ems", usage_count: 1 },
+				{ id: 4, name: "Violent", type: "citizen", color: "#ef4444", job_type: "leo", usage_count: 6 },
+				{ id: 5, name: "Allergy", type: "citizen", color: "#ef4444", job_type: "ems", usage_count: 4 },
+				{ id: 6, name: "Medical Alert", type: "citizen", color: "#f59e0b", job_type: "all", usage_count: 2 },
+				{ id: 7, name: "Gang Related", type: "report", color: "#ec4899", job_type: "leo", usage_count: 8 },
+				{ id: 8, name: "Priority", type: "report", color: "#f59e0b", job_type: "all", usage_count: 12 },
 			];
 			return;
 		}
@@ -250,6 +253,13 @@
 				bind:value={newTagName}
 				maxlength="25"
 				onkeydown={(e) => e.key === "Enter" && handleCreate()}
+			/>
+			<input
+				class="tag-name-input"
+				type="text"
+				placeholder="Description (optional)..."
+				bind:value={newTagDescription}
+				maxlength="120"
 			/>
 			<select class="tag-select" bind:value={newTagType}>
 				{#each TAG_TYPES as type}
@@ -294,9 +304,9 @@
 		/>
 		<div class="filter-pills">
 			<button class="filter-pill" class:active={filterType === "all"} onclick={() => (filterType = "all")}>All</button>
-			<button class="filter-pill" class:active={filterType === "officer"} onclick={() => (filterType = "officer")}>{isEMS ? 'Personnel' : 'Officer'}</button>
 			<button class="filter-pill" class:active={filterType === "report"} onclick={() => (filterType = "report")}>Report</button>
-			<button class="filter-pill" class:active={filterType === "both"} onclick={() => (filterType = "both")}>Both</button>
+			<button class="filter-pill" class:active={filterType === "officer"} onclick={() => (filterType = "officer")}>{isEMS ? 'Personnel' : 'Officer'}</button>
+			<button class="filter-pill" class:active={filterType === "citizen"} onclick={() => (filterType = "citizen")}>Citizen</button>
 		</div>
 		{#if !isEMS}
 			<div class="filter-pills">
@@ -329,6 +339,13 @@
 									bind:value={editName}
 									maxlength="25"
 									onkeydown={(e) => e.key === "Enter" && handleUpdate()}
+								/>
+								<input
+									class="tag-name-input edit"
+									type="text"
+									placeholder="Description (optional)..."
+									bind:value={editDescription}
+									maxlength="120"
 								/>
 								<select class="tag-select" bind:value={editType}>
 									{#each TAG_TYPES as type}
@@ -366,6 +383,7 @@
 						<div class="tag-color-indicator" style="background: {tag.color || '#6b7280'}"></div>
 						<div class="tag-info">
 							<span class="tag-name">{tag.name}</span>
+							{#if tag.description}<span class="tag-desc" title={tag.description}>{tag.description}</span>{/if}
 							<span class="tag-type-badge {tag.type}">{getTypeLabel(tag.type)}</span>
 							<span class="tag-type-badge job-{tag.job_type || 'all'}">{getJobTypeLabel(tag.job_type || 'all')}</span>
 						</div>
@@ -658,6 +676,7 @@
 		min-width: 0;
 	}
 
+	.tag-desc { font-size: 10px; color: rgba(255,255,255,0.4); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 220px; }
 	.tag-name {
 		font-size: 11px;
 		color: rgba(255, 255, 255, 0.8);
@@ -684,7 +703,8 @@
 		color: rgba(110, 231, 183, 0.7);
 	}
 
-	.tag-type-badge.both {
+	.tag-type-badge.both,
+	.tag-type-badge.citizen {
 		background: rgba(139, 92, 246, 0.08);
 		color: rgba(196, 181, 253, 0.7);
 	}
