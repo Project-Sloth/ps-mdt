@@ -785,7 +785,7 @@ INSERT IGNORE INTO mdt_tags (name, type, color, job_type) VALUES
 ('Epileptic', 'citizen', '#a855f7', 'ems'),
 ('Heart Condition', 'citizen', '#dc2626', 'ems'),
 ('Organ Donor', 'citizen', '#10b981', 'ems'),
-('Medical Alert', 'citizen', '#f59e0b', 'all'),
+('Medical Alert', 'citizen', '#f59e0b', 'all');
 
 -- Default LEO Report Tags
 INSERT IGNORE INTO mdt_tags (name, type, color, job_type) VALUES
