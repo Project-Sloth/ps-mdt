@@ -4,6 +4,7 @@ import { NUI_EVENTS } from "../constants/nuiEvents";
 export interface TagInfo {
 	name: string;
 	color: string;
+	description?: string;
 }
 
 export interface TagServiceState {
@@ -33,7 +34,7 @@ export function createTagService() {
 			);
 
 			// Server returns array of { name, color, usage_count }
-			const rawTags: Array<string | { name?: string; color?: string } | null> = Array.isArray(response)
+			const rawTags: Array<string | { name?: string; color?: string; description?: string } | null> = Array.isArray(response)
 				? response
 				: Array.isArray(response?.data)
 					? response.data
@@ -44,7 +45,7 @@ export function createTagService() {
 						return { name: tag, color: "#6b7280" };
 					}
 					if (tag?.name) {
-						return { name: tag.name, color: tag.color || "#6b7280" };
+						return { name: tag.name, color: tag.color || "#6b7280", description: tag.description };
 					}
 					return null;
 				})
