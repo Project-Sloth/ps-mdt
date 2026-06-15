@@ -1,6 +1,41 @@
 <script lang="ts">
 	import type { TagInfo } from "../../services/tagService.svelte";
 
+	// Hover tooltip rendered into <body> so a scrolling/overflow parent (the
+	// dropdown) can never clip it; follows the cursor so it never covers a
+	// neighbouring element.
+	function tip(node: HTMLElement, text: string | undefined) {
+		let el: HTMLDivElement | null = null;
+		let cur = text;
+		function place(e: MouseEvent) {
+			if (!el) return;
+			const t = el.getBoundingClientRect();
+			let x = e.clientX + 14;
+			let y = e.clientY + 16;
+			if (x + t.width > window.innerWidth - 4) x = e.clientX - t.width - 14;
+			if (y + t.height > window.innerHeight - 4) y = e.clientY - t.height - 16;
+			el.style.left = `${Math.max(4, x)}px`;
+			el.style.top = `${Math.max(4, y)}px`;
+		}
+		function show(e: MouseEvent) {
+			if (!cur || el) return;
+			el = document.createElement("div");
+			el.textContent = cur;
+			el.style.cssText = "position:fixed;z-index:99999;background:#111113;color:rgba(255,255,255,0.92);padding:6px 9px;border-radius:5px;font-size:11px;font-weight:500;line-height:1.4;max-width:240px;white-space:normal;word-break:break-word;border:1px solid rgba(255,255,255,0.12);box-shadow:0 8px 24px rgba(0,0,0,0.6);pointer-events:none;";
+			document.body.appendChild(el);
+			place(e);
+		}
+		function move(e: MouseEvent) { if (el) place(e); }
+		function hide() { if (el) { el.remove(); el = null; } }
+		node.addEventListener("mouseenter", show);
+		node.addEventListener("mousemove", move);
+		node.addEventListener("mouseleave", hide);
+		return {
+			update(v: string | undefined) { cur = v; if (el && !v) hide(); },
+			destroy() { hide(); node.removeEventListener("mouseenter", show); node.removeEventListener("mousemove", move); node.removeEventListener("mouseleave", hide); },
+		};
+	}
+
 	interface Props {
 		tags: string[];
 		availableTags: TagInfo[];
@@ -60,6 +95,7 @@
 						<button
 							class="dropdown-item"
 							onclick={() => addTag(tag.name)}
+							use:tip={tag.description}
 						>
 							<span class="tag-color-dot" style="background-color: {tag.color}"></span>
 							<span class="tag-name">{tag.name}</span>
@@ -75,7 +111,8 @@
 	<div class="tags-container">
 		{#each tags as tag, index}
 			{@const color = getTagColor(tag)}
-			<div class="tag" style="background-color: {color}20; border: 1px solid {color}40;">
+			{@const tagDesc = availableTags.find((t) => t.name === tag)?.description}
+			<div class="tag" use:tip={tagDesc} style="background-color: {color}20; border: 1px solid {color}40;">
 				<span class="tag-dot" style="background-color: {color}"></span>
 				<span class="tag-text" style="color: {color}">{tag}</span>
 				<button
