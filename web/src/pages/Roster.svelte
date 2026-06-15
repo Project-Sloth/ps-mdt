@@ -1,4 +1,39 @@
 <script lang="ts">
+	// Inline hover tooltip rendered into <body> so it is never clipped by a
+	// scrolling/overflow parent (same idea as the dashboard MOTD tooltip, but
+	// floated to body and shown below the target so it never covers neighbours).
+	function tip(node: HTMLElement, text: string | undefined) {
+		let el: HTMLDivElement | null = null;
+		let cur = text;
+		function place(e: MouseEvent) {
+			if (!el) return;
+			const t = el.getBoundingClientRect();
+			let x = e.clientX + 14;
+			let y = e.clientY + 16;
+			if (x + t.width > window.innerWidth - 4) x = e.clientX - t.width - 14;
+			if (y + t.height > window.innerHeight - 4) y = e.clientY - t.height - 16;
+			el.style.left = `${Math.max(4, x)}px`;
+			el.style.top = `${Math.max(4, y)}px`;
+		}
+		function show(e: MouseEvent) {
+			if (!cur || el) return;
+			el = document.createElement("div");
+			el.textContent = cur;
+			el.style.cssText = "position:fixed;z-index:99999;background:#111113;color:rgba(255,255,255,0.92);padding:6px 9px;border-radius:5px;font-size:11px;font-weight:500;line-height:1.4;max-width:240px;white-space:normal;word-break:break-word;border:1px solid rgba(255,255,255,0.12);box-shadow:0 8px 24px rgba(0,0,0,0.6);pointer-events:none;";
+			document.body.appendChild(el);
+			place(e);
+		}
+		function move(e: MouseEvent) { if (el) place(e); }
+		function hide() { if (el) { el.remove(); el = null; } }
+		node.addEventListener("mouseenter", show);
+		node.addEventListener("mousemove", move);
+		node.addEventListener("mouseleave", hide);
+		return {
+			update(v: string | undefined) { cur = v; if (el && !v) hide(); },
+			destroy() { hide(); node.removeEventListener("mouseenter", show); node.removeEventListener("mousemove", move); node.removeEventListener("mouseleave", hide); },
+		};
+	}
+
 	import { onMount } from "svelte";
 	import { fetchNui } from "../utils/fetchNui";
 	import { useNuiEvent } from "../utils/useNuiEvent";
@@ -36,6 +71,7 @@
 		id: number;
 		name: string;
 		color: string;
+		description?: string;
 	}
 
 	interface JobGrade {
@@ -547,6 +583,9 @@
 		const tag = availableTags.find((t) => t.name === certName);
 		return tag?.color || "#6b7280";
 	}
+	function getTagDescription(certName: string): string {
+		return availableTags.find((t) => t.name === certName)?.description || "";
+	}
 </script>
 
 <div class="roster-page">
@@ -618,7 +657,7 @@
 							<span class="cell-certs">
 								{#if officer.certifications.length > 0}
 									{#each officer.certifications as cert}
-										<span class="cert-tag" style="border-color: {getTagColor(cert)}40; color: {getTagColor(cert)}">{cert}</span>
+										<span class="cert-tag" use:tip={getTagDescription(cert)} style="border-color: {getTagColor(cert)}40; color: {getTagColor(cert)}">{cert}</span>
 									{/each}
 								{:else}
 									<span class="cell-muted">-</span>
@@ -682,6 +721,7 @@
 								class="cert-option"
 								class:selected={selectedCerts.includes(tag.name)}
 								onclick={() => toggleCert(tag.name)}
+								use:tip={tag.description}
 								style="--tag-color: {tag.color}"
 							>
 								<span class="cert-check">
@@ -845,6 +885,7 @@
 										class="cert-option"
 										class:selected={selectedCerts.includes(tag.name)}
 										onclick={() => toggleCert(tag.name)}
+										use:tip={tag.description}
 										style="--tag-color: {tag.color}"
 									>
 										<span class="cert-check">
@@ -1878,4 +1919,6 @@
 	.status-completed { background: rgba(16, 185, 129, 0.2); color: rgb(167, 243, 208); }
 	.status-failed { background: rgba(239, 68, 68, 0.2); color: rgb(252, 165, 165); }
 	.status-suspended { background: rgba(245, 158, 11, 0.2); color: rgb(253, 224, 71); }
+
+
 </style>

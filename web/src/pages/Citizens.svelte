@@ -26,6 +26,7 @@
 		vehicles: number;
 		arrests: number;
 		flags: string[];
+		tags?: string[];
 	}
 
 	interface CustomLicenseStatus {
@@ -49,7 +50,6 @@
 		vehicles: number;
 		arrests: number;
 		flags: string[];
-		tags?: string[];
 		image?: string;
 		notes?: string;
 		gallery?: Array<{
@@ -98,6 +98,7 @@
 			id: number;
 			property_name: string;
 		}>;
+		tags?: string[];
 	}
 
 	import type { JobType } from "../interfaces/IUser";
@@ -106,7 +107,7 @@
 	let { tabService, jobType = 'leo', authService }: { tabService: ReturnType<typeof createTabService>; jobType?: JobType; authService?: AuthService } =
 		$props();
 
-	let canManageLicenses = $derived(authService?.hasPermission('citizens_edit_licenses') ?? !isEMS);
+	let canManageLicenses = $derived(!isEMS && (authService?.hasPermission('citizens_edit_licenses') ?? true));
 
 	const isEMS = $derived(jobType === 'ems');
 	let searchQuery = $state("");
@@ -254,136 +255,6 @@
 		return allFilteredCitizens.slice(start, start + citizenPerPage);
 	});
 
-	// ── Citizen Tags ──
-	let tagMenuOpen = $state(false);
-	let tagSaving = $state<string | null>(null);
-	let customTagInput = $state("");
-
-	// Vordefinierte Tags, gruppiert nach Kategorie. severity steuert die Pill-Farbe.
-	const presetTagGroups: Array<{ group: string; tags: Array<{ name: string; severity: string; desc: string }> }> = [
-		{
-			group: "Threat / Officer Safety",
-			tags: [
-				{ name: "Often Armed", severity: "red", desc: "Frequently found carrying a weapon" },
-				{ name: "Violent", severity: "red", desc: "Prone to violence against persons" },
-				{ name: "Resists Arrest", severity: "orange", desc: "Known to resist arrest" },
-				{ name: "Flight Risk", severity: "orange", desc: "High risk of fleeing" },
-				{ name: "Gang Member", severity: "red", desc: "Known gang affiliation" },
-			],
-		},
-		{
-			group: "Criminal History",
-			tags: [
-				{ name: "Frequent Offender", severity: "amber", desc: "Repeated criminal record" },
-				{ name: "Drug Activity", severity: "amber", desc: "Linked to drug trade or use" },
-				{ name: "Weapon Trafficking", severity: "amber", desc: "Suspected weapon trafficking" },
-				{ name: "Repeat DUI", severity: "yellow", desc: "Multiple DUI offenses" },
-			],
-		},
-		{
-			group: "Behaviour / Caution",
-			tags: [
-				{ name: "Mentally Unstable", severity: "blue", desc: "Mentally unstable - use caution" },
-				{ name: "Medical Condition", severity: "blue", desc: "Relevant medical condition" },
-				{ name: "Known Informant", severity: "grey", desc: "Confidential informant" },
-				{ name: "Cooperative", severity: "green", desc: "Generally cooperative" },
-			],
-		},
-	];
-
-	const tagSeverityMap: Record<string, string> = (() => {
-		const m: Record<string, string> = {};
-		for (const g of presetTagGroups) for (const t of g.tags) m[t.name] = t.severity;
-		return m;
-	})();
-
-	function getTagPillClass(tag: string): string {
-		const sev = tagSeverityMap[tag];
-		switch (sev) {
-			case "red": return "flag-red";
-			case "orange": return "flag-orange";
-			case "amber": return "flag-amber";
-			case "yellow": return "flag-yellow";
-			case "blue": return "flag-blue";
-			case "green": return "flag-green";
-			case "grey": return "flag-grey";
-			default: return "flag-grey";
-		}
-	}
-
-	function openTagMenu() {
-		customTagInput = "";
-		tagMenuOpen = true;
-	}
-
-	function hasTag(tag: string): boolean {
-		return (selectedProfile?.tags ?? []).includes(tag);
-	}
-
-	async function addCitizenTag(tag: string) {
-		const clean = tag.trim();
-		if (!clean || !selectedProfile || tagSaving) return;
-		if (hasTag(clean)) {
-			globalNotifications.error("Tag already exists");
-			return;
-		}
-		tagSaving = clean;
-		try {
-			const result = await fetchNui<{ success: boolean; message?: string }>(
-				NUI_EVENTS.CITIZEN.ADD_CITIZEN_TAG,
-				{ citizenid: selectedProfile.citizenid, tag: clean },
-				{ success: true },
-			);
-			if (result.success) {
-				selectedProfile = { ...selectedProfile, tags: [...(selectedProfile.tags ?? []), clean] };
-				globalNotifications.success("Tag added");
-			} else {
-				globalNotifications.error(result.message || "Failed to add tag");
-			}
-		} catch {
-			globalNotifications.error("Failed to add tag");
-		}
-		tagSaving = null;
-	}
-
-	async function removeCitizenTag(tag: string) {
-		if (!selectedProfile || tagSaving) return;
-		tagSaving = tag;
-		try {
-			const result = await fetchNui<{ success: boolean; message?: string }>(
-				NUI_EVENTS.CITIZEN.REMOVE_CITIZEN_TAG,
-				{ citizenid: selectedProfile.citizenid, tag },
-				{ success: true },
-			);
-			if (result.success) {
-				selectedProfile = { ...selectedProfile, tags: (selectedProfile.tags ?? []).filter((t) => t !== tag) };
-				globalNotifications.success("Tag removed");
-			} else {
-				globalNotifications.error(result.message || "Failed to remove tag");
-			}
-		} catch {
-			globalNotifications.error("Failed to remove tag");
-		}
-		tagSaving = null;
-	}
-
-	function toggleTag(tag: string) {
-		if (hasTag(tag)) removeCitizenTag(tag);
-		else addCitizenTag(tag);
-	}
-
-	async function addCustomTag() {
-		const clean = customTagInput.trim();
-		if (!clean) return;
-		await addCitizenTag(clean);
-		customTagInput = "";
-	}
-
-	// Tags, die der Spieler manuell vergeben hat, aber nicht in den Presets stehen
-	let customTagsOnProfile = $derived(
-		(selectedProfile?.tags ?? []).filter((t) => !(t in tagSeverityMap)),
-	);
-
 	// Notes editing
 	let editingNotes = $state(false);
 	let notesValue = $state("");
@@ -438,12 +309,14 @@
 		if (isEnvBrowser()) {
 			loading = false;
 			citizens = [
-				{ id: 1, cid: 'ABC12345', firstName: 'Marcus', lastName: 'Rodriguez', gender: 'Male', dob: '1990-05-15', phone: '555-0142', image: '', occupations: ['Mechanic', 'Taxi Driver'], properties: 2, vehicles: 3, arrests: 1, flags: ['Active Warrant', 'Violent'] },
-				{ id: 2, cid: 'DEF67890', firstName: 'Sarah', lastName: 'Chen', gender: 'Female', dob: '1995-11-22', phone: '555-0299', image: '', occupations: ['Doctor'], properties: 1, vehicles: 1, arrests: 0, flags: [] },
-				{ id: 3, cid: 'GHI11223', firstName: 'James', lastName: 'Wilson', gender: 'Male', dob: '1988-03-08', phone: '555-0377', image: '', occupations: ['Unemployed'], properties: 0, vehicles: 2, arrests: 5, flags: ['Flight Risk'] },
+				{ id: 1, cid: 'ABC12345', firstName: 'Marcus', lastName: 'Rodriguez', gender: 'Male', dob: '1990-05-15', phone: '555-0142', image: '', occupations: ['Mechanic', 'Taxi Driver'], properties: 2, vehicles: 3, arrests: 1, flags: ['Active Warrant', 'Violent'], tags: ['Violent', 'Gang Member'] },
+				{ id: 2, cid: 'DEF67890', firstName: 'Sarah', lastName: 'Chen', gender: 'Female', dob: '1995-11-22', phone: '555-0299', image: '', occupations: ['Doctor'], properties: 1, vehicles: 1, arrests: 0, flags: [], tags: ['Medical Alert'] },
+				{ id: 3, cid: 'GHI11223', firstName: 'James', lastName: 'Wilson', gender: 'Male', dob: '1988-03-08', phone: '555-0377', image: '', occupations: ['Unemployed'], properties: 0, vehicles: 2, arrests: 5, flags: ['Flight Risk'], tags: ['Flight Risk', 'Wanted', 'Armed & Dangerous', 'Felon'] },
 			];
+			loadCitizenTags();
 			return;
 		}
+		loadCitizenTags();
 		await fetchCitizens();
 	});
 
@@ -545,9 +418,9 @@
 	async function viewProfile(citizenId: string) {
 		if (isEnvBrowser()) {
 			const mockProfiles: Record<string, CitizenProfile> = {
-				'ABC12345': { citizenid: 'ABC12345', firstName: 'Marcus', lastName: 'Rodriguez', gender: 'Male', dob: '1990-05-15', phone: '555-0142', fingerprint: 'FP-8291-AXKF', image: '', occupations: ['Mechanic', 'Taxi Driver'], properties: 2, vehicles: 3, arrests: 1, flags: ['Active Warrant', 'Violent'], tags: ['Often Armed', 'Gang Member', 'Frequent Offender'], notes: 'Known associate of local gangs. Exercise caution during traffic stops.', licenses: { driver: true, weapon: false }, customLicenses: [{ id: 1, name: 'Hunting License', active: true }, { id: 2, name: 'Boating License', active: false }, { id: 3, name: 'Pilot License', active: false }], ownedVehicles: [{ plate: '03ROY490', vehicle: 'Exemplar' }, { plate: 'FAST001', vehicle: 'Sultan' }, { plate: 'LOW99X', vehicle: 'Bati 801' }], propertiesList: [{ property_name: '4 Integrity Way, Apt 30' }, { property_name: '1561 San Vitas Street' }], weapons: [{ id: 1, serial: 'WPN-4821', scratched: 0, weaponModel: 'weapon_pistol' }, { id: 2, serial: 'WPN-9012', scratched: 1, weaponModel: 'weapon_smg' }], evidence: [{ id: 1, title: 'Shell Casings', type: 'Physical', report_id: 42, notes: 'Found at scene near Vespucci' }, { id: 2, title: 'CCTV Footage', type: 'Digital', case_id: 7 }], linkedReports: [{ id: 42, title: 'Armed Robbery - Fleeca Bank', type: 'Incident' }, { id: 55, title: 'Traffic Violation - Speeding', type: 'Citation' }], activeBolos: [{ id: 1, type: 'Person', reportId: '42', notes: 'Armed and dangerous, last seen near Legion Square' }] },
-				'DEF67890': { citizenid: 'DEF67890', firstName: 'Sarah', lastName: 'Chen', gender: 'Female', dob: '1995-11-22', phone: '555-0299', fingerprint: 'FP-1122-BXYZ', image: '', occupations: ['Doctor'], properties: 1, vehicles: 1, arrests: 0, flags: [], tags: ['Cooperative'], licenses: { driver: true, weapon: true }, customLicenses: [{ id: 1, name: 'Hunting License', active: false }, { id: 2, name: 'Boating License', active: true }, { id: 3, name: 'Pilot License', active: true }], ownedVehicles: [{ plate: 'MED001', vehicle: 'Schafter' }], propertiesList: [{ property_name: 'Eclipse Towers, Apt 5' }], weapons: [], evidence: [], linkedReports: [], activeBolos: [] },
-				'GHI11223': { citizenid: 'GHI11223', firstName: 'James', lastName: 'Wilson', gender: 'Male', dob: '1988-03-08', phone: '555-0377', fingerprint: 'FP-3344-CDEF', image: '', occupations: [], properties: 0, vehicles: 2, arrests: 5, flags: ['Flight Risk'], tags: ['Flight Risk', 'Resists Arrest'], licenses: { driver: false, weapon: false }, customLicenses: [{ id: 1, name: 'Hunting License', active: false }, { id: 2, name: 'Boating License', active: false }, { id: 3, name: 'Pilot License', active: false }], ownedVehicles: [{ plate: 'RUN4IT', vehicle: 'Comet' }, { plate: 'GHOST7', vehicle: 'Elegy' }], propertiesList: [], weapons: [{ id: 3, serial: 'WPN-5577', scratched: 0, weaponModel: 'weapon_assaultrifle' }], evidence: [], linkedReports: [{ id: 12, title: 'Evading Police', type: 'Incident' }], activeBolos: [] },
+				'ABC12345': { citizenid: 'ABC12345', firstName: 'Marcus', lastName: 'Rodriguez', gender: 'Male', dob: '1990-05-15', phone: '555-0142', fingerprint: 'FP-8291-AXKF', image: '', occupations: ['Mechanic', 'Taxi Driver'], properties: 2, vehicles: 3, arrests: 1, flags: ['Active Warrant', 'Violent'], notes: 'Known associate of local gangs. Exercise caution during traffic stops.', licenses: { driver: true, weapon: false }, customLicenses: [{ id: 1, name: 'Hunting License', active: true }, { id: 2, name: 'Boating License', active: false }, { id: 3, name: 'Pilot License', active: false }], ownedVehicles: [{ plate: '03ROY490', vehicle: 'Exemplar' }, { plate: 'FAST001', vehicle: 'Sultan' }, { plate: 'LOW99X', vehicle: 'Bati 801' }], propertiesList: [{ property_name: '4 Integrity Way, Apt 30' }, { property_name: '1561 San Vitas Street' }], weapons: [{ id: 1, serial: 'WPN-4821', scratched: 0, weaponModel: 'weapon_pistol' }, { id: 2, serial: 'WPN-9012', scratched: 1, weaponModel: 'weapon_smg' }], evidence: [{ id: 1, title: 'Shell Casings', type: 'Physical', report_id: 42, notes: 'Found at scene near Vespucci' }, { id: 2, title: 'CCTV Footage', type: 'Digital', case_id: 7 }], linkedReports: [{ id: 42, title: 'Armed Robbery - Fleeca Bank', type: 'Incident' }, { id: 55, title: 'Traffic Violation - Speeding', type: 'Citation' }], activeBolos: [{ id: 1, type: 'Person', reportId: '42', notes: 'Armed and dangerous, last seen near Legion Square' }] },
+				'DEF67890': { citizenid: 'DEF67890', firstName: 'Sarah', lastName: 'Chen', gender: 'Female', dob: '1995-11-22', phone: '555-0299', fingerprint: 'FP-1122-BXYZ', image: '', occupations: ['Doctor'], properties: 1, vehicles: 1, arrests: 0, flags: [], licenses: { driver: true, weapon: true }, customLicenses: [{ id: 1, name: 'Hunting License', active: false }, { id: 2, name: 'Boating License', active: true }, { id: 3, name: 'Pilot License', active: true }], ownedVehicles: [{ plate: 'MED001', vehicle: 'Schafter' }], propertiesList: [{ property_name: 'Eclipse Towers, Apt 5' }], weapons: [], evidence: [], linkedReports: [], activeBolos: [] },
+				'GHI11223': { citizenid: 'GHI11223', firstName: 'James', lastName: 'Wilson', gender: 'Male', dob: '1988-03-08', phone: '555-0377', fingerprint: 'FP-3344-CDEF', image: '', occupations: [], properties: 0, vehicles: 2, arrests: 5, flags: ['Flight Risk'], licenses: { driver: false, weapon: false }, customLicenses: [{ id: 1, name: 'Hunting License', active: false }, { id: 2, name: 'Boating License', active: false }, { id: 3, name: 'Pilot License', active: false }], ownedVehicles: [{ plate: 'RUN4IT', vehicle: 'Comet' }, { plate: 'GHOST7', vehicle: 'Elegy' }], propertiesList: [], weapons: [{ id: 3, serial: 'WPN-5577', scratched: 0, weaponModel: 'weapon_assaultrifle' }], evidence: [], linkedReports: [{ id: 12, title: 'Evading Police', type: 'Incident' }], activeBolos: [] },
 			};
 			selectedProfile = mockProfiles[citizenId] || null;
 			return;
@@ -572,6 +445,111 @@
 		selectedProfile = null;
 	}
 
+	// ── Citizen tags ─────────────────────────────────────────────────────────
+	let availableCitizenTags = $state<Array<{ name: string; color: string; job_type?: string; description?: string }>>([]);
+	let showTagModal = $state(false);
+	let tagBusy = $state(false);
+
+	const viewerTagDomain = $derived(isEMS ? "ems" : "leo");
+	function canManageTag(name: string): boolean {
+		const info = availableCitizenTags.find((t) => t.name === name);
+		if (!info || !info.job_type) return true;
+		return info.job_type === "all" || info.job_type === viewerTagDomain;
+	}
+	let manageableTags = $derived(
+		availableCitizenTags.filter((t) => t.job_type === "all" || t.job_type === viewerTagDomain),
+	);
+
+	function citizenTagColor(name: string): string {
+		return availableCitizenTags.find((t) => t.name === name)?.color || "#9ca3af";
+	}
+
+	function tagPillStyle(hex: string): string {
+		const c = /^#[0-9a-fA-F]{6}$/.test(hex || "") ? hex : "#9ca3af";
+		const r = parseInt(c.slice(1, 3), 16);
+		const g = parseInt(c.slice(3, 5), 16);
+		const b = parseInt(c.slice(5, 7), 16);
+		return `color:${c};border:1px solid rgba(${r},${g},${b},0.4);background:rgba(${r},${g},${b},0.15);`;
+	}
+
+	let pickableTags = $derived(
+		availableCitizenTags.filter((t) => !(selectedProfile?.tags ?? []).includes(t.name)),
+	);
+
+	async function loadCitizenTags() {
+		if (isEnvBrowser()) {
+			availableCitizenTags = [
+				{ name: "Violent", color: "#ef4444" },
+				{ name: "Flight Risk", color: "#f97316" },
+				{ name: "Medical Alert", color: "#f59e0b" },
+			];
+			return;
+		}
+		try {
+			const res = await fetchNui<{ success?: boolean; data?: Array<{ name: string; color: string }> }>(
+				NUI_EVENTS.CITIZEN.GET_CITIZEN_TAGS,
+				{},
+				{ success: true, data: [] },
+			);
+			availableCitizenTags = Array.isArray(res?.data) ? res.data : [];
+		} catch {
+			availableCitizenTags = [];
+		}
+	}
+
+	async function addCitizenTag(tag: string) {
+		if (!selectedProfile || tagBusy) return;
+		const name = (tag || "").trim();
+		if (!name) return;
+		if ((selectedProfile.tags ?? []).includes(name)) { return; }
+		if (isEnvBrowser()) {
+			selectedProfile.tags = [...(selectedProfile.tags ?? []), name];
+			return;
+		}
+		try {
+			tagBusy = true;
+			const result = await fetchNui<{ success: boolean; message?: string }>(
+				NUI_EVENTS.CITIZEN.ADD_CITIZEN_TAG,
+				{ citizenid: selectedProfile.citizenid, tag: name },
+				{ success: false },
+			);
+			if (result?.success) {
+				selectedProfile.tags = [...(selectedProfile.tags ?? []), name];
+				} else {
+				globalNotifications.error(result?.message || "Failed to add tag");
+			}
+		} catch {
+			globalNotifications.error("Failed to add tag");
+		} finally {
+			tagBusy = false;
+		}
+	}
+
+	async function removeCitizenTag(tag: string) {
+		if (!selectedProfile || tagBusy) return;
+		if (isEnvBrowser()) {
+			selectedProfile.tags = (selectedProfile.tags ?? []).filter((t) => t !== tag);
+			return;
+		}
+		try {
+			tagBusy = true;
+			const result = await fetchNui<{ success: boolean; message?: string }>(
+				NUI_EVENTS.CITIZEN.REMOVE_CITIZEN_TAG,
+				{ citizenid: selectedProfile.citizenid, tag },
+				{ success: false },
+			);
+			if (result?.success) {
+				selectedProfile.tags = (selectedProfile.tags ?? []).filter((t) => t !== tag);
+			} else {
+				globalNotifications.error(result?.message || "Failed to remove tag");
+			}
+		} catch {
+			globalNotifications.error("Failed to remove tag");
+		} finally {
+			tagBusy = false;
+		}
+	}
+
 	const SECTION_PAGE_SIZE = 3;
 	let vehiclesPage = $state(1);
 	let propertiesPage = $state(1);
@@ -590,6 +568,8 @@
 			licensesPage = 1;
 			editingNotes = false;
 			notesValue = "";
+			showTagModal = false;
+			loadCitizenTags();
 		}
 	});
 
@@ -1069,32 +1049,23 @@
 							{/if}
 						</div>
 						<div class="detail-row"><span class="dlabel">Occupations</span><span class="dvalue">{formatOccupations(selectedProfile.occupations)}</span></div>
-					</div>
-
-					<!-- Tags -->
-					<div class="panel tags-panel">
-						<div class="panel-title">
-							Tags
-							{#if !isEMS}
-								<button class="issue-license-btn" onclick={openTagMenu} aria-label="Manage tags" title="Manage tags">
-									<span class="material-icons" style="font-size: 13px;">add</span> Add
-								</button>
-							{/if}
+						<div class="detail-row">
+							<span class="dlabel">Tags</span>
+							<button class="issue-license-btn" onclick={() => (showTagModal = true)}>
+								<span class="material-icons" style="font-size: 12px;">add</span> Manage Tags
+							</button>
 						</div>
-						<div class="tags-value">
-							{#if (selectedProfile.tags ?? []).length > 0}
-								{#each selectedProfile.tags ?? [] as tag}
-									<span class="flag tag-pill {getTagPillClass(tag)}">
-										{tag}
-										{#if !isEMS}
-											<!-- svelte-ignore a11y_click_events_have_key_events -->
-											<!-- svelte-ignore a11y_no_static_element_interactions -->
-											<span class="tag-remove" title="Remove tag" onclick={() => removeCitizenTag(tag)}>×</span>
-										{/if}
-									</span>
-								{/each}
-							{:else}
-								<span class="tag-empty">No active tags</span>
+						<div class="ptags-fullrow">
+							{#each (selectedProfile.tags ?? []) as tag (tag)}
+								<span class="flag tag-pill" style={tagPillStyle(citizenTagColor(tag))}>
+									{tag}
+									{#if canManageTag(tag)}
+										<button class="ctag-remove" title="Remove tag" disabled={tagBusy} onclick={() => removeCitizenTag(tag)}>×</button>
+									{/if}
+								</span>
+							{/each}
+							{#if (selectedProfile.tags ?? []).length === 0}
+								<span class="ptags-empty">No tags</span>
 							{/if}
 						</div>
 					</div>
@@ -1604,67 +1575,33 @@
 			</div>
 		{/if}
 
-		<!-- Tags Modal -->
-		{#if tagMenuOpen}
-			<div class="modal-overlay" onclick={() => (tagMenuOpen = false)}>
+		<!-- Manage Tags Modal -->
+		{#if showTagModal}
+			<div class="modal-overlay" onclick={() => (showTagModal = false)}>
 				<div class="modal-card" onclick={(e) => e.stopPropagation()}>
 					<div class="modal-header">
 						<h3>Manage Tags</h3>
-						<button class="modal-close" onclick={() => (tagMenuOpen = false)}>
+						<button class="modal-close" onclick={() => (showTagModal = false)}>
 							<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
 						</button>
 					</div>
 					<div class="modal-body license-modal-body">
-						{#each presetTagGroups as grp}
-							<div class="tag-group-label">{grp.group}</div>
-							{#each grp.tags as preset}
+						{#if manageableTags.length === 0}
+							<div class="ptags-empty" style="padding: 8px;">No tags available</div>
+						{:else}
+							{#each manageableTags as t (t.name)}
+								{@const active = (selectedProfile?.tags ?? []).includes(t.name)}
 								<div class="license-modal-row">
 									<div class="license-modal-info">
-										<div style="display: flex; flex-direction: column; gap: 2px; min-width: 0;">
-											<div style="display: flex; align-items: center; gap: 6px;">
-												<span class="tag-dot {getTagPillClass(preset.name)}"></span>
-												<span class="license-modal-name">{preset.name}</span>
-											</div>
-											<span class="license-modal-description">{preset.desc}</span>
+										<div style="display:flex; flex-direction:column; align-items:flex-start; gap:3px; min-width:0;">
+											<span class="flag tag-pill" style={tagPillStyle(t.color)}>{t.name}</span>
+											{#if t.description}<span class="license-modal-description">{t.description}</span>{/if}
 										</div>
 									</div>
-									<label class="toggle">
-										<input type="checkbox" checked={hasTag(preset.name)} disabled={tagSaving === preset.name} onchange={() => toggleTag(preset.name)} />
-										<span class="toggle-track"></span>
-									</label>
-								</div>
-							{/each}
-						{/each}
-
-						{#if customTagsOnProfile.length > 0}
-							<div class="tag-group-label">Custom Tags</div>
-							{#each customTagsOnProfile as tag}
-								<div class="license-modal-row">
-									<div class="license-modal-info">
-										<div style="display: flex; align-items: center; gap: 6px;">
-											<span class="tag-dot flag-grey"></span>
-											<span class="license-modal-name">{tag}</span>
-										</div>
-									</div>
-									<label class="toggle">
-										<input type="checkbox" checked={true} disabled={tagSaving === tag} onchange={() => removeCitizenTag(tag)} />
-										<span class="toggle-track"></span>
-									</label>
+									<label class="toggle"><input type="checkbox" checked={active} disabled={tagBusy} onchange={() => active ? removeCitizenTag(t.name) : addCitizenTag(t.name)} /><span class="toggle-track"></span></label>
 								</div>
 							{/each}
 						{/if}
-					</div>
-					<div class="modal-footer-row">
-						<input
-							class="photo-input"
-							style="flex:1;"
-							type="text"
-							maxlength="50"
-							placeholder="Custom tag…"
-							bind:value={customTagInput}
-							onkeydown={(e) => { if (e.key === 'Enter') addCustomTag(); if (e.key === 'Escape') tagMenuOpen = false; }}
-						/>
-						<button class="photo-confirm-btn" onclick={addCustomTag} disabled={!customTagInput.trim() || !!tagSaving}>Add</button>
 					</div>
 				</div>
 			</div>
@@ -1686,7 +1623,7 @@
 				<div class="center-msg"><span>No citizen records available.</span></div>
 			{:else}
 				<div class="citizens-header">
-					<span></span><span>Name</span><span>Citizen ID</span><span>Phone</span><span>Gender</span><span>DOB</span><span>Stats</span><span>Flags</span>
+					<span></span><span>Name</span><span>Citizen ID</span><span>Phone</span><span>Gender</span><span>DOB</span><span>Stats</span><span>Tags</span><span>Flags</span>
 				</div>
 				<div class="citizens-table">
 					{#each filteredCitizens as citizen (citizen.id)}
@@ -1707,6 +1644,14 @@
 								<span>{citizen.properties} prop</span>
 								<span>{citizen.vehicles} veh</span>
 								<span class:accent-red={citizen.arrests > 0}>{citizen.arrests} arr</span>
+							</div>
+							<div class="citizen-tags-cell">
+								{#each (citizen.tags ?? []).slice(0, 3) as tag}
+									<span class="flag tag-pill" style={tagPillStyle(citizenTagColor(tag))}>{tag}</span>
+								{/each}
+								{#if (citizen.tags ?? []).length > 3}
+									<span class="flag flag-more">+{(citizen.tags ?? []).length - 3}</span>
+								{/if}
 							</div>
 							<div class="citizen-flags-cell">
 								{#each citizen.flags.slice(0, 3) as flag}
@@ -1816,12 +1761,12 @@
 	.search-box input { flex: 1; background: none; border: none; color: rgba(255,255,255,0.85); font-size: 12px; outline: none; }
 	.search-box input::placeholder { color: rgba(255,255,255,0.25); }
 
-	.citizens-header { display: grid; grid-template-columns: 36px 1.5fr 1fr 1fr 0.6fr 0.8fr 1.2fr 1.5fr; gap: 12px; padding: 8px 20px; border-bottom: 1px solid rgba(255,255,255,0.06); color: rgba(255,255,255,0.3); font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; flex-shrink: 0; }
+	.citizens-header { display: grid; grid-template-columns: 36px 1.5fr 1fr 1fr 0.6fr 0.8fr 1.2fr 1.2fr 1.5fr; gap: 12px; padding: 8px 20px; border-bottom: 1px solid rgba(255,255,255,0.06); color: rgba(255,255,255,0.3); font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; flex-shrink: 0; }
 	.citizens-table { flex: 1; overflow-y: auto; padding: 2px 10px; display: flex; flex-direction: column; gap: 0; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.08) transparent; min-height: 0; }
 	.citizens-table::-webkit-scrollbar { width: 3px; }
 	.citizens-table::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 2px; }
 
-	.citizen-row { display: grid; grid-template-columns: 36px 1.5fr 1fr 1fr 0.6fr 0.8fr 1.2fr 1.5fr; align-items: center; gap: 12px; padding: 8px 10px; background: transparent; border: none; border-radius: 4px; cursor: pointer; transition: background 0.1s; text-align: left; font: inherit; color: inherit; width: 100%; }
+	.citizen-row { display: grid; grid-template-columns: 36px 1.5fr 1fr 1fr 0.6fr 0.8fr 1.2fr 1.2fr 1.5fr; align-items: center; gap: 12px; padding: 8px 10px; background: transparent; border: none; border-radius: 4px; cursor: pointer; transition: background 0.1s; text-align: left; font: inherit; color: inherit; width: 100%; }
 	.citizen-row:hover { background: rgba(255,255,255,0.03); }
 
 	.citizen-avatar { width: 28px; height: 28px; border-radius: 50%; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; }
@@ -1830,6 +1775,14 @@
 	.citizen-meta { color: rgba(255,255,255,0.3); font-size: 11px; font-family: monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 	.citizen-nums { display: flex; gap: 8px; font-size: 10px; color: rgba(255,255,255,0.35); }
 	.citizen-flags-cell { display: flex; gap: 4px; flex-wrap: nowrap; align-items: center; overflow: hidden; }
+	.citizen-tags-cell { display: flex; gap: 4px; flex-wrap: nowrap; align-items: center; overflow: hidden; }
+	.ctag-mini {
+		font-size: 9px; font-weight: 600; padding: 2px 6px; border-radius: 3px; white-space: nowrap;
+		color: var(--ctag, #9ca3af);
+		background: color-mix(in srgb, var(--ctag, #9ca3af) 14%, transparent);
+		border: 1px solid color-mix(in srgb, var(--ctag, #9ca3af) 28%, transparent);
+	}
+	.ctag-mini.ctag-more { color: rgba(255,255,255,0.4); background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.08); }
 
 	.flag { padding: 1px 6px; border-radius: 3px; font-size: 9px; font-weight: 600; letter-spacing: 0.2px; background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.4); border: 1px solid transparent; }
 	.flag-red { background: rgba(239,68,68,0.12); color: #f87171; border-color: rgba(239,68,68,0.15); }
@@ -1837,26 +1790,6 @@
 	.flag-orange { background: rgba(245,158,11,0.12); color: #fbbf24; border-color: rgba(245,158,11,0.15); }
 	.flag-amber { background: rgba(249,115,22,0.12); color: #fb923c; border-color: rgba(249,115,22,0.15); }
 	.flag-more { background: rgba(255,255,255,0.04); color: rgba(255,255,255,0.3); font-size: 9px; white-space: nowrap; flex-shrink: 0; }
-	.flag-blue { background: rgba(59,130,246,0.12); color: #60a5fa; border-color: rgba(59,130,246,0.15); }
-	.flag-green { background: rgba(16,185,129,0.12); color: #34d399; border-color: rgba(16,185,129,0.15); }
-	.flag-grey { background: rgba(148,163,184,0.12); color: #cbd5e1; border-color: rgba(148,163,184,0.15); }
-
-	/* ── Citizen Tags ── */
-	.tags-panel .panel-title { margin-bottom: 8px; }
-	.tags-value { display: flex; flex-wrap: wrap; gap: 5px; align-items: center; }
-	.tag-empty { color: rgba(255,255,255,0.3); font-size: 11px; }
-	.tag-pill { display: inline-flex; align-items: center; gap: 4px; font-size: 10px; padding: 2px 7px; }
-	.tag-remove { cursor: pointer; font-size: 13px; line-height: 1; opacity: 0.55; transition: opacity 0.12s; margin-left: 1px; }
-	.tag-remove:hover { opacity: 1; }
-	.tag-group-label { padding: 8px 16px 4px; font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: rgba(255,255,255,0.35); }
-	.tag-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; padding: 0; border: none; }
-	.tag-dot.flag-red { background: #f87171; }
-	.tag-dot.flag-orange { background: #fbbf24; }
-	.tag-dot.flag-amber { background: #fb923c; }
-	.tag-dot.flag-yellow { background: #facc15; }
-	.tag-dot.flag-blue { background: #60a5fa; }
-	.tag-dot.flag-green { background: #34d399; }
-	.tag-dot.flag-grey { background: #cbd5e1; }
 	.accent-red { color: #f87171 !important; }
 
 	.center-msg { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; color: rgba(255,255,255,0.2); font-size: 12px; }
@@ -1892,6 +1825,46 @@
 	@keyframes fadeToast { 0%,100% { opacity: 0; } 30%,70% { opacity: 1; } }
 
 	.pstats-row { display: flex; align-items: center; padding: 0 20px; height: 44px; flex-shrink: 0; border-bottom: 1px solid rgba(255,255,255,0.06); gap: 0; }
+	.tags-detail-row { align-items: flex-start; }
+	.tags-detail-row .dlabel { padding-top: 3px; }
+	.ptags-list { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 6px; min-width: 0; }
+	.ptags-empty { font-size: 11px; color: rgba(255,255,255,0.25); }
+	.flag.tag-pill { display: inline-flex; align-items: center; gap: 3px; }
+	.ptags-fullrow { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 8px 16px 12px; }
+	.ctag {
+		display: inline-flex; align-items: center; gap: 5px;
+		font-size: 10px; font-weight: 600; padding: 2px 4px 2px 8px; border-radius: 4px;
+		color: var(--ctag); background: color-mix(in srgb, var(--ctag) 14%, transparent);
+		border: 1px solid color-mix(in srgb, var(--ctag) 30%, transparent);
+	}
+	.ctag-remove {
+		display: inline-flex; align-items: center; justify-content: center;
+		width: 14px; height: 14px; border: none; border-radius: 3px; background: transparent;
+		color: var(--ctag); opacity: 0.6; cursor: pointer; font-size: 13px; line-height: 1; padding: 0;
+	}
+	.ctag-remove:hover:not(:disabled) { opacity: 1; background: color-mix(in srgb, var(--ctag) 20%, transparent); }
+	.ctag-remove:disabled { opacity: 0.3; cursor: default; }
+	.ctag-add-wrap { position: relative; }
+	.ctag-add {
+		font-size: 10px; font-weight: 600; padding: 3px 8px; border-radius: 4px; cursor: pointer;
+		background: transparent; border: 1px dashed rgba(255,255,255,0.18); color: rgba(255,255,255,0.5); transition: all 0.1s;
+	}
+	.ctag-add:hover:not(:disabled) { border-color: rgba(var(--accent-rgb),0.5); color: rgba(var(--accent-text-rgb),0.9); }
+	.ctag-add:disabled { opacity: 0.4; cursor: default; }
+	.ctag-picker {
+		position: absolute; top: calc(100% + 4px); left: 0; z-index: 30;
+		min-width: 160px; max-height: 220px; overflow-y: auto;
+		background: rgba(20,22,28,0.98); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px;
+		padding: 4px; box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+	}
+	.ctag-picker-empty { font-size: 10px; color: rgba(255,255,255,0.3); padding: 6px 8px; }
+	.ctag-picker-item {
+		display: flex; align-items: center; gap: 7px; width: 100%; text-align: left;
+		background: transparent; border: none; border-radius: 4px; padding: 5px 8px;
+		color: rgba(255,255,255,0.8); font-size: 11px; cursor: pointer;
+	}
+	.ctag-picker-item:hover { background: rgba(255,255,255,0.06); }
+	.ctag-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
 	.pstat { display: flex; align-items: center; gap: 8px; padding: 0 18px; border-right: 1px solid rgba(255,255,255,0.06); }
 	.pstat:last-child { border-right: none; }
 	.pstat-val { color: rgba(255,255,255,0.9); font-size: 14px; font-weight: 700; line-height: 1; }
@@ -1920,9 +1893,8 @@
 	.dvalue.clickable { cursor: pointer; transition: color 0.12s; }
 	.dvalue.clickable:hover { color: #60a5fa; }
 	.dvalue .edit-icon { font-size: 11px; margin-left: 4px; opacity: 0; transition: opacity 0.12s; vertical-align: middle; }
+	.dvalue .copy-icon { font-size: 11px; margin-left: 4px; opacity: 0.5; transition: opacity 0.12s; vertical-align: middle; }
 	.dvalue.clickable:hover .edit-icon { opacity: 0.5; }
-	.dvalue .copy-icon { font-size: 11px; margin-right: 4px; opacity: 0.35; transition: opacity 0.12s; vertical-align: middle; }
-	.dvalue.clickable:hover .copy-icon { opacity: 0.8; }
 	.dna-input { background: rgba(255,255,255,0.06); border: 1px solid rgba(96,165,250,0.3); border-radius: 3px; color: rgba(255,255,255,0.9); font-size: 12px; padding: 2px 6px; outline: none; width: 120px; }
 	.dna-input:focus { border-color: rgba(96,165,250,0.6); }
 
