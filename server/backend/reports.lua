@@ -1008,15 +1008,33 @@ ps.registerCallback(resourceName..':server:getAvailableTags', function(source, p
 
     local jt = playerJobType or 'leo'
 
-    -- Pull from master mdt_tags table (report + both types) filtered by job_type
+    -- Pull from master mdt_tags table (report tags) filtered by job_type
     local tags = MySQL.query.await([[
-        SELECT t.name, t.color,
+        SELECT t.name, t.color, t.description,
                (SELECT COUNT(*) FROM mdt_reports_tags rt WHERE rt.tag = t.name) AS usage_count
         FROM mdt_tags t
-        WHERE t.type IN ('report', 'both')
+        WHERE t.type = 'report'
           AND (t.job_type = ? OR t.job_type = 'all')
         ORDER BY t.name ASC
     ]], { jt })
+
+    return tags or {}
+end)
+
+-- Available citizen tags for the citizen-profile picker, scoped to the viewer's
+-- domain (EMS sees ems + shared, police sees leo + shared).
+ps.registerCallback(resourceName..':server:getCitizenTags', function(source, playerJobType)
+    local src = source
+    if not CheckAuth(src) then return {} end
+
+    -- Return the full citizen-tag dictionary (with job_type) so the UI can
+    -- colour every tag; the client gates which ones a domain may add/remove.
+    local tags = MySQL.query.await([[
+        SELECT t.name, t.color, t.job_type, t.description
+        FROM mdt_tags t
+        WHERE t.type = 'citizen'
+        ORDER BY t.name ASC
+    ]])
 
     return tags or {}
 end)

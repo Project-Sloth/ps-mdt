@@ -128,6 +128,7 @@ ps.registerCallback(resourceName .. ':server:getCitizens', function(source, page
     local propCounts = {}
     local vehCounts = {}
     local arrestCounts = {}
+    local tagsByCid = {}
 
     if #citizenids > 0 then
         local inClause = buildInClause(citizenids)
@@ -139,6 +140,18 @@ ps.registerCallback(resourceName .. ':server:getCitizens', function(source, page
         for _, row in ipairs(profileRows) do
             if row.profilepicture and row.profilepicture ~= '' then
                 profilePics[row.citizenid] = row.profilepicture
+            end
+        end
+
+        -- Profile tags (so the list can show them before opening a profile)
+        local tagRows = safeQuery(
+            ('SELECT mp.citizenid AS citizenid, pt.tag AS tag FROM mdt_profiles_tags pt JOIN mdt_profiles mp ON mp.id = pt.profileId WHERE mp.citizenid IN (%s)'):format(inClause),
+            citizenids
+        )
+        for _, row in ipairs(tagRows) do
+            if row.citizenid and row.tag then
+                tagsByCid[row.citizenid] = tagsByCid[row.citizenid] or {}
+                tagsByCid[row.citizenid][#tagsByCid[row.citizenid] + 1] = row.tag
             end
         end
 
@@ -183,6 +196,7 @@ ps.registerCallback(resourceName .. ':server:getCitizens', function(source, page
         v.vehicles = vehCounts[v.citizenid] or 0
         v.arrests = arrestCounts[v.citizenid] or 0
         v.flags = flagsByCid[v.citizenid] or {}
+        v.tags = tagsByCid[v.citizenid] or {}
     end
     local endTime = os.clock()
     local elapsedTime = (endTime - startTime) * 1000
@@ -268,6 +282,7 @@ ps.registerCallback(resourceName .. ':server:searchCitizens', function(source, q
     local propCounts = {}
     local vehCounts = {}
     local arrestCounts = {}
+    local tagsByCid = {}
 
     if #citizenids > 0 then
         local inClause = buildInClause(citizenids)
@@ -279,6 +294,18 @@ ps.registerCallback(resourceName .. ':server:searchCitizens', function(source, q
         for _, row in ipairs(profileRows) do
             if row.profilepicture and row.profilepicture ~= '' then
                 profilePics[row.citizenid] = row.profilepicture
+            end
+        end
+
+        -- Profile tags (so the list can show them before opening a profile)
+        local tagRows = safeQuery(
+            ('SELECT mp.citizenid AS citizenid, pt.tag AS tag FROM mdt_profiles_tags pt JOIN mdt_profiles mp ON mp.id = pt.profileId WHERE mp.citizenid IN (%s)'):format(inClause),
+            citizenids
+        )
+        for _, row in ipairs(tagRows) do
+            if row.citizenid and row.tag then
+                tagsByCid[row.citizenid] = tagsByCid[row.citizenid] or {}
+                tagsByCid[row.citizenid][#tagsByCid[row.citizenid] + 1] = row.tag
             end
         end
 
@@ -321,6 +348,7 @@ ps.registerCallback(resourceName .. ':server:searchCitizens', function(source, q
         v.vehicles = vehCounts[v.citizenid] or 0
         v.arrests = arrestCounts[v.citizenid] or 0
         v.flags = flagsByCid[v.citizenid] or {}
+        v.tags = tagsByCid[v.citizenid] or {}
     end
 
     local endTime = os.clock()

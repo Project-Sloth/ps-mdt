@@ -211,15 +211,15 @@ ps.registerCallback('ps-mdt:server:getOfficerTags', function(source)
     local rows
     if jobType and (jobType == 'leo' or jobType == 'ems') then
         rows = MySQL.query.await([[
-            SELECT id, name, color FROM mdt_tags
-            WHERE type IN ('officer', 'both')
+            SELECT id, name, color, description FROM mdt_tags
+            WHERE type = 'officer'
               AND (job_type = ? OR job_type = 'all' OR job_type IS NULL)
             ORDER BY name ASC
         ]], { jobType })
     else
         rows = MySQL.query.await([[
-            SELECT id, name, color FROM mdt_tags
-            WHERE type IN ('officer', 'both')
+            SELECT id, name, color, description FROM mdt_tags
+            WHERE type = 'officer'
             ORDER BY name ASC
         ]])
     end
