@@ -4,6 +4,10 @@
 
 local resourceName = tostring(GetCurrentResourceName())
 
+-- Ace tied to the placer command (auto-created by lib.addCommand's `restricted`).
+-- Used to gate the mutating camera events directly, so they can't be spoofed.
+local placerAce = 'command.' .. (((Config and Config.CameraPlacer) or {}).command or 'cameraplacer')
+
 local spawnedCameras = {} -- Track spawned cameras
 local playerViewingCamera = {} -- Track players viewing cameras
 
@@ -81,6 +85,12 @@ function Camera.new(camId, camType, camLabel, options)
         newCameraInstance.model = options.model or 'security_cam_03'
         newCameraInstance.coords = options.coords or vector3(0.0, 0.0, 0.0)
         newCameraInstance.rotation = options.rotation or vector3(0.0, 0.0, 0.0)
+        -- Feed transform (what the operator sees). Decoupled from the prop:
+        -- the gizmo places the physical prop (coords/rotation), the feed placer
+        -- sets these. nil = fall back to prop transform (+ heading offset).
+        newCameraInstance.feedCoords = options.feedCoords or nil
+        newCameraInstance.feedRotation = options.feedRotation or nil
+        newCameraInstance.feedFov = options.feedFov or nil
         newCameraInstance.image = options.image or nil
         newCameraInstance.canRotate = options.canRotate ~= false -- Default to true
         newCameraInstance.isOnline = options.isOnline ~= false -- Default to true
@@ -385,6 +395,10 @@ function Camera:getData()
         data.coords = self.coords
         data.rotation = self.rotation
         data.entityId = self.entityId
+        data.spawnsModel = self.spawnsModel ~= false -- TRUE = real prop spawned (needs view offset)
+        data.feedCoords = self.feedCoords        -- decoupled feed transform (nil = use prop)
+        data.feedRotation = self.feedRotation
+        data.feedFov = self.feedFov
 
         -- Convert entity ID to network ID for client-server communication
         if self.entityId and DoesEntityExist(self.entityId) then
@@ -413,6 +427,9 @@ function Camera:update(updates)
     elseif self.camType == Camera.types.static then
         if updates.coords then self.coords = updates.coords end
         if updates.rotation then self.rotation = updates.rotation end
+        if updates.feedCoords then self.feedCoords = updates.feedCoords end
+        if updates.feedRotation then self.feedRotation = updates.feedRotation end
+        if updates.feedFov then self.feedFov = updates.feedFov end
         if updates.model and Camera.models[updates.model] then
             local oldModel = self.model
             self.model = updates.model
@@ -509,11 +526,12 @@ function Camera:saveToDatabase()
     end
 
     local query = [[
-        INSERT INTO mdt_cameras (cam_id, cam_label, cam_type, model, coords, rotation, image, can_rotate, is_online, spawns_model, created_by)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO mdt_cameras (cam_id, cam_label, cam_type, model, coords, rotation, feed_coords, feed_rotation, feed_fov, image, can_rotate, is_online, spawns_model, created_by)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ON DUPLICATE KEY UPDATE
         cam_label = VALUES(cam_label), cam_type = VALUES(cam_type), model = VALUES(model), coords = VALUES(coords),
-        rotation = VALUES(rotation), image = VALUES(image), can_rotate = VALUES(can_rotate), is_online = VALUES(is_online), spawns_model = VALUES(spawns_model)
+        rotation = VALUES(rotation), feed_coords = VALUES(feed_coords), feed_rotation = VALUES(feed_rotation), feed_fov = VALUES(feed_fov),
+        image = VALUES(image), can_rotate = VALUES(can_rotate), is_online = VALUES(is_online), spawns_model = VALUES(spawns_model)
     ]]
 
     local success = MySQL.insert.await(query, {
@@ -523,6 +541,9 @@ function Camera:saveToDatabase()
         self.model,
         json.encode({x = self.coords.x, y = self.coords.y, z = self.coords.z}),
         json.encode({x = self.rotation.x, y = self.rotation.y, z = self.rotation.z}),
+        self.feedCoords and json.encode({x = self.feedCoords.x, y = self.feedCoords.y, z = self.feedCoords.z}) or '',
+        self.feedRotation and json.encode({x = self.feedRotation.x, y = self.feedRotation.y, z = self.feedRotation.z}) or '',
+        self.feedFov or 0.0,
         self.image or '',
         self.canRotate,
         self.isOnline,
@@ -593,6 +614,18 @@ function Camera.loadAllFromDatabase()
             camera.createdAt = row.created_at
             camera.createdBy = row.created_by
 
+            -- Decode feed transform if present (decoupled from prop)
+            if row.feed_coords and row.feed_coords ~= '' then
+                local okC, fc = pcall(json.decode, row.feed_coords)
+                if okC and fc then camera.feedCoords = vector3(fc.x, fc.y, fc.z) end
+            end
+            if row.feed_rotation and row.feed_rotation ~= '' then
+                local okR, fr = pcall(json.decode, row.feed_rotation)
+                if okR and fr then camera.feedRotation = vector3(fr.x, fr.y, fr.z) end
+            end
+            local fovNum = tonumber(row.feed_fov)
+            if fovNum and fovNum > 0 then camera.feedFov = fovNum end
+
             if camera.camTypeDb == 'placed' or camera.spawnsModel then
                 camera:spawn()
                 --ps.debug('Camera.loadAllFromDatabase - Loaded and spawned physical camera ' .. row.cam_id .. ' (type: ' .. camera.camTypeDb .. ')')
@@ -618,8 +651,11 @@ end
 RegisterNetEvent(resourceName .. ':server:createStaticCamera', function(cameraData)
     local playerId = source
     if not CheckAuth(playerId) then return end
-    if not CheckPermission(playerId, 'cameras_view') then return end
-    
+    if not IsPlayerAceAllowed(playerId, placerAce) then
+        ps.notify(playerId, 'You are not allowed to place cameras', 'error')
+        return
+    end
+
     ps.debug('Creating static camera for player:', playerId)
     ps.debug('Received camera data:')
     ps.debug('  camId: ' .. tostring(cameraData.camId))
@@ -658,6 +694,15 @@ RegisterNetEvent(resourceName .. ':server:createStaticCamera', function(cameraDa
         camera.createdBy = ps.getIdentifier(playerId)
         camera.createdAt = os.time() * 1000 -- Convert to milliseconds
 
+        -- Decoupled feed transform (set by the feed placer on the client)
+        if cameraData.feedCoords then
+            camera.feedCoords = vector3(cameraData.feedCoords.x, cameraData.feedCoords.y, cameraData.feedCoords.z)
+        end
+        if cameraData.feedRotation then
+            camera.feedRotation = vector3(cameraData.feedRotation.x, cameraData.feedRotation.y, cameraData.feedRotation.z)
+        end
+        if cameraData.feedFov then camera.feedFov = tonumber(cameraData.feedFov) end
+
         -- Set camera type and spawning behavior for player-placed cameras
         camera.camTypeDb = 'placed'
         camera.spawnsModel = true
@@ -695,6 +740,10 @@ end)
 RegisterNetEvent(resourceName .. ':server:requestCameraList', function()
     local playerId = source
     if not CheckAuth(playerId) then return end
+    if not IsPlayerAceAllowed(playerId, placerAce) then
+        ps.notify(playerId, 'You are not allowed to manage cameras', 'error')
+        return
+    end
     ps.debug('Sending camera list to player:', playerId)
 
     local cameraList = {}
@@ -705,6 +754,9 @@ RegisterNetEvent(resourceName .. ':server:requestCameraList', function()
             model = camera.model,
             coords = camera.coords,
             rotation = camera.rotation,
+            feedCoords = camera.feedCoords,
+            feedRotation = camera.feedRotation,
+            feedFov = camera.feedFov,
             isSpawned = camera.isSpawned,
             viewerCount = camera:getViewerCount()
         })
@@ -717,6 +769,7 @@ end)
 RegisterNetEvent(resourceName .. ':server:spawnCamera', function(camId)
     local playerId = source
     if not CheckAuth(playerId) then return end
+    if not IsPlayerAceAllowed(playerId, placerAce) then return end
     ps.debug('Spawning camera for player:', playerId, 'Camera ID:', camId)
 
     local camera = spawnedCameras[camId]
@@ -742,6 +795,7 @@ end)
 RegisterNetEvent(resourceName .. ':server:despawnCamera', function(camId)
     local playerId = source
     if not CheckAuth(playerId) then return end
+    if not IsPlayerAceAllowed(playerId, placerAce) then return end
     ps.debug('Despawning camera for player:', playerId, 'Camera ID:', camId)
 
     local camera = spawnedCameras[camId]
@@ -833,7 +887,10 @@ end)
 RegisterNetEvent(resourceName .. ':server:deleteCamera', function(camId)
     local playerId = source
     if not CheckAuth(playerId) then return end
-    if not CheckPermission(playerId, 'cameras_view') then return end
+    if not IsPlayerAceAllowed(playerId, placerAce) then
+        ps.notify(playerId, 'You are not allowed to delete cameras', 'error')
+        return
+    end
     ps.debug('Deleting camera for player:', playerId, 'Camera ID:', camId)
 
     local camera = spawnedCameras[camId]
@@ -872,6 +929,13 @@ end)
 -- Handle camera update request from client
 ps.registerCallback(resourceName .. ':server:updateCamera', function(source, updateData)
     local playerId = source
+    if not CheckAuth(playerId, true) then
+        return { success = false, error = 'Not authorized' }
+    end
+    if not IsPlayerAceAllowed(playerId, placerAce) then
+        ps.notify(playerId, 'You are not allowed to edit cameras', 'error')
+        return { success = false, error = 'Not allowed' }
+    end
     ps.debug('Updating camera for player:', playerId, 'Data:', updateData)
 
     if not updateData or type(updateData) ~= 'table' then
@@ -903,6 +967,9 @@ ps.registerCallback(resourceName .. ':server:updateCamera', function(source, upd
     if updateData.model then updates.model = updateData.model end
     if updateData.coords then updates.coords = updateData.coords end
     if updateData.rotation then updates.rotation = updateData.rotation end
+    if updateData.feedCoords then updates.feedCoords = updateData.feedCoords end
+    if updateData.feedRotation then updates.feedRotation = updateData.feedRotation end
+    if updateData.feedFov then updates.feedFov = updateData.feedFov end
 
     camera:update(updates)
 
@@ -1112,3 +1179,13 @@ AddEventHandler('playerDropped', function(reason)
     end
 end)
 
+-- Camera Placer command ----------------------------------
+-- Admin-only entry point. ox_lib's `restricted` field gates this server-side
+-- (auto-creates the `command.<name>` ace), so no manual permission wiring is
+-- needed beyond mapping the group in server.cfg if you use a custom group.
+lib.addCommand(Config.CameraPlacer and Config.CameraPlacer.command or 'cameraplacer', {
+    help = 'Open the static camera placer (admin)',
+    restricted = Config.CameraPlacer and Config.CameraPlacer.restricted or 'group.admin'
+}, function(source)
+    TriggerClientEvent(resourceName .. ':client:openCameraPlacer', source)
+end)
