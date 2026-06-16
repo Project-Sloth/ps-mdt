@@ -297,6 +297,12 @@ Config.CameraViewer = {
     FovMin = 10.0,
     FovMax = 100.0,
     FovStep = 2.0,
+    -- Yaw offset (degrees) applied to the *view* of cameras that spawn a real
+    -- CCTV prop (player-placed ones). Those props face the opposite way from the
+    -- camera's look direction, so the feed needs +180. Virtual cameras
+    -- (spawns_model = false) are unaffected. Set to 0.0 if your prop models
+    -- already look the right way.
+    HeadingOffset = 180.0,
 }
 
 -- Management permissions and defaults (per job grade)
@@ -452,6 +458,18 @@ Config.CameraModels = {
     ['cctv_cam_07'] = 'prop_cctv_pole_03',
     ['cctv_cam_08'] = 'p_cctv_s',
     ['cctv_cam_09'] = 'hei_prop_bank_cctv_02',
+}
+
+-- ============================================================================
+--  Static Camera Placer (admin tool)
+--  Opens an in-game menu to create / edit / reposition / delete static
+--  security cameras using a 3D gizmo. The entry command is registered through
+--  ox_lib's lib.addCommand, whose `restricted` field handles the admin gating
+--  server-side (it auto-creates the `command.<name>` ace).
+-- ============================================================================
+Config.CameraPlacer = {
+    command = 'cameraplacer',  -- Chat command that opens the placer menu
+    restricted = 'group.admin', -- ox_lib restricted group/ace allowed to use it
 }
 
 -- Which Weapons should be allowed to be registered manually
