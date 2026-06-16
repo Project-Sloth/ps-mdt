@@ -596,6 +596,9 @@ CREATE TABLE IF NOT EXISTS `mdt_cameras` (
   `model` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'security_cam_03',
   `coords` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `rotation` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `feed_coords` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Decoupled camera feed position (what the operator sees). NULL = use prop coords',
+  `feed_rotation` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Decoupled camera feed rotation. NULL = use prop rotation + heading offset',
+  `feed_fov` float DEFAULT NULL COMMENT 'Decoupled camera feed FOV. NULL = default FOV',
   `image` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `can_rotate` BOOLEAN NOT NULL DEFAULT TRUE,
   `is_online` BOOLEAN NOT NULL DEFAULT TRUE,
@@ -604,6 +607,12 @@ CREATE TABLE IF NOT EXISTS `mdt_cameras` (
   `created_by` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   PRIMARY KEY (`cam_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Migration for existing installs: add decoupled camera-feed columns (MariaDB)
+ALTER TABLE `mdt_cameras`
+  ADD COLUMN IF NOT EXISTS `feed_coords` text DEFAULT NULL,
+  ADD COLUMN IF NOT EXISTS `feed_rotation` text DEFAULT NULL,
+  ADD COLUMN IF NOT EXISTS `feed_fov` float DEFAULT NULL;
 
 -- DEFAULT CAMERA DATA (remove if not needed for your server)
 INSERT IGNORE INTO `mdt_cameras` (`cam_id`, `cam_label`, `cam_type`, `coords`, `rotation`, `image`, `can_rotate`, `is_online`, `spawns_model`, `created_by`) VALUES
