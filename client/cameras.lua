@@ -104,9 +104,11 @@ RegisterNetEvent(resourceName..':client:startCameraView', function(cameraData)
         Wait(0)
     end
 
-    -- Set focus area to the camera coordinates to ensure the area is streamed
-    ps.debug('Setting focus area to camera coordinates:', cameraData.coords.x, cameraData.coords.y, cameraData.coords.z)
-    SetFocusPosAndVel(cameraData.coords.x, cameraData.coords.y, cameraData.coords.z, 0, 0, 0)
+    -- Set focus area to the camera coordinates to ensure the area is streamed.
+    -- Use the feed position if the camera has a decoupled feed, otherwise the prop.
+    local focusCoords = cameraData.feedCoords or cameraData.coords
+    ps.debug('Setting focus area to camera coordinates:', focusCoords.x, focusCoords.y, focusCoords.z)
+    SetFocusPosAndVel(focusCoords.x, focusCoords.y, focusCoords.z, 0, 0, 0)
     -- Wait a moment for the focus area to take effect
     Wait(100)
 
@@ -127,16 +129,32 @@ RegisterNetEvent(resourceName..':client:startCameraView', function(cameraData)
     end
 
     if cam and cam ~= 0 then
-        -- Use the coords and rot from server
-        local coords = cameraData.coords
-        local rotation = cameraData.rotation
-        ps.debug('Using coords from server data:', tostring(coords))
-        ps.debug('Using rotation from server data:', tostring(rotation))
+        -- Prefer the decoupled feed transform (set by the feed placer). It is
+        -- exactly what the operator aimed, so no heading offset is applied.
+        -- Cameras without a feed fall back to the prop transform: player-placed
+        -- props look opposite to their heading so they get the (configurable)
+        -- offset; virtual cams and bodycams do not.
+        local hasFeed = cameraData.feedCoords ~= nil and cameraData.feedRotation ~= nil
+        local coords, rotation, fov
 
-        -- Set camera pos and rot
-        SetCamCoord(cam, coords.x, coords.y, coords.z)
-        SetCamRot(cam, rotation.x, rotation.y, rotation.z, 2)
-        SetCamFov(cam, 50.0)
+        if hasFeed then
+            coords = cameraData.feedCoords
+            rotation = cameraData.feedRotation
+            fov = cameraData.feedFov or 50.0
+            ps.debug('Using decoupled feed transform for camera view')
+            SetCamCoord(cam, coords.x, coords.y, coords.z)
+            SetCamRot(cam, rotation.x, rotation.y, rotation.z, 2)
+            SetCamFov(cam, fov)
+        else
+            coords = cameraData.coords
+            rotation = cameraData.rotation
+            local needsOffset = cameraData.spawnsModel == true and not cameraData.isBodycam
+            local headingOffset = needsOffset and (camCfg.HeadingOffset or 180.0) or 0.0
+            ps.debug('Using prop transform (no feed) for camera view')
+            SetCamCoord(cam, coords.x, coords.y, coords.z)
+            SetCamRot(cam, rotation.x, rotation.y, (rotation.z + headingOffset) % 360.0, 2)
+            SetCamFov(cam, 50.0)
+        end
 
         ps.debug('Camera properties set - Position:', tostring(coords), 'Rotation:', tostring(rotation))
 
@@ -304,6 +322,125 @@ startCameraControlThread = function()
         end
         cameraControlThreadActive = false
     end)
+end
+
+-- Camera Feed Placer ----------------------------------
+-- A free-fly camera that lets an admin aim what a static camera actually shows
+-- (the "feed"), decoupled from where the physical prop sits. Returns
+-- { coords = vector3, rotation = vector3, fov = number } on confirm, or nil if
+-- cancelled.
+--
+-- Controls: WASD move, SPACE/CTRL up/down, SHIFT faster, mouse look,
+--           scroll = zoom (FOV), ENTER confirm, BACKSPACE cancel.
+local function setupCameraFeed(startCoords, startRot, startFov)
+    local cam = CreateCam('DEFAULT_SCRIPTED_CAMERA', true)
+    if not cam or cam == 0 then
+        ps.error('setupCameraFeed - failed to create camera')
+        return nil
+    end
+
+    local coords = vector3(startCoords.x, startCoords.y, startCoords.z)
+    local pitch = startRot and startRot.x or 0.0
+    local yaw = startRot and startRot.z or 0.0
+    local fov = startFov or 50.0
+
+    SetCamCoord(cam, coords.x, coords.y, coords.z)
+    SetCamRot(cam, pitch, 0.0, yaw, 2)
+    SetCamFov(cam, fov)
+    SetCamActive(cam, true)
+    RenderScriptCams(true, false, 0, true, true)
+    SetTimecycleModifier('scanline_cam_cheap')
+    SetTimecycleModifierStrength(1.0)
+
+    local result = nil
+    local lookSens = 8.0
+    local baseSpeed = 0.10
+
+    while true do
+        Wait(0)
+
+        local ped = PlayerPedId()
+
+        -- Disable everything that would move the ped / camera / open menus
+        DisablePlayerFiring(ped, true)
+        DisableControlAction(0, 1, true)   -- look LR
+        DisableControlAction(0, 2, true)   -- look UD
+        DisableControlAction(0, 24, true)  -- attack
+        DisableControlAction(0, 25, true)  -- aim
+        DisableControlAction(0, 30, true)  -- move LR
+        DisableControlAction(0, 31, true)  -- move UD
+        DisableControlAction(0, 32, true)  -- W
+        DisableControlAction(0, 33, true)  -- S
+        DisableControlAction(0, 34, true)  -- A
+        DisableControlAction(0, 35, true)  -- D
+        DisableControlAction(0, 21, true)  -- sprint
+        DisableControlAction(0, 22, true)  -- jump (used for up)
+        DisableControlAction(0, 36, true)  -- duck (used for down)
+        DisableControlAction(0, 44, true)  -- cover
+        DisableControlAction(0, 23, true)  -- enter
+        DisableControlAction(0, 75, true)  -- exit vehicle
+        DisableControlAction(0, 199, true) -- pause
+        DisableControlAction(0, 200, true) -- pause alt
+
+        -- Mouse look
+        yaw = (yaw - GetDisabledControlNormal(0, 1) * lookSens) % 360.0
+        pitch = math.max(-89.0, math.min(89.0, pitch - GetDisabledControlNormal(0, 2) * lookSens))
+
+        -- Direction vectors from current yaw/pitch
+        local radYaw = math.rad(yaw)
+        local radPitch = math.rad(pitch)
+        local cosPitch = math.cos(radPitch)
+        local forward = vector3(-math.sin(radYaw) * cosPitch, math.cos(radYaw) * cosPitch, math.sin(radPitch))
+        local right = vector3(math.cos(radYaw), math.sin(radYaw), 0.0)
+
+        local speed = baseSpeed
+        if IsDisabledControlPressed(0, 21) then speed = baseSpeed * 5.0 end -- shift = faster
+
+        if IsDisabledControlPressed(0, 32) then coords = coords + forward * speed end -- W
+        if IsDisabledControlPressed(0, 33) then coords = coords - forward * speed end -- S
+        if IsDisabledControlPressed(0, 35) then coords = coords + right * speed end   -- D
+        if IsDisabledControlPressed(0, 34) then coords = coords - right * speed end   -- A
+        if IsDisabledControlPressed(0, 22) then coords = vector3(coords.x, coords.y, coords.z + speed) end -- space up
+        if IsDisabledControlPressed(0, 36) then coords = vector3(coords.x, coords.y, coords.z - speed) end -- ctrl down
+
+        -- Zoom (FOV)
+        if IsDisabledControlPressed(0, 241) then fov = math.max(10.0, fov - 1.0) end -- wheel up
+        if IsDisabledControlPressed(0, 242) then fov = math.min(100.0, fov + 1.0) end -- wheel down
+
+        SetCamCoord(cam, coords.x, coords.y, coords.z)
+        SetCamRot(cam, pitch, 0.0, yaw, 2)
+        SetCamFov(cam, fov)
+        SetFocusPosAndVel(coords.x, coords.y, coords.z, 0.0, 0.0, 0.0)
+
+        ShowCameraHelpNotification(
+            'Set Camera Feed' ..
+            '~n~WASD: Move  |  Space/Ctrl: Up/Down  |  Shift: Faster' ..
+            '~n~Mouse: Aim  |  Scroll: Zoom (FOV ' .. string.format('%.0f', fov) .. ')' ..
+            '~n~~INPUT_FRONTEND_ACCEPT~ Confirm  |  ~INPUT_FRONTEND_CANCEL~ Cancel'
+        )
+
+        if IsControlJustPressed(0, 201) or IsControlJustPressed(0, 18) then -- Enter
+            result = {
+                coords = vector3(coords.x, coords.y, coords.z),
+                rotation = vector3(pitch, 0.0, yaw),
+                fov = fov
+            }
+            break
+        end
+
+        if IsControlJustPressed(0, 202) or IsControlJustPressed(0, 177) then -- Backspace / Esc
+            result = nil
+            break
+        end
+    end
+
+    RenderScriptCams(false, false, 0, true, true)
+    SetCamActive(cam, false)
+    DestroyCam(cam, false)
+    ClearTimecycleModifier()
+    ClearFocus()
+
+    return result
 end
 
 -- Camera Placement ------------------------------------
@@ -529,11 +666,19 @@ function CameraPlacement.showCameraActions(camera)
             end
         },
         {
-            title = 'Edit Position with Gizmo',
-            description = 'Visually position camera using 3D gizmo',
+            title = 'Reposition Prop with Gizmo',
+            description = 'Move the physical camera model using the 3D gizmo',
             icon = 'cube',
             onSelect = function()
                 CameraPlacement.placeWithGizmo(camera)
+            end
+        },
+        {
+            title = 'Edit Camera Feed',
+            description = 'Re-aim what this camera shows (free-fly view)',
+            icon = 'video',
+            onSelect = function()
+                CameraPlacement.editFeed(camera)
             end
         }
     }
@@ -755,35 +900,54 @@ function CameraPlacement.createWithGizmo()
         return
     end
 
-    -- Get final position and rotation
+    -- Get final prop position and rotation (the physical model only)
     local finalCoords = gizmoResult.position
     local finalRotation = gizmoResult.rotation
 
     ps.debug('Gizmo final position: ' .. tostring(finalCoords))
     ps.debug('Final rotation: ' .. tostring(finalRotation))
 
-    -- Clean up temporary object
-    DeleteObject(tempObj)
+    -- Step 2: aim the camera feed. The temp prop stays visible so the operator
+    -- can see the camera while framing the shot. Start at the prop, looking the
+    -- way the lens points (heading + 180).
+    ps.notify('Now aim the camera feed - move/look, then ENTER to confirm', 'info')
+    local feed = setupCameraFeed(
+        vector3(finalCoords.x, finalCoords.y, finalCoords.z),
+        vector3(0.0, 0.0, (finalRotation.z + 180.0) % 360.0),
+        50.0
+    )
 
-    -- Prepare camera data
+    -- Clean up temporary object now that both steps are done
+    DeleteObject(tempObj)
+    SetModelAsNoLongerNeeded(modelHash)
+
+    if not feed then
+        ps.warn('Camera feed setup cancelled')
+        ps.notify('Camera creation cancelled', 'info')
+        return
+    end
+
+    -- Prepare camera data (prop transform + decoupled feed transform)
     local cameraData = {
         camId = tostring(input[1]),
         camLabel = tostring(input[2]),
         model = tostring(input[3]),
         coords = vector3(finalCoords.x, finalCoords.y, finalCoords.z),
         rotation = vector3(finalRotation.x, finalRotation.y, finalRotation.z),
+        feedCoords = feed.coords,
+        feedRotation = feed.rotation,
+        feedFov = feed.fov,
     }
 
     ps.debug('Camera data being sent to server:')
     ps.debug('  coords: ' .. tostring(cameraData.coords))
     ps.debug('  rotation: ' .. tostring(cameraData.rotation))
-
-    SetModelAsNoLongerNeeded(modelHash)
+    ps.debug('  feedCoords: ' .. tostring(cameraData.feedCoords))
 
     -- Send to server for creation
     TriggerServerEvent(resourceName .. ':server:createStaticCamera', cameraData)
     ps.info('Camera placement request sent to server for: ' .. cameraData.camId)
-    ps.notify('Camera created at position: ' .. string.format('%.2f, %.2f, %.2f', finalCoords.x, finalCoords.y, finalCoords.z), 'success')
+    ps.notify('Camera created: ' .. cameraData.camLabel, 'success')
 end
 
 -- Position existing camera with gizmo
@@ -848,6 +1012,46 @@ function CameraPlacement.placeWithGizmo(camera)
     ps.notify('Camera repositioned at: ' .. string.format('%.2f, %.2f, %.2f', finalCoords.x, finalCoords.y, finalCoords.z), 'success')
 end
 
+-- Re-aim the camera feed (decoupled from the prop) using the free-fly placer
+function CameraPlacement.editFeed(camera)
+    -- Start from the existing feed if set, otherwise from the prop looking the
+    -- way the lens points (heading + 180).
+    local startCoords, startRot, startFov
+    if camera.feedCoords and camera.feedRotation then
+        startCoords = vector3(camera.feedCoords.x, camera.feedCoords.y, camera.feedCoords.z)
+        startRot = vector3(camera.feedRotation.x, camera.feedRotation.y, camera.feedRotation.z)
+        startFov = camera.feedFov or 50.0
+    else
+        startCoords = vector3(camera.coords.x, camera.coords.y, camera.coords.z)
+        startRot = vector3(0.0, 0.0, (camera.rotation.z + 180.0) % 360.0)
+        startFov = 50.0
+    end
+
+    ps.notify('Aim the camera feed for "' .. camera.camLabel .. '", then ENTER to confirm', 'info')
+    local feed = setupCameraFeed(startCoords, startRot, startFov)
+
+    if not feed then
+        ps.notify('Camera feed edit cancelled', 'info')
+        return
+    end
+
+    local updateData = {
+        camId = camera.camId,
+        feedCoords = feed.coords,
+        feedRotation = feed.rotation,
+        feedFov = feed.fov,
+    }
+
+    local result = ps.callback(resourceName .. ':server:updateCamera', updateData)
+    if result and result.success then
+        ps.info('Camera feed updated for: ' .. camera.camId)
+        ps.notify('Camera feed updated', 'success')
+    else
+        ps.warn('Camera feed update failed for: ' .. camera.camId)
+        ps.notify('Camera feed update failed', 'error')
+    end
+end
+
 -- Main camera menu
 function CameraPlacement.showMainMenu()
     lib.registerContext({
@@ -883,6 +1087,13 @@ function CameraPlacement.showMainMenu()
 
     lib.showContext('camera_main_menu')
 end
+
+-- Camera Placer entry point -------------------------------
+-- Opened from the server's lib.addCommand handler, which already enforces the
+-- admin (restricted) check, so this just shows the menu.
+RegisterNetEvent(resourceName .. ':client:openCameraPlacer', function()
+    CameraPlacement.showMainMenu()
+end)
 
 -- Exports --------------------------------------
 
