@@ -8,6 +8,7 @@ local dataview = require 'client.utils.gizmo.dataview'
 local enableScale = false -- allow scaling mode. doesnt scale collisions and resets when physics are applied it seems
 local isCursorActive = false
 local gizmoEnabled = false
+local gizmoCancelled = false
 local currentMode = 'translate'
 local isRelative = false
 local currentEntity
@@ -93,10 +94,34 @@ local function gizmoLoop(entity)
                 isCursorActive = true
             end
         end
-        DisableControlAction(0, 24, true)  -- lmb
-        DisableControlAction(0, 25, true)  -- rmb
-        DisableControlAction(0, 140, true) -- r
+
+        -- Disable the player's own actions while editing so pressing the gizmo
+        -- mode keys (W = translate, S = scale, R = rotate, etc.) doesn't also
+        -- walk / reload / attack. The lib.addKeybind binds still fire because
+        -- key mappings are independent of DisableControlAction.
         DisablePlayerFiring(cache.playerId, true)
+        DisableControlAction(0, 24, true)  -- attack / lmb
+        DisableControlAction(0, 25, true)  -- aim / rmb
+        DisableControlAction(0, 140, true) -- melee light (R)
+        DisableControlAction(0, 141, true) -- melee heavy
+        DisableControlAction(0, 142, true) -- melee alt
+        DisableControlAction(0, 257, true) -- attack 2
+        DisableControlAction(0, 263, true) -- melee attack 1
+        DisableControlAction(0, 264, true) -- melee attack 2
+        DisableControlAction(0, 30, true)  -- move left/right
+        DisableControlAction(0, 31, true)  -- move up/down
+        DisableControlAction(0, 32, true)  -- move up (W)
+        DisableControlAction(0, 33, true)  -- move down (S)
+        DisableControlAction(0, 34, true)  -- move left (A)
+        DisableControlAction(0, 35, true)  -- move right (D)
+        DisableControlAction(0, 21, true)  -- sprint
+        DisableControlAction(0, 22, true)  -- jump
+        DisableControlAction(0, 23, true)  -- enter vehicle
+        DisableControlAction(0, 36, true)  -- duck / stealth
+        DisableControlAction(0, 44, true)  -- cover
+        DisableControlAction(0, 45, true)  -- reload
+        DisableControlAction(0, 37, true)  -- weapon wheel
+        DisableControlAction(0, 75, true)  -- exit vehicle
 
         local matrixBuffer = makeEntityMatrix(entity)
         local changed = Citizen.InvokeNative(0xEB2EDCA2, matrixBuffer:Buffer(), 'Editor1',
@@ -144,7 +169,8 @@ local function textUILoop()
                 scaleText ..
                 '[Q]     - Relative/World  \n' ..
                 '[LALT]  - Snap To Ground  \n' ..
-                '[ENTER] - Done Editing  \n'
+                '[ENTER] - Done Editing  \n' ..
+                '[BACK]  - Cancel  \n'
             )
         end
         lib.hideTextUI()
@@ -155,9 +181,16 @@ end
 
 local function useGizmo(entity)
     gizmoEnabled = true
+    gizmoCancelled = false
     currentEntity = entity
     textUILoop()
     gizmoLoop(entity)
+
+    -- Cancelled via the cancel key -> signal the caller to abort (no changes).
+    if gizmoCancelled then
+        gizmoCancelled = false
+        return nil
+    end
 
     return {
         handle = entity,
@@ -232,6 +265,17 @@ lib.addKeybind({
     defaultKey = 'RETURN',
     onPressed = function(self)
         if not gizmoEnabled then return end
+        gizmoEnabled = false
+    end,
+})
+
+lib.addKeybind({
+    name = 'gizmocancel',
+    description = 'cancel gizmo (discard changes)',
+    defaultKey = 'BACK',
+    onPressed = function(self)
+        if not gizmoEnabled then return end
+        gizmoCancelled = true
         gizmoEnabled = false
     end,
 })
