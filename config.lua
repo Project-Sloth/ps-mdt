@@ -303,6 +303,12 @@ Config.CameraViewer = {
     -- (spawns_model = false) are unaffected. Set to 0.0 if your prop models
     -- already look the right way.
     HeadingOffset = 180.0,
+    -- On-screen CCTV overlay shown while viewing a camera, also works for bodycam
+    Overlay = {
+        enabled = true,
+        showTimestamp = true,   -- real date/time (top right)
+        recBlink = true,        -- blinking REC indicator (false = always on)
+    },
 }
 
 -- Management permissions and defaults (per job grade)
