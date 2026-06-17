@@ -204,6 +204,111 @@ local function ShowCameraHelpNotification(text)
     EndTextCommandDisplayHelp(0, false, true, -1)
 end
 
+-- CCTV overlay HUD ------------------------------------
+
+local function drawHudText(text, x, y, scale, r, g, b, a, align)
+    SetTextFont(4)
+    SetTextScale(scale, scale)
+    SetTextColour(r, g, b, a)
+    SetTextDropShadow()
+    SetTextOutline()
+    if align == 'right' then
+        SetTextJustification(2)
+        SetTextWrap(0.0, x)
+    elseif align == 'center' then
+        SetTextCentre(true)
+    end
+    BeginTextCommandDisplayText('STRING')
+    AddTextComponentSubstringPlayerName(text)
+    EndTextCommandDisplayText(x, y)
+end
+
+-- Real server time for the overlay. The FiveM client has no `os` library and we
+-- don't want the client's local clock, so we sync the server's epoch + timezone
+-- offset once (via callback) and tick locally with GetGameTimer(). No per-frame
+-- or per-second network traffic. Reformatted at most once per second.
+local srvBaseEpoch = nil   -- server UTC epoch at last sync
+local srvOffset = 0        -- server local timezone offset (seconds)
+local srvSyncTimer = 0     -- GetGameTimer() value at sync
+local overlayTimeStr = ''
+local overlayTimeLastSec = -1
+
+local function syncServerTime()
+    local t = ps.callback(resourceName .. ':server:getServerTime')
+    if t and t.epoch then
+        srvBaseEpoch = t.epoch
+        srvOffset = t.offset or 0
+        srvSyncTimer = GetGameTimer()
+        overlayTimeLastSec = -1
+    end
+end
+
+-- Convert an epoch (already shifted to the desired timezone) to a date string.
+-- Uses Howard Hinnant's days->civil algorithm so no os/date library is needed.
+local function epochToString(epoch)
+    local days = math.floor(epoch / 86400)
+    local secs = epoch % 86400
+    local hour = math.floor(secs / 3600)
+    local minute = math.floor((secs % 3600) / 60)
+    local second = secs % 60
+
+    local z = days + 719468
+    local era = math.floor((z >= 0 and z or (z - 146096)) / 146097)
+    local doe = z - era * 146097
+    local yoe = math.floor((doe - math.floor(doe / 1460) + math.floor(doe / 36524) - math.floor(doe / 146096)) / 365)
+    local y = yoe + era * 400
+    local doy = doe - (365 * yoe + math.floor(yoe / 4) - math.floor(yoe / 100))
+    local mp = math.floor((5 * doy + 2) / 153)
+    local d = doy - math.floor((153 * mp + 2) / 5) + 1
+    local m = (mp < 10) and (mp + 3) or (mp - 9)
+    if m <= 2 then y = y + 1 end
+
+    return ('%04d-%02d-%02d  %02d:%02d:%02d'):format(y, m, d, hour, minute, second)
+end
+
+local function getOverlayTime()
+    if not srvBaseEpoch then return '' end
+    local cur = srvBaseEpoch + math.floor((GetGameTimer() - srvSyncTimer) / 1000)
+    if cur ~= overlayTimeLastSec then
+        overlayTimeLastSec = cur
+        overlayTimeStr = epochToString(cur + srvOffset)
+    end
+    return overlayTimeStr
+end
+
+-- Draws a simple CCTV overlay while a camera is being viewed.
+local function drawCameraOverlay()
+    if not isViewingCamera or not currentCamera then return end
+    local ov = (camCfg and camCfg.Overlay) or {}
+    if ov.enabled == false then return end
+
+    local data = currentCameraData or {}
+    local label
+    if data.isBodycam == true then
+        label = 'BODYCAM - ' .. tostring(data.officerName or data.playerName or 'Unknown')
+    else
+        label = tostring(data.camLabel or 'CCTV')
+    end
+
+    -- Top contrast bar
+    DrawRect(0.5, 0.035, 1.0, 0.06, 0, 0, 0, 140)
+
+    -- REC dot + camera name (top left)
+    local showDot = (ov.recBlink == false) or ((GetGameTimer() % 1200) < 700)
+    if showDot then
+        DrawRect(0.036, 0.037, 0.007, 0.012, 200, 35, 35, 255)
+    end
+    drawHudText(label, 0.05, 0.022, 0.55, 255, 255, 255, 255)
+
+    -- Real date + time (top right)
+    if ov.showTimestamp ~= false then
+        drawHudText(getOverlayTime(), 0.965, 0.024, 0.45, 220, 220, 220, 230, 'right')
+    end
+
+    -- Subtle exit hint (bottom left)
+    drawHudText('[ESC] Exit', 0.036, 0.95, 0.34, 200, 200, 200, 170)
+end
+
 -- Camera controls
 updateCameraControls = function()
     if not isViewingCamera or not currentCamera then
@@ -265,14 +370,8 @@ updateCameraControls = function()
         SetCamRot(currentCamera, newRotX, currentRot.y, newRotZ, 2)
     end
 
-    -- Show help text
-    local helpLabel = currentCameraData and currentCameraData.isBodycam and 'Bodycam View' or 'Camera View'
-    ShowCameraHelpNotification(
-        helpLabel ..
-        '~n~Mouse Wheel: Zoom In/Out (FOV: ' .. string.format('%.0f', currentFov) .. ')' ..
-        (not (currentCameraData and currentCameraData.isBodycam) and '~n~Mouse: Rotate Camera View' or '') ..
-        '~n~Press ~INPUT_FRONTEND_PAUSE_ALTERNATE~ Exit Camera'
-    )
+    -- The on-screen overlay (drawn each frame in the control thread) shows the
+    -- camera name, REC/LIVE state, timestamp, zoom and controls.
 end
 
 -- Camera control thread - spawned on demand, exits when camera view stops
@@ -283,9 +382,15 @@ startCameraControlThread = function()
     cameraControlThreadActive = true
 
     CreateThread(function()
+        -- Sync real server time once for the overlay clock
+        syncServerTime()
+
         while isViewingCamera do
             -- Update camera controls
             updateCameraControls()
+
+            -- Draw the CCTV overlay (name, REC/LIVE, timestamp, zoom, controls)
+            drawCameraOverlay()
 
             -- Check for ESC key to exit camera view
             if IsControlJustPressed(0, 177) or IsControlJustPressed(0, 200) then
