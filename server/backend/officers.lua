@@ -25,6 +25,16 @@ ps.registerCallback(resourceName .. ':server:setCallsign', function(source, payl
         return { success = false, message = 'Missing citizen ID or callsign' }
     end
     if not QBCore then return { success = false, message = 'Core framework not available' } end
+
+    -- Reject a callsign already owned by a different profile (UNIQUE index).
+    local taken = MySQL.scalar.await(
+        'SELECT 1 FROM mdt_profiles WHERE callsign = ? AND citizenid != ? LIMIT 1',
+        { newCallsign, cid }
+    )
+    if taken then
+        return { success = false, message = 'Callsign "' .. tostring(newCallsign) .. '" is already in use' }
+    end
+
     local Player = QBCore.Functions.GetPlayerByCitizenId(cid)
     if Player then
         Player.Functions.SetMetaData('callsign', newCallsign)
