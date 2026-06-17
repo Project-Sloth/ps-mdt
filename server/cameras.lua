@@ -627,8 +627,16 @@ function Camera.loadAllFromDatabase()
             if fovNum and fovNum > 0 then camera.feedFov = fovNum end
 
             if camera.camTypeDb == 'placed' or camera.spawnsModel then
-                camera:spawn()
-                --ps.debug('Camera.loadAllFromDatabase - Loaded and spawned physical camera ' .. row.cam_id .. ' (type: ' .. camera.camTypeDb .. ')')
+                -- Server-side CreateObject needs at least one connected player to
+                -- act as host. At a fresh server boot nobody is online yet, so we
+                -- defer the actual spawn to SpawnPendingCameras() (called on the
+                -- first player load). On a live restart players may already be
+                -- online, so spawn right away in that case.
+                if GetNumPlayerIndices() > 0 then
+                    camera:spawn()
+                else
+                    camera.isSpawned = false
+                end
             else
                 camera.isSpawned = true
                 --ps.debug('Camera.loadAllFromDatabase - Loaded virtual camera ' .. row.cam_id .. ' (type: ' .. camera.camTypeDb .. ', no model spawned)')
@@ -643,6 +651,35 @@ function Camera.loadAllFromDatabase()
 
     --ps.info('Camera.loadAllFromDatabase - Loaded ' .. #cameras .. ' cameras from database')
     return cameras
+end
+
+-- Spawn any physical cameras that aren't spawned yet. Safe to call repeatedly:
+-- Camera:spawn() guards against double-spawning, so already-spawned cameras are
+-- skipped. Used to (re)spawn props once a player is connected, since server-side
+-- entities need a host. Networked entities then replicate to all later joiners.
+local spawningPending = false
+function SpawnPendingCameras()
+    if spawningPending then return end
+    if GetNumPlayerIndices() <= 0 then return end
+    spawningPending = true
+
+    local spawned = 0
+    for _, camera in pairs(spawnedCameras) do
+        if camera.camType == Camera.types.static
+            and (camera.camTypeDb == 'placed' or camera.spawnsModel)
+            and not camera.isSpawned then
+            if camera:spawn() then
+                spawned = spawned + 1
+                Wait(0) -- yield between spawns to avoid a burst
+            end
+        end
+    end
+
+    if spawned > 0 then
+        ps.debug('SpawnPendingCameras - spawned ' .. spawned .. ' pending camera(s)')
+    end
+
+    spawningPending = false
 end
 
 -- Server event handlers for client menu actions ----------------------------------
@@ -1112,6 +1149,22 @@ ps.registerCallback(resourceName .. ':server:viewCamera', function(source, camer
 end)
 
 -- Callback to get available camera models
+-- Returns the server's real time so the camera overlay can show actual time
+-- (not in-game, not the client's local clock). epoch = UTC seconds, offset =
+-- server local timezone offset in seconds. The client ticks locally from this.
+ps.registerCallback(resourceName .. ':server:getServerTime', function(source)
+    local now = os.time()
+    -- DST-correct local UTC offset: compare the local wall-clock and UTC tables
+    -- with isdst forced off so the standard offset cancels and the real (incl.
+    -- summer time) difference remains. The naive os.difftime(now, os.time(!*t))
+    -- ignores DST and is an hour short in summer.
+    local utcdate = os.date('!*t', now)
+    local localdate = os.date('*t', now)
+    localdate.isdst = false
+    local offset = os.difftime(os.time(localdate), os.time(utcdate))
+    return { epoch = now, offset = offset }
+end)
+
 ps.registerCallback(resourceName .. ':server:getCameraModels', function(source)
     local models = {}
     for key, hash in pairs(Camera.models) do
@@ -1153,8 +1206,25 @@ AddEventHandler('onResourceStart', function(startedResource)
         for _ in pairs(loadedCameras) do count = count + 1 end
 
         ps.debug('Loaded ' .. count .. ' cameras from database')
+
+        -- Live restart: players may already be online, so spawn deferred props now.
+        if GetNumPlayerIndices() > 0 then
+            SpawnPendingCameras()
+        end
     end
 end)
+
+-- Spawn deferred camera props once a player is connected (server-side entities
+-- need a host). Covers a fresh server boot where nobody was online at start.
+-- Listens to both QBCore and QBX player-loaded events; spawn is idempotent.
+local function onPlayerReady()
+    -- small delay so the player is fully in the session before we create entities
+    SetTimeout(1500, SpawnPendingCameras)
+end
+
+AddEventHandler('QBCore:Server:OnPlayerLoaded', onPlayerReady)
+AddEventHandler('qbx_core:server:onPlayerLoaded', onPlayerReady)
+RegisterNetEvent('QBCore:Server:OnPlayerLoaded', onPlayerReady)
 
 -- Resource stop cleanup
 AddEventHandler('onResourceStop', function(resourceName)
