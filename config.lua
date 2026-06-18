@@ -303,11 +303,39 @@ Config.CameraViewer = {
     -- (spawns_model = false) are unaffected. Set to 0.0 if your prop models
     -- already look the right way.
     HeadingOffset = 180.0,
-    -- On-screen CCTV overlay shown while viewing a camera, also works for bodycam
+    -- On-screen CCTV overlay shown while viewing a camera
     Overlay = {
         enabled = true,
         showTimestamp = true,   -- real date/time (top right)
         recBlink = true,        -- blinking REC indicator (false = always on)
+    },
+}
+
+-- ============================================================================
+--  Dashcams (police vehicle cameras)
+--  IMPORTANT: a vehicle only gets a working dashcam if its model is listed in
+--  `Positions.models` below. Unconfigured vehicles still show in the camera
+--  list, but opening them returns an error instead of a feed. There is no
+--  `default` on purpose - this prevents every cop car from silently working.
+--  Offsets are in the vehicle's local space: side = +right, forward = +front,
+--  height = +up (metres), pitch = camera tilt (negative looks down). Rear
+--  values are optional and fall back to the front values. Keys are spawn names.
+-- ============================================================================
+Config.Dashcam = {
+    -- Only vehicles of this class are considered (18 = Emergency, same as the
+    -- tracking system uses to identify police vehicles). Checked on the client.
+    EmergencyClass = 18,
+    -- How often (ms) the server pushes a unit's live position to dashcam
+    -- viewers. Lower = smoother for far-away units, but more network traffic.
+    UpdateInterval = 250,
+    Positions = {
+        models = {
+            ['police']  = { side = 0.0, forward = 0.75, height = 0.55, pitch = 1.0, rearForward = 1.2, rearHeight = 0.60, rearPitch = 1.0 },
+            -- ['police2'] = { side = 0.0, forward = 1.1, height = 0.85, pitch = -6.0 },
+
+            -- Example with a rear camera tuned separately:
+            -- ['fbi2'] = { forward = 2.0, height = 0.9, pitch = -5.0, rearForward = 2.4, rearHeight = 0.8, rearPitch = -8.0 },
+        },
     },
 }
 
@@ -355,6 +383,7 @@ Config.ManagementPermissions = {
     -- Cameras & Bodycams
     'cameras_view',
     'bodycams_view',
+    'dashcams_view',
     -- Notes
     'notes_edit_department',
     -- Roster
