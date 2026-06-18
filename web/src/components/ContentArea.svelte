@@ -117,7 +117,7 @@
 		reports: ["reports_view", "reports_create"],
 		warrants: ["warrants_view", "warrants_issue"],
 		charges: ["charges_view", "charges_edit"],
-		cameras: ["cameras_view"],
+		cameras: ["cameras_view", "dashcams_view"],
 		bodycams: ["bodycams_view"],
 		ia: ["ia_view"],
 		sop: ["sop_view", "sop_manage"],
