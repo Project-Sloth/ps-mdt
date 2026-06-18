@@ -13,6 +13,7 @@
 		'cameras_view',
 		'management_tracking',
 		'bodycams_view',
+		'dashcams_view',
 		'court_view',
 		'court_create',
 		'court_edit',
