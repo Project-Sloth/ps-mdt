@@ -128,11 +128,12 @@ export const PERMISSION_CATEGORIES: PermissionCategory[] = [
 	},
 	{
 		key: "cameras",
-		label: "Cameras & Bodycams",
+		label: "Cameras, Bodycams & Dashcams",
 		icon: "videocam",
 		permissions: [
 			{ key: "cameras_view", label: "View Cameras", description: "Access security camera feeds" },
 			{ key: "bodycams_view", label: "View Bodycams", description: "Access officer bodycam footage" },
+			{ key: "dashcams_view", label: "View Dashcams", description: "Access police vehicle dashcam feeds" },
 		],
 	},
 	{
