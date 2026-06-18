@@ -6,6 +6,14 @@ local isViewingCamera = false
 local hiddenCameraEntity = nil
 local currentCameraData = nil
 
+-- Dashcam view state
+local dashcamRear = false      -- false = front camera, true = rear camera
+local dashcamSpeedKmh = 0      -- current speed of the viewed vehicle (km/h)
+-- Live transform pushed by the server (used when the vehicle isn't streamed to
+-- the viewer, e.g. the unit is far away). nil until the first push arrives.
+local dashcamFeed = nil        -- { coords, heading, speed, vehicleNetId, t }
+local dashcamRenderCoords = nil -- smoothed camera position when using the feed
+
 -- Forward declarations
 local startCameraControlThread
 local updateCameraControls
@@ -60,6 +68,10 @@ local function stopCameraView(notifyServer)
                 local bodycamId = currentCameraData.targetSource and tostring(currentCameraData.targetSource) or 'unknown'
                 ps.debug('Notifying server to deactivate bodycam:', bodycamId)
                 TriggerServerEvent(resourceName .. ':server:deactivateBodycam', bodycamId)
+            elseif currentCameraData and currentCameraData.isDashcam then
+                local dashcamId = currentCameraData.dashcamId or ('dashcam:' .. tostring(currentCameraData.targetSource or 'unknown'))
+                ps.debug('Notifying server to deactivate dashcam:', dashcamId)
+                TriggerServerEvent(resourceName .. ':server:deactivateDashcam', dashcamId)
             else
                 ps.debug('Notifying server to deactivate regular camera')
                 TriggerServerEvent(resourceName .. ':server:deactivateCamera', 'current')
@@ -148,7 +160,7 @@ RegisterNetEvent(resourceName..':client:startCameraView', function(cameraData)
         else
             coords = cameraData.coords
             rotation = cameraData.rotation
-            local needsOffset = cameraData.spawnsModel == true and not cameraData.isBodycam
+            local needsOffset = cameraData.spawnsModel == true and not cameraData.isBodycam and not cameraData.isDashcam
             local headingOffset = needsOffset and (camCfg.HeadingOffset or 180.0) or 0.0
             ps.debug('Using prop transform (no feed) for camera view')
             SetCamCoord(cam, coords.x, coords.y, coords.z)
@@ -284,8 +296,17 @@ local function drawCameraOverlay()
 
     local data = currentCameraData or {}
     local label
+    local subline = nil
     if data.isBodycam == true then
         label = 'BODYCAM - ' .. tostring(data.officerName or data.playerName or 'Unknown')
+    elseif data.isDashcam == true then
+        label = 'DASHCAM - ' .. tostring(data.officerName or 'Unit')
+        local parts = {}
+        if data.callsign and data.callsign ~= '' then parts[#parts + 1] = 'CS ' .. tostring(data.callsign) end
+        if data.plate and data.plate ~= '' then parts[#parts + 1] = tostring(data.plate) end
+        parts[#parts + 1] = ('%d km/h'):format(math.floor(dashcamSpeedKmh + 0.5))
+        parts[#parts + 1] = dashcamRear and 'REAR' or 'FRONT'
+        subline = table.concat(parts, '   ')
     else
         label = tostring(data.camLabel or 'CCTV')
     end
@@ -299,17 +320,62 @@ local function drawCameraOverlay()
         DrawRect(0.036, 0.037, 0.007, 0.012, 200, 35, 35, 255)
     end
     drawHudText(label, 0.05, 0.022, 0.55, 255, 255, 255, 255)
+    if subline then
+        drawHudText(subline, 0.05, 0.05, 0.34, 190, 190, 190, 220)
+    end
 
     -- Real date + time (top right)
     if ov.showTimestamp ~= false then
         drawHudText(getOverlayTime(), 0.965, 0.024, 0.45, 220, 220, 220, 230, 'right')
     end
 
-    -- Subtle exit hint (bottom left)
-    drawHudText('[ESC] Exit', 0.036, 0.95, 0.34, 200, 200, 200, 170)
+    -- Subtle exit/controls hint (bottom left)
+    local hint = (data.isDashcam == true) and '[ESC] Exit     [E] Front/Rear' or '[ESC] Exit'
+    drawHudText(hint, 0.036, 0.95, 0.34, 200, 200, 200, 170)
 end
 
 -- Camera controls
+-- Dashcam offsets come strictly from Config.Dashcam.Positions.models. There is
+-- no default: an unconfigured model returns nil and the view won't position
+-- (the server already blocks viewing unconfigured vehicles).
+local function buildDashcamOffset(chosen)
+    if not chosen then return nil end
+    local side = chosen.side or 0.0
+    local forward = chosen.forward or 2.0
+    local height = chosen.height or 0.7
+    local pitch = chosen.pitch or 0.0
+    return {
+        side = side,
+        forward = forward,
+        height = height,
+        pitch = pitch,
+        rearSide = chosen.rearSide or side,
+        rearForward = chosen.rearForward or forward,
+        rearHeight = chosen.rearHeight or height,
+        rearPitch = chosen.rearPitch or pitch,
+    }
+end
+
+local function getDashcamModels()
+    return (Config.Dashcam and Config.Dashcam.Positions and Config.Dashcam.Positions.models) or {}
+end
+
+-- By config model name (used for the far-away feed path where we have no entity)
+local function getDashcamOffsetByName(name)
+    return buildDashcamOffset(name and getDashcamModels()[name] or nil)
+end
+
+-- By vehicle model hash (used when the vehicle is streamed locally)
+local function getDashcamOffset(veh)
+    local hash = GetEntityModel(veh)
+    for name, off in pairs(getDashcamModels()) do
+        if GetHashKey(name) == hash then
+            return buildDashcamOffset(off)
+        end
+    end
+    return nil
+end
+
 updateCameraControls = function()
     if not isViewingCamera or not currentCamera then
         return
@@ -336,6 +402,97 @@ updateCameraControls = function()
         end
     end
 
+    -- For dashcams, attach the camera to the target's vehicle (front or rear).
+    -- If the vehicle is streamed locally we attach to the entity (smooth, exact).
+    -- Otherwise we fall back to the server-pushed live transform: force-stream
+    -- that area and position the camera from the fed coords/heading so far-away
+    -- units are still viewable.
+    if currentCameraData and currentCameraData.isDashcam then
+        local veh = nil
+        if currentCameraData.vehicleNetId and NetworkDoesNetworkIdExist(currentCameraData.vehicleNetId) then
+            local e = NetworkGetEntityFromNetworkId(currentCameraData.vehicleNetId)
+            if e and e ~= 0 and DoesEntityExist(e) then veh = e end
+        end
+        if not veh and currentCameraData.targetSource then
+            local tped = GetPlayerPed(GetPlayerFromServerId(currentCameraData.targetSource))
+            if tped and tped ~= 0 then
+                local v = GetVehiclePedIsIn(tped, false)
+                if v and v ~= 0 then veh = v end
+            end
+        end
+
+        if veh and veh ~= 0 and DoesEntityExist(veh) then
+            -- Streamed locally: attach directly to the entity (best quality)
+            dashcamRenderCoords = nil
+            local off = getDashcamOffset(veh)
+            if off then
+            local pos
+            local heading = GetEntityHeading(veh)
+            local yaw
+
+            if dashcamRear then
+                pos = GetOffsetFromEntityInWorldCoords(veh, off.rearSide, -off.rearForward, off.rearHeight)
+                yaw = (heading + 180.0) % 360.0
+                SetCamRot(currentCamera, off.rearPitch, 0.0, yaw, 2)
+            else
+                pos = GetOffsetFromEntityInWorldCoords(veh, off.side, off.forward, off.height)
+                yaw = heading
+                SetCamRot(currentCamera, off.pitch, 0.0, yaw, 2)
+            end
+
+            SetCamCoord(currentCamera, pos.x, pos.y, pos.z)
+            SetFocusPosAndVel(pos.x, pos.y, pos.z, 0, 0, 0)
+            dashcamSpeedKmh = GetEntitySpeed(veh) * 3.6
+            end
+
+        elseif dashcamFeed then
+            -- Not streamed: use the server-pushed transform. Force-stream the
+            -- area so the world/vehicle around it loads in (then the branch above
+            -- takes over once the entity exists).
+            local fc = dashcamFeed.coords
+            SetFocusPosAndVel(fc.x, fc.y, fc.z, 0.0, 0.0, 0.0)
+
+            -- Offset by the configured model (server tells us which one)
+            local off = getDashcamOffsetByName(currentCameraData.dashcamModel)
+            if off then
+            local h = math.rad(dashcamFeed.heading or 0.0)
+            local fwd = vector3(-math.sin(h), math.cos(h), 0.0)
+            local right = vector3(math.cos(h), math.sin(h), 0.0)
+
+            local side, fdist, height, pitch, yaw
+            if dashcamRear then
+                side, fdist, height, pitch = off.rearSide, -off.rearForward, off.rearHeight, off.rearPitch
+                yaw = (dashcamFeed.heading + 180.0) % 360.0
+            else
+                side, fdist, height, pitch = off.side, off.forward, off.height, off.pitch
+                yaw = dashcamFeed.heading
+            end
+
+            local target = vector3(
+                fc.x + right.x * side + fwd.x * fdist,
+                fc.y + right.y * side + fwd.y * fdist,
+                fc.z + height
+            )
+
+            -- Smooth the 250ms server steps by easing toward the target
+            if not dashcamRenderCoords then
+                dashcamRenderCoords = target
+            else
+                local a = 0.2
+                dashcamRenderCoords = vector3(
+                    dashcamRenderCoords.x + (target.x - dashcamRenderCoords.x) * a,
+                    dashcamRenderCoords.y + (target.y - dashcamRenderCoords.y) * a,
+                    dashcamRenderCoords.z + (target.z - dashcamRenderCoords.z) * a
+                )
+            end
+
+            SetCamCoord(currentCamera, dashcamRenderCoords.x, dashcamRenderCoords.y, dashcamRenderCoords.z)
+            SetCamRot(currentCamera, pitch, 0.0, yaw, 2)
+            dashcamSpeedKmh = (dashcamFeed.speed or 0.0) * 3.6
+            end
+        end
+    end
+
     -- Handle zoom controls (adjust FOV instead of position for CCTV)
     local currentFov = GetCamFov(currentCamera)
     local fovStep = camCfg.FovStep or 2.0
@@ -351,8 +508,8 @@ updateCameraControls = function()
     currentFov = math.max(camCfg.FovMin or 10.0, math.min(camCfg.FovMax or 100.0, currentFov))
     SetCamFov(currentCamera, currentFov)
 
-    -- Handle mouse look controls for CCTV rotation (only for static cameras, not bodycams)
-    if not (currentCameraData and currentCameraData.isBodycam) then
+    -- Handle mouse look controls for CCTV rotation (static cameras only)
+    if not (currentCameraData and (currentCameraData.isBodycam or currentCameraData.isDashcam)) then
         local mouseX = GetDisabledControlNormal(0, 1) * cameraOptions.rotationSpeed
         local mouseY = GetDisabledControlNormal(0, 2) * cameraOptions.rotationSpeed
 
@@ -384,10 +541,22 @@ startCameraControlThread = function()
     CreateThread(function()
         -- Sync real server time once for the overlay clock
         syncServerTime()
+        dashcamRear = false
+        dashcamSpeedKmh = 0
+        dashcamFeed = nil
+        dashcamRenderCoords = nil
 
         while isViewingCamera do
             -- Update camera controls
             updateCameraControls()
+
+            -- Dashcam: toggle front/rear camera with [E]
+            if currentCameraData and currentCameraData.isDashcam then
+                DisableControlAction(0, 51, true) -- INPUT_CONTEXT (E)
+                if IsDisabledControlJustPressed(0, 51) then
+                    dashcamRear = not dashcamRear
+                end
+            end
 
             -- Draw the CCTV overlay (name, REC/LIVE, timestamp, zoom, controls)
             drawCameraOverlay()
@@ -1198,6 +1367,57 @@ end
 -- admin (restricted) check, so this just shows the menu.
 RegisterNetEvent(resourceName .. ':client:openCameraPlacer', function()
     CameraPlacement.showMainMenu()
+end)
+
+-- Live dashcam transform from the server (enables viewing far-away units)
+RegisterNetEvent(resourceName .. ':client:dashcamTransform', function(data)
+    if not isViewingCamera or not currentCameraData or not currentCameraData.isDashcam then return end
+    if not data or not data.coords then return end
+    if currentCameraData.dashcamId and data.dashcamId and data.dashcamId ~= currentCameraData.dashcamId then return end
+
+    dashcamFeed = {
+        coords = vector3(data.coords.x, data.coords.y, data.coords.z),
+        heading = data.heading or 0.0,
+        speed = data.speed or 0.0,
+        vehicleNetId = data.vehicleNetId,
+        t = GetGameTimer(),
+    }
+    -- Keep the net id fresh in case the vehicle re-streamed with a new handle
+    if data.vehicleNetId then currentCameraData.vehicleNetId = data.vehicleNetId end
+end)
+
+-- Dashcam ended server-side (officer left the vehicle / went off duty)
+RegisterNetEvent(resourceName .. ':client:dashcamEnded', function(dashcamId)
+    if not isViewingCamera or not currentCameraData or not currentCameraData.isDashcam then return end
+    if dashcamId and currentCameraData.dashcamId and dashcamId ~= currentCameraData.dashcamId then return end
+    ps.notify('Dashcam ended - unit is no longer driving', 'info')
+    stopCameraView(false)
+end)
+
+-- Report to the server when this player is the driver of an emergency-class
+-- vehicle (police car), so the server knows which units actually have a dashcam.
+-- GetVehicleClass isn't reliable server-side, so the check runs here (same
+-- approach as the tracking system). Sends only on change to minimise traffic.
+CreateThread(function()
+    local emergencyClass = (Config.Dashcam and Config.Dashcam.EmergencyClass) or 18
+    local lastKey = nil
+    while true do
+        Wait(2000)
+        local ped = PlayerPedId()
+        local isCopDriver, plate = false, nil
+        if ped and ped ~= 0 and IsPedInAnyVehicle(ped, false) then
+            local veh = GetVehiclePedIsIn(ped, false)
+            if veh ~= 0 and GetPedInVehicleSeat(veh, -1) == ped and GetVehicleClass(veh) == emergencyClass then
+                isCopDriver = true
+                plate = (GetVehicleNumberPlateText(veh) or ''):gsub('%s+', '')
+            end
+        end
+        local key = isCopDriver and plate or false
+        if key ~= lastKey then
+            lastKey = key
+            TriggerServerEvent(resourceName .. ':server:dashcamVehicleState', isCopDriver and { plate = plate } or nil)
+        end
+    end
 end)
 
 -- Exports --------------------------------------
