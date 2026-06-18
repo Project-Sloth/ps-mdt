@@ -156,13 +156,88 @@
                     <div class="op-row"><span class="op-label">Patrol</span>${patrolHtml}</div>
                     <div class="op-row"><span class="op-label">Status</span>${vehicleBadge}</div>
                     <div class="op-row op-row--coords">
-                        <span class="op-label">Position</span>
-                        <span class="op-value">${officer.coords.x.toFixed(0)}, ${officer.coords.y.toFixed(0)}</span>
+                        <span class="op-label">Heading</span>
                         ${heading}
                     </div>
                 </div>
             </div>
         `;
+    }
+
+    // Build the popup HTML for a vehicle marker. Live (non-cached) vehicles get
+    // a "View Dashcam" button; parked/last-known ones don't (no live feed).
+    function buildVehiclePopupHtml(vehicle: any, plate: string, cached: boolean): string {
+        const coords = normalizeCoords(vehicle.coords) ?? { x: 0, y: 0 };
+        const headingLabel = (h: number) => {
+            const dirs = ["N","NE","E","SE","S","SW","W","NW","N"];
+            return dirs[Math.round(((360 - h) % 360) / 45)];
+        };
+        const heading = vehicle.heading != null
+            ? `<span class="op-heading">
+                   <svg width="10" height="10" viewBox="0 0 12 12" style="transform:rotate(${360 - vehicle.heading}deg);display:inline-block">
+                       <polygon points="6,1 9,11 6,8 3,11" fill="currentColor"/>
+                   </svg>
+                   ${headingLabel(vehicle.heading)}
+               </span>`
+            : "";
+
+        const status = cached
+            ? `<span class="op-badge op-badge--foot">🅿️ Parked</span>`
+            : `<span class="op-badge op-badge--vehicle">🚔 Active</span>`;
+
+        const action = (!cached && plate)
+            ? `<button class="veh-dashcam-btn" data-plate="${plate}">
+                   <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M17 10.5V7a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-3.5l4 4v-11l-4 4z"/></svg>
+                   View Dashcam
+               </button>`
+            : `<div class="veh-note">No live dashcam (last known position)</div>`;
+
+        return `
+            <div class="op-wrap veh-wrap">
+                <div class="op-header" style="--op-color:#f97316">
+                    <div class="op-name">${plate || "Unknown Vehicle"}</div>
+                    <div class="op-callsign-badge">VEH</div>
+                </div>
+                <div class="op-body">
+                    <div class="op-row"><span class="op-label">Status</span>${status}</div>
+                    <div class="op-row op-row--coords">
+                        <span class="op-label">Heading</span>
+                        ${heading}
+                    </div>
+                    <div class="veh-actions">${action}</div>
+                </div>
+            </div>
+        `;
+    }
+
+    // Open the dashcam for a vehicle by plate (dashcam ids are the plate). The
+    // server validates permission / configured model and returns an error we
+    // surface as a toast.
+    async function viewVehicleDashcam(plate: string) {
+        if (!plate) return;
+        try {
+            const res: any = await fetchNui(NUI_EVENTS.CAMERA.VIEW_CAMERA, plate);
+            if (res && res.success === false) {
+                globalNotifications.error(res.message || "No dashcam available for this vehicle");
+            }
+        } catch {
+            globalNotifications.error("No dashcam available for this vehicle");
+        }
+    }
+
+    // Leaflet stops click propagation inside popups, so wire the button up via
+    // the popup's DOM once it's open (and after any content refresh).
+    function attachDashcamHandler(marker: L.Marker, plate: string) {
+        const el = marker.getPopup()?.getElement();
+        const btn = el?.querySelector(".veh-dashcam-btn") as HTMLButtonElement | null;
+        if (btn) {
+            btn.onclick = (ev) => {
+                ev.preventDefault();
+                ev.stopPropagation();
+                viewVehicleDashcam(plate);
+                marker.closePopup();
+            };
+        }
     }
 
     function highlightOfficerOnMap(citizenid: string) {
@@ -651,6 +726,8 @@
                     existing.setTooltipContent(label);
                 } else {
                     const m = createMarker("bodycam", coords, label, bodycam.heading, color);
+                    const cid = bc.citizenid;
+                    m.on("click", () => selectOfficer(cid));
                     m.addTo(bodycamLayer);
                     bodycamMarkers.set(bc.citizenid, m);
                 }
@@ -702,8 +779,19 @@
                     existing.setLatLng(latLng);
                     existing.setIcon(makeTrackIcon("vehicle", (vehicle as any).heading, undefined, cached));
                     existing.setTooltipContent(label);
+                    existing.setPopupContent(buildVehiclePopupHtml(vehicle, plate, cached));
+                    if (existing.isPopupOpen()) attachDashcamHandler(existing, plate);
                 } else {
                     const m = createMarker("vehicle", coords, label, (vehicle as any).heading, undefined, cached);
+                    m.bindPopup(buildVehiclePopupHtml(vehicle, plate, cached), {
+                        className: "officer-popup veh-popup",
+                        closeButton: true,
+                        autoClose: true,
+                        closeOnClick: false,
+                        offset: [0, -10],
+                    });
+                    const vplate = plate;
+                    m.on("popupopen", () => attachDashcamHandler(m, vplate));
                     m.addTo(vehicleLayer);
                     vehicleMarkers.set(key, m);
                 }
@@ -1441,6 +1529,30 @@
         font-variant-numeric: tabular-nums;
     }
     :global(.op-row--coords .op-value) { color: rgba(255,255,255,0.4); font-size: 9px; }
+
+    /* Vehicle popup: dashcam button + note */
+    :global(.veh-actions) { margin-top: 8px; }
+    :global(.veh-dashcam-btn) {
+        display: flex; align-items: center; justify-content: center; gap: 6px;
+        width: 100%; padding: 6px 8px;
+        background: rgba(249,115,22,0.15);
+        color: rgba(249,180,120,0.95);
+        border: 1px solid rgba(249,115,22,0.35);
+        border-radius: 6px;
+        font-size: 11px; font-weight: 600; cursor: pointer;
+        transition: background 0.12s ease, border-color 0.12s ease;
+    }
+    :global(.veh-dashcam-btn:hover) {
+        background: rgba(249,115,22,0.28);
+        border-color: rgba(249,115,22,0.55);
+        color: #fff;
+    }
+    :global(.veh-dashcam-btn svg) { flex-shrink: 0; }
+    :global(.veh-note) {
+        margin-top: 2px; padding-top: 6px;
+        border-top: 1px solid rgba(255,255,255,0.05);
+        font-size: 9px; color: rgba(255,255,255,0.35); text-align: center;
+    }
 
     /* Selected officer card highlight */
     .officer-selected {

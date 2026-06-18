@@ -204,8 +204,15 @@
 		groupedCameras = grouped;
 	});
 
-	function viewCamera(camera: any) {
-		fetchNui(NUI_EVENTS.CAMERA.VIEW_CAMERA, camera.id);
+	async function viewCamera(camera: any) {
+		try {
+			const res: any = await fetchNui(NUI_EVENTS.CAMERA.VIEW_CAMERA, camera.id);
+			if (res && res.success === false) {
+				globalNotifications.error(res.message || "Failed to view camera");
+			}
+		} catch (e) {
+			globalNotifications.error("Failed to view camera");
+		}
 	}
 </script>
 
