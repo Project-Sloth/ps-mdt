@@ -1095,25 +1095,292 @@ end
 -- Callbacks ----------------------------
 
 -- Callback to get spawned cameras for the frontend
+-- ============================================================================
+--  Dashcams (v1) - police vehicle cameras
+--  A dashcam exists for any on-duty LEO who is the DRIVER of a vehicle. They are
+--  ephemeral (no DB), discovered live and surfaced through the normal camera
+--  list as type 'Dashcam'. Viewing reuses the bodycam-style attach pipeline on
+--  the client (the cam follows the vehicle each frame), so it works for vehicles
+--  that are streamed to the viewer - same constraint as bodycams.
+-- ============================================================================
+local dashcamViewers = {} -- [dashcamId] = { source = ownerSrc, viewers = { [viewerSrc] = startTime } }
+local dashcamPushActive = false
+-- Client-reported "I am the driver of an emergency-class (18) vehicle" status.
+-- GetVehicleClass isn't reliable server-side (tracking does the same client-side
+-- check), so the officer's client reports it and we gate dashcams on it here.
+local dashcamVehState = {} -- [src] = { plate = string }
+
+RegisterNetEvent(resourceName .. ':server:dashcamVehicleState', function(data)
+    local src = source
+    if not CheckAuth(src) then return end
+    if data and data.plate then
+        dashcamVehState[src] = { plate = data.plate }
+    else
+        dashcamVehState[src] = nil
+    end
+end)
+
+local function dashcamOfficerInfo(src)
+    if QBCore and QBCore.Functions and QBCore.Functions.GetPlayer then
+        local player = QBCore.Functions.GetPlayer(src)
+        if player and player.PlayerData then
+            local d = player.PlayerData
+            return {
+                name = (d.charinfo and (d.charinfo.firstname .. ' ' .. d.charinfo.lastname)) or GetPlayerName(src),
+                callsign = d.metadata and d.metadata.callsign or nil,
+                jobName = d.job and d.job.name or nil,
+                jobType = d.job and d.job.type or nil,
+                onduty = d.job and d.job.onduty,
+            }
+        end
+        return nil
+    end
+    return {
+        name = (ps.getPlayerName and ps.getPlayerName(src)) or GetPlayerName(src) or ('Unit ' .. tostring(src)),
+        callsign = ps.getMetadata and ps.getMetadata(src, 'callsign') or nil,
+        jobName = ps.getJobName and ps.getJobName(src) or nil,
+        jobType = ps.getJobType and ps.getJobType(src) or nil,
+        onduty = not (ps.getJobDuty) and true or ps.getJobDuty(src),
+    }
+end
+
+-- Returns the vehicle a player is driving (server-side), or nil.
+local function getDrivenVehicle(src)
+    local ped = GetPlayerPed(src)
+    if not ped or ped == 0 then return nil end
+    local veh = GetVehiclePedIsIn(ped, false)
+    if not veh or veh == 0 then return nil end
+    -- Only the driver gets the dashcam (also de-dupes multiple cops in one car)
+    if GetPedInVehicleSeat(veh, -1) ~= ped then return nil end
+    return veh
+end
+
+-- Build the list of currently active dashcams. Keyed by vehicle so a
+-- double-crewed unit only ever produces ONE dashcam for the car.
+local function getActiveDashcams()
+    local byVeh = {} -- [vehNetId] = entry
+    for _, pidStr in ipairs(GetPlayers()) do
+        local pid = tonumber(pidStr)
+        local info = pid and dashcamOfficerInfo(pid) or nil
+        if info and info.onduty ~= false and IsPoliceJob(info.jobName, info.jobType)
+            and dashcamVehState[pid] then
+            local veh = getDrivenVehicle(pid)
+            if veh then
+                local netId = NetworkGetNetworkIdFromEntity(veh)
+                if netId and netId ~= 0 and not byVeh[netId] then
+                    local plate = GetVehicleNumberPlateText(veh)
+                    plate = plate and (plate:gsub('%s+', '')) or nil
+                    -- Id is simply the plate (falls back to the net id only if a
+                    -- vehicle somehow has no plate).
+                    local id = plate or ('#' .. netId)
+                    byVeh[netId] = {
+                        id = id,
+                        netId = netId,
+                        source = pid,
+                        officerName = info.name,
+                        callsign = info.callsign,
+                        plate = plate,
+                    }
+                end
+            end
+        end
+    end
+
+    local list = {}
+    for _, e in pairs(byVeh) do
+        local viewers = 0
+        if dashcamViewers[e.id] and dashcamViewers[e.id].viewers then
+            for _ in pairs(dashcamViewers[e.id].viewers) do viewers = viewers + 1 end
+        end
+        e.viewerCount = viewers
+        list[#list + 1] = e
+    end
+    return list
+end
+
+-- Pushes live vehicle transforms to dashcam viewers so the feed works even when
+-- the unit is far away / not streamed to the viewer. Runs only while there are
+-- viewers; exits when none remain. If an officer stops driving or goes off duty,
+-- the dashcam ends for its viewers.
+function StartDashcamPushThread()
+    if dashcamPushActive then return end
+    dashcamPushActive = true
+
+    CreateThread(function()
+        local interval = (Config.Dashcam and Config.Dashcam.UpdateInterval) or 250
+        while next(dashcamViewers) ~= nil do
+            for id, entry in pairs(dashcamViewers) do
+                local stillValid = false
+                local src = entry.source
+                local info = src and dashcamOfficerInfo(src) or nil
+
+                if info and info.onduty ~= false and IsPoliceJob(info.jobName, info.jobType)
+                    and dashcamVehState[src] then
+                    local veh = getDrivenVehicle(src)
+                    if veh then
+                        stillValid = true
+                        local coords = GetEntityCoords(veh)
+                        local heading = GetEntityHeading(veh)
+                        local speed = GetEntitySpeed(veh)
+                        local netId = NetworkGetNetworkIdFromEntity(veh)
+                        for viewer in pairs(entry.viewers) do
+                            TriggerClientEvent(resourceName .. ':client:dashcamTransform', viewer, {
+                                dashcamId = id,
+                                coords = coords,
+                                heading = heading,
+                                speed = speed,
+                                vehicleNetId = netId,
+                            })
+                        end
+                    end
+                end
+
+                -- Officer left the car / went off duty -> end the dashcam
+                if not stillValid then
+                    for viewer in pairs(entry.viewers) do
+                        TriggerClientEvent(resourceName .. ':client:dashcamEnded', viewer, id)
+                    end
+                    dashcamViewers[id] = nil
+                end
+            end
+            Wait(interval)
+        end
+        dashcamPushActive = false
+    end)
+end
+
+-- Returns the configured model name (key in Config.Dashcam.Positions.models)
+-- that matches this vehicle, or nil if the model isn't configured.
+local function getDashcamModelName(veh)
+    local models = (Config.Dashcam and Config.Dashcam.Positions and Config.Dashcam.Positions.models) or {}
+    local hash = GetEntityModel(veh)
+    for name in pairs(models) do
+        if GetHashKey(name) == hash then return name end
+    end
+    return nil
+end
+
+-- Start a dashcam view for a viewer (called from viewCamera for dashcam ids).
+local function startDashcamView(viewerSrc, dashcamId)
+    if not CheckPermission(viewerSrc, 'dashcams_view') then
+        return { success = false, error = 'No permission to view dashcams' }
+    end
+
+    -- Resolve the requested dashcam against the live list (handles plate ids)
+    local match
+    for _, dc in ipairs(getActiveDashcams()) do
+        if dc.id == dashcamId then match = dc break end
+    end
+    if not match then
+        return { success = false, error = 'Dashcam unavailable' }
+    end
+
+    local veh = getDrivenVehicle(match.source)
+    if not veh or veh == 0 then
+        return { success = false, error = 'Vehicle not available' }
+    end
+
+    -- A dashcam only works for vehicles configured in Config.Dashcam.Positions.
+    local modelName = getDashcamModelName(veh)
+    if not modelName then
+        return { success = false, error = 'No dashcam configured for this vehicle' }
+    end
+
+    local coords = GetEntityCoords(veh)
+    local heading = GetEntityHeading(veh)
+
+    TriggerClientEvent(resourceName .. ':client:startCameraView', viewerSrc, {
+        coords = coords,
+        rotation = vector3(0.0, 0.0, heading),
+        networkId = nil,
+        isDashcam = true,
+        dashcamId = match.id,
+        dashcamModel = modelName,
+        targetSource = match.source,
+        vehicleNetId = match.netId,
+        officerName = match.officerName,
+        callsign = match.callsign,
+        plate = match.plate,
+    })
+
+    dashcamViewers[match.id] = dashcamViewers[match.id] or { source = match.source, viewers = {} }
+    dashcamViewers[match.id].source = match.source
+    dashcamViewers[match.id].viewers[viewerSrc] = os.time()
+
+    StartDashcamPushThread()
+
+    return { success = true, camera = { id = match.id, label = (match.officerName or 'Dashcam') .. ' Dashcam' } }
+end
+
+RegisterNetEvent(resourceName .. ':server:deactivateDashcam', function(dashcamId)
+    local playerId = source
+    if not CheckAuth(playerId) then return end
+    local entry = dashcamViewers[dashcamId]
+    if entry and entry.viewers then
+        entry.viewers[playerId] = nil
+        if next(entry.viewers) == nil then
+            dashcamViewers[dashcamId] = nil
+        end
+    end
+end)
+
+AddEventHandler('playerDropped', function()
+    local playerId = source
+    dashcamVehState[playerId] = nil
+    -- Remove this player from any dashcam viewer lists, and drop dashcams they
+    -- owned (their vehicle despawns when they leave anyway).
+    for id, entry in pairs(dashcamViewers) do
+        if entry.source == playerId then
+            for viewer in pairs(entry.viewers) do
+                TriggerClientEvent(resourceName .. ':client:dashcamEnded', viewer, id)
+            end
+            dashcamViewers[id] = nil
+        elseif entry.viewers[playerId] then
+            entry.viewers[playerId] = nil
+            if next(entry.viewers) == nil then dashcamViewers[id] = nil end
+        end
+    end
+end)
+
 ps.registerCallback(resourceName .. ':server:getCameras', function(source)
     local src = source
     if not CheckAuth(src) then
         return {}
     end
 
+    local canCameras = CheckPermission(src, 'cameras_view')
+    local canDashcams = CheckPermission(src, 'dashcams_view')
+
     local cameraList = {}
-    for camId, camera in pairs(spawnedCameras) do
-        table.insert(cameraList, {
-            id = camId,
-            label = camera.camLabel,
-            type = camera.camTypeDb or camera.camType,
-            isOnline = camera.isOnline ~= false,
-            image = camera.image or '',
-            coords = camera.coords,
-            rotation = camera.rotation,
-            model = camera.model,
-            viewerCount = camera:getViewerCount()
-        })
+    if canCameras then
+        for camId, camera in pairs(spawnedCameras) do
+            table.insert(cameraList, {
+                id = camId,
+                label = camera.camLabel,
+                type = camera.camTypeDb or camera.camType,
+                isOnline = camera.isOnline ~= false,
+                image = camera.image or '',
+                coords = camera.coords,
+                rotation = camera.rotation,
+                model = camera.model,
+                viewerCount = camera:getViewerCount()
+            })
+        end
+    end
+
+    -- Append live dashcams (police vehicle cameras) as their own type
+    if canDashcams then
+        for _, dc in ipairs(getActiveDashcams()) do
+            cameraList[#cameraList + 1] = {
+                id = dc.id,
+                label = (dc.callsign and ('[' .. dc.callsign .. '] ') or '') .. (dc.officerName or 'Unit')
+                    .. (dc.plate and (' - ' .. dc.plate) or ''),
+                type = 'Dashcam',
+                isOnline = true,
+                image = '',
+                viewerCount = dc.viewerCount or 0,
+            }
+        end
     end
 
     return cameraList
@@ -1124,6 +1391,14 @@ ps.registerCallback(resourceName .. ':server:viewCamera', function(source, camer
     local src = source
     if not CheckAuth(src) then
         return { success = false, error = "Unauthorized" }
+    end
+
+    -- Dashcams are virtual/live and routed separately. Since the id is just the
+    -- plate now, match it against the live dashcam list rather than a prefix.
+    for _, dc in ipairs(getActiveDashcams()) do
+        if dc.id == cameraId then
+            return startDashcamView(src, cameraId)
+        end
     end
 
     local camera = spawnedCameras[cameraId]
