@@ -67,7 +67,7 @@ local function getAllPermissions()
         'warrants_view', 'warrants_issue', 'warrants_close',
         'charges_view', 'charges_edit',
         'map_patrols_view', 'map_patrols_manage', 'map_patrols_edit', 'dispatch_attach', 'dispatch_route',
-        'cameras_view', 'bodycams_view',
+        'cameras_view', 'bodycams_view', 'dashcams_view',
         'notes_edit_department',
         'roster_manage_certifications', 'roster_manage_officers',
         'ppr_view', 'ppr_manage',
