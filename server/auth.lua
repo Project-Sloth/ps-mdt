@@ -9,20 +9,33 @@ local function isDojJob(jobName)
 end
 
 function CheckAuth(source, silent)
+    -- Never feed an invalid/offline source into the framework bridge: some
+    -- bridges index the player object without a nil-check and raise a non-string
+    -- error ("attempt to index a nil value (local player)"). If that happens
+    -- inside a NUI callback it never replies, and the UI hangs until it times
+    -- out. Fail closed instead of crashing.
+    if not source or (tonumber(source) or 0) <= 0 then
+        return false
+    end
+
+    local ok, jobType, jobName = pcall(function()
+        return ps.getJobType(source), ps.getJobName(source)
+    end)
+    if not ok then
+        return false
+    end
+
     ps.debug('Checking MDT Authorization')
-    local jobType = ps.getJobType(source)
-    local jobName = ps.getJobName(source)
     local dojCheck = isDojJob(jobName) or (Config.DojJobType and jobType == Config.DojJobType)
     if jobType ~= Config.PoliceJobType and jobType ~= Config.MedicalJobType and not dojCheck then
-        ps.debug('Access Denied for ID: ' .. source .. ', Name: ' .. ps.getPlayerName(source) .. ', not an authorized job type')
+        ps.debug('Access Denied for ID: ' .. tostring(source) .. ', not an authorized job type')
         if not silent then
             ps.notify(source, 'Access Denied: Authorized Personnel Only', 'error')
         end
         return false
-    else
-        ps.debug('Access Granted for ID: ' .. source .. ', Name: ' .. ps.getPlayerName(source) .. ', job type: ' .. tostring(jobType))
-        return true
     end
+    ps.debug('Access Granted for ID: ' .. tostring(source) .. ', job type: ' .. tostring(jobType))
+    return true
 end
 
 -- Check if a player has a specific permission (by job + grade lookup)

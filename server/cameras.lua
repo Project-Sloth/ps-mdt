@@ -1112,7 +1112,7 @@ local dashcamVehState = {} -- [src] = { plate = string }
 
 RegisterNetEvent(resourceName .. ':server:dashcamVehicleState', function(data)
     local src = source
-    if not CheckAuth(src) then return end
+    if not CheckAuth(src, true) then return end
     if data and data.plate then
         dashcamVehState[src] = { plate = data.plate }
     else
