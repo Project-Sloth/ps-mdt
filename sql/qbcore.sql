@@ -1334,7 +1334,7 @@ CREATE TABLE IF NOT EXISTS `mdt_warrant_requests` (
   `charges` text DEFAULT NULL,
   `reason` text NOT NULL,
   `linked_report_id` int(10) unsigned DEFAULT NULL,
-  `status` enum('pending','approved','denied') NOT NULL DEFAULT 'pending',
+  `status` enum('pending','approved','denied','closed') NOT NULL DEFAULT 'pending',
   `reviewer_citizenid` varchar(50) DEFAULT NULL,
   `reviewer_name` varchar(100) DEFAULT NULL,
   `review_reason` text DEFAULT NULL,
