@@ -302,6 +302,7 @@ export const NUI_EVENTS = {
 		GET_WARRANT_REQUESTS: "getWarrantRequests",
 		REVIEW_WARRANT_REQUEST: "reviewWarrantRequest",
 		CREATE_WARRANT_REQUEST: "createWarrantRequest",
+		CLOSE_WARRANT_REQUEST: "closeWarrantRequest",
 		GET_COURT_ORDERS: "getCourtOrders",
 		CREATE_COURT_ORDER: "createCourtOrder",
 		UPDATE_COURT_ORDER: "updateCourtOrder",
