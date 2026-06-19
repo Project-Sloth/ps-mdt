@@ -6,9 +6,13 @@
 	import { NUI_EVENTS } from "../constants/nuiEvents";
 	import { openReportInEditor } from "../stores/reportsStore";
 	import type { createTabService } from "../services/tabService.svelte";
+	import type { AuthService } from "../services/authService.svelte";
 	import { globalNotifications } from "../services/notificationService.svelte";
 
-	let { tabService }: { tabService: ReturnType<typeof createTabService> } = $props();
+	let { tabService, authService }: {
+		tabService: ReturnType<typeof createTabService>;
+		authService: AuthService;
+	} = $props();
 
 	interface Warrant {
 		reportid: number | string;
@@ -23,6 +27,13 @@
 	let warrants = $state<Warrant[]>([]);
 	let isLoading = $state(false);
 	let searchQuery = $state("");
+	let confirmingKey = $state<string | null>(null);
+
+	let canClose = $derived(authService?.hasPermission("warrants_close") ?? false);
+
+	function warrantKey(warrant: Warrant): string {
+		return `${warrant.reportid}:${warrant.citizenid}`;
+	}
 
 	let filteredWarrants = $derived.by(() => {
 		const query = searchQuery.trim().toLowerCase();
@@ -43,6 +54,46 @@
 			day: "2-digit",
 			year: "numeric",
 		});
+	}
+
+	type ExpiryLevel = "expired" | "critical" | "soon" | "normal" | "unknown";
+
+	function expiryInfo(value: string): { label: string; level: ExpiryLevel } {
+		if (!value) return { label: "Unknown", level: "unknown" };
+		const date = new Date(value);
+		if (Number.isNaN(date.getTime())) return { label: value, level: "unknown" };
+		const diffMs = date.getTime() - Date.now();
+		if (diffMs <= 0) return { label: "Expired", level: "expired" };
+		const hours = diffMs / 3600000;
+		if (hours < 24) {
+			const h = Math.max(1, Math.round(hours));
+			return { label: `in ${h}h`, level: "critical" };
+		}
+		const days = Math.round(hours / 24);
+		return { label: `in ${days}d`, level: days <= 3 ? "soon" : "normal" };
+	}
+
+	async function handleCloseWarrant(warrant: Warrant) {
+		isLoading = true;
+		try {
+			const result = await fetchNui<{ success: boolean; error?: string }>(
+				NUI_EVENTS.WARRANT.CLOSE_WARRANT,
+				{ reportId: warrant.reportid, citizenid: warrant.citizenid },
+				{ success: true },
+			);
+			if (result.success) {
+				warrants = warrants.filter(
+					(w) => !(w.reportid === warrant.reportid && w.citizenid === warrant.citizenid),
+				);
+				globalNotifications.success(`Warrant closed for ${warrant.name}`);
+			} else {
+				globalNotifications.error(result.error || "Failed to close warrant");
+			}
+		} catch {
+			globalNotifications.error("Failed to close warrant");
+		}
+		confirmingKey = null;
+		isLoading = false;
 	}
 
 	function openReport(reportId: number | string) {
@@ -154,8 +205,15 @@
 					</p>
 				</div>
 			{:else}
-				{#each filteredWarrants as warrant}
-					<button class="table-row" onclick={() => openReport(warrant.reportid)}>
+				{#each filteredWarrants as warrant (warrantKey(warrant))}
+					{@const exp = expiryInfo(warrant.expirydate)}
+					<div
+						class="table-row"
+						role="button"
+						tabindex="0"
+						onclick={() => openReport(warrant.reportid)}
+						onkeydown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openReport(warrant.reportid); } }}
+					>
 						<span class="cell-name">{warrant.name}</span>
 						<span class="cell-id">{warrant.citizenid}</span>
 						<span class="cell-report">#{warrant.reportid}</span>
@@ -180,11 +238,27 @@
 								<span class="cell-muted">0</span>
 							{/if}
 						</span>
-						<span class="cell-date">{formatExpiry(warrant.expirydate)}</span>
+						<span class="cell-date expiry-{exp.level}" title={formatExpiry(warrant.expirydate)}>{exp.label}</span>
 						<span class="cell-action">
-							<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+							{#if canClose}
+								{#if confirmingKey === warrantKey(warrant)}
+									<button class="icon-btn confirm" title="Confirm close" aria-label="Confirm close warrant" disabled={isLoading}
+										onclick={(e) => { e.stopPropagation(); handleCloseWarrant(warrant); }}>
+										<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+									</button>
+									<button class="icon-btn cancel" title="Cancel" aria-label="Cancel" disabled={isLoading}
+										onclick={(e) => { e.stopPropagation(); confirmingKey = null; }}>
+										<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+									</button>
+								{:else}
+									<button class="icon-btn close" title="Close warrant" aria-label="Close warrant"
+										onclick={(e) => { e.stopPropagation(); confirmingKey = warrantKey(warrant); }}>
+										<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg>
+									</button>
+								{/if}
+							{/if}
 						</span>
-					</button>
+					</div>
 				{/each}
 			{/if}
 		</div>
@@ -293,7 +367,7 @@
 
 	.table-header {
 		display: grid;
-		grid-template-columns: 1.5fr 0.8fr 0.6fr 0.7fr 0.9fr 0.7fr 0.8fr 40px;
+		grid-template-columns: 1.5fr 0.8fr 0.6fr 0.7fr 0.9fr 0.7fr 0.8fr 72px;
 		gap: 8px;
 		padding: 8px 16px;
 		border-bottom: 1px solid rgba(255, 255, 255, 0.06);
@@ -311,7 +385,7 @@
 
 	.table-row {
 		display: grid;
-		grid-template-columns: 1.5fr 0.8fr 0.6fr 0.7fr 0.9fr 0.7fr 0.8fr 40px;
+		grid-template-columns: 1.5fr 0.8fr 0.6fr 0.7fr 0.9fr 0.7fr 0.8fr 72px;
 		gap: 8px;
 		padding: 7px 16px;
 		border: none;
@@ -366,12 +440,76 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		color: rgba(255, 255, 255, 0.15);
-		transition: color 0.1s;
+		gap: 4px;
 	}
 
-	.table-row:hover .cell-action {
-		color: rgba(var(--accent-text-rgb), 0.7);
+	.icon-btn {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 24px;
+		height: 24px;
+		padding: 0;
+		border-radius: 4px;
+		border: 1px solid transparent;
+		background: transparent;
+		cursor: pointer;
+		transition: all 0.1s;
+	}
+
+	.icon-btn:disabled {
+		opacity: 0.4;
+		cursor: not-allowed;
+	}
+
+	.icon-btn.close {
+		color: rgba(255, 255, 255, 0.2);
+	}
+
+	.table-row:hover .icon-btn.close {
+		color: rgba(248, 113, 113, 0.65);
+	}
+
+	.icon-btn.close:hover {
+		background: rgba(239, 68, 68, 0.1);
+		border-color: rgba(239, 68, 68, 0.18);
+		color: rgba(248, 113, 113, 0.9);
+	}
+
+	.icon-btn.confirm {
+		color: rgba(52, 211, 153, 0.85);
+		background: rgba(16, 185, 129, 0.1);
+		border-color: rgba(16, 185, 129, 0.18);
+	}
+
+	.icon-btn.confirm:hover:not(:disabled) {
+		background: rgba(16, 185, 129, 0.18);
+	}
+
+	.icon-btn.cancel {
+		color: rgba(255, 255, 255, 0.4);
+		background: rgba(255, 255, 255, 0.04);
+		border-color: rgba(255, 255, 255, 0.08);
+	}
+
+	.icon-btn.cancel:hover:not(:disabled) {
+		color: rgba(255, 255, 255, 0.7);
+		background: rgba(255, 255, 255, 0.08);
+	}
+
+	.expiry-expired {
+		color: rgba(248, 113, 113, 0.9);
+		font-weight: 600;
+	}
+
+	.expiry-critical {
+		color: rgba(248, 113, 113, 0.8);
+		font-weight: 600;
+	}
+
+	.expiry-soon {
+		color: rgba(251, 191, 36, 0.8);
+		font-weight: 600;
 	}
 
 	.pill {
