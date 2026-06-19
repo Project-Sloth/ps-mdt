@@ -14,7 +14,7 @@
 
 	let { tabService, authService }: Props = $props();
 
-	type WarrantRequestStatus = "pending" | "approved" | "denied";
+	type WarrantRequestStatus = "pending" | "approved" | "denied" | "closed";
 
 	interface WarrantRequest {
 		id: number;
@@ -22,11 +22,14 @@
 		citizenid: string;
 		charges: string[];
 		requesting_officer: string;
+		officer_name?: string;
 		requesting_officer_badge?: string;
 		linked_report_id?: number;
 		reason: string;
 		status: WarrantRequestStatus;
 		review_reason?: string;
+		reviewer_name?: string;
+		reviewer_citizenid?: string;
 		reviewed_by?: string;
 		reviewed_at?: string;
 		created_at: string;
@@ -40,6 +43,7 @@
 	let reviewReason = $state("");
 
 	let canApprove = $derived(authService?.hasPermission("warrants_approve") ?? false);
+	let canClose = $derived(authService?.hasPermission("warrants_close") ?? false);
 
 	// New document modal
 	let showNewDocModal = $state(false);
@@ -69,13 +73,14 @@
 		}
 	}
 
-	const statusOptions = ["pending", "approved", "denied", "all"];
+	const statusOptions = ["pending", "approved", "closed", "denied", "all"];
 
 	function getStatusPillClass(status: string): string {
 		switch (status) {
 			case "pending": return "pill-yellow";
 			case "approved": return "pill-green";
 			case "denied": return "pill-red";
+			case "closed": return "pill-grey";
 			default: return "pill-grey";
 		}
 	}
@@ -141,6 +146,7 @@
 				{ id: 2, citizen_name: "David Chen", citizenid: "DEF456", charges: ["Drug Trafficking", "Possession of Controlled Substance"], requesting_officer: "Det. Ramirez", requesting_officer_badge: "5678", linked_report_id: 102, reason: "Large quantity of narcotics found during traffic stop. Suspect has prior history.", status: "pending", created_at: "2026-03-19T14:30:00Z" },
 				{ id: 3, citizen_name: "Tony Ramirez", citizenid: "GHI789", charges: ["Grand Theft Auto"], requesting_officer: "Sgt. Garcia", requesting_officer_badge: "9012", linked_report_id: 103, reason: "Suspect identified via CCTV stealing vehicle from dealership lot.", status: "approved", review_reason: "Sufficient probable cause established.", reviewed_by: "Hon. Patricia Wells", reviewed_at: "2026-03-18T16:00:00Z", created_at: "2026-03-17T08:00:00Z" },
 				{ id: 4, citizen_name: "Lisa Park", citizenid: "JKL012", charges: ["Trespassing"], requesting_officer: "Ofc. Thompson", requesting_officer_badge: "3456", linked_report_id: 104, reason: "Suspect found on restricted property.", status: "denied", review_reason: "Insufficient evidence for warrant. Recommend further investigation.", reviewed_by: "Hon. Robert Kim", reviewed_at: "2026-03-16T11:00:00Z", created_at: "2026-03-15T09:00:00Z" },
+				{ id: 5, citizen_name: "Frank Doyle", citizenid: "MNO345", charges: ["Burglary", "Resisting Arrest"], requesting_officer: "Det. Ramirez", requesting_officer_badge: "5678", linked_report_id: 105, reason: "Suspect apprehended; warrant served and case resolved.", status: "closed", review_reason: "Probable cause established.", reviewed_by: "Hon. Patricia Wells", reviewed_at: "2026-03-14T10:00:00Z", created_at: "2026-03-13T08:00:00Z" },
 			];
 			mounted = true;
 			return;
@@ -149,7 +155,19 @@
 		mounted = true;
 	});
 
+	let loadInFlight = false;
+	let loadQueued = false;
+
 	async function loadRequests() {
+		// Never let two getWarrantRequests roundtrips run at once: concurrent
+		// identical NUI callbacks can collide on the server response and leave one
+		// fetch unresolved (10s timeout). If a load is requested mid-flight, run
+		// exactly one more afterwards with the latest filters.
+		if (loadInFlight) {
+			loadQueued = true;
+			return;
+		}
+		loadInFlight = true;
 		isLoading = true;
 		try {
 			const data = await fetchNui<{ requests: WarrantRequest[] }>(
@@ -165,6 +183,11 @@
 			globalNotifications.error("Failed to load warrant requests");
 		}
 		isLoading = false;
+		loadInFlight = false;
+		if (loadQueued) {
+			loadQueued = false;
+			loadRequests();
+		}
 	}
 
 	function selectRequest(id: number) {
@@ -196,13 +219,37 @@
 			);
 			if (result.success) {
 				globalNotifications.success(`Warrant request ${action}`);
-				goBack();
+				selectedRequest = null;
+				reviewReason = "";
 				await loadRequests();
 			} else {
 				globalNotifications.error(result.error || "Failed to review warrant request");
 			}
 		} catch {
 			globalNotifications.error("Failed to review warrant request");
+		}
+		isLoading = false;
+	}
+
+	async function handleCloseWarrant() {
+		if (!selectedRequest) return;
+		isLoading = true;
+		try {
+			const result = await fetchNui<{ success: boolean; error?: string }>(
+				NUI_EVENTS.DOJ.CLOSE_WARRANT_REQUEST,
+				{ request_id: selectedRequest.id },
+				{ success: true },
+			);
+			if (result.success) {
+				globalNotifications.success("Warrant closed");
+				selectedRequest = null;
+				reviewReason = "";
+				await loadRequests();
+			} else {
+				globalNotifications.error(result.error || "Failed to close warrant");
+			}
+		} catch {
+			globalNotifications.error("Failed to close warrant");
 		}
 		isLoading = false;
 	}
@@ -258,7 +305,7 @@
 						<div class="field-row">
 							<div class="field-group">
 								<span class="field-label">Officer</span>
-								<span class="field-value">{selectedRequest.requesting_officer}{selectedRequest.requesting_officer_badge ? ` (#${selectedRequest.requesting_officer_badge})` : ""}</span>
+								<span class="field-value">{selectedRequest.officer_name || selectedRequest.requesting_officer}{selectedRequest.requesting_officer_badge ? ` (#${selectedRequest.requesting_officer_badge})` : ""}</span>
 							</div>
 							{#if selectedRequest.linked_report_id}
 								<div class="field-group">
@@ -281,7 +328,7 @@
 							<div class="field-row">
 								<div class="field-group">
 									<span class="field-label">Reviewed By</span>
-									<span class="field-value">{selectedRequest.reviewed_by || "-"}</span>
+									<span class="field-value">{selectedRequest.reviewer_name || selectedRequest.reviewed_by || "-"}</span>
 								</div>
 								<div class="field-group">
 									<span class="field-label">Reviewed At</span>
@@ -315,6 +362,24 @@
 						<div class="section">
 							<div class="center-state" style="padding: 20px;">
 								<p>Only judges with warrant approval permission can review this request.</p>
+							</div>
+						</div>
+					{/if}
+					{#if selectedRequest.status === "approved" && canClose}
+						<div class="section">
+							<div class="section-title">Active Warrant</div>
+							<p class="muted-text">
+								{#if selectedRequest.linked_report_id}
+									This request issued an active warrant on report #{selectedRequest.linked_report_id}. It closes automatically when it expires, or you can close it now — this also marks the request as closed.
+								{:else}
+									Closing marks this request as closed.
+								{/if}
+							</p>
+							<div class="review-actions">
+								<button class="close-warrant-btn" disabled={isLoading} onclick={handleCloseWarrant}>
+									<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+									Close Warrant
+								</button>
 							</div>
 						</div>
 					{/if}
@@ -877,6 +942,32 @@
 	}
 
 	.deny-btn:disabled {
+		opacity: 0.3;
+		cursor: not-allowed;
+	}
+
+	.close-warrant-btn {
+		display: inline-flex;
+		align-items: center;
+		gap: 5px;
+		background: rgba(245, 158, 11, 0.08);
+		color: rgba(251, 191, 36, 0.85);
+		border: 1px solid rgba(245, 158, 11, 0.14);
+		border-radius: 3px;
+		padding: 5px 12px;
+		font-size: 10px;
+		font-weight: 600;
+		cursor: pointer;
+		transition: all 0.1s;
+		flex: 1;
+		justify-content: center;
+	}
+
+	.close-warrant-btn:hover:not(:disabled) {
+		background: rgba(245, 158, 11, 0.14);
+	}
+
+	.close-warrant-btn:disabled {
 		opacity: 0.3;
 		cursor: not-allowed;
 	}
