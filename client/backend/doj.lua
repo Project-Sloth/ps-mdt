@@ -106,6 +106,21 @@ RegisterNUICallback('reviewWarrantRequest', function(data, cb)
     cb(result or { success = false })
 end)
 
+RegisterNUICallback('closeWarrantRequest', function(data, cb)
+    if not MDTOpen then
+        cb({ success = false, error = 'MDT is not open' })
+        return
+    end
+
+    if not data or not data.request_id then
+        cb({ success = false, error = 'Missing request_id' })
+        return
+    end
+
+    local result = ps.callback(resourceName .. ':server:closeWarrantRequest', data.request_id)
+    cb(result or { success = false })
+end)
+
 -- Court Orders
 RegisterNUICallback('getCourtOrders', function(data, cb)
     if not MDTOpen then

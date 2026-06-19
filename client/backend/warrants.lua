@@ -27,3 +27,11 @@ RegisterNUICallback('closeWarrant', function(data, cb)
         cb({ success = false, message = result and result.error or 'Failed to close warrant' })
     end
 end)
+
+-- Live update pushed by the server whenever a warrant is issued, closed or
+-- approved. Gated to LEO so we don't hand law-enforcement data to other NUIs.
+RegisterNetEvent(resourceName .. ':client:updateActiveWarrants', function(data)
+    if ps.getJobType() == 'leo' then
+        SendNUI('updateActiveWarrants', data or {})
+    end
+end)
