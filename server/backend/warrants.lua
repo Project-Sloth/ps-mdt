@@ -81,6 +81,14 @@ function GetActiveWarrantsData(src)
     return results
 end
 
+-- Push the current active-warrants list to all clients so any open MDT
+-- live-updates without a manual refresh. The payload is global (identical for
+-- every viewer), so a single broadcast is enough; the client relay gates it to
+-- LEO players before handing it to the NUI.
+function BroadcastActiveWarrants()
+    TriggerClientEvent(resourceName .. ':client:updateActiveWarrants', -1, GetActiveWarrantsData())
+end
+
 ps.registerCallback(resourceName .. ':server:getActiveWarrants', function(source)
     local src = source
     if not CheckAuth(src) then return {} end
@@ -108,6 +116,13 @@ ps.registerCallback(resourceName .. ':server:issueWarrant', function(source, dat
         return { success = false, error = 'Missing required fields' }
     end
 
+    -- One warrant per report: refuse if this report already has any active
+    -- (non-expired) warrant, regardless of which subject it targets.
+    local activeForReport = MySQL.single.await('SELECT 1 AS x FROM mdt_reports_warrants WHERE reportid = ? AND expirydate >= NOW() LIMIT 1', { reportId })
+    if activeForReport then
+        return { success = false, error = 'This report already has an active warrant' }
+    end
+
     local existing = MySQL.single.await('SELECT reportid FROM mdt_reports_warrants WHERE reportid = ? AND citizenid = ?', { reportId, citizenid })
     if existing and existing.reportid then
         return { success = false, error = 'An active warrant already exists for this subject on this report' }
@@ -125,6 +140,7 @@ ps.registerCallback(resourceName .. ':server:issueWarrant', function(source, dat
         })
     end
 
+    BroadcastActiveWarrants()
     return { success = true }
 end)
 
@@ -154,6 +170,7 @@ ps.registerCallback(resourceName .. ':server:closeWarrant', function(source, dat
                 citizenid = citizenid
             })
         end
+        BroadcastActiveWarrants()
         return { success = true }
     end
 

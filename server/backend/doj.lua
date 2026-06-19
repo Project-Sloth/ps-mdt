@@ -20,6 +20,29 @@ local function getDisplayName(src)
     return name
 end
 
+-- A report may only carry ONE warrant at a time, regardless of which citizen it
+-- targets. These guards back that rule: a report is "taken" if it already has an
+-- active (non-expired) warrant, or an open (pending/approved) bench-warrant
+-- request pointing at it.
+local function reportHasActiveWarrant(reportId)
+    if not reportId then return false end
+    local row = MySQL.single.await(
+        'SELECT 1 AS x FROM mdt_reports_warrants WHERE reportid = ? AND expirydate >= NOW() LIMIT 1',
+        { reportId }
+    )
+    return row ~= nil
+end
+
+local function reportHasOpenWarrantRequest(reportId, excludeId)
+    if not reportId then return false end
+    local row = MySQL.single.await([[
+        SELECT 1 AS x FROM mdt_warrant_requests
+        WHERE linked_report_id = ? AND status IN ('pending','approved') AND id != ?
+        LIMIT 1
+    ]], { reportId, excludeId or 0 })
+    return row ~= nil
+end
+
 -- Court Cases
 ps.registerCallback(resourceName .. ':server:getCourtCases', function(source, page, limit, status, case_type, search)
     local src = source
@@ -257,15 +280,14 @@ ps.registerCallback(resourceName .. ':server:createWarrantRequest', function(sou
     local requesting_officer = ps.getIdentifier(src)
     local officer_name = getDisplayName(src)
 
-    -- Prevent duplicate pending request for same citizen on same report
+    -- One warrant per report: block if the report already has an active warrant
+    -- or another open (pending/approved) request, regardless of citizen.
     if linked_report_id then
-        local existing = MySQL.single.await([[
-            SELECT id FROM mdt_warrant_requests
-            WHERE citizenid = ? AND linked_report_id = ? AND status = 'pending'
-            LIMIT 1
-        ]], { citizenid, linked_report_id })
-        if existing then
-            return { success = false, error = 'A pending bench warrant request already exists for this citizen on this report' }
+        if reportHasActiveWarrant(linked_report_id) then
+            return { success = false, error = 'This report already has an active warrant' }
+        end
+        if reportHasOpenWarrantRequest(linked_report_id) then
+            return { success = false, error = 'This report already has an open warrant request' }
         end
     end
 
@@ -308,6 +330,14 @@ ps.registerCallback(resourceName .. ':server:reviewWarrantRequest', function(sou
     local reviewerCitizenid = ps.getIdentifier(src)
     local reviewerName = getDisplayName(src)
 
+    -- One warrant per report: if approving and the linked report already has an
+    -- active warrant, refuse before mutating anything so we never create a second.
+    if decision == 'approved' and request.linked_report_id then
+        if reportHasActiveWarrant(tonumber(request.linked_report_id)) then
+            return { success = false, error = 'This report already has an active warrant' }
+        end
+    end
+
     -- Update the request status
     MySQL.update.await([[
         UPDATE mdt_warrant_requests
@@ -327,11 +357,13 @@ ps.registerCallback(resourceName .. ':server:reviewWarrantRequest', function(sou
         if reportId then
             local reportExists = MySQL.single.await('SELECT id FROM mdt_reports WHERE id = ?', { reportId })
             if reportExists then
-                local expiryDate = os.date('%Y-%m-%d %H:%M:%S', os.time() + (30 * 24 * 60 * 60)) -- 30 days
+                local defaultDays = (Config and Config.Warrants and Config.Warrants.DefaultExpiryDays) or 7
+                local expiryDate = os.date('%Y-%m-%d %H:%M:%S', os.time() + (defaultDays * 24 * 60 * 60))
                 MySQL.insert.await([[
                     INSERT IGNORE INTO mdt_reports_warrants (reportid, citizenid, expirydate)
                     VALUES (?, ?, ?)
                 ]], { reportId, request.citizenid, expiryDate })
+                if BroadcastActiveWarrants then BroadcastActiveWarrants() end
             end
         end
     end
@@ -345,6 +377,94 @@ ps.registerCallback(resourceName .. ':server:reviewWarrantRequest', function(sou
     end
 
     return { success = true }
+end)
+
+ps.registerCallback(resourceName .. ':server:closeWarrantRequest', function(source, request_id)
+    local src = source
+    if not CheckAuth(src) then return { success = false, error = 'Unauthorized' } end
+    if not CheckPermission(src, 'warrants_close') then
+        return { success = false, error = 'Insufficient permissions' }
+    end
+
+    request_id = tonumber(request_id)
+    if not request_id then return { success = false, error = 'Invalid request id' } end
+
+    -- Only an approved request can be closed.
+    local request = MySQL.single.await('SELECT * FROM mdt_warrant_requests WHERE id = ? AND status = ?', { request_id, 'approved' })
+    if not request then
+        return { success = false, error = 'Warrant request not found or not approved' }
+    end
+
+    -- Mark the request itself as closed so it leaves the approved list.
+    MySQL.update.await('UPDATE mdt_warrant_requests SET status = ? WHERE id = ?', { 'closed', request_id })
+
+    -- Expire the linked active warrant (if one was issued on approval) so it
+    -- drops off the active warrants list and the civilian profile.
+    if request.linked_report_id then
+        MySQL.update.await([[
+            UPDATE mdt_reports_warrants
+            SET expirydate = NOW()
+            WHERE reportid = ? AND citizenid = ?
+        ]], { request.linked_report_id, request.citizenid })
+        if BroadcastActiveWarrants then BroadcastActiveWarrants() end
+    end
+
+    if ps.auditLog then
+        ps.auditLog(src, 'warrant_request_closed', 'warrant_request', request_id, {
+            citizenid = request.citizenid,
+            linked_report_id = request.linked_report_id
+        })
+    end
+
+    return { success = true }
+end)
+
+-- Flip approved requests to 'closed' once the warrant they issued has expired
+-- (auto-close after Config.Warrants.DefaultExpiryDays) or has been removed, so
+-- the request lifecycle mirrors the active warrant instead of sitting forever on
+-- 'approved'. Only touches requests with a linked report (those that actually
+-- issued a warrant); link-less approvals are closed manually.
+local function ReconcileExpiredWarrantRequests()
+    pcall(MySQL.update.await, [[
+        UPDATE mdt_warrant_requests wr
+        LEFT JOIN mdt_reports_warrants w
+            ON w.reportid = wr.linked_report_id AND w.citizenid = wr.citizenid
+        SET wr.status = 'closed'
+        WHERE wr.status = 'approved'
+          AND wr.linked_report_id IS NOT NULL
+          AND (w.reportid IS NULL OR w.expirydate <= NOW())
+    ]])
+end
+
+CreateThread(function()
+    Wait(2000) -- let the DB / framework settle on boot
+
+    -- Self-healing migration: older installs created mdt_warrant_requests.status
+    -- as enum('pending','approved','denied'). Closing a request needs a 'closed'
+    -- value, so extend the enum once if it isn't already present.
+    local ok, col = pcall(function()
+        return MySQL.single.await([[
+            SELECT COLUMN_TYPE AS coltype FROM information_schema.COLUMNS
+            WHERE TABLE_SCHEMA = DATABASE()
+              AND TABLE_NAME = 'mdt_warrant_requests'
+              AND COLUMN_NAME = 'status'
+        ]])
+    end)
+    if ok and col and col.coltype and not tostring(col.coltype):find('closed') then
+        pcall(MySQL.query.await, [[
+            ALTER TABLE `mdt_warrant_requests`
+            MODIFY COLUMN `status` enum('pending','approved','denied','closed') NOT NULL DEFAULT 'pending'
+        ]])
+        if Config and Config.Debug then
+            print('[ps-mdt] migrated mdt_warrant_requests.status enum to include closed')
+        end
+    end
+
+    -- Then reconcile expired warrants -> closed, once now and every minute after.
+    while true do
+        ReconcileExpiredWarrantRequests()
+        Wait(60000)
+    end
 end)
 
 -- Court Orders

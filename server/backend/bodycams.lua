@@ -387,8 +387,11 @@ CreateThread(function()
                             createOfficerBodycam(Player.PlayerData.source, Player.PlayerData)
                         end
                     elseif ps and ps.getPlayerByIdentifier then
-                        local player = ps.getPlayerByIdentifier(officer.citizenid)
-                        if player and player.PlayerData and player.PlayerData.job and player.PlayerData.job.onduty then
+                        -- getEmployees() returns offline staff too; resolving an
+                        -- offline citizenid can throw inside the framework bridge
+                        -- (nil player index), so guard it.
+                        local okp, player = pcall(ps.getPlayerByIdentifier, officer.citizenid)
+                        if okp and player and player.PlayerData and player.PlayerData.job and player.PlayerData.job.onduty then
                             createOfficerBodycam(player.PlayerData.source, player.PlayerData)
                         end
                     end
