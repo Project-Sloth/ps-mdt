@@ -143,6 +143,19 @@ RegisterNUICallback('getCitizen', function(data, cb)
     end
 end)
 
+-- Charges section in the Citizen profile — paginated on-demand (20/page) so
+-- opening a profile never has to load a citizen's full charge history at once.
+RegisterNUICallback('getCitizenCharges', function(data, cb)
+    if not MDTOpen then cb({ charges = {}, hasMore = false }) return end
+    if not data or not data.citizenid then
+        cb({ charges = {}, hasMore = false })
+        return
+    end
+
+    local result = ps.callback(resourceName .. ':server:getCitizenCharges', data.citizenid, data.page or 1)
+    cb(result or { charges = {}, hasMore = false })
+end)
+
 RegisterNUICallback('updateCitizenLicense', function(data, cb)
     if not MDTOpen then cb({ success = false, message = 'MDT is not open' }) return end
     if not data or not data.citizenid or not data.license then
