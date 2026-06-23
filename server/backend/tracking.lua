@@ -406,6 +406,24 @@ local function getTrackingSnapshot(domain)
     end
     local matchFn = (domain == 'ems') and IsEmsJob or IsPoliceJob
     local vehicles, bodycams = getAllTrackers(matchFn, domain)
+
+    -- Fold each officer's current availability status into their bodycam
+    -- entry. GetOfficerStatusSnapshot is defined in officer_status.lua and is
+    -- a cheap in-memory lookup (no DB hit), so this adds no measurable cost to
+    -- the tracking poll. Guarded with a global nil-check so tracking.lua keeps
+    -- working standalone even if officer_status.lua is ever removed/disabled.
+    if GetOfficerStatusSnapshot then
+        local statuses = GetOfficerStatusSnapshot(domain)
+        for _, bc in ipairs(bodycams) do
+            local s = bc.citizenid and statuses[bc.citizenid]
+            if s then
+                bc.status          = s.status
+                bc.statusNote      = s.note
+                bc.statusUpdatedAt = s.updatedAt
+            end
+        end
+    end
+
     cache.vehicles = vehicles
     cache.bodycams = bodycams
     cache.ts = now
