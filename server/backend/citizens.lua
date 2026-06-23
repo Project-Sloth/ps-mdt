@@ -910,6 +910,7 @@ ps.registerCallback(resourceName .. ':server:updateCitizenDNA', function(source,
     local Player = ps.getPlayerByIdentifier(citizenid)
     if Player and Player.Functions and Player.Functions.SetMetaData then
         Player.Functions.SetMetaData('dna', dna or '')
+        persistLiveMetadata(Player, citizenid)
         if ps.auditLog then
             ps.auditLog(src, 'update_dna', 'citizens', citizenid, { dna = dna })
         end
