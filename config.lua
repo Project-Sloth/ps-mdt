@@ -254,6 +254,7 @@ Config.Pagination = {
     Citizens = 20, -- Citizens per page
     CitizenSearch = 20, -- Max citizen search results
     Cases = 20, -- Cases per page
+    CitizenCharges = 20, -- Charges per page in the Citizen profile's Charges section
 }
 
 -- Fine Processing
@@ -430,6 +431,32 @@ Config.Bodycam = {
     MultiJobDutyEvent = 'ps-multijob:server:dutyChanged',
     DutyResource = 'qb-core',
     MultiJobResource = 'ps-multijob',
+}
+
+-- Officer Status (Map tab) ---------------------------------------------------
+-- Defines every selectable status. `id` is the stable key stored in the DB and
+-- sent over the wire — never rename an existing id, only add new ones, or
+-- officers who saved an old status will fall back to Default below.
+-- `id`   : stable key (string, no spaces, lowercase recommended)
+-- `label`: display name shown in the UI
+-- `color`: hex used for the badge/dot and map marker ring
+-- `icon` : optional emoji/short glyph shown next to the label (purely visual)
+-- To add a new status, just append a new entry — no other file needs to change.
+Config.OfficerStatus = {
+    list = {
+        { id = 'active', label = 'Active', color = '#22C55E', icon = '●' },
+        { id = 'busy',   label = 'Busy',   color = '#F59E0B', icon = '●' },
+        -- Examples for future statuses (uncomment / adjust as needed):
+        -- { id = 'enroute',   label = 'En Route',   color = '#3B82F6', icon = '●' },
+        -- { id = 'unavailable', label = 'Unavailable', color = '#EF4444', icon = '●' },
+        -- { id = 'break',     label = 'On Break',    color = '#8B5CF6', icon = '●' },
+    },
+    -- Status id assumed for any officer who has never set one.
+    Default = 'active',
+    -- Max length for the optional free-text note (e.g. "Traffic Stop").
+    MaxNoteLength = 60,
+    -- Minimum ms between two status changes from the same player (anti-spam).
+    ChangeCooldownMs = 1500,
 }
 
 -- Optional defaults for role permissions by job/grade
