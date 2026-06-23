@@ -92,6 +92,7 @@ export const NUI_EVENTS = {
 		SET_WAYPOINT: "setWaypoint",
 		SEARCH_CITIZENS: "searchCitizens",
 		GET_CITIZEN: "getCitizen",
+		GET_CITIZEN_CHARGES: "getCitizenCharges",
 		UPDATE_CITIZEN: "updateCitizen",
 		GET_BOLOS: "getBolos",
 		CREATE_BOLO: "createBolo",
@@ -247,6 +248,8 @@ export const NUI_EVENTS = {
 		SAVE_UI_STATE: "saveMapUiState",
 		REORDER_PATROLS: "reorderPatrols",
 		SET_PATROL_ZONE: "setPatrolZone",
+		GET_OFFICER_STATUS_CONFIG: "getOfficerStatusConfig",
+		SET_OFFICER_STATUS: "setOfficerStatus",
 	},
 	MANAGEMENT: {
 		GET_PERMISSION_ROLES: "getPermissionRoles",
