@@ -658,6 +658,67 @@ ps.registerCallback(resourceName .. ':server:getCitizenProfile', function(source
     }
 end)
 
+-- Citizen profile "Charges" section — kept deliberately separate from
+-- getCitizenProfile (unlike linkedReports/evidence/weapons, which load
+-- everything at once): a heavily-charged citizen can accumulate hundreds of
+-- rows over a long-running server, and loading them all on every profile open
+-- would be wasteful. Instead the NUI calls this on-demand, 20 rows at a time
+-- (Config.Pagination.CitizenCharges), via a real LIMIT/OFFSET query backed by
+-- the existing idx_charges_citizenid index — no client-side slicing.
+--
+-- Rows are grouped by charge TYPE (not one row per report): a citizen charged
+-- with the same offense across several reports gets a single line with the
+-- combined count, instead of N separate near-duplicate lines. This is done in
+-- SQL (GROUP BY), not by aggregating in Lua/JS after the fact, since the
+-- whole point of this endpoint is to never pull a citizen's full charge
+-- history into memory just to summarize it.
+ps.registerCallback(resourceName .. ':server:getCitizenCharges', function(source, citizenid, page)
+    local src = source
+    if not CheckAuth(src) then return { charges = {}, hasMore = false } end
+
+    if not citizenid or citizenid == '' then
+        return { charges = {}, hasMore = false }
+    end
+
+    page = tonumber(page) or 1
+    if page < 1 then page = 1 end
+    local limit = (Config.Pagination and Config.Pagination.CitizenCharges) or 20
+    local offset = (page - 1) * limit
+
+    -- One extra row is fetched (limit + 1) so "hasMore" is exact rather than
+    -- the cases.lua heuristic (#rows >= limit, which is wrong whenever the
+    -- citizen has precisely a multiple of `limit` distinct charge types).
+    -- report_id is shown directly in the UI (so an officer can jump to the
+    -- report by id) when the charge came from a single report; for charges
+    -- spanning several reports there's no single id to show.
+    local rows = MySQL.query.await([[
+        SELECT
+            mrc.charge,
+            SUM(mrc.count)               AS total_count,
+            SUM(mrc.count * mrc.fine)    AS total_fine,
+            SUM(mrc.count * mrc.time)    AS total_time,
+            COUNT(DISTINCT mrc.reportid) AS report_count,
+            MAX(mr.id)                   AS report_id,
+            MAX(mr.datecreated)          AS datecreated,
+            MAX(mpc.code)                AS charge_code,
+            MAX(mpc.charge_class)        AS charge_class
+        FROM mdt_reports_charges mrc
+        INNER JOIN mdt_reports mr ON mr.id = mrc.reportid
+        LEFT JOIN mdt_penal_codes mpc ON mpc.label = mrc.charge
+        WHERE mrc.citizenid = ?
+        GROUP BY mrc.charge
+        ORDER BY datecreated DESC, mrc.charge ASC
+        LIMIT ? OFFSET ?
+    ]], { citizenid, limit + 1, offset }) or {}
+
+    local hasMore = #rows > limit
+    if hasMore then
+        rows[#rows] = nil -- drop the lookahead row, it was only there to detect hasMore
+    end
+
+    return { charges = rows, hasMore = hasMore }
+end)
+
 ps.registerCallback(resourceName .. ':server:updateCitizenLicense', function(source, payload)
     local src = source
     if not CheckAuth(src) then return { success = false, message = 'Unauthorized' } end
