@@ -1391,6 +1391,24 @@ CREATE TABLE IF NOT EXISTS `mdt_patrols` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- ════════════════════════════════════════════════════════════════════════════
+--  Officer Status  (server/backend/officer_status.lua)
+--  One row per officer who has ever set a status. `status` is a free-form key
+--  validated server-side against Config.OfficerStatus (see config.lua), so new
+--  statuses can be added there without a migration. `note` is the optional
+--  custom description (e.g. "Traffic Stop"); NULL falls back to the status
+--  label client-side. `updated_at` powers the "since" timestamp in the UI.
+-- ════════════════════════════════════════════════════════════════════════════
+CREATE TABLE IF NOT EXISTS `mdt_officer_status` (
+  `citizenid` varchar(64) NOT NULL,
+  `status` varchar(32) NOT NULL DEFAULT 'active',
+  `note` varchar(120) DEFAULT NULL,
+  `job_type` varchar(10) NOT NULL DEFAULT 'police',
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`citizenid`),
+  KEY `idx_mdt_officer_status_job` (`job_type`,`status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- ════════════════════════════════════════════════════════════════════════════
 --  Court / Training calendar  (server/backend/court.lua)
 --  Hearings cover court dates, trainings and meetings; `job_type` keeps the
 --  police/DOJ calendar separate from the EMS calendar. Attendees are the people
