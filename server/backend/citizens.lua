@@ -74,6 +74,20 @@ local function getGender(gen)
     return 'Unknown'
 end
 
+-- SetMetaData only updates the player's IN-MEMORY metadata; the players row is
+-- rewritten only on the next autosave/logout. To keep the DB consistent right
+-- away (so MDT profile re-reads, which query the players table, reflect the
+-- change immediately), eagerly persist the full live metadata after SetMetaData.
+-- Because this snapshot is identical to what's in memory, the next autosave just
+-- rewrites the same value -- there is no clobber.
+local function persistLiveMetadata(Player, citizenid)
+    if not (Player and Player.PlayerData and Player.PlayerData.metadata and citizenid) then return end
+    local ok, encoded = pcall(json.encode, Player.PlayerData.metadata)
+    if ok and encoded then
+        MySQL.update.await('UPDATE players SET metadata = ? WHERE citizenid = ?', { encoded, citizenid })
+    end
+end
+
 -- Safe query helper: returns empty table on error (handles missing tables gracefully)
 local function safeQuery(query, params)
     local ok, rows = pcall(MySQL.query.await, query, params)
@@ -422,6 +436,19 @@ ps.registerCallback(resourceName .. ':server:getCitizenProfile', function(source
         return { success = false, message = 'Citizen not found' }
     end
 
+    -- Online players keep PlayerData.metadata in memory as the source of truth; the
+    -- DB row is only the last-saved snapshot and lags behind live changes (e.g. a
+    -- license toggled via SetMetaData won't reach the DB until the next autosave).
+    -- Use the live metadata when the citizen is online so the profile reflects the
+    -- current state instead of stale data.
+    local OnlinePlayer = ps.getPlayerByIdentifier(citizenid)
+    if OnlinePlayer and OnlinePlayer.PlayerData and OnlinePlayer.PlayerData.metadata then
+        local okEnc, encoded = pcall(json.encode, OnlinePlayer.PlayerData.metadata)
+        if okEnc and encoded then
+            playerRow.metadata = encoded
+        end
+    end
+
     local profileRow = MySQL.single.await('SELECT id, profilepicture, notes FROM mdt_profiles WHERE citizenid = ?', { citizenid })
 
     -- Fetch tags and gallery for this profile
@@ -743,6 +770,7 @@ ps.registerCallback(resourceName .. ':server:updateCitizenLicense', function(sou
         metadata.licences = metadata.licences or {}
         metadata.licences[licenseType] = enabled
         Player.Functions.SetMetaData('licences', metadata.licences)
+        persistLiveMetadata(Player, citizenId)
         return { success = true }
     end
 
@@ -846,6 +874,7 @@ ps.registerCallback(resourceName .. ':server:updateCitizenFingerprint', function
     local Player = ps.getPlayerByIdentifier(citizenid)
     if Player and Player.Functions and Player.Functions.SetMetaData then
         Player.Functions.SetMetaData('fingerprint', fingerprint or '')
+        persistLiveMetadata(Player, citizenid)
         if ps.auditLog then
             ps.auditLog(src, 'update_fingerprint', 'citizens', citizenid, { fingerprint = fingerprint })
         end
