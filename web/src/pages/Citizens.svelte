@@ -558,6 +558,76 @@
 	let reportsPage = $state(1);
 	let licensesPage = $state(1);
 
+	// ── Charges section (separate from the other sections above) ──────────
+	// Unlike linkedReports/evidence/weapons/etc., charges are NOT loaded as
+	// part of the profile payload and NOT paginated client-side. A long-running
+	// server can give a single citizen hundreds of charge rows over time, so
+	// this fetches 20 at a time from a dedicated, indexed server endpoint
+	// (idx_charges_citizenid) — "Load 20 more" appends rather than replacing,
+	// so re-fetched pages never get re-requested.
+	type CitizenCharge = {
+		charge: string;
+		total_count: number;
+		total_fine?: number | null;
+		total_time?: number | null;
+		report_count: number;
+		report_id?: number | null;
+		datecreated?: string;
+		charge_code?: string | null;
+		charge_class?: "felony" | "misdemeanor" | "infraction" | null;
+	};
+	let citizenCharges = $state<CitizenCharge[]>([]);
+	let chargesPage = $state(1);
+	let chargesHasMore = $state(false);
+	let chargesLoading = $state(false);
+	let chargesLoadedFor = $state<string | null>(null); // citizenid the current list belongs to
+
+	async function loadCitizenCharges(citizenid: string, page: number, append: boolean) {
+		if (isEnvBrowser()) {
+			// No backend in the browser preview — keep the section empty rather
+			// than fabricating fake charge history.
+			citizenCharges = [];
+			chargesHasMore = false;
+			chargesLoadedFor = citizenid;
+			return;
+		}
+		chargesLoading = true;
+		try {
+			const res = await fetchNui<{ charges: CitizenCharge[]; hasMore: boolean }>(
+				NUI_EVENTS.CITIZEN.GET_CITIZEN_CHARGES,
+				{ citizenid, page },
+				{ charges: [], hasMore: false },
+			);
+			// Guard against a fast profile switch landing a stale response: if the
+			// user has since opened a different citizen, this result no longer
+			// belongs anywhere — drop it instead of corrupting the new list.
+			if (selectedProfile?.citizenid !== citizenid) return;
+			const rows = res?.charges ?? [];
+			citizenCharges = append ? [...citizenCharges, ...rows] : rows;
+			chargesHasMore = res?.hasMore ?? false;
+			chargesPage = page;
+			chargesLoadedFor = citizenid;
+		} catch {
+			if (selectedProfile?.citizenid === citizenid && !append) citizenCharges = [];
+			globalNotifications.error("Failed to load charges");
+		} finally {
+			if (selectedProfile?.citizenid === citizenid) chargesLoading = false;
+		}
+	}
+
+	function loadMoreCharges() {
+		if (!selectedProfile || chargesLoading || !chargesHasMore) return;
+		loadCitizenCharges(selectedProfile.citizenid, chargesPage + 1, true);
+	}
+
+	// Explicit capitalize instead of relying on CSS text-transform: capitalize,
+	// which is inconsistent in CEF (FiveM's NUI browser) — same caution as the
+	// color-mix() avoidance elsewhere in this codebase.
+	function capitalize(s: string | null | undefined): string {
+		if (!s) return "";
+		return s.charAt(0).toUpperCase() + s.slice(1);
+	}
+
 	$effect(() => {
 		if (selectedProfile) {
 			vehiclesPage = 1;
@@ -570,6 +640,22 @@
 			notesValue = "";
 			showTagModal = false;
 			loadCitizenTags();
+
+			// Only (re)load charges when we've actually switched to a different
+			// citizen — selectedProfile is also reassigned on small in-place
+			// edits (notes, photo, license toggles), which must NOT re-trigger
+			// a charges fetch.
+			if (selectedProfile.citizenid !== chargesLoadedFor) {
+				citizenCharges = [];
+				chargesHasMore = false;
+				chargesPage = 1;
+				loadCitizenCharges(selectedProfile.citizenid, 1, false);
+			}
+		} else {
+			citizenCharges = [];
+			chargesHasMore = false;
+			chargesPage = 1;
+			chargesLoadedFor = null;
 		}
 	});
 
@@ -1301,6 +1387,51 @@
 								</div>
 							{/if}
 						</div>
+
+						<!-- Charges — fetched on demand, 20 at a time, from a dedicated
+						     endpoint (NOT part of the profile payload), grouped by charge
+						     type with a combined count across all of the citizen's reports.
+						     See loadCitizenCharges() / getCitizenCharges (server). -->
+						<div class="panel">
+							<div class="panel-title">Charges <span class="cnt">{citizenCharges.length}{chargesHasMore ? "+" : ""}</span></div>
+							<div class="section-list">
+								{#if chargesLoading && citizenCharges.length === 0}
+									<div class="empty-msg">Loading charges…</div>
+								{:else if citizenCharges.length > 0}
+									{#each citizenCharges as c (c.charge)}
+										<div class="sitem" class:sitem-danger={c.charge_class === "felony"} class:sitem-warning={c.charge_class === "misdemeanor"}>
+											<div class="sitem-info">
+												<span class="sitem-primary">
+													{c.total_count > 1 ? `${c.total_count}x ${c.charge}` : c.charge}
+												</span>
+												<span class="sitem-secondary">
+													{#if c.report_count > 1}
+														Across {c.report_count} reports
+													{:else}
+														Report #{c.report_id}
+													{/if}
+													{#if c.datecreated}· {new Date(c.datecreated).toLocaleDateString()}{/if}
+													{#if c.total_fine}· ${c.total_fine.toLocaleString()}{/if}
+													{#if c.total_time}· {c.total_time}mo{/if}
+												</span>
+											</div>
+											{#if c.charge_class}
+												<span class="badge" class:badge-red={c.charge_class === "felony"} class:badge-green={c.charge_class !== "felony"}>{capitalize(c.charge_class)}</span>
+											{/if}
+										</div>
+									{/each}
+								{:else}
+									<div class="empty-msg">No charges</div>
+								{/if}
+							</div>
+							{#if chargesHasMore}
+								<div class="section-pager">
+									<button class="load-more-btn" disabled={chargesLoading} onclick={loadMoreCharges}>
+										{chargesLoading ? "Loading…" : "Load 20 more"}
+									</button>
+								</div>
+							{/if}
+						</div>
 					</div>
 				</div>
 			</div>
@@ -1931,7 +2062,7 @@
 	.sitem-arrow { display: flex; align-items: center; justify-content: center; width: 22px; height: 22px; flex-shrink: 0; background: transparent; border: none; color: rgba(255,255,255,0.2); cursor: pointer; transition: color 0.12s; border-radius: 4px; }
 	.sitem-arrow:hover { color: rgba(255,255,255,0.6); background: rgba(255,255,255,0.04); }
 
-	.badge { padding: 1px 6px; border-radius: 3px; font-size: 9px; font-weight: 600; flex-shrink: 0; border: 1px solid transparent; }
+	.badge { padding: 1px 6px; border-radius: 3px; font-size: 9px; font-weight: 600; flex-shrink: 0; border: 1px solid transparent; text-transform: capitalize; }
 	.badge-green { background: rgba(16,185,129,0.12); color: #34d399; border-color: rgba(16,185,129,0.15); }
 	.badge-red { background: rgba(239,68,68,0.12); color: #f87171; border-color: rgba(239,68,68,0.15); }
 
@@ -1945,6 +2076,10 @@
 	.spager-btn:hover:not(:disabled) { background: rgba(255,255,255,0.04); color: rgba(255,255,255,0.7); }
 	.spager-btn:disabled { opacity: 0.2; cursor: not-allowed; }
 	.spager-info { font-size: 10px; color: rgba(255,255,255,0.2); min-width: 28px; text-align: center; }
+
+	.load-more-btn { width: 100%; background: transparent; border: 1px solid rgba(255,255,255,0.08); border-radius: 5px; padding: 6px 0; color: rgba(255,255,255,0.4); font-size: 11px; font-weight: 500; cursor: pointer; transition: all 0.12s ease; }
+	.load-more-btn:hover:not(:disabled) { background: rgba(255,255,255,0.04); color: rgba(255,255,255,0.75); border-color: rgba(255,255,255,0.14); }
+	.load-more-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
 	.profile-photo-actions { display: flex; gap: 6px; justify-content: center; margin-top: 8px; }
 	.photo-action-btn { display: flex; align-items: center; gap: 4px; background: transparent; border: 1px solid rgba(255,255,255,0.06); color: rgba(255,255,255,0.4); padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: 500; cursor: pointer; transition: all 0.12s; }
