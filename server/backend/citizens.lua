@@ -744,33 +744,45 @@ ps.registerCallback(resourceName .. ':server:updateCitizenLicense', function(sou
     return { success = true }
 end)
 
-ps.registerCallback(resourceName .. ':server:updateCitizenCustomLicense', function(source, payload)
+ps.registerCallback(resourceName .. ':server:updateCitizenLicense', function(source, payload)
     local src = source
     if not CheckAuth(src) then return { success = false, message = 'Unauthorized' } end
 
     payload = payload or {}
     local citizenId = payload.citizenid
-    local licenseId = tonumber(payload.licenseId)
+    local licenseType = payload.license
     local enabled = payload.enabled == true
-
-    if not citizenId or not licenseId then
-        return { success = false, message = 'Missing citizen id or license id' }
+    if not citizenId or not licenseType then
+        return { success = false, message = 'Missing citizen id or license' }
     end
 
-    -- Verify the license exists
-    local licenseExists = MySQL.scalar.await('SELECT id FROM mdt_custom_licenses WHERE id = ?', { licenseId })
-    if not licenseExists then
-        return { success = false, message = 'License not found' }
+    -- When the citizen is ONLINE, QBCore/QBX keep PlayerData.metadata in memory as
+    -- the source of truth and flush it back to the `players` table on autosave /
+    -- logout. A direct UPDATE while they are online gets silently clobbered by the
+    -- next flush (and live license checks read the stale in-memory copy), so the
+    -- change appears to do nothing. Go through SetMetaData instead: it mutates the
+    -- in-memory metadata AND persists it.
+    local Player = ps.getPlayerByIdentifier(citizenId)
+    if Player and Player.Functions and Player.Functions.SetMetaData then
+        local metadata = (Player.PlayerData and Player.PlayerData.metadata) or {}
+        metadata.licences = metadata.licences or {}
+        metadata.licences[licenseType] = enabled
+        Player.Functions.SetMetaData('licences', metadata.licences)
+        return { success = true }
     end
 
-    local grantedBy = ps.getIdentifier(src)
+    -- OFFLINE fallback: no in-memory state to conflict with, so a direct DB write
+    -- is safe and authoritative.
+    local row = MySQL.single.await('SELECT metadata FROM players WHERE citizenid = ? LIMIT 1', { citizenId })
+    if not row then
+        return { success = false, message = 'Citizen not found' }
+    end
 
-    MySQL.query.await([[
-        INSERT INTO mdt_citizen_licenses (citizenid, license_id, active, granted_by)
-        VALUES (?, ?, ?, ?)
-        ON DUPLICATE KEY UPDATE active = VALUES(active), granted_by = VALUES(granted_by)
-    ]], { citizenId, licenseId, enabled and 1 or 0, grantedBy })
+    local metadata = row.metadata and json.decode(row.metadata) or {}
+    metadata.licences = metadata.licences or {}
+    metadata.licences[licenseType] = enabled
 
+    MySQL.update.await('UPDATE players SET metadata = ? WHERE citizenid = ?', { json.encode(metadata), citizenId })
     return { success = true }
 end)
 
