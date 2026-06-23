@@ -594,8 +594,14 @@ function Camera.loadAllFromDatabase()
     end
 
     for _, row in ipairs(results) do
-        local coords = json.decode(row.coords)
-        local rotation = json.decode(row.rotation)
+        local okCoords, coords = pcall(json.decode, row.coords)
+        local okRot, rotation = pcall(json.decode, row.rotation)
+        if not okCoords or not okRot or type(coords) ~= 'table' or type(rotation) ~= 'table'
+            or coords.x == nil or coords.y == nil or coords.z == nil
+            or rotation.x == nil or rotation.y == nil or rotation.z == nil then
+            ps.warn(('Camera.loadAllFromDatabase - skipping cam_id %s: invalid coords/rotation JSON'):format(tostring(row.cam_id)))
+            goto continue
+        end
 
         local camera = Camera.createStatic(
             row.cam_id,
@@ -647,6 +653,8 @@ function Camera.loadAllFromDatabase()
         else
             ps.error('Camera.loadAllFromDatabase - Failed to create camera ' .. row.cam_id)
         end
+
+        ::continue::
     end
 
     --ps.info('Camera.loadAllFromDatabase - Loaded ' .. #cameras .. ' cameras from database')
