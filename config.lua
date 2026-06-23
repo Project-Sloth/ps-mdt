@@ -254,7 +254,7 @@ Config.Pagination = {
     Citizens = 20, -- Citizens per page
     CitizenSearch = 20, -- Max citizen search results
     Cases = 20, -- Cases per page
-    CitizenCharges = 20, -- Charges per page in the Citizen profile's Charges section
+    CitizenCharges = 5, -- Charges per page in the Citizen profile's Charges section
 }
 
 -- Fine Processing
