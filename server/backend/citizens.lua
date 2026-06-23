@@ -731,31 +731,6 @@ ps.registerCallback(resourceName .. ':server:updateCitizenLicense', function(sou
         return { success = false, message = 'Missing citizen id or license' }
     end
 
-    local row = MySQL.single.await('SELECT metadata FROM players WHERE citizenid = ? LIMIT 1', { citizenId })
-    if not row then
-        return { success = false, message = 'Citizen not found' }
-    end
-
-    local metadata = row.metadata and json.decode(row.metadata) or {}
-    metadata.licences = metadata.licences or {}
-    metadata.licences[licenseType] = enabled
-
-    MySQL.update.await('UPDATE players SET metadata = ? WHERE citizenid = ?', { json.encode(metadata), citizenId })
-    return { success = true }
-end)
-
-ps.registerCallback(resourceName .. ':server:updateCitizenLicense', function(source, payload)
-    local src = source
-    if not CheckAuth(src) then return { success = false, message = 'Unauthorized' } end
-
-    payload = payload or {}
-    local citizenId = payload.citizenid
-    local licenseType = payload.license
-    local enabled = payload.enabled == true
-    if not citizenId or not licenseType then
-        return { success = false, message = 'Missing citizen id or license' }
-    end
-
     -- When the citizen is ONLINE, QBCore/QBX keep PlayerData.metadata in memory as
     -- the source of truth and flush it back to the `players` table on autosave /
     -- logout. A direct UPDATE while they are online gets silently clobbered by the
@@ -783,6 +758,36 @@ ps.registerCallback(resourceName .. ':server:updateCitizenLicense', function(sou
     metadata.licences[licenseType] = enabled
 
     MySQL.update.await('UPDATE players SET metadata = ? WHERE citizenid = ?', { json.encode(metadata), citizenId })
+    return { success = true }
+end)
+
+ps.registerCallback(resourceName .. ':server:updateCitizenCustomLicense', function(source, payload)
+    local src = source
+    if not CheckAuth(src) then return { success = false, message = 'Unauthorized' } end
+
+    payload = payload or {}
+    local citizenId = payload.citizenid
+    local licenseId = tonumber(payload.licenseId)
+    local enabled = payload.enabled == true
+
+    if not citizenId or not licenseId then
+        return { success = false, message = 'Missing citizen id or license id' }
+    end
+
+    -- Verify the license exists
+    local licenseExists = MySQL.scalar.await('SELECT id FROM mdt_custom_licenses WHERE id = ?', { licenseId })
+    if not licenseExists then
+        return { success = false, message = 'License not found' }
+    end
+
+    local grantedBy = ps.getIdentifier(src)
+
+    MySQL.query.await([[
+        INSERT INTO mdt_citizen_licenses (citizenid, license_id, active, granted_by)
+        VALUES (?, ?, ?, ?)
+        ON DUPLICATE KEY UPDATE active = VALUES(active), granted_by = VALUES(granted_by)
+    ]], { citizenId, licenseId, enabled and 1 or 0, grantedBy })
+
     return { success = true }
 end)
 
@@ -836,6 +841,18 @@ ps.registerCallback(resourceName .. ':server:updateCitizenFingerprint', function
         return { success = false, message = 'Missing citizen id' }
     end
 
+    -- Online: write through the live player object so the next autosave does not
+    -- clobber it (same rationale as updateCitizenLicense).
+    local Player = ps.getPlayerByIdentifier(citizenid)
+    if Player and Player.Functions and Player.Functions.SetMetaData then
+        Player.Functions.SetMetaData('fingerprint', fingerprint or '')
+        if ps.auditLog then
+            ps.auditLog(src, 'update_fingerprint', 'citizens', citizenid, { fingerprint = fingerprint })
+        end
+        return { success = true }
+    end
+
+    -- Offline fallback: direct DB write is safe.
     local row = MySQL.single.await('SELECT metadata FROM players WHERE citizenid = ? LIMIT 1', { citizenid })
     if not row then
         return { success = false, message = 'Citizen not found' }
@@ -852,13 +869,22 @@ ps.registerCallback(resourceName .. ':server:updateCitizenFingerprint', function
     return { success = true }
 end)
 
--- Update citizen DNA
+-- Update citizen dna
 ps.registerCallback(resourceName .. ':server:updateCitizenDNA', function(source, citizenid, dna)
     local src = source
     if not CheckAuth(src) then return { success = false, message = 'Unauthorized' } end
 
     if not citizenid or citizenid == '' then
         return { success = false, message = 'Missing citizen id' }
+    end
+
+    local Player = ps.getPlayerByIdentifier(citizenid)
+    if Player and Player.Functions and Player.Functions.SetMetaData then
+        Player.Functions.SetMetaData('dna', dna or '')
+        if ps.auditLog then
+            ps.auditLog(src, 'update_dna', 'citizens', citizenid, { dna = dna })
+        end
+        return { success = true }
     end
 
     local row = MySQL.single.await('SELECT metadata FROM players WHERE citizenid = ? LIMIT 1', { citizenid })
