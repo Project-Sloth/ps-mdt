@@ -31,14 +31,103 @@ local function formatLabel(value)
     return formatted
 end
 
-local function parseStatus(raw)
-    if not raw or raw == '' then return 'valid', '' end
-    local ok, decoded = pcall(function() return json.decode(raw) end)
-    if ok and type(decoded) == 'table' then
-        return decoded.status or 'valid', decoded.reason or ''
+-- ─── Insurance integration ───────────────────────────────────────────────────
+-- A vehicle's STATUS (the pill shown on the profile + in the list) is no longer
+-- set by hand. When Config.VehicleInsurance.enabled is true it is resolved LIVE
+-- from a configurable insurance resource; when disabled every vehicle is 'valid'.
+--
+-- The configured export may be either callback-style or direct-return:
+--   callback = true  -> exports[res]:export(plate, function(hasInsurance) end)
+--   callback = false -> local hasInsurance = exports[res]:export(plate)
+--
+-- We always FAIL OPEN: any missing resource / export / error / timeout is treated
+-- as "insured" so a broken insurance script can never wrongly flag every vehicle.
+
+local function insuranceEnabled()
+    return Config.VehicleInsurance ~= nil and Config.VehicleInsurance.enabled == true
+end
+
+local function pointsEnabled()
+    -- Default ON if the config block is absent, to preserve previous behaviour.
+    if Config.VehiclePoints == nil then return true end
+    return Config.VehiclePoints.enabled ~= false
+end
+
+-- Returns status, reason for a given insured flag using the configured mapping.
+local function mapInsurance(hasInsurance)
+    local cfg = Config.VehicleInsurance or {}
+    if hasInsurance then
+        return cfg.insuredStatus or 'valid', ''
     end
-    -- Fallback für alte plain-text Werte
-    return raw, ''
+    return cfg.uninsuredStatus or 'uninsured', cfg.uninsuredReason or 'No active insurance'
+end
+
+-- Start a single insurance lookup, returning a promise that resolves to a boolean.
+local function startInsuranceLookup(plate)
+    local cfg = Config.VehicleInsurance or {}
+    local p = promise.new()
+    local settled = false
+    local function finish(value)
+        if settled then return end
+        settled = true
+        -- Treat nil/anything non-false as insured (fail open).
+        p:resolve(value ~= false)
+    end
+
+    local res = exports[cfg.resource]
+    if not res or res[cfg.export] == nil then
+        -- Missing resource/export → fail open.
+        finish(true)
+        return p
+    end
+
+    -- Guard against an export that never calls back.
+    SetTimeout(tonumber(cfg.timeout) or 2000, function() finish(true) end)
+
+    local ok = pcall(function()
+        if cfg.callback then
+            res[cfg.export](res, plate, function(hasInsurance)
+                finish(hasInsurance and true or false)
+            end)
+        else
+            local result = res[cfg.export](res, plate)
+            finish(result and true or false)
+        end
+    end)
+    if not ok then
+        finish(true) -- error calling the export → fail open
+    end
+
+    return p
+end
+
+-- Resolve a single plate synchronously (used by the detail view).
+local function resolveInsurance(plate)
+    if not insuranceEnabled() then return 'valid', '' end
+    local hasInsurance = Citizen.Await(startInsuranceLookup(plate))
+    return mapInsurance(hasInsurance)
+end
+
+-- Resolve many plates in parallel (used by the list). Returns a map of
+-- UPPER(plate) -> { status = ..., reason = ... }. Empty map = treat all as valid.
+local function resolveInsuranceBatch(plates)
+    local out = {}
+    if not insuranceEnabled() then return out end
+
+    local cfg = Config.VehicleInsurance or {}
+    if cfg.resolveInList == false then return out end
+
+    -- Kick every lookup off first so they run concurrently, THEN await them.
+    local pending = {}
+    for _, plate in ipairs(plates) do
+        pending[#pending + 1] = { plate = plate, p = startInsuranceLookup(plate) }
+    end
+    for _, item in ipairs(pending) do
+        local hasInsurance = Citizen.Await(item.p)
+        local status, reason = mapInsurance(hasInsurance)
+        out[string.upper(item.plate)] = { status = status, reason = reason }
+    end
+    return out
 end
 
 local function getVehicleShared(model)
@@ -122,13 +211,23 @@ ps.registerCallback(resourceName .. ':server:GetVehicles', function(source)
         })
     end
 
+    -- Resolve insurance for every plate up-front (runs concurrently).
+    local platesForInsurance = {}
+    for _, v in ipairs(vehList) do
+        platesForInsurance[#platesForInsurance + 1] = v.plate and string.upper(v.plate) or 'UNKNOWN'
+    end
+    local insuranceByPlate = resolveInsuranceBatch(platesForInsurance)
+
     local vehicles = {}
     for _, v in ipairs(vehList) do
         local vehicleData = getVehicleShared(v.vehicle)
         local plate = v.plate and string.upper(v.plate) or 'UNKNOWN'
         local reportCount = countSetItems(reportIdsByPlate[plate])
         local hasActiveBolo = activeBoloByPlate[plate] == true or v.boloactive == 1
-        local statusName, statusReason = parseStatus(v.status)
+        -- Status/reason come from insurance (or default to 'valid' when disabled).
+        local ins = insuranceByPlate[plate]
+        local statusName = ins and ins.status or 'valid'
+        local statusReason = ins and ins.reason or ''
         local flags = buildVehicleFlags(v.stolen == 1, hasActiveBolo, statusName)
 
         table.insert(vehicles, {
@@ -160,7 +259,15 @@ ps.registerCallback(resourceName .. ':server:GetVehicles', function(source)
         ps.debug('[getVehicles] Sample bolo data structure:', bolos[1])
     end
 
-    return {vehicles = vehicles, bolos = bolos}
+    return {
+        vehicles = vehicles,
+        bolos = bolos,
+        features = {
+            points = pointsEnabled(),
+            insurance = insuranceEnabled(),
+        },
+        canEditPoints = CheckPermission(src, 'vehicles_edit_dmv'),
+    }
 end)
 
 ps.registerCallback(resourceName .. ':server:UpdateVehicle', function(source, payload)
@@ -178,25 +285,6 @@ ps.registerCallback(resourceName .. ':server:UpdateVehicle', function(source, pa
         return { success = false, message = 'Vehicle not found' }
     end
 
-    local existing = MySQL.single.await('SELECT mdt_vehicle_points, mdt_vehicle_status, mdt_vehicle_information FROM player_vehicles WHERE plate = ? LIMIT 1', { plate })
-    local previousPoints = existing and tonumber(existing.mdt_vehicle_points) or 0
-
-    local points = tonumber(payload.points)
-    if points and points < 0 then
-        points = 0
-    end
-
-    local allowedStatus = {
-        valid = true,
-        suspended = true,
-        expired = true,
-        impounded = true
-    }
-    local status = payload.status
-    if status and not allowedStatus[status] then
-        status = nil
-    end
-
     local updates = {}
     local values = {}
 
@@ -210,16 +298,25 @@ ps.registerCallback(resourceName .. ':server:UpdateVehicle', function(source, pa
         values[#values + 1] = payload.image
     end
 
-    if points ~= nil then
+    -- Points are the only "DMV" field officers can still set, and only when the
+    -- feature is enabled and the officer holds the edit permission.
+    local points = nil
+    if payload.points ~= nil then
+        if not pointsEnabled() then
+            return { success = false, message = 'Points are disabled' }
+        end
+        if not CheckPermission(src, 'vehicles_edit_dmv') then
+            return { success = false, message = 'Insufficient permissions' }
+        end
+        points = tonumber(payload.points)
+        if not points then
+            return { success = false, message = 'Invalid points value' }
+        end
+        if points < 0 then points = 0 end
+        if points > 1000 then points = 1000 end -- sane upper bound
+        points = math.floor(points)
         updates[#updates + 1] = 'mdt_vehicle_points = ?'
         values[#values + 1] = points
-    end
-
-    if status ~= nil then
-        local reason = payload.reason or ''
-        local encoded = json.encode({ status = status, reason = reason })
-        updates[#updates + 1] = 'mdt_vehicle_status = ?'
-        values[#values + 1] = encoded
     end
 
     if #updates == 0 then
@@ -234,8 +331,7 @@ ps.registerCallback(resourceName .. ':server:UpdateVehicle', function(source, pa
         ps.auditLog(src, 'vehicle_updated', 'vehicle', plate, {
             plate = plate,
             points = points,
-            status = status,
-            information = payload.information
+            information = payload.information,
         })
     end
 
@@ -297,11 +393,16 @@ ps.registerCallback(resourceName .. ':server:GetVehicle', function(source, plate
     end
 
     local reportCount = countSetItems(reportIdSet)
-    local statusName, statusReason = parseStatus(row.status)
+    local statusName, statusReason = resolveInsurance(plateUpper)
     local flags = buildVehicleFlags(row.stolen == 1, hasActiveBolo or row.boloactive == 1, statusName)
 
     return {
         success = true,
+        features = {
+            points = pointsEnabled(),
+            insurance = insuranceEnabled(),
+        },
+        canEditPoints = CheckPermission(src, 'vehicles_edit_dmv'),
         vehicle = {
             id = row.id,
             model = row.vehicle,
