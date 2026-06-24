@@ -78,7 +78,7 @@ export const PERMISSION_CATEGORIES: PermissionCategory[] = [
 		icon: "directions_car",
 		permissions: [
 			{ key: "vehicles_search", label: "Search Vehicles", description: "Search and view vehicle records" },
-			{ key: "vehicles_edit_dmv", label: "Edit DMV Status", description: "Update points, status, and notes" },
+			{ key: "vehicles_edit_dmv", label: "Edit Vehicle Points & Impound", description: "Set license points and impound/release vehicles" },
 		],
 	},
 	{
