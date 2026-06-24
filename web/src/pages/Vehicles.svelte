@@ -49,7 +49,6 @@
 	let selectedVehicle: VehicleDetails | null = $state(null);
 	let vehicleDetailLoading = $state(false);
 	let vehicleDetailError = $state<string | null>(null);
-	let vehicleSaving = $state(false);
 	let editingNotes = $state(false);
 	let notesValue = $state("");
 	let notesSaving = $state(false);
@@ -129,11 +128,48 @@
 		imageSaving = false;
 	}
 
-	let vehicleForm = $state({
-		points: 0,
-		status: "valid",
-		reason: "",
+	// Feature toggles + permission, provided by the backend (getVehicles / getVehicle).
+	let features = $state({ points: true, insurance: true });
+	let visualMaxPoints = $state(12);
+	let canEditPoints = $state(false);
+
+	// Points editing: a local draft the officer adjusts before saving.
+	let pointsDraft = $state(0);
+	let pointsSaving = $state(false);
+
+	let savedPoints = $derived<number>(selectedVehicle?.points ?? 0);
+	let pointsDirty = $derived<boolean>(pointsDraft !== savedPoints);
+	let pointsDelta = $derived<number>(pointsDraft - savedPoints);
+
+	const POINT_PRESETS = [1, 2, 3, 6];
+
+	function adjustPoints(delta: number) {
+		pointsDraft = Math.max(0, Math.min(1000, pointsDraft + delta));
+	}
+
+	function resetPoints() {
+		pointsDraft = 0;
+	}
+
+	// Visual pip strip: filled pips up to visualMax, with a "+N" overflow badge.
+	let pointPips = $derived.by(() => {
+		const max = Math.max(1, visualMaxPoints);
+		const filled = Math.min(pointsDraft, max);
+		const overflow = Math.max(0, pointsDraft - max);
+		return { max, filled, overflow };
 	});
+
+	function isVehicleInsured(v?: { status?: string } | null): boolean {
+		// Anything that isn't the configured "uninsured" status counts as insured.
+		return (v?.status || "valid").toLowerCase() !== "uninsured";
+	}
+
+	// The points column (0.6fr) drops out of the list grid when points are disabled.
+	let listGridColumns = $derived(
+		features.points
+			? "28px 2fr 1fr 1.5fr 0.8fr 0.6fr 0.8fr 1.5fr"
+			: "28px 2fr 1fr 1.5fr 0.8fr 0.8fr 1.5fr",
+	);
 
 	let linkedReports: Array<{ id: number; title: string; type: string; datecreated: string; authorplaintext: string }> = $state([]);
 	let linkedReportsLoading = $state(false);
@@ -198,6 +234,7 @@
 			case "suspended": return "status-suspended";
 			case "expired": return "status-expired";
 			case "impounded": return "status-impounded";
+			case "uninsured": return "status-uninsured";
 			case "valid": return "status-valid";
 			case "clear": return "status-valid";
 			default: return "status-valid";
@@ -220,9 +257,9 @@
 					boloactive: match.flags?.includes("Bolo") || false,
 					bolos: [],
 				};
-				vehicleForm.points = match.points ?? 0;
-				vehicleForm.status = match.status ?? "valid";
-				vehicleForm.reason = match.reason ?? "";
+				features = { points: true, insurance: true };
+				canEditPoints = true;
+				pointsDraft = match.points ?? 0;
 				linkedReports = [
 					{ id: 42, title: "Armed Robbery - Fleeca Bank", type: "Incident Report", datecreated: "2026-03-19", authorplaintext: "D2020 Ofc. Smith" },
 				];
@@ -235,9 +272,9 @@
 			const response = await fetchNui(NUI_EVENTS.VEHICLE.GET_VEHICLE, { plate });
 			if (response?.vehicle) {
 				selectedVehicle = response.vehicle;
-				vehicleForm.points = response.vehicle.points ?? 0;
-				vehicleForm.status = response.vehicle.status ?? "valid";
-				vehicleForm.reason = response.vehicle.reason ?? "";
+				if (response.features) features = { points: !!response.features.points, insurance: !!response.features.insurance };
+				canEditPoints = !!response.canEditPoints;
+				pointsDraft = response.vehicle.points ?? 0;
 			} else {
 				vehicleDetailError = response?.message || "Failed to load vehicle";
 			}
@@ -278,61 +315,67 @@
 		selectedVehicle = null;
 		vehicleDetailError = null;
 		vehicleDetailLoading = false;
-		vehicleSaving = false;
+		pointsSaving = false;
 		linkedReports = [];
 		editingNotes = false;
 		notesValue = "";
 		notesSaving = false;
 	}
 
-	async function saveVehicle() {
-		if (!selectedVehicle) return;
-		vehicleSaving = true;
+	async function savePoints() {
+		if (!selectedVehicle || pointsSaving || !pointsDirty) return;
+		pointsSaving = true;
 		try {
 			const response = await fetchNui(NUI_EVENTS.VEHICLE.UPDATE_VEHICLE, {
 				plate: selectedVehicle.plate,
-				points: vehicleForm.points,
-				status: vehicleForm.status,
-				reason: vehicleForm.reason,
+				points: pointsDraft,
 			});
 			if (!response?.success) {
-				vehicleDetailError = response?.message || "Failed to update vehicle";
+				globalNotifications.error(response?.message || "Failed to update points");
 				return;
 			}
-			selectedVehicle = {
-				...selectedVehicle,
-				points: vehicleForm.points,
-				status: vehicleForm.status,
-				reason: vehicleForm.reason,
-			};
+			selectedVehicle = { ...selectedVehicle, points: pointsDraft };
 			vehicleList = vehicleList.map((vehicle) =>
 				vehicle.plate === selectedVehicle?.plate
-					? { ...vehicle, points: vehicleForm.points, status: vehicleForm.status, reason: vehicleForm.reason }
+					? { ...vehicle, points: pointsDraft }
 					: vehicle,
 			);
+			globalNotifications.success("Points updated");
 		} catch (error) {
-			globalNotifications.error("Failed to update vehicle");
-			vehicleDetailError = "Failed to update vehicle";
+			globalNotifications.error("Failed to update points");
 		} finally {
-			vehicleSaving = false;
+			pointsSaving = false;
+		}
+	}
+
+	function applyVehiclesResponse(response: any) {
+		vehicleList = Array.isArray(response?.vehicles) ? response.vehicles : [];
+		if (response?.features) {
+			features = { points: !!response.features.points, insurance: !!response.features.insurance };
+		}
+		if (typeof response?.canEditPoints === "boolean") {
+			canEditPoints = response.canEditPoints;
 		}
 	}
 
 	onMount(async () => {
 		if (isEnvBrowser()) {
+			features = { points: true, insurance: true };
+			canEditPoints = true;
 			vehicleList = [
 				{ id: 1, model: 'sultan', label: 'Karin Sultan', plate: 'ABC 123', owner: 'Marcus Johnson', class: 'Sports', type: 'car', flags: ['Stolen'], status: 'stolen', points: 3 },
 				{ id: 2, model: 'adder', label: 'Truffade Adder', plate: 'XYZ 789', owner: 'Sarah Williams', class: 'Super', type: 'car', flags: [], status: 'valid', points: 0 },
 				{ id: 3, model: 'bati801', label: 'Pegassi Bati 801', plate: 'MOT 456', owner: 'David Chen', class: 'Motorcycles', type: 'bike', flags: ['Bolo'], status: 'bolo', points: 1 },
 				{ id: 4, model: 'zentorno', label: 'Pegassi Zentorno', plate: 'SPD 001', owner: 'LSPD Fleet', class: 'Super', type: 'car', flags: [], status: 'valid', points: 0 },
 				{ id: 5, model: 'sanchez', label: 'Sanchez', plate: 'DRT 321', owner: 'James Miller', class: 'Off-Road', type: 'bike', flags: ['Active Warrant'], status: 'impounded', points: 6 },
+				{ id: 6, model: 'futo', label: 'Karin Futo', plate: 'INS 404', owner: 'Olivia Brown', class: 'Sports', type: 'car', flags: [], status: 'uninsured', reason: 'No active insurance', points: 2 },
 			];
 			loading = false;
 		} else {
 			loading = true;
 			try {
 				const response = await fetchNui(NUI_EVENTS.VEHICLE.GET_VEHICLES);
-				vehicleList = Array.isArray(response.vehicles) ? response.vehicles : [];
+				applyVehiclesResponse(response);
 			} catch (error) {
 				globalNotifications.error("Failed to load vehicles");
 				vehicleList = [];
@@ -346,7 +389,7 @@
 		loading = true;
 		try {
 			const response = await fetchNui(NUI_EVENTS.VEHICLE.GET_VEHICLES);
-			vehicleList = Array.isArray(response.vehicles) ? response.vehicles : [];
+			applyVehiclesResponse(response);
 		} catch (error) {
 			globalNotifications.error("Failed to load vehicles");
 			vehicleList = [];
@@ -420,7 +463,17 @@
 					<div class="info-item"><span class="info-label">Type</span><span class="info-value">{selectedVehicle.type}</span></div>
 					<div class="info-item"><span class="info-label">Brand</span><span class="info-value">{selectedVehicle.brand || 'Unknown'}</span></div>
 					<div class="info-item"><span class="info-label">Reports</span><span class="info-value">{selectedVehicle.seenIn || 0}</span></div>
-					<div class="info-item"><span class="info-label">Points</span><span class="info-value" class:accent-red={(selectedVehicle.points ?? 0) > 0}>{selectedVehicle.points ?? 0}</span></div>
+					{#if features.points}
+						<div class="info-item"><span class="info-label">Points</span><span class="info-value" class:accent-red={(selectedVehicle.points ?? 0) > 0}>{selectedVehicle.points ?? 0}</span></div>
+					{/if}
+					{#if features.insurance}
+						<div class="info-item">
+							<span class="info-label">Insurance</span>
+							<span class="info-value" class:state-active={isVehicleInsured(selectedVehicle)} class:accent-red={!isVehicleInsured(selectedVehicle)}>
+								{isVehicleInsured(selectedVehicle) ? 'Insured' : 'Uninsured'}
+							</span>
+						</div>
+					{/if}
 					<div class="info-item">
 						<span class="info-label">State</span>
 						<span class="info-value" class:state-active={selectedVehicle.core_state === 0} class:state-garaged={selectedVehicle.core_state === 1} class:state-impounded-state={selectedVehicle.core_state === 2}>
@@ -478,33 +531,61 @@
 					</div>
 				{/if}
 
-				<div class="section">
-					<div class="section-title">DMV Updates</div>
-					<div class="dmv-form">
-						<div class="form-row">
-							<label class="form-field">
-								<span>Points</span>
-								<input type="number" min="0" bind:value={vehicleForm.points} />
-							</label>
-							<label class="form-field">
-								<span>Status</span>
-								<select bind:value={vehicleForm.status}>
-									<option value="valid">Valid</option>
-									<option value="suspended">Suspended</option>
-									<option value="expired">Expired</option>
-									<option value="impounded">Impounded</option>
-								</select>
-							</label>
-							<label class="form-field form-grow">
-								<span>Reason</span>
-								<input type="text" placeholder="Optional note" bind:value={vehicleForm.reason} />
-							</label>
+				{#if features.points}
+					<div class="section">
+						<div class="section-title">
+							License Points
+							{#if pointsDirty}
+								<span class="points-pending">{pointsDelta > 0 ? `+${pointsDelta}` : pointsDelta} unsaved</span>
+							{/if}
 						</div>
-						<button class="save-btn" onclick={saveVehicle} disabled={vehicleSaving} type="button">
-							{vehicleSaving ? "Saving..." : "Save DMV"}
-						</button>
+
+						{#if canEditPoints}
+							<div class="points-editor">
+								<div class="points-stepper">
+									<button class="pt-step" onclick={() => adjustPoints(-1)} disabled={pointsDraft <= 0} title="Remove one point" type="button" aria-label="Remove one point">
+										<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14"/></svg>
+									</button>
+									<div class="pt-value" class:pt-value-zero={pointsDraft === 0}>{pointsDraft}</div>
+									<button class="pt-step" onclick={() => adjustPoints(1)} disabled={pointsDraft >= 1000} title="Add one point" type="button" aria-label="Add one point">
+										<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+									</button>
+								</div>
+
+								<div class="pt-pips" aria-hidden="true">
+									{#each Array(pointPips.max) as _, i}
+										<span class="pt-pip" class:pt-pip-on={i < pointPips.filled}></span>
+									{/each}
+									{#if pointPips.overflow > 0}
+										<span class="pt-pip-overflow">+{pointPips.overflow}</span>
+									{/if}
+								</div>
+
+								<div class="pt-presets">
+									<span class="pt-presets-label">Quick add</span>
+									{#each POINT_PRESETS as preset}
+										<button class="pt-chip" onclick={() => adjustPoints(preset)} type="button">+{preset}</button>
+									{/each}
+									<button class="pt-chip pt-chip-reset" onclick={resetPoints} disabled={pointsDraft === 0} type="button">Reset</button>
+								</div>
+
+								<div class="pt-actions">
+									<button class="pt-save" onclick={savePoints} disabled={pointsSaving || !pointsDirty} type="button">
+										{pointsSaving ? "Saving..." : pointsDirty ? "Save points" : "Saved"}
+									</button>
+									{#if pointsDirty}
+										<button class="pt-revert" onclick={() => pointsDraft = savedPoints} type="button">Revert</button>
+									{/if}
+								</div>
+							</div>
+						{:else}
+							<div class="points-readonly" class:accent-red={(selectedVehicle.points ?? 0) > 0}>
+								<span class="pt-readonly-value">{selectedVehicle.points ?? 0}</span>
+								<span class="pt-readonly-label">points on record</span>
+							</div>
+						{/if}
 					</div>
-				</div>
+				{/if}
 
 				{#if selectedVehicle.bolos && selectedVehicle.bolos.length}
 					<div class="section">
@@ -616,14 +697,16 @@
 		</div>
 
 		<div class="list-panel">
-			<div class="list-header">
+			<div class="list-header" style="grid-template-columns: {listGridColumns};">
 			    <span></span>
 				<span class="col-name">Vehicle</span>
 				<span class="col-plate">Plate</span>
 				<span class="col-owner">Owner</span>
 				<span class="col-class">Class</span>
-				<span class="col-points">Points</span>
-				<span class="col-status">Status</span>
+				{#if features.points}
+					<span class="col-points">Points</span>
+				{/if}
+				<span class="col-status">Insurance</span>
 				<span class="col-flags">Flags</span>
 			</div>
 			<div class="list-body">
@@ -633,7 +716,7 @@
 					<div class="empty-state">{searchQuery ? "No vehicles match your search." : "No vehicles found."}</div>
 				{:else}
 					{#each filteredVehicles as vehicle}
-						<button class="vehicle-row" onclick={() => viewVehicle(vehicle.plate)}>
+						<button class="vehicle-row" style="grid-template-columns: {listGridColumns};" onclick={() => viewVehicle(vehicle.plate)}>
 							<div class="vehicle-avatar">
 								{#if vehicle.image && !vehicle.image.startsWith('https://docs.fivem.net')}
 									<img src={vehicle.image} alt="" onerror={(e) => { (e.target as HTMLImageElement).style.display = 'none'; (e.target as HTMLImageElement).nextElementSibling?.removeAttribute('style'); }} />
@@ -646,7 +729,9 @@
 							<span class="col-plate mono">{vehicle.plate}</span>
 							<span class="col-owner">{vehicle.owner}</span>
 							<span class="col-class">{vehicle.class}</span>
-							<span class="col-points" class:accent-red={(vehicle.points ?? 0) > 0}>{vehicle.points ?? 0}</span>
+							{#if features.points}
+								<span class="col-points" class:accent-red={(vehicle.points ?? 0) > 0}>{vehicle.points ?? 0}</span>
+							{/if}
 							<span class="col-status">
 								<span 
 									class="status-pill {getStatusClass(vehicle.status || 'valid')}"
@@ -995,6 +1080,12 @@
 		border: 1px solid rgba(245, 158, 11, 0.1);
 	}
 
+	.status-uninsured {
+		background: rgba(239, 68, 68, 0.08);
+		color: rgba(248, 113, 113, 0.8);
+		border: 1px solid rgba(239, 68, 68, 0.1);
+	}
+
 	/* ===== Empty / Loading ===== */
 	.empty-state, .loading-state, .error-state {
 		display: flex;
@@ -1119,74 +1210,209 @@
 		flex-wrap: wrap;
 	}
 
-	/* ===== DMV Form ===== */
-	.dmv-form {
-		display: flex;
-		flex-direction: column;
-		gap: 8px;
+	/* ===== License Points Editor ===== */
+	.points-pending {
+		margin-left: 8px;
+		font-size: 9px;
+		font-weight: 700;
+		letter-spacing: 0.3px;
+		color: rgba(251, 191, 36, 0.85);
+		background: rgba(245, 158, 11, 0.08);
+		border: 1px solid rgba(245, 158, 11, 0.12);
+		border-radius: 3px;
+		padding: 1px 6px;
+		text-transform: none;
 	}
 
-	.form-row {
-		display: flex;
-		gap: 8px;
-		align-items: flex-end;
-	}
-
-	.form-field {
+	.points-editor {
 		display: flex;
 		flex-direction: column;
-		gap: 3px;
-		min-width: 100px;
+		gap: 12px;
+	}
+
+	.points-stepper {
+		display: flex;
+		align-items: center;
+		gap: 14px;
+	}
+
+	.pt-step {
+		width: 30px;
+		height: 30px;
+		display: grid;
+		place-items: center;
+		border-radius: 6px;
+		background: rgba(255, 255, 255, 0.04);
+		border: 1px solid rgba(255, 255, 255, 0.07);
+		color: rgba(255, 255, 255, 0.7);
+		cursor: pointer;
+		transition: background 0.1s, color 0.1s, border-color 0.1s;
+	}
+
+	.pt-step:hover:not(:disabled) {
+		background: rgba(255, 255, 255, 0.08);
+		color: rgba(255, 255, 255, 0.95);
+		border-color: rgba(255, 255, 255, 0.12);
+	}
+
+	.pt-step:disabled {
+		opacity: 0.3;
+		cursor: not-allowed;
+	}
+
+	.pt-value {
+		min-width: 56px;
+		text-align: center;
+		font-family: monospace;
+		font-size: 30px;
+		font-weight: 700;
+		line-height: 1;
+		letter-spacing: 1px;
+		color: rgba(248, 113, 113, 0.9);
+		font-variant-numeric: tabular-nums;
+	}
+
+	.pt-value-zero {
+		color: rgba(255, 255, 255, 0.85);
+	}
+
+	.pt-pips {
+		display: flex;
+		align-items: center;
+		gap: 4px;
+		flex-wrap: wrap;
+	}
+
+	.pt-pip {
+		width: 16px;
+		height: 6px;
+		border-radius: 2px;
+		background: rgba(255, 255, 255, 0.07);
+		transition: background 0.1s;
+	}
+
+	.pt-pip-on {
+		background: rgba(248, 113, 113, 0.7);
+	}
+
+	.pt-pip-overflow {
+		margin-left: 4px;
+		font-family: monospace;
+		font-size: 10px;
+		font-weight: 700;
+		color: rgba(248, 113, 113, 0.85);
+	}
+
+	.pt-presets {
+		display: flex;
+		align-items: center;
+		gap: 6px;
+		flex-wrap: wrap;
+	}
+
+	.pt-presets-label {
 		color: rgba(255, 255, 255, 0.35);
 		font-size: 9px;
 		font-weight: 600;
 		text-transform: uppercase;
 		letter-spacing: 0.5px;
+		margin-right: 2px;
 	}
 
-	.form-grow { flex: 1; }
-
-	.form-field input {
-		background: rgba(255, 255, 255, 0.03);
-		border: 1px solid rgba(255, 255, 255, 0.06);
-		border-radius: 3px;
-		padding: 5px 8px;
-		color: rgba(255, 255, 255, 0.8);
+	.pt-chip {
+		background: rgba(255, 255, 255, 0.04);
+		border: 1px solid rgba(255, 255, 255, 0.07);
+		border-radius: 4px;
+		padding: 4px 10px;
+		color: rgba(255, 255, 255, 0.7);
 		font-size: 11px;
+		font-weight: 600;
+		font-family: monospace;
+		cursor: pointer;
+		transition: background 0.1s, color 0.1s, border-color 0.1s;
 	}
 
-	.form-field select {
-		padding: 5px 22px 5px 8px;
-		font-size: 10px;
+	.pt-chip:hover:not(:disabled) {
+		background: rgba(248, 113, 113, 0.1);
+		color: rgba(248, 113, 113, 0.9);
+		border-color: rgba(239, 68, 68, 0.15);
 	}
 
-	.form-field input:focus,
-	.form-field select:focus {
-		outline: none;
-		border-color: rgba(255, 255, 255, 0.1);
+	.pt-chip-reset {
+		font-family: inherit;
+		color: rgba(255, 255, 255, 0.45);
 	}
 
-	.save-btn {
-		align-self: flex-start;
+	.pt-chip-reset:hover:not(:disabled) {
+		background: rgba(255, 255, 255, 0.06);
+		color: rgba(255, 255, 255, 0.8);
+		border-color: rgba(255, 255, 255, 0.12);
+	}
+
+	.pt-chip:disabled {
+		opacity: 0.3;
+		cursor: not-allowed;
+	}
+
+	.pt-actions {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+	}
+
+	.pt-save {
 		background: rgba(16, 185, 129, 0.06);
-		color: rgba(52, 211, 153, 0.7);
-		border: 1px solid rgba(16, 185, 129, 0.1);
-		padding: 4px 12px;
-		border-radius: 3px;
+		color: rgba(52, 211, 153, 0.8);
+		border: 1px solid rgba(16, 185, 129, 0.12);
+		padding: 5px 14px;
+		border-radius: 4px;
+		font-size: 10px;
+		font-weight: 600;
+		cursor: pointer;
+		transition: background 0.1s, color 0.1s;
+	}
+
+	.pt-save:hover:not(:disabled) {
+		background: rgba(16, 185, 129, 0.12);
+		color: rgba(110, 231, 183, 0.95);
+	}
+
+	.pt-save:disabled {
+		opacity: 0.35;
+		cursor: not-allowed;
+	}
+
+	.pt-revert {
+		background: transparent;
+		border: none;
+		color: rgba(255, 255, 255, 0.4);
 		font-size: 10px;
 		font-weight: 500;
 		cursor: pointer;
-		transition: all 0.1s;
+		padding: 5px 6px;
 	}
 
-	.save-btn:hover:not(:disabled) {
-		background: rgba(16, 185, 129, 0.12);
-		color: rgba(110, 231, 183, 0.9);
+	.pt-revert:hover {
+		color: rgba(255, 255, 255, 0.7);
 	}
 
-	.save-btn:disabled {
-		opacity: 0.3;
-		cursor: not-allowed;
+	.points-readonly {
+		display: flex;
+		align-items: baseline;
+		gap: 8px;
+		color: rgba(255, 255, 255, 0.85);
+	}
+
+	.pt-readonly-value {
+		font-family: monospace;
+		font-size: 24px;
+		font-weight: 700;
+		line-height: 1;
+	}
+
+	.pt-readonly-label {
+		font-size: 10px;
+		color: rgba(255, 255, 255, 0.4);
 	}
 
 	/* ===== BOLOs in Detail ===== */

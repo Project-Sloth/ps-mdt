@@ -1427,7 +1427,7 @@
 							{#if chargesHasMore}
 								<div class="section-pager">
 									<button class="load-more-btn" disabled={chargesLoading} onclick={loadMoreCharges}>
-										{chargesLoading ? "Loading…" : "Load 20 more"}
+										{chargesLoading ? "Loading…" : "Load more charges"}
 									</button>
 								</div>
 							{/if}
