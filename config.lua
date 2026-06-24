@@ -202,6 +202,57 @@ Config.Housing = {
     },
 }
 
+-- ─────────────────────────────────────────────────────────────────────────────
+--  Vehicle MDT — License Points
+-- ─────────────────────────────────────────────────────────────────────────────
+-- "License points" are shown on a vehicle's MDT profile and (optionally) in the
+-- vehicle list. Officers add them one at a time, or via quick presets, on the
+-- vehicle detail view (requires the `vehicles_edit_dmv` permission).
+Config.VehiclePoints = {
+    enabled   = false, -- false = hide points everywhere (list column, profile, editor) and reject point writes
+    visualMax = 12,   -- how many pips the points bar draws before showing a "+N" overflow badge
+}
+
+-- ─────────────────────────────────────────────────────────────────────────────
+--  Vehicle MDT — Insurance Integration
+-- ─────────────────────────────────────────────────────────────────────────────
+-- When enabled, a vehicle's STATUS (the pill shown top-right on the profile and
+-- in the vehicle list) is driven LIVE by your insurance resource instead of being
+-- set by hand — officers can no longer edit status/reason manually.
+--
+-- When DISABLED, the status simply defaults to "Valid" everywhere and NO insurance
+-- lookups are performed.
+--
+-- The lookup is fully configurable so you can point it at whatever insurance script
+-- you run. Example (m-Insurance), which uses a callback-style export:
+--     exports['m-Insurance']:HasCarInsurance('ABC123', function(hasInsurance) ... end)
+--
+-- NOTE: lookups always FAIL OPEN — a missing resource/export, an error, or a
+-- timeout is treated as "insured", so a broken insurance script can never wrongly
+-- flag every vehicle as uninsured.
+Config.VehicleInsurance = {
+    enabled  = false,
+    resource = 'm-Insurance',     -- resource that exposes the export
+    export   = 'HasCarInsurance', -- export name to call
+
+    -- How the export delivers its answer:
+    --   callback = true  -> exports[resource]:export(plate, function(hasInsurance) end)
+    --   callback = false -> local hasInsurance = exports[resource]:export(plate)
+    callback = true,
+
+    timeout  = 2000, -- ms to wait for a callback answer before failing open (treated as insured)
+
+    -- Resolve insurance for EVERY row in the vehicle list? On large servers this is
+    -- one lookup per vehicle. Set false to only resolve it on the detail view (the
+    -- list then shows "Valid" until a vehicle is opened).
+    resolveInList = true,
+
+    -- How the insured/uninsured result maps onto the existing status/reason pill:
+    insuredStatus   = 'valid',                -- status when the vehicle IS insured
+    uninsuredStatus = 'uninsured',            -- status when it is NOT insured
+    uninsuredReason = 'No active insurance',  -- reason text shown next to the pill
+}
+
 -- Weapon Registration
 Config.RegisterWeaponsAutomatically = true -- Auto-register weapons on purchase (ox_inventory and qb-inventory/qb-weapons)
 Config.RegisterCreatedWeapons = false -- Also auto-register weapons on item creation (ox_inventory only)
@@ -254,7 +305,7 @@ Config.Pagination = {
     Citizens = 20, -- Citizens per page
     CitizenSearch = 20, -- Max citizen search results
     Cases = 20, -- Cases per page
-    CitizenCharges = 5, -- Charges per page in the Citizen profile's Charges section
+    CitizenCharges = 2, -- Charges per page in the Citizen profile's Charges section
 }
 
 -- Fine Processing
