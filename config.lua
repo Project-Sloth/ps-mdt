@@ -253,6 +253,43 @@ Config.VehicleInsurance = {
     uninsuredReason = 'No active insurance',  -- reason text shown next to the pill
 }
 
+-- ─────────────────────────────────────────────────────────────────────────────
+--  Vehicle MDT — Registration Integration
+-- ─────────────────────────────────────────────────────────────────────────────
+-- A sibling of Config.VehicleInsurance. When enabled, a vehicle's REGISTRATION
+-- (shown as its own Registered/Unregistered field on the profile + in the vehicle
+-- list, and as a pill in the profile detail view) is resolved LIVE from a
+-- configurable resource. When disabled, every vehicle simply reads "Registered"
+-- and NO registration lookups are performed.
+--
+-- The lookup is fully configurable. Example (m-Insurance), which uses a
+-- callback-style export:
+--     exports['m-Insurance']:HasCarRegistration('ABC123', function(hasReg) ... end)
+--
+-- NOTE: lookups always FAIL OPEN — a missing resource/export, an error, or a
+-- timeout is treated as "registered", so a broken script can never wrongly flag
+-- every vehicle as unregistered.
+Config.VehicleRegistration = {
+    enabled  = false,
+    resource = 'm-Insurance',        -- resource that exposes the export
+    export   = 'HasCarRegistration', -- export name to call
+
+    -- How the export delivers its answer:
+    --   callback = true  -> exports[resource]:export(plate, function(hasReg) end)
+    --   callback = false -> local hasReg = exports[resource]:export(plate)
+    callback = true,
+
+    timeout  = 2000, -- ms to wait for a callback answer before failing open (treated as registered)
+
+    -- Resolve registration for EVERY row in the vehicle list? On large servers this
+    -- is one lookup per vehicle. Set false to only resolve it on the detail view
+    -- (the list then shows "Registered" until a vehicle is opened).
+    resolveInList = true,
+
+    -- Reason text shown next to the pill when a vehicle is NOT registered:
+    unregisteredReason = 'No active registration',
+}
+
 -- Weapon Registration
 Config.RegisterWeaponsAutomatically = true -- Auto-register weapons on purchase (ox_inventory and qb-inventory/qb-weapons)
 Config.RegisterCreatedWeapons = false -- Also auto-register weapons on item creation (ox_inventory only)
