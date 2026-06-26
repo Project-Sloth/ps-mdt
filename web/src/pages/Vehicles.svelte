@@ -24,6 +24,8 @@
 		points?: number;
 		status?: string;
 		reason?: string;
+		registered?: boolean;
+		registrationReason?: string;
 		core_state?: number;
 	}
 
@@ -129,7 +131,7 @@
 	}
 
 	// Feature toggles + permission, provided by the backend (getVehicles / getVehicle).
-	let features = $state({ points: true, insurance: true });
+	let features = $state({ points: true, insurance: true, registration: true });
 	let visualMaxPoints = $state(12);
 	let canEditPoints = $state(false);
 
@@ -164,11 +166,25 @@
 		return (v?.status || "valid").toLowerCase() !== "uninsured";
 	}
 
-	// The points column (0.6fr) drops out of the list grid when points are disabled.
+	function isVehicleRegistered(v?: { registered?: boolean } | null): boolean {
+		// Defaults to registered when the field is absent (fail open / feature off).
+		return v?.registered !== false;
+	}
+
+	// Columns drop out of the list grid when their feature is disabled:
+	// points (0.6fr), insurance (0.8fr) and registration (0.8fr).
 	let listGridColumns = $derived(
-		features.points
-			? "28px 2fr 1fr 1.5fr 0.8fr 0.6fr 0.8fr 1.5fr"
-			: "28px 2fr 1fr 1.5fr 0.8fr 0.8fr 1.5fr",
+		[
+			"28px",  // avatar
+			"2fr",   // vehicle
+			"1fr",   // plate
+			"1.5fr", // owner
+			"0.8fr", // class
+			features.points ? "0.6fr" : null,       // points
+			features.insurance ? "0.8fr" : null,    // insurance
+			features.registration ? "0.8fr" : null, // registration
+			"1.5fr", // flags
+		].filter(Boolean).join(" "),
 	);
 
 	let linkedReports: Array<{ id: number; title: string; type: string; datecreated: string; authorplaintext: string }> = $state([]);
@@ -257,7 +273,7 @@
 					boloactive: match.flags?.includes("Bolo") || false,
 					bolos: [],
 				};
-				features = { points: true, insurance: true };
+				features = { points: true, insurance: true, registration: true };
 				canEditPoints = true;
 				pointsDraft = match.points ?? 0;
 				linkedReports = [
@@ -272,7 +288,7 @@
 			const response = await fetchNui(NUI_EVENTS.VEHICLE.GET_VEHICLE, { plate });
 			if (response?.vehicle) {
 				selectedVehicle = response.vehicle;
-				if (response.features) features = { points: !!response.features.points, insurance: !!response.features.insurance };
+				if (response.features) features = { points: !!response.features.points, insurance: !!response.features.insurance, registration: !!response.features.registration };
 				canEditPoints = !!response.canEditPoints;
 				pointsDraft = response.vehicle.points ?? 0;
 			} else {
@@ -351,7 +367,7 @@
 	function applyVehiclesResponse(response: any) {
 		vehicleList = Array.isArray(response?.vehicles) ? response.vehicles : [];
 		if (response?.features) {
-			features = { points: !!response.features.points, insurance: !!response.features.insurance };
+			features = { points: !!response.features.points, insurance: !!response.features.insurance, registration: !!response.features.registration };
 		}
 		if (typeof response?.canEditPoints === "boolean") {
 			canEditPoints = response.canEditPoints;
@@ -360,15 +376,15 @@
 
 	onMount(async () => {
 		if (isEnvBrowser()) {
-			features = { points: true, insurance: true };
+			features = { points: true, insurance: true, registration: true };
 			canEditPoints = true;
 			vehicleList = [
 				{ id: 1, model: 'sultan', label: 'Karin Sultan', plate: 'ABC 123', owner: 'Marcus Johnson', class: 'Sports', type: 'car', flags: ['Stolen'], status: 'stolen', points: 3 },
 				{ id: 2, model: 'adder', label: 'Truffade Adder', plate: 'XYZ 789', owner: 'Sarah Williams', class: 'Super', type: 'car', flags: [], status: 'valid', points: 0 },
 				{ id: 3, model: 'bati801', label: 'Pegassi Bati 801', plate: 'MOT 456', owner: 'David Chen', class: 'Motorcycles', type: 'bike', flags: ['Bolo'], status: 'bolo', points: 1 },
 				{ id: 4, model: 'zentorno', label: 'Pegassi Zentorno', plate: 'SPD 001', owner: 'LSPD Fleet', class: 'Super', type: 'car', flags: [], status: 'valid', points: 0 },
-				{ id: 5, model: 'sanchez', label: 'Sanchez', plate: 'DRT 321', owner: 'James Miller', class: 'Off-Road', type: 'bike', flags: ['Active Warrant'], status: 'impounded', points: 6 },
-				{ id: 6, model: 'futo', label: 'Karin Futo', plate: 'INS 404', owner: 'Olivia Brown', class: 'Sports', type: 'car', flags: [], status: 'uninsured', reason: 'No active insurance', points: 2 },
+				{ id: 5, model: 'sanchez', label: 'Sanchez', plate: 'DRT 321', owner: 'James Miller', class: 'Off-Road', type: 'bike', flags: ['Active Warrant'], status: 'impounded', points: 6, registered: false, registrationReason: 'No active registration' },
+				{ id: 6, model: 'futo', label: 'Karin Futo', plate: 'INS 404', owner: 'Olivia Brown', class: 'Sports', type: 'car', flags: [], status: 'uninsured', reason: 'No active insurance', points: 2, registered: true },
 			];
 			loading = false;
 		} else {
@@ -418,9 +434,14 @@
 					{#if selectedVehicle.boloactive}
 						<span class="pill pill-orange">BOLO</span>
 					{/if}
-					<span class="pill {getStatusClass(selectedVehicle.status || 'valid')}">
-						{(selectedVehicle.status || 'Valid').charAt(0).toUpperCase() + (selectedVehicle.status || 'Valid').slice(1)}{selectedVehicle.reason?.trim() ? ` (${selectedVehicle.reason.trim()})` : ''}
-					</span>
+					{#if features.insurance}
+						<span class="pill {getStatusClass(selectedVehicle.status || 'valid')}">
+							{(selectedVehicle.status || 'Valid').charAt(0).toUpperCase() + (selectedVehicle.status || 'Valid').slice(1)}{selectedVehicle.reason?.trim() ? ` (${selectedVehicle.reason.trim()})` : ''}
+						</span>
+					{/if}
+					{#if features.registration && !isVehicleRegistered(selectedVehicle)}
+						<span class="pill pill-red" title={selectedVehicle.registrationReason?.trim() || undefined}>Unregistered</span>
+					{/if}
 				</div>
 			{/if}
 		</div>
@@ -471,6 +492,14 @@
 							<span class="info-label">Insurance</span>
 							<span class="info-value" class:state-active={isVehicleInsured(selectedVehicle)} class:accent-red={!isVehicleInsured(selectedVehicle)}>
 								{isVehicleInsured(selectedVehicle) ? 'Insured' : 'Uninsured'}
+							</span>
+						</div>
+					{/if}
+					{#if features.registration}
+						<div class="info-item">
+							<span class="info-label">Registration</span>
+							<span class="info-value" class:state-active={isVehicleRegistered(selectedVehicle)} class:accent-red={!isVehicleRegistered(selectedVehicle)}>
+								{isVehicleRegistered(selectedVehicle) ? 'Registered' : 'Unregistered'}
 							</span>
 						</div>
 					{/if}
@@ -706,7 +735,12 @@
 				{#if features.points}
 					<span class="col-points">Points</span>
 				{/if}
-				<span class="col-status">Insurance</span>
+				{#if features.insurance}
+					<span class="col-status">Insurance</span>
+				{/if}
+				{#if features.registration}
+					<span class="col-status">Registration</span>
+				{/if}
 				<span class="col-flags">Flags</span>
 			</div>
 			<div class="list-body">
@@ -732,13 +766,24 @@
 							{#if features.points}
 								<span class="col-points" class:accent-red={(vehicle.points ?? 0) > 0}>{vehicle.points ?? 0}</span>
 							{/if}
-							<span class="col-status">
-								<span 
-									class="status-pill {getStatusClass(vehicle.status || 'valid')}"
-									title={vehicle.reason?.trim() ? `${vehicle.status}: ${vehicle.reason}` : undefined}
-									>{vehicle.status || 'Valid'}
+							{#if features.insurance}
+								<span class="col-status">
+									<span 
+										class="status-pill {getStatusClass(vehicle.status || 'valid')}"
+										title={vehicle.reason?.trim() ? `${vehicle.status}: ${vehicle.reason}` : undefined}
+										>{vehicle.status || 'Valid'}
+									</span>
 								</span>
-							</span>
+							{/if}
+							{#if features.registration}
+								<span class="col-status">
+									<span 
+										class="status-pill {isVehicleRegistered(vehicle) ? 'status-registered' : 'status-unregistered'}"
+										title={!isVehicleRegistered(vehicle) && vehicle.registrationReason?.trim() ? vehicle.registrationReason : undefined}
+										>{isVehicleRegistered(vehicle) ? 'Registered' : 'Unregistered'}
+									</span>
+								</span>
+							{/if}
 							<span class="col-flags">
 								{#each (vehicle.flags || []).filter(f => !f.toLowerCase().startsWith('status:')) as flag}
 									<span class={getFlagClass(flag)}>{flag}</span>
@@ -1081,6 +1126,18 @@
 	}
 
 	.status-uninsured {
+		background: rgba(239, 68, 68, 0.08);
+		color: rgba(248, 113, 113, 0.8);
+		border: 1px solid rgba(239, 68, 68, 0.1);
+	}
+
+	.status-registered {
+		background: rgba(16, 185, 129, 0.08);
+		color: rgba(52, 211, 153, 0.8);
+		border: 1px solid rgba(16, 185, 129, 0.1);
+	}
+
+	.status-unregistered {
 		background: rgba(239, 68, 68, 0.08);
 		color: rgba(248, 113, 113, 0.8);
 		border: 1px solid rgba(239, 68, 68, 0.1);

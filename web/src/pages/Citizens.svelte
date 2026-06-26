@@ -753,6 +753,9 @@
 		class?: string;
 		type?: string;
 		status?: string;
+		reason?: string;
+		registered?: boolean;
+		registrationReason?: string;
 		points?: number;
 		information?: string;
 		stolen?: boolean;
@@ -760,6 +763,7 @@
 	}
 	let vehicleDetail: VehicleDetail | null = $state(null);
 	let vehicleDetailLoading = $state(false);
+	let vehicleDetailFeatures = $state({ points: false, insurance: false, registration: false });
 
 	// ── Property detail modal ──
 	interface PropertyDetail {
@@ -793,11 +797,18 @@
 		if (!plate) return;
 		vehicleDetailLoading = true;
 		vehicleDetail = null;
+		vehicleDetailFeatures = { points: false, insurance: false, registration: false };
 		try {
 			const response = await fetchNui<any>(NUI_EVENTS.VEHICLE.GET_VEHICLE, { plate });
 			vehicleDetail = response?.vehicle || { plate, vehicle: "Unknown" };
+			vehicleDetailFeatures = {
+				points: !!response?.features?.points,
+				insurance: !!response?.features?.insurance,
+				registration: !!response?.features?.registration,
+			};
 		} catch {
 			vehicleDetail = { plate, vehicle: "Unknown" };
+			vehicleDetailFeatures = { points: false, insurance: false, registration: false };
 		}
 		vehicleDetailLoading = false;
 	}
@@ -1568,8 +1579,9 @@
 							<div class="vd-row"><span class="vd-label">Vehicle</span><span class="vd-value">{vehicleDetail.label || vehicleDetail.vehicle || vehicleDetail.model || 'Unknown'}</span></div>
 							{#if vehicleDetail.owner}<div class="vd-row"><span class="vd-label">Owner</span><span class="vd-value">{vehicleDetail.owner}</span></div>{/if}
 							{#if vehicleDetail.class}<div class="vd-row"><span class="vd-label">Class</span><span class="vd-value">{vehicleDetail.class}</span></div>{/if}
-							{#if vehicleDetail.status}<div class="vd-row"><span class="vd-label">Status</span><span class="vd-value vd-status-{vehicleDetail.status}">{vehicleDetail.status}</span></div>{/if}
-							{#if vehicleDetail.points !== undefined}<div class="vd-row"><span class="vd-label">Points</span><span class="vd-value" class:accent-red={vehicleDetail.points > 0}>{vehicleDetail.points}</span></div>{/if}
+							{#if vehicleDetailFeatures.insurance}<div class="vd-row"><span class="vd-label">Insurance</span><span class="vd-value" style="color: {(vehicleDetail.status || 'valid').toLowerCase() === 'uninsured' ? '#f87171' : '#34d399'};">{(vehicleDetail.status || 'valid').toLowerCase() === 'uninsured' ? 'Uninsured' : 'Insured'}</span></div>{/if}
+							{#if vehicleDetailFeatures.registration}<div class="vd-row"><span class="vd-label">Registration</span><span class="vd-value" style="color: {vehicleDetail.registered === false ? '#f87171' : '#34d399'};">{vehicleDetail.registered === false ? 'Unregistered' : 'Registered'}</span></div>{/if}
+							{#if vehicleDetailFeatures.points && vehicleDetail.points !== undefined}<div class="vd-row"><span class="vd-label">Points</span><span class="vd-value" class:accent-red={vehicleDetail.points > 0}>{vehicleDetail.points}</span></div>{/if}
 							{#if vehicleDetail.stolen}<div class="vd-row"><span class="vd-label">Stolen</span><span class="vd-value accent-red">Yes</span></div>{/if}
 							{#if vehicleDetail.boloactive}<div class="vd-row"><span class="vd-label">BOLO</span><span class="vd-value" style="color: #fbbf24;">Active</span></div>{/if}
 							{#if vehicleDetail.information}<div class="vd-row vd-notes"><span class="vd-label">Notes</span><span class="vd-value">{vehicleDetail.information}</span></div>{/if}
@@ -2115,10 +2127,6 @@
 	.vd-value.mono { font-family: monospace; letter-spacing: 0.5px; }
 	.vd-notes { flex-direction: column; align-items: flex-start; gap: 4px; }
 	.vd-notes .vd-value { font-weight: 400; line-height: 1.4; }
-	.vd-status-stolen { color: #f87171 !important; }
-	.vd-status-impounded { color: #fb923c !important; }
-	.vd-status-bolo { color: #fbbf24 !important; }
-	.vd-status-valid { color: #34d399 !important; }
 
 	/* ── Property modal ── */
 	.prop-modal-title-group { display: flex; align-items: flex-start; gap: 7px; flex: 1; min-width: 0; }
