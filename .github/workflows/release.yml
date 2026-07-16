@@ -74,4 +74,5 @@ jobs:
           generate_release_notes: true
           draft: false
           prerelease: ${{ contains(steps.version.outputs.tag, '-') }}
+          make_latest: true
           files: ${{ steps.archive.outputs.name }}
