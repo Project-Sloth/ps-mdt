@@ -760,11 +760,45 @@
     // and can grow without touching this file. `Default` is what an officer
     // who never set a status is treated as.
     type StatusDef = { id: string; label: string; color: string; icon?: string };
-    let statusDefs    = $state<StatusDef[]>([
-        { id: "active", label: "Active", color: "#22C55E", icon: "●" },
-        { id: "busy",   label: "Busy",   color: "#F59E0B", icon: "●" },
-    ]);
-    let defaultStatusId = $state("active");
+    // Status ids missing from this list paint a grey "unknown" dot, so what it
+    // holds before the server answers decides what the first frames look like.
+    //
+    // It is remembered from the LAST successful load rather than hardcoded:
+    // a hardcoded list would be wrong the moment a server adds a status or
+    // removes one, and would keep being wrong every time the tab opens. The
+    // cache is written by loadStatusConfig() below, so it always describes
+    // THIS server's Config.OfficerStatus.list, custom entries included.
+    //
+    // Very first open on a machine there is no cache — that case is covered by
+    // awaiting the fetch before the first markers are drawn (see initializeMap).
+    const STATUS_CACHE_KEY = "mdt_status_defs";
+
+    function readStatusCache(): { statuses: StatusDef[]; default?: string } | null {
+        try {
+            const raw = localStorage.getItem(STATUS_CACHE_KEY);
+            if (!raw) return null;
+            const parsed = JSON.parse(raw);
+            if (!Array.isArray(parsed?.statuses) || parsed.statuses.length === 0) return null;
+            // Only keep entries that actually look like a status definition;
+            // a half-written cache must not poison the map.
+            const statuses = parsed.statuses.filter(
+                (d: any) => d && typeof d.id === "string" && typeof d.color === "string",
+            );
+            return statuses.length > 0 ? { statuses, default: parsed.default } : null;
+        } catch {
+            return null;
+        }
+    }
+
+    function writeStatusCache(statuses: StatusDef[], fallbackId: string) {
+        try {
+            localStorage.setItem(STATUS_CACHE_KEY, JSON.stringify({ statuses, default: fallbackId }));
+        } catch { /* storage full or unavailable — the fetch still works */ }
+    }
+
+    const cachedStatus = readStatusCache();
+    let statusDefs    = $state<StatusDef[]>(cachedStatus?.statuses ?? []);
+    let defaultStatusId = $state(cachedStatus?.default ?? "active");
     let statusById = $derived(new globalThis.Map(statusDefs.map(s => [s.id, s] as [string, StatusDef])));
 
     function statusDef(id?: string): StatusDef {
@@ -822,8 +856,23 @@
         return `${d}d ago`;
     }
 
+    // Awaited before the first marker paint so dots are never drawn with a
+    // status list the server has not confirmed yet.
+    let statusConfigReady: Promise<void> | null = null;
+
     async function loadStatusConfig() {
-        if (isEnvBrowser()) return;
+        if (isEnvBrowser()) {
+            // Browser preview has no NUI to ask, and with no cache the list
+            // would be empty and every dot grey. Sample data only — the game
+            // never reaches this branch.
+            if (statusDefs.length === 0) {
+                statusDefs = [
+                    { id: "active", label: "Available", color: "#22C55E", icon: "●" },
+                    { id: "busy",   label: "Busy",      color: "#F59E0B", icon: "●" },
+                ];
+            }
+            return;
+        }
         try {
             const res = await fetchNui(
                 NUI_EVENTS.MAP.GET_OFFICER_STATUS_CONFIG,
@@ -831,8 +880,29 @@
                 { statuses: statusDefs, default: defaultStatusId },
             );
             const statuses = (res as any).statuses;
-            if (Array.isArray(statuses) && statuses.length > 0) statusDefs = statuses;
+            let changed = false;
+            if (Array.isArray(statuses) && statuses.length > 0) {
+                changed = JSON.stringify(statuses) !== JSON.stringify(statusDefs);
+                statusDefs = statuses;
+            }
             if (typeof (res as any).default === "string") defaultStatusId = (res as any).default;
+
+            // Remembered for the next open, so a server that customises its
+            // status list gets correct colours from the very first frame
+            // instead of a hardcoded guess.
+            if (Array.isArray(statuses) && statuses.length > 0) {
+                writeStatusCache(statuses, defaultStatusId);
+            }
+
+            // Leaflet markers are built imperatively, so an updated status list
+            // does not repaint them on its own — without this they would keep
+            // the seed colours until the next poll, up to 10 seconds later.
+            // Only reached when markers were already drawn before the config
+            // arrived (a push beat the fetch); the normal path awaits this
+            // promise first and never needs the extra pass.
+            if (changed && officers.length > 0) {
+                refreshTracking();
+            }
         } catch { /* keep the built-in fallback defs above */ }
     }
 
@@ -2341,7 +2411,12 @@
         // defer the data fetches and marker rendering to later frames so opening
         // the tab doesn't spike a single game tick. Each step yields first.
         const idle = (fn: () => void, delay: number) => setTimeout(fn, delay);
-        idle(() => refreshTracking(), 0);   // next frame: officers/vehicles/bodycams
+        idle(async () => {
+            // Wait for the status list, otherwise officers on any status
+            // beyond the seeded ones paint grey for the first frames.
+            try { await statusConfigReady; } catch { /* seeded defs stand */ }
+            refreshTracking();
+        }, 0);                              // next frame: officers/vehicles/bodycams
         idle(() => loadDispatches(), 60);   // then: dispatch calls + markers
 
         window.addEventListener("keydown", handleTickerKeys);
@@ -2384,8 +2459,10 @@
         fetchNui<{ citizenid?: string }>(NUI_EVENTS.MAP.GET_LOCAL_CITIZEN_ID, {}, {})
             .then(r => { if (!ownCitizenId && typeof r?.citizenid === "string") ownCitizenId = r.citizenid; })
             .catch(() => { /* push path remains */ });
-        // Defer the two secondary fetches so they don't pile onto the mount tick.
-        setTimeout(() => loadStatusConfig(), 120);
+        // Status colours have to be known BEFORE the first markers are drawn,
+        // so this one starts immediately rather than being deferred like the
+        // genuinely secondary fetches below.
+        statusConfigReady = loadStatusConfig();
         setTimeout(() => loadPatrols(), 180);
     });
 
