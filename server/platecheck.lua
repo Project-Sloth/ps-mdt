@@ -584,7 +584,7 @@ end
 ---@param plate string
 ---@param coords table|nil Optional scan position, shown on the alert's map
 ---@return table result    The same table CheckPlate returns, plus `alerted`
-function MdtPlateCheckAlert(src, plate, coords)
+function MdtPlateCheckAlert(src, plate, coords, plateIndex)
     if not mayRunPlateCheck(src) then
         return { plate = normalizePlate(plate) or tostring(plate or ''),
                  found = false, hits = {}, denied = true }
@@ -679,6 +679,7 @@ function MdtPlateCheckAlert(src, plate, coords)
             -- model fills the vehicle strip — the same anatomy an officer
             -- already reads on every other alert.
             plate = normalized,
+            plateIndex = plateIndex,
             vehicle = result.model,
             name = result.owner,
             information = #hitsForMe > 0 and summarize(shown) or 'No flags on this plate',
