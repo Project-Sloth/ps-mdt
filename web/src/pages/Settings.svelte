@@ -12,9 +12,71 @@
 
 	const STORAGE_KEY = "ps-mdt-preferences";
 
+	// Preferences live in Lua's KVP store, which unlike localStorage survives a
+	// CEF cache clear. localStorage stays as a mirror so the synchronous reads
+	// below keep working and nothing configured before this change is lost.
+	let kvpCache: string | null = null;
+
+	// Same raw-fetch style the clientPrefs push below uses: these callbacks are
+	// local to this page and not part of the typed NUI event map.
+	function nui(name: string, body: unknown) {
+		return fetch(`https://${(window as any).GetParentResourceName?.() ?? "ps-mdt"}/${name}`, {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify(body),
+		});
+	}
+
+	async function seedPrefs() {
+		try {
+			const res = await (await nui("getMdtPrefs", {})).json();
+			if (res?.data) {
+				kvpCache = res.data;
+				// Keep the mirror in step so a later synchronous read agrees.
+				try { localStorage.setItem(STORAGE_KEY, res.data); } catch { /* full or blocked */ }
+			}
+		} catch { /* client unreachable — localStorage stands */ }
+	}
+
+	function readPrefs(): string | null {
+		if (kvpCache) return kvpCache;
+		try { return localStorage.getItem(STORAGE_KEY); } catch { return null; }
+	}
+
+	function writePrefs(json: string) {
+		kvpCache = json;
+		nui("saveMdtPrefs", json).catch(() => { /* mirror still holds it */ });
+		try { localStorage.setItem(STORAGE_KEY, json); } catch { /* full or blocked */ }
+	}
+
+	// Fixed steps rather than a slider. The control sits in the panel it resizes,
+	// so dragging fights you — the handle moves out from under the cursor. One
+	// click per step, and the labels say what they are for.
+	// Two independent axes. Content zoom decides how big things are INSIDE the
+	// content area; window size decides how much of the screen the MDT itself
+	// takes. On a 4K screen you often want a smaller window with larger text,
+	// which one control could never express.
+	const WINDOW_STEPS: Array<[string, string, string]> = [
+		["compact", "75vw", "72vh"],
+		["default", "95vw", "90vh"],
+		["full", "99vw", "96vh"],
+	];
+	const WINDOW_LABELS: Record<string, string> = {
+		compact: "Compact", default: "Default", full: "Full",
+	};
+
+	const ZOOM_STEPS: Array<[number, string]> = [
+		[100, "100%"],
+		[115, "115%"],
+		[130, "Default"],
+		[150, "1440p"],
+		[175, "4K"],
+	];
+
 	// Appearance
 	let notificationSounds = $state(true);
 	let uiZoom = $state(130);
+	let windowSize = $state("default");
 
 	// Map
 	let defaultZoom = $state(5);
@@ -45,11 +107,13 @@
 	// topbar can show an "Unsaved changes" hint.
 	let savedSnapshot = $state("");
 	function snapshot(): string {
-		return JSON.stringify({ notificationSounds, uiZoom, defaultZoom, centerOnSelf, patrolZoneNotifications, autoStatusNotifications, autoWaypoint, assignmentNotifications, bodycamAutoDuty, defaultTab, reducedMotion , plateCheckAlerts, plateCheckIgnoreImpounds, plateCheckCriticalOnly });
+		return JSON.stringify({ notificationSounds, uiZoom, windowSize, defaultZoom, centerOnSelf, patrolZoneNotifications, autoStatusNotifications, autoWaypoint, assignmentNotifications, bodycamAutoDuty, defaultTab, reducedMotion , plateCheckAlerts, plateCheckIgnoreImpounds, plateCheckCriticalOnly });
 	}
 	let isDirty = $derived(savedSnapshot !== "" && snapshot() !== savedSnapshot);
 
 	onMount(() => {
+		// Pull the stored preferences before anything reads them.
+		seedPrefs();
 		loadPreferences();
 		savedSnapshot = snapshot();
 
@@ -61,7 +125,7 @@
 			applyReducedMotion(reducedMotion);
 			}
 			if (event.data?.type === "requestAutoStatusPref") {
-				const saved = localStorage.getItem(STORAGE_KEY);
+				const saved = readPrefs();
 				let enabled = true; // default
 				try {
 					if (saved) {
@@ -78,7 +142,7 @@
 				}).catch(() => {});
 			}
 			if (event.data?.type === "requestPatrolZonePref") {
-				const saved = localStorage.getItem(STORAGE_KEY);
+				const saved = readPrefs();
 				let enabled = true; // default
 				try {
 					if (saved) {
@@ -102,11 +166,11 @@
 	});
 
 	// Push the Lua-mirrored bundle (sounds, waypoint, assignment notify) to the
-	// client. Reads from localStorage so the resource-start request gets saved
+	// client. Reads the stored preferences so the resource-start request gets saved
 	// values even before this component's state has hydrated.
 	function pushClientPrefs() {
 		let d: Record<string, unknown> = {};
-		try { d = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? "{}"); } catch { /* defaults */ }
+		try { d = JSON.parse(readPrefs() ?? "{}"); } catch { /* defaults */ }
 		fetch(`https://${(window as any).GetParentResourceName?.() ?? "ps-mdt"}/clientPrefs`, {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
@@ -170,11 +234,12 @@
 
 	function loadPreferences() {
 		try {
-			const saved = localStorage.getItem(STORAGE_KEY);
+			const saved = readPrefs();
 			if (!saved) return;
 			const data = JSON.parse(saved);
 			if (data.notificationSounds !== undefined) notificationSounds = data.notificationSounds;
 			if (data.uiZoom !== undefined) uiZoom = data.uiZoom;
+			if (typeof data.windowSize === "string") applyWindow(data.windowSize);
 			if (data.defaultZoom !== undefined) defaultZoom = clampZoomLevel(data.defaultZoom);
 			if (data.centerOnSelf !== undefined) centerOnSelf = data.centerOnSelf;
 			if (data.patrolZoneNotifications !== undefined) patrolZoneNotifications = data.patrolZoneNotifications;
@@ -198,6 +263,7 @@
 			const data = {
 				notificationSounds,
 				uiZoom,
+				windowSize,
 				defaultZoom,
 				centerOnSelf,
 				patrolZoneNotifications,
@@ -211,7 +277,7 @@
 				defaultTab,
 				reducedMotion,
 			};
-			localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+			writePrefs(JSON.stringify(data));
 			savedSnapshot = snapshot();
 
 			// Immediately sync notification prefs to the Lua client
@@ -242,6 +308,13 @@
 		}, 2500);
 	}
 
+	function applyWindow(key: string) {
+		windowSize = key;
+		const step = WINDOW_STEPS.find(([k]) => k === key) ?? WINDOW_STEPS[1];
+		document.documentElement.style.setProperty("--mdt-window-w", step[1]);
+		document.documentElement.style.setProperty("--mdt-window-h", step[2]);
+	}
+
 	function applyZoom(value: number) {
 		uiZoom = value;
 		const el = document.querySelector(".content-area") as HTMLElement;
@@ -250,9 +323,6 @@
 		}
 	}
 
-	function resetZoom() {
-		applyZoom(130);
-	}
 </script>
 
 <svelte:document onclick={handleDocClick} />
@@ -351,22 +421,41 @@
 				</div>
 				<div class="setting-row">
 					<div class="setting-info">
-						<span class="setting-label">UI Zoom</span>
-						<span class="setting-desc">Adjust the overall MDT interface size</span>
+						<span class="setting-label">Window Size</span>
+						<span class="setting-desc">How much of the screen the MDT itself takes up</span>
 					</div>
 					<div class="zoom-control">
-						<input
-							type="range"
-							class="zoom-slider"
-							min="100"
-							max="200"
-							step="5"
-							value={uiZoom}
-							oninput={(e) => applyZoom(parseInt(e.currentTarget.value))}
-						/>
-						<span class="zoom-value">{uiZoom}%</span>
-						{#if uiZoom !== 130}
-							<button class="zoom-reset" onclick={resetZoom} type="button">Reset</button>
+						<div class="zoom-steps">
+							{#each WINDOW_STEPS as [key]}
+								<button
+									class="zoom-step"
+									class:active={windowSize === key}
+									type="button"
+									onclick={() => applyWindow(key)}
+								>{WINDOW_LABELS[key]}</button>
+							{/each}
+						</div>
+					</div>
+				</div>
+
+				<div class="setting-row">
+					<div class="setting-info">
+						<span class="setting-label">Content Zoom</span>
+						<span class="setting-desc">Size of text and boxes inside the content area</span>
+					</div>
+					<div class="zoom-control">
+						<div class="zoom-steps">
+							{#each ZOOM_STEPS as [value, label]}
+								<button
+									class="zoom-step"
+									class:active={uiZoom === value}
+									type="button"
+									onclick={() => applyZoom(value)}
+								>{label}</button>
+							{/each}
+						</div>
+						{#if !ZOOM_STEPS.some(([v]) => v === uiZoom)}
+							<span class="zoom-value">{uiZoom}%</span>
 						{/if}
 					</div>
 				</div>
@@ -648,52 +737,39 @@
 	.setting-input::-webkit-outer-spin-button,
 	.setting-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 
-	.zoom-control { display: flex; align-items: center; gap: 8px; }
-	.zoom-slider {
-		-webkit-appearance: none;
-		appearance: none;
-		width: 100px;
-		height: 4px;
-		background: rgba(255, 255, 255, 0.06);
-		border-radius: 2px;
-		outline: none;
-		cursor: pointer;
+	/* Fixed width on both rows so the two button groups line up under each
+	   other. Left to their content, three buttons and five buttons ended at
+	   different points and the block looked ragged. */
+	.zoom-control { display: flex; align-items: center; justify-content: flex-end; gap: 8px; width: 330px; }
+	/* Zoom presets. Same construction as the other choice rows in the MDT:
+	   quiet until selected, accent when active. */
+	.zoom-steps {
+		display: flex;
+		gap: 3px;
+		flex: 1;
+		padding: 3px;
+		background: rgba(0, 0, 0, 0.22);
+		border: 1px solid rgba(255, 255, 255, 0.05);
+		border-radius: 4px;
 	}
-	.zoom-slider::-webkit-slider-thumb {
-		-webkit-appearance: none;
-		appearance: none;
-		width: 12px;
-		height: 12px;
-		border-radius: 50%;
-		background: rgba(var(--accent-text-rgb), 0.7);
-		box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.08);
-		cursor: pointer;
-		transition: background 0.1s, box-shadow 0.1s;
-	}
-	.zoom-slider::-webkit-slider-thumb:hover {
-		background: rgba(var(--accent-text-rgb), 0.9);
-		box-shadow: 0 0 0 4px rgba(var(--accent-rgb), 0.14);
-	}
-	.zoom-value {
+	.zoom-step {
+		flex: 1;
+		padding: 5px 2px;
+		background: transparent;
+		border: none;
+		border-radius: 3px;
+		color: rgba(255, 255, 255, 0.45);
 		font-size: 10px;
 		font-weight: 600;
-		color: rgba(255, 255, 255, 0.6);
-		min-width: 32px;
-		text-align: center;
-		font-variant-numeric: tabular-nums;
-	}
-	.zoom-reset {
-		background: transparent;
-		border: 1px solid rgba(255, 255, 255, 0.06);
-		color: rgba(255, 255, 255, 0.35);
-		padding: 1px 6px;
-		border-radius: 3px;
-		font-size: 9px;
-		font-weight: 500;
 		cursor: pointer;
 		transition: all 0.1s;
+		white-space: nowrap;
 	}
-	.zoom-reset:hover { background: rgba(255, 255, 255, 0.04); color: rgba(255, 255, 255, 0.6); }
+	.zoom-step:hover { color: rgba(255, 255, 255, 0.8); }
+	.zoom-step.active {
+		background: rgba(var(--accent-rgb), 0.18);
+		color: rgba(var(--accent-text-rgb), 0.95);
+	}
 
 	/* ===== Toggle ===== */
 	/* Custom dropdown, same visual language as Pagination's per-page menu —
