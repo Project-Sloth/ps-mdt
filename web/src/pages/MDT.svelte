@@ -223,8 +223,11 @@
     }
 
     .mdt-window {
-        width: 95vw;
-        height: 90vh;
+        /* Driven by the Window Size preference. Custom properties rather than a
+           transform: a transform would scale the frame but leave click targets
+           and border edges where they were. */
+        width: var(--mdt-window-w, 95vw);
+        height: var(--mdt-window-h, 90vh);
         background: var(--dark-bg);
         border-radius: 12px;
         overflow: hidden;

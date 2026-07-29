@@ -68,3 +68,30 @@ function MdtPref(name, default)
     if v == nil then return default end
     return v
 end
+
+-- ── Persistence ─────────────────────────────────────────────────────────────
+-- Preferences are stored with SetResourceKvp rather than the NUI's own
+-- localStorage. Both survive a relog, but a CEF cache clear wipes localStorage
+-- — and clearing the cache is the first thing players are told to try when
+-- anything misbehaves, so every troubleshooting step used to cost them their
+-- settings. KVP lives outside the browser.
+--
+-- localStorage is still written as a mirror and read as a fallback, so nobody
+-- loses what they had configured before this existed.
+local PREF_KVP = 'ps_mdt_preferences'
+
+RegisterNUICallback('saveMdtPrefs', function(data, cb)
+    if type(data) == 'string' and #data < 20000 then
+        SetResourceKvp(PREF_KVP, data)
+    end
+    cb({})
+end)
+
+RegisterNUICallback('getMdtPrefs', function(_, cb)
+    cb({ data = GetResourceKvpString(PREF_KVP) or nil })
+end)
+
+RegisterNUICallback('resetMdtPrefs', function(_, cb)
+    DeleteResourceKvp(PREF_KVP)
+    cb({})
+end)
