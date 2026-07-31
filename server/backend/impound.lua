@@ -1023,7 +1023,7 @@ ps.registerCallback(resourceName .. ':server:getImpoundLot', function(source)
             ) AS owner_name
         FROM mdt_impound i
         JOIN player_vehicles pv ON pv.id = i.vehicleid
-        LEFT JOIN players p ON p.citizenid = pv.citizenid
+        LEFT JOIN players p ON p.citizenid = pv.citizenid COLLATE utf8mb4_general_ci
         WHERE i.status = 'active'
         ORDER BY i.time DESC
     ]]) or {}

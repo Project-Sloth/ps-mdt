@@ -189,7 +189,7 @@ local function runPlateQueries(normalized, candidates)
                JSON_UNQUOTE(JSON_EXTRACT(p.charinfo, '$.lastname'))  AS lastname,
                JSON_EXTRACT(p.metadata, '$.licences.driver')          AS driver_licence
         FROM player_vehicles pv
-        LEFT JOIN players p ON p.citizenid = pv.citizenid
+        LEFT JOIN players p ON p.citizenid = pv.citizenid COLLATE utf8mb4_general_ci COLLATE utf8mb4_general_ci
         WHERE pv.plate IN (?, ?)
         LIMIT 1
     ]], { c1, c2 })
@@ -204,7 +204,7 @@ local function runPlateQueries(normalized, candidates)
                    JSON_UNQUOTE(JSON_EXTRACT(p.charinfo, '$.lastname'))  AS lastname,
                    JSON_EXTRACT(p.metadata, '$.licences.driver')          AS driver_licence
             FROM player_vehicles pv
-            LEFT JOIN players p ON p.citizenid = pv.citizenid
+            LEFT JOIN players p ON p.citizenid = pv.citizenid COLLATE utf8mb4_general_ci COLLATE utf8mb4_general_ci
             WHERE REPLACE(pv.plate, ' ', '') = ?
             LIMIT 1
         ]], { normalized })

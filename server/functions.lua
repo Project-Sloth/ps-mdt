@@ -1050,7 +1050,7 @@ function CallsignHolder(callsign, exceptCitizenid)
                    JSON_UNQUOTE(JSON_EXTRACT(p.charinfo, '$.lastname'))
                ) AS fullname
         FROM players p
-        LEFT JOIN mdt_profiles pr ON pr.citizenid = p.citizenid
+        LEFT JOIN mdt_profiles pr ON pr.citizenid = p.citizenid COLLATE utf8mb4_general_ci COLLATE utf8mb4_general_ci
         WHERE JSON_UNQUOTE(JSON_EXTRACT(p.metadata, '$.callsign')) = ?
           AND p.citizenid != ?
           AND (pr.callsign IS NULL OR pr.callsign = '' OR pr.callsign = ?)
@@ -1075,7 +1075,7 @@ AddEventHandler('onResourceStart', function(res)
                pr.callsign AS profile_callsign,
                JSON_UNQUOTE(JSON_EXTRACT(p.metadata, '$.callsign')) AS meta_callsign
         FROM players p
-        INNER JOIN mdt_profiles pr ON pr.citizenid = p.citizenid
+        INNER JOIN mdt_profiles pr ON pr.citizenid = p.citizenid COLLATE utf8mb4_general_ci COLLATE utf8mb4_general_ci
         WHERE pr.callsign IS NOT NULL AND pr.callsign <> ''
           AND JSON_UNQUOTE(JSON_EXTRACT(p.metadata, '$.callsign')) <> pr.callsign
     ]], {}) or {}

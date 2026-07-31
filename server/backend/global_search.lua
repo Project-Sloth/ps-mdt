@@ -71,7 +71,7 @@ ps.registerCallback(resourceName .. ':server:globalSearch', function(source, pay
                    JSON_UNQUOTE(JSON_EXTRACT(p.charinfo, '$.phone')) AS phone,
                    mp.profilepicture AS image
             FROM players p
-            LEFT JOIN mdt_profiles mp ON mp.citizenid = p.citizenid
+            LEFT JOIN mdt_profiles mp ON mp.citizenid = p.citizenid COLLATE utf8mb4_general_ci
             HAVING name LIKE ? OR p.citizenid LIKE ? OR phone LIKE ?
             LIMIT ?
         ]], { like, like, like, PER_TYPE }) or {}
@@ -114,7 +114,7 @@ ps.registerCallback(resourceName .. ':server:globalSearch', function(source, pay
                        JSON_UNQUOTE(JSON_EXTRACT(p.charinfo, '$.lastname'))
                    ) AS owner
             FROM player_vehicles v
-            LEFT JOIN players p ON p.citizenid = v.citizenid
+            LEFT JOIN players p ON p.citizenid = v.citizenid COLLATE utf8mb4_general_ci
             WHERE (v.plate LIKE ? OR v.vehicle LIKE ?%s)
             LIMIT ?
         ]]):format(modelClause), args) or {}
@@ -144,7 +144,7 @@ ps.registerCallback(resourceName .. ':server:globalSearch', function(source, pay
             FROM mdt_reports_warrants w
             INNER JOIN mdt_reports AS mr ON mr.id = w.reportid
             LEFT JOIN mdt_reports_restrictions AS mrr ON mr.id = mrr.reportid
-            LEFT JOIN players p ON p.citizenid = w.citizenid
+            LEFT JOIN players p ON p.citizenid = w.citizenid COLLATE utf8mb4_general_ci
             WHERE w.expirydate > NOW() AND %s
             HAVING name LIKE ? OR w.citizenid LIKE ? OR title LIKE ?
             LIMIT ?
