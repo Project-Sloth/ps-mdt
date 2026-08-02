@@ -525,6 +525,20 @@ Config.WeaponImagePath = 'nui://ox_inventory/web/images/'
 -- retrieve it there like any other car. Lots are purely a record of WHERE the
 -- vehicle is being held while impounded.
 Config.Impound = {
+    -- Master switch for the whole impound feature.
+    --
+    -- Off means off everywhere, not merely hidden: the on-site command is never
+    -- registered, every server callback refuses, the tab and the dashboard tile
+    -- disappear, the civilian view stops offering to settle fees, and the plate
+    -- check drops its impound-history flag. A server that tows through another
+    -- resource should not have a second half-wired impound system sitting
+    -- behind a hidden button.
+    --
+    -- Existing records are left alone. Turning this back on brings the history
+    -- back exactly as it was, and vehicles already held stay held — the state
+    -- lives in mdt_impound and player_vehicles, not in this flag.
+    Enabled = false,
+
     Lots = {
         { id = 'lspd',   label = 'LSPD Impound' },
         { id = 'paleto', label = 'Paleto Impound' },

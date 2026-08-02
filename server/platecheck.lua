@@ -46,6 +46,13 @@ end
 ---@param name string
 ---@return boolean
 local function checkEnabled(name)
+    -- The impound history check has nothing to report on a server that does not
+    -- impound, and would keep querying mdt_impound for rows that will never be
+    -- written. Gated here rather than at the call site so the master switch
+    -- cannot be defeated by someone enabling the check in Config.PlateCheck.
+    if name == 'impounds' and Config and Config.Impound and Config.Impound.Enabled == false then
+        return false
+    end
     return checkCfg(name).enabled ~= false
 end
 

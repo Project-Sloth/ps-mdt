@@ -23,6 +23,47 @@ local function impoundCfg()
     return (Config and Config.Impound) or {}
 end
 
+--- Is the impound feature switched on at all?
+---@return boolean
+function ImpoundEnabled()
+    return impoundCfg().Enabled ~= false
+end
+
+--- Register an impound callback that refuses when the feature is off.
+---
+--- Wrapping the registration rather than adding a guard to each of the eleven
+--- handlers below: a guard repeated eleven times is a guard forgotten once, and
+--- the one that gets forgotten is a live database write reachable from a NUI
+--- message. This way a new callback cannot be added without inheriting the
+--- check.
+---
+--- The callbacks are still registered when disabled, and answer with a refusal
+--- rather than not existing. A missing callback leaves the caller waiting for a
+--- reply that never comes; a refusal is something the interface can act on.
+---@param name string
+---@param handler function
+local function registerImpoundCallback(name, handler)
+    ps.registerCallback(resourceName .. ':server:' .. name, function(source, payload)
+        if not ImpoundEnabled() then
+            -- `enabled = false` as well as `disabled = true`: the civilian view
+            -- tests `enabled !== false`, so a refusal without it reads as
+            -- undefined and the page carries on as though the feature were
+            -- live. Empty collections for the same reason — a caller that
+            -- iterates the result should find nothing, not nil.
+            return {
+                success  = false,
+                disabled = true,
+                enabled  = false,
+                impounds = {},
+                history  = {},
+                vehicles = {},
+                message  = 'Impound is disabled on this server',
+            }
+        end
+        return handler(source, payload)
+    end)
+end
+
 local function getLot(lotId)
     for _, lot in ipairs(impoundCfg().Lots or {}) do
         if lot.id == lotId then return lot end
@@ -323,7 +364,7 @@ local function doImpound(src, payload)
     return { success = true, message = msg, boloClosed = boloClosed }
 end
 
-ps.registerCallback(resourceName .. ':server:impoundVehicle', function(source, payload)
+registerImpoundCallback('impoundVehicle', function(source, payload)
     return doImpound(source, payload)
 end)
 
@@ -350,7 +391,7 @@ local function civilianPayEnabled()
 end
 
 --- Every vehicle of MINE currently sitting in a lot, with what it costs.
-ps.registerCallback(resourceName .. ':server:getMyImpounds', function(source)
+registerImpoundCallback('getMyImpounds', function(source)
     local src = source
     if not civilianPayEnabled() then return { success = false, enabled = false, impounds = {} } end
 
@@ -404,7 +445,7 @@ ps.registerCallback(resourceName .. ':server:getMyImpounds', function(source)
 end)
 
 --- Settle the bill on one of MY vehicles.
-ps.registerCallback(resourceName .. ':server:payMyImpoundFee', function(source, payload)
+registerImpoundCallback('payMyImpoundFee', function(source, payload)
     local src = source
     if not civilianPayEnabled() then return { success = false, message = 'Not available' } end
 
@@ -482,7 +523,7 @@ ps.registerCallback(resourceName .. ':server:payMyImpoundFee', function(source, 
     }
 end)
 
-ps.registerCallback(resourceName .. ':server:payImpoundFee', function(source, payload)
+registerImpoundCallback('payImpoundFee', function(source, payload)
     local src = source
     if not CheckAuth(src) then return { success = false, message = 'Unauthorized' } end
     if not CheckPermission(src, 'vehicle_impound_release') then
@@ -591,7 +632,7 @@ end)
 -- Release a vehicle: administrative, works from anywhere. The car is queued to
 -- be spawned into a free spot at its lot.
 -- ─────────────────────────────────────────────────────────────────────────────
-ps.registerCallback(resourceName .. ':server:releaseImpound', function(source, payload)
+registerImpoundCallback('releaseImpound', function(source, payload)
     local src = source
     if not CheckAuth(src) then return { success = false, message = 'Unauthorized' } end
     if not CheckPermission(src, 'vehicle_impound_release') then
@@ -803,7 +844,7 @@ end
 
 -- Step 1: the client asks what it's looking at. Tells the UI whether this is an
 -- owned vehicle (full impound form) or unowned traffic (quick removal).
-ps.registerCallback(resourceName .. ':server:inspectOnSiteVehicle', function(source, payload)
+registerImpoundCallback('inspectOnSiteVehicle', function(source, payload)
     local src = source
     if not CheckAuth(src) then return { success = false, message = 'Unauthorized' } end
     if not CheckPermission(src, 'vehicle_impound') then
@@ -885,7 +926,7 @@ ps.registerCallback(resourceName .. ':server:inspectOnSiteVehicle', function(sou
 end)
 
 -- Step 2a: owned vehicle — impound it properly, then remove it from the world.
-ps.registerCallback(resourceName .. ':server:impoundOnSite', function(source, payload)
+registerImpoundCallback('impoundOnSite', function(source, payload)
     local src = source
     if not CheckAuth(src) then return { success = false, message = 'Unauthorized' } end
     if not CheckPermission(src, 'vehicle_impound') then
@@ -913,7 +954,7 @@ ps.registerCallback(resourceName .. ':server:impoundOnSite', function(source, pa
 end)
 
 -- Step 2b: unowned traffic — remove it and pay the officer for clearing the road.
-ps.registerCallback(resourceName .. ':server:cleanupVehicle', function(source, payload)
+registerImpoundCallback('cleanupVehicle', function(source, payload)
     local src = source
     if not CheckAuth(src) then return { success = false, message = 'Unauthorized' } end
     if not CheckPermission(src, 'vehicle_impound') then
@@ -1006,7 +1047,7 @@ end)
 -- ─────────────────────────────────────────────────────────────────────────────
 
 -- The impound lot work list: every active impound.
-ps.registerCallback(resourceName .. ':server:getImpoundLot', function(source)
+registerImpoundCallback('getImpoundLot', function(source)
     local src = source
     if not CheckAuth(src) then return { vehicles = {} } end
 
@@ -1041,7 +1082,7 @@ ps.registerCallback(resourceName .. ':server:getImpoundLot', function(source)
 end)
 
 -- Full impound history for one vehicle (active + past).
-ps.registerCallback(resourceName .. ':server:getImpoundHistory', function(source, payload)
+registerImpoundCallback('getImpoundHistory', function(source, payload)
     local src = source
     if not CheckAuth(src) then return { entries = {} } end
 
@@ -1076,7 +1117,17 @@ ps.registerCallback(resourceName .. ':server:getImpoundHistory', function(source
 end)
 
 -- Reasons + lots for the impound modal.
+-- Registered directly rather than through the wrapper: this is the one call the
+-- interface makes to find out whether the feature exists, so a blanket refusal
+-- would leave it unable to distinguish "switched off" from "request failed".
 ps.registerCallback(resourceName .. ':server:getImpoundConfig', function(source)
+    if not ImpoundEnabled() then
+        return { enabled = false, reasons = {}, lots = {}, durations = {} }
+    end
+    return GetImpoundConfigPayload(source)
+end)
+
+function GetImpoundConfigPayload(source)
     if not CheckAuth(source) then return {} end
     local cfg = impoundCfg()
     local lots = {}
@@ -1096,8 +1147,9 @@ ps.registerCallback(resourceName .. ':server:getImpoundConfig', function(source)
         },
         durations       = cfg.Durations or {},
         defaultDuration = cfg.DefaultDuration or 'immediate',
+        enabled         = true,
     }
-end)
+end
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- Self-healing: a vehicle can be set to state 2 by another resource (a garage

@@ -223,13 +223,29 @@ local function runImpound()
     busy = false
 end
 
-RegisterCommand(cfg().Command or 'impound', function()
-    CreateThread(runImpound)
-end, false)
+--- Whether the impound feature exists on this server at all.
+---@return boolean
+local function enabled()
+    return not (Config and Config.Impound) or Config.Impound.Enabled ~= false
+end
 
--- So this can be hung off a target or a keybind later.
+-- The command is not registered at all when the feature is off, rather than
+-- registered and refusing. A command that exists and does nothing shows up in
+-- the chat suggestion list and reads as a broken feature; one that was never
+-- registered reads as a feature this server does not have.
+if enabled() then
+    RegisterCommand(cfg().Command or 'impound', function()
+        CreateThread(runImpound)
+    end, false)
+end
+
+-- So this can be hung off a target or a keybind later. Always exported, because
+-- a missing export throws in the caller — a resource wired to a target option
+-- should get a quiet false, not an error.
 exports('impoundNearbyVehicle', function()
+    if not enabled() then return false end
     CreateThread(runImpound)
+    return true
 end)
 
 -- ── NUI callbacks for the standalone form ────────────────────────────────────
