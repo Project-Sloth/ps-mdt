@@ -15,7 +15,6 @@ These need to be running on your server:
 | [ps_lib](https://github.com/Project-Sloth/ps_lib) | Framework abstraction layer |
 | [oxmysql](https://github.com/overextended/oxmysql) | Database |
 | [ox_lib](https://github.com/overextended/ox_lib) | Utility library |
-| [screenshot-basic](https://github.com/citizenfx/screenshot-basic) | Mugshot capture |
 
 
 Optional but HIGHLY RECOMMENDED:
@@ -23,7 +22,8 @@ Optional but HIGHLY RECOMMENDED:
 | Resource | Why |
 |----------|-----|
 | [ps-dispatch](https://github.com/Project-Sloth/ps-dispatch) | Dispatch integration |
-| [ps-multijob](https://github.com/Project-Sloth/ps-multijob) | Officers Bodycam |
+| [lsn-radar](https://github.com/LeSiiN/lsn-radar) | Very Good Radar with all features needed|
+| [ps-multijob](https://github.com/Project-Sloth/ps-multijob) | Officers Bodycam ( Optional, works anyways )|
 
 ## Installation
 No backwards compatibility with ps-mdtv1.
