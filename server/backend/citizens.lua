@@ -252,7 +252,7 @@ ps.registerCallback(resourceName .. ':server:searchCitizens', function(source, q
             JSON_UNQUOTE(JSON_EXTRACT(p.metadata, '$.fingerprint')) AS fingerprint,
             JSON_UNQUOTE(JSON_EXTRACT(p.metadata, '$.dna')) AS dna
         FROM players AS p
-        LEFT JOIN mdt_profiles AS mp ON p.citizenid = mp.citizenid
+        LEFT JOIN mdt_profiles AS mp ON p.citizenid = mp.citizenid COLLATE utf8mb4_general_ci
         WHERE 
             LOWER(JSON_UNQUOTE(JSON_EXTRACT(p.charinfo, '$.firstname'))) LIKE ? OR
             LOWER(JSON_UNQUOTE(JSON_EXTRACT(p.charinfo, '$.lastname'))) LIKE ? OR

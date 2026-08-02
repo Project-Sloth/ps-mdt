@@ -76,7 +76,7 @@ AddEventHandler("wk:onPlateScanned", function(cam, plate, index)
             local row = MySQL.single.await([[
                 SELECT JSON_EXTRACT(p.metadata, '$.licences.driver') AS driver_licence
                 FROM player_vehicles pv
-                LEFT JOIN players p ON p.citizenid = pv.citizenid
+                LEFT JOIN players p ON p.citizenid = pv.citizenid COLLATE utf8mb4_general_ci COLLATE utf8mb4_general_ci
                 WHERE pv.plate = ? OR REPLACE(pv.plate, ' ', '') = REPLACE(?, ' ', '')
                 LIMIT 1
             ]], { normalizedPlate, normalizedPlate })

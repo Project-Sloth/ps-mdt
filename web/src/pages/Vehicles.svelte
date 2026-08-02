@@ -52,8 +52,18 @@
 	// Use the shared definitions rather than re-declaring them here — a local copy is
 	// how the reason's `hold` field went missing in the first place.
 
-	let canImpound = $derived(authService ? (authService.hasPermission("vehicle_impound") ?? false) : true);
-	let canRelease = $derived(authService ? (authService.hasPermission("vehicle_impound_release") ?? false) : true);
+	// Whether the server has the feature switched on at all. Declared before the
+	// permissions below because they read it — a $derived referencing a $state
+	// declared further down is a temporal dead zone error at module evaluation,
+	// not a Svelte quirk that resolves itself.
+	//
+	// Starts false so a slow or failed config load hides the impound controls
+	// rather than offering buttons that will be refused. A refusal after the
+	// click is a worse answer than a control that was never there.
+	let impoundEnabled = $state(false);
+
+	let canImpound = $derived(impoundEnabled && (authService ? (authService.hasPermission("vehicle_impound") ?? false) : true));
+	let canRelease = $derived(impoundEnabled && (authService ? (authService.hasPermission("vehicle_impound_release") ?? false) : true));
 	function holdLeft(seconds: number): string {
 		const d = Math.floor(seconds / 86400);
 		const h = Math.floor((seconds % 86400) / 3600);
@@ -62,7 +72,7 @@
 		return `${Math.max(1, Math.floor(seconds / 60))}m left`;
 	}
 
-	let canOverride = $derived(authService ? (authService.hasPermission("vehicle_impound_override") ?? false) : true);
+	let canOverride = $derived(impoundEnabled && (authService ? (authService.hasPermission("vehicle_impound_override") ?? false) : true));
 
 	let impoundDurations = $state<ImpoundDuration[]>([]);
 	let defaultDuration = $state("");
@@ -112,9 +122,10 @@
 	async function loadImpoundConfig() {
 		if (impoundCfgLoaded) return;
 		try {
-			const res = await fetchNui<{ reasons: ImpoundReason[]; lots: ImpoundLot[]; durations: ImpoundDuration[]; defaultFee: number; requireFeePaid: boolean; maxFee: number; defaultDuration: string; storage: { perDay: number; maxDays: number }; lotPageSize?: number }>(
+			const res = await fetchNui<{ enabled?: boolean; reasons: ImpoundReason[]; lots: ImpoundLot[]; durations: ImpoundDuration[]; defaultFee: number; requireFeePaid: boolean; maxFee: number; defaultDuration: string; storage: { perDay: number; maxDays: number }; lotPageSize?: number }>(
 				NUI_EVENTS.IMPOUND.GET_IMPOUND_CONFIG, {},
-				{ reasons: [], lots: [], durations: [], defaultFee: 500, requireFeePaid: true, maxFee: 50000, defaultDuration: "immediate", storage: { perDay: 0, maxDays: 0 }, lotPageSize: 10 });
+				{ enabled: false, reasons: [], lots: [], durations: [], defaultFee: 500, requireFeePaid: true, maxFee: 50000, defaultDuration: "immediate", storage: { perDay: 0, maxDays: 0 }, lotPageSize: 10 });
+			impoundEnabled = res?.enabled === true;
 			impoundReasons = res?.reasons ?? [];
 			impoundLots = res?.lots ?? [];
 			impoundDurations = res?.durations ?? [];
@@ -825,7 +836,18 @@
 					</div>
 				</div>
 
-				<!-- ═══ Impound ═══ -->
+				<!-- ═══ Impound ═══
+				     Hidden entirely when the feature is off. The buttons inside are
+				     already permission-gated, but an empty "Impound" heading with a
+				     history that can never be written reads as a broken section
+				     rather than an absent one.
+
+				     The State row above and the status pill in the list stay put
+				     either way: core_state 2 is a fact about the vehicle in the
+				     database, and another resource can set it. Reporting a car as
+				     "Garaged" because this MDT does not handle impounds would be
+				     telling an officer something untrue. ═══ -->
+				{#if impoundEnabled}
 				<div class="section">
 					<div class="section-title">
 						Impound
@@ -975,6 +997,7 @@
 						{/if}
 					{/if}
 				</div>
+				{/if}
 
 				<div class="section">
 					<div class="section-title">

@@ -604,6 +604,15 @@ end)
 -- to be worked out the same way here rather than read from a column.
 local function computeImpoundMetrics(safeCount)
     local cfg = (Config and Config.Impound) or {}
+
+    -- Nothing at all when the feature is off, rather than a row of zeroes. The
+    -- dashboard tile is already conditional on there being figures, so an empty
+    -- table removes it — and three database queries a dashboard load are saved
+    -- on servers that do not impound.
+    if cfg.Enabled == false then
+        return { held = 0, outstanding = 0, oldestDays = 0, impoundedLast7 = 0 }
+    end
+
     local storage = cfg.Storage or {}
     local perDay  = storage.PerDay or 0
     local maxDays = storage.MaxDays or 0

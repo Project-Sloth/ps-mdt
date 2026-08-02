@@ -217,6 +217,8 @@
 			<div class="stat-divider"></div>
 
 			<!-- Impound -->
+			<!-- The server sends no impound figures when the feature is off, so an
+			     absent block hides the tile without needing a flag of its own. -->
 			{#if impound.held > 0 || impound.outstanding > 0}
 				<div class="stat-item" title={impound.oldestDays > 0
 					? `Oldest vehicle has been held for ${impound.oldestDays} day${impound.oldestDays === 1 ? '' : 's'}`

@@ -46,6 +46,13 @@ end
 ---@param name string
 ---@return boolean
 local function checkEnabled(name)
+    -- The impound history check has nothing to report on a server that does not
+    -- impound, and would keep querying mdt_impound for rows that will never be
+    -- written. Gated here rather than at the call site so the master switch
+    -- cannot be defeated by someone enabling the check in Config.PlateCheck.
+    if name == 'impounds' and Config and Config.Impound and Config.Impound.Enabled == false then
+        return false
+    end
     return checkCfg(name).enabled ~= false
 end
 
@@ -189,7 +196,7 @@ local function runPlateQueries(normalized, candidates)
                JSON_UNQUOTE(JSON_EXTRACT(p.charinfo, '$.lastname'))  AS lastname,
                JSON_EXTRACT(p.metadata, '$.licences.driver')          AS driver_licence
         FROM player_vehicles pv
-        LEFT JOIN players p ON p.citizenid = pv.citizenid
+        LEFT JOIN players p ON p.citizenid = pv.citizenid COLLATE utf8mb4_general_ci COLLATE utf8mb4_general_ci
         WHERE pv.plate IN (?, ?)
         LIMIT 1
     ]], { c1, c2 })
@@ -204,7 +211,7 @@ local function runPlateQueries(normalized, candidates)
                    JSON_UNQUOTE(JSON_EXTRACT(p.charinfo, '$.lastname'))  AS lastname,
                    JSON_EXTRACT(p.metadata, '$.licences.driver')          AS driver_licence
             FROM player_vehicles pv
-            LEFT JOIN players p ON p.citizenid = pv.citizenid
+            LEFT JOIN players p ON p.citizenid = pv.citizenid COLLATE utf8mb4_general_ci COLLATE utf8mb4_general_ci
             WHERE REPLACE(pv.plate, ' ', '') = ?
             LIMIT 1
         ]], { normalized })

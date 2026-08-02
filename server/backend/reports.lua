@@ -449,7 +449,7 @@ ps.registerCallback(resourceName .. ':server:searchPlayers', function(source, qu
             JSON_UNQUOTE(JSON_EXTRACT(p.metadata, '$.fingerprint')) as fingerprint,
             mp.profilepicture
         FROM players p
-        LEFT JOIN mdt_profiles mp ON mp.citizenid = p.citizenid
+        LEFT JOIN mdt_profiles mp ON mp.citizenid = p.citizenid COLLATE utf8mb4_general_ci
         WHERE (
             LOWER(p.citizenid) LIKE ?
             OR LOWER(JSON_UNQUOTE(JSON_EXTRACT(p.charinfo, '$.firstname'))) LIKE ?
@@ -528,7 +528,7 @@ ps.registerCallback(resourceName .. ':server:searchOfficers', function(source, q
             JSON_UNQUOTE(JSON_EXTRACT(p.job, '$.grade.name')) as jobgrade,
             mp.callsign as callsign
         FROM players p
-        LEFT JOIN mdt_profiles mp ON mp.citizenid = p.citizenid
+        LEFT JOIN mdt_profiles mp ON mp.citizenid = p.citizenid COLLATE utf8mb4_general_ci
         WHERE (
             LOWER(p.citizenid) LIKE ?
             OR LOWER(JSON_UNQUOTE(JSON_EXTRACT(p.charinfo, '$.firstname'))) LIKE ?
@@ -592,7 +592,7 @@ ps.registerCallback(resourceName .. ':server:searchVehiclesForReport', function(
                 'Unknown'
             ) as owner_name
         FROM player_vehicles pv
-        LEFT JOIN players p ON p.citizenid = pv.citizenid
+        LEFT JOIN players p ON p.citizenid = pv.citizenid COLLATE utf8mb4_general_ci
         WHERE (
             REPLACE(LOWER(pv.plate), ' ', '') LIKE ?
             OR LOWER(CONCAT(
