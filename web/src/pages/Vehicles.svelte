@@ -13,6 +13,7 @@
 	import Pagination from "../components/Pagination.svelte";
 
 	import type { AuthService } from "../services/authService.svelte";
+	import { permissionHint } from "../utils/permissionHint";
 
 	let { tabService, authService }: {
 		tabService: ReturnType<typeof createTabService>;
@@ -851,8 +852,8 @@
 				<div class="section">
 					<div class="section-title">
 						Impound
-						{#if !activeImpound && canImpound}
-							<button class="danger-btn" onclick={openImpoundModal}>Impound vehicle</button>
+						{#if !activeImpound}
+							<button class="danger-btn" use:permissionHint={canImpound ? null : "vehicle_impound"} onclick={openImpoundModal}>Impound vehicle</button>
 						{/if}
 					</div>
 
@@ -944,8 +945,9 @@
 											Collect {money(activeImpound.total ?? activeImpound.fee)}
 										</button>
 									{/if}
-									{#if activeImpound.hold_releasable === false && canOverride}
-										<button class="danger-btn" disabled={impoundBusy}
+									{#if activeImpound.hold_releasable === false}
+										<button class="danger-btn" disabled={impoundBusy && canOverride}
+											use:permissionHint={canOverride ? null : "vehicle_impound_override"}
 											onclick={() => { overridePlate = selectedVehicle!.plate; overrideReason = ""; overrideOpen = true; }}>
 											Early release
 										</button>
@@ -959,7 +961,7 @@
 								</div>
 								{#if activeImpound.hold_releasable === false}
 									<div class="imp-gate-hint">
-										{activeImpound.hold_reason}{#if !canOverride} — you are not authorised to override this hold{/if}
+										{activeImpound.hold_reason}
 									</div>
 								{:else if requireFeePaid && (activeImpound.total ?? activeImpound.fee) > 0 && !activeImpound.fee_paid}
 									<div class="imp-hint">The fee must be collected before this vehicle can be released.</div>

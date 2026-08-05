@@ -42,6 +42,7 @@
     import { NUI_EVENTS } from "../constants/nuiEvents";
     import { globalNotifications } from "../services/notificationService.svelte";
     import type { AuthService } from "../services/authService.svelte";
+    import { permissionHint } from "../utils/permissionHint";
 
     interface Props {
         authService?: AuthService;
@@ -94,6 +95,14 @@
     let sidebarWidth = $derived(
         (officersOpen ? 260 : 36) + 1 + (patrolsOpen ? 260 : 36)
     );
+
+    /**
+     * Whether the sidebar is genuinely on screen. `sidebarOpen` survives in
+     * localStorage regardless of permission, so without this the zoom control
+     * and the default view kept reserving room for a panel that was never
+     * rendered — leaving the +/- floating over the middle of the map.
+     */
+    let sidebarVisible = $derived(canViewPatrols && sidebarOpen);
 
     type GtaPoint = { x: number; y: number };
 
@@ -1297,7 +1306,7 @@
     function defaultViewTarget(): L.LatLng {
         const island = mapImageBounds ? mapImageBounds.getCenter() : L.latLng(-300, -1500);
         if (!map) return island;
-        const coveredPx = sidebarOpen ? sidebarWidth + 34 : 0;
+        const coveredPx = sidebarVisible ? sidebarWidth + 34 : 0;
         const p = map.project(island, DEFAULT_VIEW_ZOOM).add([coveredPx / 2, 0]);
         return map.unproject(p, DEFAULT_VIEW_ZOOM);
     }
@@ -1316,7 +1325,7 @@
     function flyToCentered(target: L.LatLngExpression, zoom: number, duration = 0.9) {
         if (!map) return;
         const ll = L.latLng(target as L.LatLngExpression);
-        const coveredPx = sidebarOpen ? sidebarWidth + 34 : 0;
+        const coveredPx = sidebarVisible ? sidebarWidth + 34 : 0;
         const p = map.project(ll, zoom).add([coveredPx / 2, 0]);
         if (motionReduced()) {
             map.setView(map.unproject(p, zoom), zoom, { animate: false });
@@ -2497,7 +2506,7 @@
     $effect(() => { showCalls; if (effectsArmed) renderDispatchMarkers(); });
 </script>
 <div class="map-page">
-    <div class="map-wrapper" style="--sidebar-width:{sidebarWidth}px; --zoom-offset:{sidebarOpen ? sidebarWidth + 46 : 12}px">
+    <div class="map-wrapper" style="--sidebar-width:{sidebarWidth}px; --zoom-offset:{sidebarVisible ? sidebarWidth + 46 : 12}px">
 
         {#if showBackToMap}
             <button class="back-to-map" onclick={flyBackToMap}>
@@ -2814,13 +2823,11 @@
                 </label>
             </div>
             <div class="controls-divider"></div>
-            {#if canAssignUnits}
-                <button class="create-call-btn" onclick={openCreateCall}>
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                    Create Call
-                </button>
-                <div class="controls-divider"></div>
-            {/if}
+            <button class="create-call-btn" use:permissionHint={canAssignUnits ? null : "dispatch_assign"} onclick={openCreateCall}>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Create Call
+            </button>
+            <div class="controls-divider"></div>
             <div class="legend">
                 <span class="legend-item vehicle">Vehicle</span>
                 <span class="legend-item vehicle-parked">Parked</span>
@@ -3109,6 +3116,15 @@
                 {/if}
             </div>
         </div>
+        {:else}
+            <button class="sidebar-toggle" type="button"
+                use:permissionHint={"map_patrols_view"}
+                aria-label="Patrols sidebar">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <path d="M6 3L11 8L6 13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span class="sidebar-toggle-label">Patrols</span>
+            </button>
         {/if}
     </div>
 </div>

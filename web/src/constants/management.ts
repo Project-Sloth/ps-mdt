@@ -241,3 +241,31 @@ export const ALL_PERMISSION_KEYS = [
 	...PERMISSION_CATEGORIES.flatMap((cat) => cat.permissions.map((p) => p.key)),
 	...TAB_VISIBILITY_KEYS.map((t) => t.key),
 ];
+
+/** A permission entry enriched with the category it belongs to */
+export interface PermissionMeta {
+	key: string;
+	label: string;
+	description: string;
+	category: string;
+}
+
+const PERMISSION_INDEX = new Map<string, PermissionMeta>(
+	PERMISSION_CATEGORIES.flatMap((cat) =>
+		cat.permissions.map((p) => [p.key, { ...p, category: cat.label }] as const),
+	),
+);
+
+/**
+ * Resolves a permission key to its human readable label and description.
+ * Returns undefined for keys that are not declared in PERMISSION_CATEGORIES,
+ * which is nearly always a permission that was added to the backend but never
+ * registered here — so warn loudly during development.
+ */
+export function getPermissionMeta(key: string): PermissionMeta | undefined {
+	const meta = PERMISSION_INDEX.get(key);
+	if (!meta && import.meta.env.DEV) {
+		console.warn(`[mdt] Permission "${key}" has no entry in PERMISSION_CATEGORIES`);
+	}
+	return meta;
+}

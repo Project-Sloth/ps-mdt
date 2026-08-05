@@ -11,6 +11,7 @@
 	import SkeletonList from "../components/SkeletonList.svelte";
 
 	import type { Charge, GroupedCharges } from "./../interfaces/ICharges";
+	import { permissionHint } from "../utils/permissionHint";
 
 	let { authService }: { authService?: AuthService } = $props();
 
@@ -311,11 +312,9 @@
 			>
 				{isLoading ? "Loading..." : "Refresh"}
 			</button>
-			{#if canEdit}
-				<button class="add-charge-btn" onclick={openCreate}>
-					<span class="material-icons" style="font-size: 12px;">add</span> New Charge
-				</button>
-			{/if}
+			<button class="add-charge-btn" use:permissionHint={canEdit ? null : "charges_edit"} onclick={openCreate}>
+				<span class="material-icons" style="font-size: 12px;">add</span> New Charge
+			</button>
 		</div>
 	</div>
 

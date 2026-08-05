@@ -10,6 +10,7 @@
 	import PersonSearchModal from "../components/report-editor/PersonSearchModal.svelte";
 	import type { createTabService } from "../services/tabService.svelte";
 	import type { AuthService } from "../services/authService.svelte";
+	import { permissionHint } from "../utils/permissionHint";
 
 	let { tabService, authService }: { tabService?: ReturnType<typeof createTabService>; authService?: AuthService } = $props();
 
@@ -348,16 +349,14 @@
 					<div class="section">
 						<div class="section-header">
 							<div class="section-title" style="margin-bottom:0;">Incident Details</div>
-							{#if canManage}
-								<div class="inline-controls">
-									{#if editMode}
-										<button class="action-btn" onclick={handleUpdateEntry}>Save</button>
-										<button class="action-btn" onclick={() => { editMode = false; }}>Cancel</button>
-									{:else}
-										<button class="action-btn" onclick={() => { editMode = true; }}>Edit</button>
-									{/if}
-								</div>
-							{/if}
+							<div class="inline-controls">
+								{#if editMode}
+									<button class="action-btn" onclick={handleUpdateEntry}>Save</button>
+									<button class="action-btn" onclick={() => { editMode = false; }}>Cancel</button>
+								{:else}
+									<button class="action-btn" use:permissionHint={canManage ? null : "ppr_manage"} onclick={() => { editMode = true; }}>Edit</button>
+								{/if}
+							</div>
 						</div>
 						{#if editMode && canManage}
 							<div class="field-row">
@@ -587,12 +586,10 @@
 				<input type="text" placeholder="Search PPR entries..." bind:value={searchQuery} />
 			</div>
 			<div style="flex:1;"></div>
-			{#if canManage}
-				<button class="primary-btn" onclick={() => { showCreateForm = true; }}>
-					<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-					New PPR
-				</button>
-			{/if}
+			<button class="primary-btn" use:permissionHint={canManage ? null : "ppr_manage"} onclick={() => { showCreateForm = true; }}>
+				<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+				New PPR
+			</button>
 			<button class="back-btn" onclick={loadEntries} disabled={loading}>
 				<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
 				Refresh

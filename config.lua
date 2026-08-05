@@ -537,7 +537,7 @@ Config.Impound = {
     -- Existing records are left alone. Turning this back on brings the history
     -- back exactly as it was, and vehicles already held stay held — the state
     -- lives in mdt_impound and player_vehicles, not in this flag.
-    Enabled = false,
+    Enabled = true,
 
     Lots = {
         { id = 'lspd',   label = 'LSPD Impound' },

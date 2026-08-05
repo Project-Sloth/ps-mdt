@@ -11,6 +11,7 @@
 	import PersonSearchModal from "../components/report-editor/PersonSearchModal.svelte";
 	import { createSearchService } from "../services/searchService.svelte";
 	import type { AuthService } from "../services/authService.svelte";
+	import { permissionHint } from "../utils/permissionHint";
 
 	interface WeaponFlag {
 		type: string;
@@ -514,11 +515,9 @@
 			<button class="refresh-btn" onclick={refreshWeapons} disabled={loading}>
 				{loading ? "Loading..." : "Refresh"}
 			</button>
-			{#if canAddWeapon}
-				<button class="add-weapon-btn" onclick={() => (showAddWeaponModal = true)}>
-					<span class="material-icons" style="font-size: 12px;">add</span> Add Weapon
-				</button>
-			{/if}
+			<button class="add-weapon-btn" use:permissionHint={canAddWeapon ? null : "weapons_add"} onclick={() => (showAddWeaponModal = true)}>
+				<span class="material-icons" style="font-size: 12px;">add</span> Add Weapon
+			</button>
 		</div>
 
 		<div class="list-panel">

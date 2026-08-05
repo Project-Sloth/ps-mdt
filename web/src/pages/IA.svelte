@@ -11,6 +11,7 @@
 	import PersonSearchModal from "../components/report-editor/PersonSearchModal.svelte";
 	import type { createTabService } from "../services/tabService.svelte";
 	import type { AuthService } from "../services/authService.svelte";
+	import { permissionHint } from "../utils/permissionHint";
 
 	let { tabService, authService }: { tabService?: ReturnType<typeof createTabService>; authService?: AuthService } = $props();
 
@@ -368,16 +369,14 @@
 					<div class="section">
 						<div class="section-header">
 							<div class="section-title" style="margin-bottom:0;">Complaint Information</div>
-							{#if canManage}
-								<div class="inline-controls">
-									{#if editMode}
-										<button class="action-btn" onclick={handleSaveComplaintInfo}>Save</button>
-										<button class="action-btn" onclick={() => { editMode = false; }}>Cancel</button>
-									{:else}
-										<button class="action-btn" onclick={() => { editMode = true; }}>Edit</button>
-									{/if}
-								</div>
-							{/if}
+							<div class="inline-controls">
+								{#if editMode}
+									<button class="action-btn" onclick={handleSaveComplaintInfo}>Save</button>
+									<button class="action-btn" onclick={() => { editMode = false; }}>Cancel</button>
+								{:else}
+									<button class="action-btn" use:permissionHint={canManage ? null : "ia_manage"} onclick={() => { editMode = true; }}>Edit</button>
+								{/if}
+							</div>
 						</div>
 						{#if editMode && canManage}
 							<div class="field-row">

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { getTabsForJob, getTabLabel, type MDTTab } from "../constants";
+	import { WINDOW_STEPS } from "../utils/preferences";
 	import type { JobType } from "../interfaces/IUser";
 
 	// authService is passed down from ContentArea so the Default Tab dropdown
@@ -56,11 +57,6 @@
 	// content area; window size decides how much of the screen the MDT itself
 	// takes. On a 4K screen you often want a smaller window with larger text,
 	// which one control could never express.
-	const WINDOW_STEPS: Array<[string, string, string]> = [
-		["compact", "75vw", "72vh"],
-		["default", "95vw", "90vh"],
-		["full", "99vw", "96vh"],
-	];
 	const WINDOW_LABELS: Record<string, string> = {
 		compact: "Compact", default: "Default", full: "Full",
 	};

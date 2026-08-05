@@ -1,12 +1,21 @@
 <script lang="ts">
 	import { onMount } from "svelte";
-	import { PLACEHOLDER_COMPONENTS, type ComponentId } from "../constants";
+	import {
+		PLACEHOLDER_COMPONENTS,
+		TAB_TO_COMPONENT_MAP,
+		getTabsForJob,
+		getTabLabel,
+		type ComponentId,
+		type MDTTab,
+	} from "../constants";
 	import type { AuthService } from "../services/authService.svelte";
 	import { fetchNui } from "../utils/fetchNui";
 	import { NUI_EVENTS } from "../constants/nuiEvents";
+	import { readPrefs, onPrefsReady } from "../utils/preferences";
 	import LoginOverlay from "./LoginOverlay.svelte";
 	import SOPAgreementOverlay from "./SOPAgreementOverlay.svelte";
 	import PlaceholderContent from "./PlaceholderContent.svelte";
+	import AccessRestricted from "./AccessRestricted.svelte";
 	import CivilianView from "../pages/CivilianView.svelte";
 	import Dashboard from "../pages/Dashboard.svelte";
 	import Reports from "../pages/Reports.svelte";
@@ -52,18 +61,19 @@
 	let sopIntroduction = $state("");
 	let sopMissionStatement = $state("");
 
-	onMount(() => {
-		try {
-			const saved = localStorage.getItem("ps-mdt-preferences");
-			if (saved) {
-				const data = JSON.parse(saved);
-				if (data.uiZoom && data.uiZoom >= 100 && data.uiZoom <= 200) {
-					contentZoom = `${data.uiZoom}%`;
-				}
-			}
-		} catch {
-			// Ignore
+	function applyZoomFromPrefs() {
+		const zoom = readPrefs().uiZoom;
+		if (typeof zoom === "number" && zoom >= 100 && zoom <= 200) {
+			contentZoom = `${zoom}%`;
 		}
+	}
+
+	onMount(() => {
+		applyZoomFromPrefs();
+		// The KVP copy may land after this mounts, e.g. on the first open after
+		// a resource restart — without this the zoom stayed at its default
+		// until the player visited the Preferences page.
+		return onPrefsReady(applyZoomFromPrefs);
 	});
 
 	// Check SOP agreement when auth becomes authorized
@@ -124,7 +134,9 @@
 		bulletin_board: ["bulletin_view"],
 		calendar: ["court_view", "training_view"],
 		management: ["management_settings", "management_bulletins", "management_activity", "management_permissions", "management_tracking"],
-		settings: ["management_settings"],
+		// No entry for `settings`: that page is the officer's own preferences
+		// (default tab, UI scale), not department configuration. The chief-level
+		// screen is `management`.
 	};
 
 	const DOJ_SHARED_PAGES = ["reports", "citizens", "cases", "evidence", "charges"];
@@ -134,6 +146,39 @@
 		const requiredPerms = PAGE_PERMISSIONS[pageId];
 		if (!requiredPerms) return true;
 		return authService.hasAnyPermission(...requiredPerms);
+	}
+
+	/**
+	 * Switching tabs means moving the *active instance*, not just the global
+	 * activeTab — getActiveComponent() reads the instance, so setting only the
+	 * global value leaves the screen exactly where it was.
+	 */
+	function goToTab(tab: MDTTab) {
+		const active = tabService.getActiveInstance();
+		if (active) {
+			tabService.setInstanceTab(active.id, tab);
+		} else {
+			tabService.setActiveTab(tab);
+		}
+	}
+
+	/** Sections this officer may open, offered when they land on a locked one. */
+	function getAccessibleTabs(current: ComponentId) {
+		return getTabsForJob(authService.jobType)
+			.filter((tab) => !authService.hasRawPermission(`tab_hidden_${tab.name.toLowerCase()}`))
+			.map((tab) => ({
+				tab: tab.name,
+				icon: tab.icon,
+				label: getTabLabel(tab.name as MDTTab),
+				component: TAB_TO_COMPONENT_MAP[tab.name as keyof typeof TAB_TO_COMPONENT_MAP],
+			}))
+			.filter(
+				(entry) =>
+					entry.component !== current &&
+					entry.component !== "dashboard" &&
+					canAccessPage(entry.component),
+			)
+			.slice(0, 6);
 	}
 
 	function getPageLabel(pageId: string): string {
@@ -175,20 +220,16 @@
 		{@const activeComponent = (getActiveComponent() as any) as ComponentId}
 
 		{#if !canAccessPage(activeComponent)}
-			<div class="denied-overlay">
-				<div class="denied-card">
-					<span class="material-icons denied-icon">lock</span>
-					<span class="denied-title">Permission Denied</span>
-					<span class="denied-desc">
-						You do not have permission to access <strong>{getPageLabel(activeComponent)}</strong>.
-						Contact a supervisor to request access.
-					</span>
-					<button class="denied-btn" onclick={() => tabService.setActiveTab("Dashboard")}>
-						<span class="material-icons denied-btn-icon">arrow_back</span>
-						Back to Dashboard
-					</button>
-				</div>
-			</div>
+			<AccessRestricted
+				pageLabel={getPageLabel(activeComponent)}
+				requiredPermissions={PAGE_PERMISSIONS[activeComponent] ?? []}
+				rank={authService.playerData?.job?.grade?.name ?? ""}
+				callsign={authService.playerData?.metadata?.callsign ?? ""}
+				department={authService.playerData?.job?.label ?? ""}
+				suggestions={getAccessibleTabs(activeComponent)}
+				onBack={() => goToTab("Dashboard")}
+				onOpen={(tab) => goToTab(tab as MDTTab)}
+			/>
 		{:else if activeComponent === "dashboard"}
 			<Dashboard
 				signOut={authService.signOut}
@@ -270,78 +311,4 @@
 		position: relative;
 	}
 
-	.denied-overlay {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		height: 100%;
-		background: var(--card-dark-bg);
-	}
-
-	.denied-card {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		text-align: center;
-		background: var(--dark-bg);
-		border: 1px solid rgba(255, 255, 255, 0.06);
-		border-radius: 16px;
-		padding: 40px 48px;
-		max-width: 400px;
-		animation: fadeIn 0.3s ease-out;
-	}
-
-	.denied-icon {
-		font-size: 42px;
-		color: rgba(239, 68, 68, 0.6);
-		margin-bottom: 16px;
-	}
-
-	.denied-title {
-		font-size: 20px;
-		font-weight: 700;
-		color: rgba(239, 68, 68, 0.8);
-		margin-bottom: 8px;
-	}
-
-	.denied-desc {
-		font-size: 13px;
-		color: rgba(255, 255, 255, 0.45);
-		line-height: 1.6;
-		margin-bottom: 24px;
-	}
-
-	.denied-desc strong {
-		color: rgba(255, 255, 255, 0.7);
-	}
-
-	.denied-btn {
-		display: inline-flex;
-		align-items: center;
-		gap: 6px;
-		padding: 10px 22px;
-		border-radius: 8px;
-		font-size: 13px;
-		font-weight: 500;
-		cursor: pointer;
-		transition: all 0.15s ease;
-		background: rgba(255, 255, 255, 0.04);
-		color: rgba(255, 255, 255, 0.6);
-		border: 1px solid rgba(255, 255, 255, 0.08);
-	}
-
-	.denied-btn:hover {
-		background: rgba(255, 255, 255, 0.08);
-		color: rgba(255, 255, 255, 0.9);
-		border-color: rgba(255, 255, 255, 0.15);
-	}
-
-	.denied-btn-icon {
-		font-size: 16px;
-	}
-
-	@keyframes fadeIn {
-		0% { opacity: 0; transform: translateY(8px); }
-		100% { opacity: 1; transform: translateY(0); }
-	}
 </style>

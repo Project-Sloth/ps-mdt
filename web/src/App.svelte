@@ -10,6 +10,7 @@
 	import { queryClient } from "./utils/query-client";
 	import { onMount } from "svelte";
 	import { setupInputDebug } from "./utils/debugInputBlocker";
+	import { seedPreferences } from "./utils/preferences";
 
 	let cleanupInputDebug: (() => void) | undefined;
 	let showComplaintForm = $state(false);
@@ -19,6 +20,10 @@
 	let impoundVehicle = $state<{ plate: string; model?: string; netId: number; owner?: string; stolen?: boolean; bolo?: boolean; priorImpounds?: number } | null>(null);
 
 	onMount(() => {
+		// Before anything reads a preference: KVP outlives localStorage, so this
+		// is what makes the saved zoom and window size survive a restart.
+		seedPreferences();
+
 		if (import.meta.env && import.meta.env.DEV) {
 			cleanupInputDebug = setupInputDebug();
 		}
