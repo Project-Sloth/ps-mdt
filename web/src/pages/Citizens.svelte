@@ -108,6 +108,7 @@
 	// Called by the suspect-photo upload below; without this import that
 	// handler threw a ReferenceError the moment anyone picked a file.
 	import { compressImage } from "../services/uploadService";
+	import { permissionHint } from "../utils/permissionHint";
 
 	let { tabService, jobType = 'leo', authService }: { tabService: ReturnType<typeof createTabService>; jobType?: JobType; authService?: AuthService } =
 		$props();
@@ -1280,11 +1281,9 @@
 						<div class="panel">
 							<div class="panel-title">
 								Licenses <span class="cnt">{activeLicenses.length}</span>
-								{#if canManageLicenses}
-									<button class="issue-license-btn" onclick={() => (showIssueLicenseModal = true)}>
-										<span class="material-icons" style="font-size: 12px;">add</span> Issue License
-									</button>
-								{/if}
+								<button class="issue-license-btn" use:permissionHint={canManageLicenses ? null : "citizens_edit_licenses"} onclick={() => (showIssueLicenseModal = true)}>
+									<span class="material-icons" style="font-size: 12px;">add</span> Issue License
+								</button>
 							</div>
 							<div class="section-list">
 								{#if activeLicenses.length > 0}

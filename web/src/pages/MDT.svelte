@@ -9,6 +9,7 @@
     import {NUI_EVENTS} from "@/constants/nuiEvents";
     import {getTabsForJob, type MDTTab} from "../constants";
     import {fetchNui} from "@/utils/fetchNui";
+    import {readPrefs, applyGlobalPrefs, onPrefsReady, prefsReady} from "@/utils/preferences";
     import {globalNotifications} from "../services/notificationService.svelte";
     import TopBar from "../components/TopBar.svelte";
     import NavigationPills from "../components/NavigationPills.svelte";
@@ -32,19 +33,13 @@
         settingsService.loadColorConfig();
         setupInstanceCoordination();
         loadMissedHearings();
-        applyReducedMotionFromPrefs();
+        applyGlobalPrefs();
+        return onPrefsReady(applyGlobalPrefs);
     });
 
-    function readPrefs(): Record<string, unknown> {
-        try { return JSON.parse(localStorage.getItem("ps-mdt-preferences") ?? "{}"); } catch { return {}; }
-    }
-
-    // Reduced motion must apply from the first frame, independent of whether
-    // the Settings page ever mounts — so it's read here at boot. Settings
-    // re-applies it live on save.
-    function applyReducedMotionFromPrefs() {
-        document.documentElement.classList.toggle("mdt-reduced-motion", readPrefs().reducedMotion === true);
-    }
+    // Reduced motion and window size must apply from the first frame, whether
+    // or not the Settings page ever mounts. Settings re-applies them live on
+    // save; onPrefsReady covers the case where the KVP pull lands after this.
 
     // Default tab (Settings > General): applied on every MDT open. "last"
     // (or unset) keeps the classic behavior of resuming wherever you were.
@@ -61,7 +56,9 @@
     $effect(() => {
         if (!authService.isAuthorized || defaultTabApplied) return;
         defaultTabApplied = true;
-        applyDefaultTab();
+        // Wait for the KVP pull: auth can finish first, and reading the
+        // preference too early lands on the fallback instead of the saved tab.
+        prefsReady.then(applyDefaultTab);
     });
 
     function applyDefaultTab() {

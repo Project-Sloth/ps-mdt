@@ -57,6 +57,7 @@ export const DOJ_TABS: readonly string[] = [
 	"Bulletin Board",
 	"Legal Documents",
 	"Charges",
+	"Preferences",
 	"Settings",
 ] as const;
 
@@ -101,7 +102,7 @@ export const DOJ_NAV_GROUPS: NavGroup[] = [
 	{ id: "court", label: "Court", icon: "account_balance", tabs: ["Court Cases", "Calendar", "Warrant Review", "Court Orders"] },
 	{ id: "legal", label: "Legal", icon: "description", tabs: ["Legal Documents", "Charges"] },
 	{ id: "records", label: "Records", icon: "folder_open", tabs: ["Reports", "Citizens", "Cases", "Evidence"] },
-	{ id: "bottom", tabs: ["Settings"] },
+	{ id: "bottom", tabs: ["Preferences", "Settings"] },
 ];
 
 /** Report types per job */
