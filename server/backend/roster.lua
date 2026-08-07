@@ -131,6 +131,8 @@ local function checkDuty(citizenid, matchFn)
 end
 
 ps.registerCallback('ps-mdt:server:getRosterList', function(source)
+    local src = source
+    if not CheckAuth(src) then return {} end
     -- Scope the roster to the caller's domain: EMS sees EMS, police sees police.
     local domain = GetMdtDomain(source)
     local jobList, matchFn, defaultDept, scopeJobType
